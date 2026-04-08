@@ -1,0 +1,59 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --color-blood-red: #C1121F;
+  --color-soft-crimson: #E63946;
+  --color-frosted-white: #F8F9FA;
+}
+
+@layer base {
+  body {
+    @apply text-[#1A1A1A] font-sans overflow-x-hidden;
+  }
+}
+
+@layer utilities {
+  .glass {
+    @apply bg-white/30 backdrop-blur-[25px] border border-white/40 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] ring-1 ring-white/20;
+  }
+  
+  .glass-dark {
+    @apply bg-black/40 backdrop-blur-[20px] border border-white/10 shadow-2xl ring-1 ring-white/5;
+  }
+
+  .liquid-bg {
+    background: linear-gradient(45deg, #C1121F, #E63946, #FF8C00);
+    background-size: 400% 400%;
+    animation: liquid-flow 15s ease infinite;
+  }
+
+  @keyframes liquid-flow {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  .liquid-wave {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .liquid-wave::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 200%;
+    height: 100%;
+    background: rgba(193, 18, 31, 0.1);
+    border-radius: 40%;
+    animation: wave 10s linear infinite;
+  }
+
+  @keyframes wave {
+    0% { transform: translateX(0) rotate(0deg); }
+    100% { transform: translateX(-50%) rotate(360deg); }
+  }
+}
