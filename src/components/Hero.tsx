@@ -24,62 +24,6 @@ const donors = [
   { name: "Jos Buttler", phone: "+880 1422 990011", group: "AB-", location: "Jessore, BD" },
 ];
 
-// Moving Card Component for the Marquee
-const MovingCard = ({ donor, speed, rowTop, index }: any) => {
-  const cardRef = useRef<HTMLDivElement>(null);
-  const tweenRef = useRef<gsap.core.Tween | null>(null);
-
-  useEffect(() => {
-    const card = cardRef.current;
-    if (!card) return;
-
-    const cardWidth = 260;
-    // Initial spread across the screen
-    const startX = window.innerWidth + (index * 350);
-    
-    const animate = (fromX: number) => {
-      const targetX = -cardWidth - 100;
-      const distance = fromX - targetX;
-      // Calculate duration based on distance to maintain constant speed
-      const duration = distance / speed;
-
-      tweenRef.current = gsap.fromTo(card,
-        { x: fromX },
-        {
-          x: targetX,
-          duration: duration,
-          ease: "none",
-          onComplete: () => animate(window.innerWidth + 100)
-        }
-      );
-    };
-
-    animate(startX);
-
-    return () => {
-      if (tweenRef.current) tweenRef.current.kill();
-    };
-  }, [speed, index]);
-
-  return (
-    <div
-      ref={cardRef}
-      style={{ top: rowTop }}
-      onMouseEnter={() => tweenRef.current?.pause()}
-      onMouseLeave={() => tweenRef.current?.play()}
-      className="absolute flex items-center bg-white/40 backdrop-blur-xl rounded-full px-4 py-2 shadow-lg border border-white/60 min-w-[240px] cursor-pointer select-none transition-shadow hover:shadow-blood-red/20"
-    >
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blood-red text-sm font-bold text-white shadow-md">
-        {donor.group}
-      </div>
-      <div className="ml-3 flex flex-col overflow-hidden">
-        <h3 className="truncate text-sm font-bold text-gray-900">{donor.name}</h3>
-        <p className="truncate text-[10px] font-medium text-gray-600">{donor.location} — 25+</p>
-      </div>
-    </div>
-  );
-};
-
 export default function Hero() {
   const [activeGroup, setActiveGroup] = useState<string | null>(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -281,29 +225,43 @@ export default function Hero() {
           </div>
         </motion.div>
 
-        {/* Donor Marquee Section (5 Rows) */}
-        <div className="relative mt-12 h-[460px] w-full overflow-hidden">
-          {[0, 1, 2, 3, 4].map((rowIdx) => {
-            const rowSpeed = 40 + Math.random() * 40;
-            const rowTop = rowIdx * 90;
-            
-            // Assign 5 cards per row, cycling through donors
-            return [0, 1, 2, 3, 4].map((cardIdx) => {
-              const donorIdx = (rowIdx * 5 + cardIdx) % donors.length;
-              // Add a slight random variance to each card's speed for "random" feel
-              const cardSpeed = rowSpeed + (Math.random() * 10 - 5);
+        {/* Donor Cards Row (4 per row) */}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {filteredDonors.map((donor, index) => (
+            <motion.div
+              key={`${donor.name}-${index}`}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: index * 0.05 }}
+              whileHover={{ 
+                y: -5, 
+                transition: { type: "spring", stiffness: 400, damping: 15 }
+              }}
+              className="group relative flex items-center gap-3 overflow-hidden rounded-[8px] border border-white/40 bg-white/20 p-2 pr-4 shadow-[0_4px_15px_rgba(0,0,0,0.03)] backdrop-blur-2xl transition-all duration-300 hover:border-blood-red/40 hover:shadow-[0_10px_30px_rgba(193,18,31,0.12)]"
+            >
+              {/* Inner Glow / Ring */}
+              <div className="absolute inset-0 rounded-[8px] ring-1 ring-inset ring-white/50" />
               
-              return (
-                <MovingCard 
-                  key={`${rowIdx}-${cardIdx}`}
-                  donor={donors[donorIdx]}
-                  speed={cardSpeed}
-                  rowTop={rowTop}
-                  index={cardIdx}
-                />
-              );
-            });
-          })}
+              <div className="relative z-10 flex w-full items-center">
+                {/* Left Side: Blood Group */}
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[8px] bg-blood-red text-lg font-black text-white shadow-[0_6px_15px_rgba(193,18,31,0.3)]">
+                  {donor.group}
+                </div>
+
+                {/* Right Side: Info */}
+                <div className="ml-3 flex flex-1 flex-col overflow-hidden">
+                  <h3 className="truncate text-sm font-bold tracking-tight text-gray-900">{donor.name}</h3>
+                  <div className="mt-0.5 flex flex-col text-[10px] font-medium text-gray-600">
+                    <span className="truncate">{donor.phone}</span>
+                    <span className="truncate opacity-70">{donor.location}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Glossy Reflection Overlay */}
+              <div className="absolute -top-full -left-full h-[200%] w-[200%] rotate-45 bg-gradient-to-b from-white/10 via-transparent to-transparent opacity-0 transition-all duration-700 group-hover:top-[-50%] group-hover:left-[-50%] group-hover:opacity-100" />
+            </motion.div>
+          ))}
         </div>
       </div>
     </section>
