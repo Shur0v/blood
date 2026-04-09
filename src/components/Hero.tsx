@@ -2,8 +2,16 @@ import { motion, useMotionValue, useTransform, animate } from "motion/react";
 import { useEffect, useState, useRef } from "react";
 import { Phone, MapPin, User, Search, X } from "lucide-react";
 import { gsap } from "gsap";
+import DonorModal from "./DonorModal";
 
 const bloodGroups = ["AB+", "AB-", "A+", "A-", "B+", "B-", "O+", "O-"];
+
+interface Donor {
+  name: string;
+  phone: string;
+  group: string;
+  location: string;
+}
 
 const donors = [
   { name: "Imran Khan", phone: "+880 1712 345678", group: "A+", location: "Dhaka, BD" },
@@ -28,6 +36,7 @@ export default function Hero() {
   const [activeGroup, setActiveGroup] = useState<string | null>(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedDonor, setSelectedDonor] = useState<Donor | null>(null);
   
   const controlsWrapperRef = useRef<HTMLDivElement>(null);
   const searchContainerRef = useRef<HTMLDivElement>(null);
@@ -233,11 +242,12 @@ export default function Hero() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: index * 0.05 }}
+              onClick={() => setSelectedDonor(donor)}
               whileHover={{ 
                 y: -5, 
                 transition: { type: "spring", stiffness: 400, damping: 15 }
               }}
-              className="group relative flex items-center gap-3 overflow-hidden rounded-[8px] border border-white/40 bg-white/20 p-2 pr-4 shadow-[0_4px_15px_rgba(0,0,0,0.03)] backdrop-blur-2xl transition-all duration-300 hover:border-blood-red/40 hover:shadow-[0_10px_30px_rgba(193,18,31,0.12)]"
+              className="group relative flex items-center gap-3 cursor-pointer overflow-hidden rounded-[8px] border border-white/40 bg-white/20 p-2 pr-4 shadow-[0_4px_15px_rgba(0,0,0,0.03)] backdrop-blur-2xl transition-all duration-300 hover:border-blood-red/40 hover:shadow-[0_10px_30px_rgba(193,18,31,0.12)]"
             >
               {/* Inner Glow / Ring */}
               <div className="absolute inset-0 rounded-[8px] ring-1 ring-inset ring-white/50" />
@@ -264,6 +274,11 @@ export default function Hero() {
           ))}
         </div>
       </div>
+
+      <DonorModal 
+        donor={selectedDonor} 
+        onClose={() => setSelectedDonor(null)} 
+      />
     </section>
   );
 }

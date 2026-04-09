@@ -1,26 +1,29 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
 import { gsap } from "gsap";
+import DonorModal from "./DonorModal";
 
 const donorsPool = [
-  { group: "A+", name: "Imran Khan", location: "Dhaka", age: "25+" },
-  { group: "B+", name: "Sara Ahmed", location: "Chittagong", age: "30+" },
-  { group: "O-", name: "John Doe", location: "Sylhet", age: "22+" },
-  { group: "AB+", name: "Mila Kunis", location: "Rajshahi", age: "28+" },
-  { group: "A-", name: "Alex Hales", location: "Khulna", age: "35+" },
-  { group: "B-", name: "David Warner", location: "Barisal", age: "27+" },
-  { group: "O+", name: "Virat Kohli", location: "Rangpur", age: "32+" },
-  { group: "AB-", name: "Steve Smith", location: "Mymensingh", age: "29+" },
-  { group: "A+", name: "Babar Azam", location: "Comilla", age: "26+" },
-  { group: "B+", name: "Kane Williamson", location: "Gazipur", age: "31+" },
-  { group: "O+", name: "Rohit Sharma", location: "Dhaka", age: "34+" },
-  { group: "A-", name: "Joe Root", location: "Sylhet", age: "32+" },
-  { group: "B-", name: "Ben Stokes", location: "Khulna", age: "29+" },
-  { group: "AB+", name: "Glenn Maxwell", location: "Chittagong", age: "33+" },
-  { group: "O-", name: "Rashid Khan", location: "Rajshahi", age: "24+" },
+  { group: "A+", name: "Imran Khan", location: "Dhaka", age: "25+", phone: "+880 1712 345678" },
+  { group: "B+", name: "Sara Ahmed", location: "Chittagong", age: "30+", phone: "+880 1812 987654" },
+  { group: "O-", name: "John Doe", location: "Sylhet", age: "22+", phone: "+880 1912 112233" },
+  { group: "AB+", name: "Mila Kunis", location: "Rajshahi", age: "28+", phone: "+880 1612 445566" },
+  { group: "A-", name: "Alex Hales", location: "Khulna", age: "35+", phone: "+880 1512 778899" },
+  { group: "B-", name: "David Warner", location: "Barisal", age: "27+", phone: "+880 1412 009988" },
+  { group: "O+", name: "Virat Kohli", location: "Rangpur", age: "32+", phone: "+880 1312 334455" },
+  { group: "AB-", name: "Steve Smith", location: "Mymensingh", age: "29+", phone: "+880 1212 667788" },
+  { group: "A+", name: "Babar Azam", location: "Comilla", age: "26+", phone: "+880 1112 990011" },
+  { group: "B+", name: "Kane Williamson", location: "Gazipur", age: "31+", phone: "+880 1012 223344" },
+  { group: "O+", name: "Rohit Sharma", location: "Dhaka", age: "34+", phone: "+880 1722 556677" },
+  { group: "A-", name: "Joe Root", location: "Sylhet", age: "32+", phone: "+880 1822 889900" },
+  { group: "B-", name: "Ben Stokes", location: "Khulna", age: "29+", phone: "+880 1922 112244" },
+  { group: "AB+", name: "Glenn Maxwell", location: "Chittagong", age: "33+", phone: "+880 1622 334455" },
+  { group: "O-", name: "Rashid Khan", location: "Rajshahi", age: "24+", phone: "+880 1522 667788" },
 ];
 
 export default function FloatingDonorTags() {
+  const [selectedDonor, setSelectedDonor] = useState<any>(null);
+
   return (
     <section className="relative overflow-hidden py-24">
       {/* Background Decorative Elements - Centered with side fade */}
@@ -45,17 +48,37 @@ export default function FloatingDonorTags() {
       </div>
 
       <div className="relative z-10 flex flex-col gap-4 [mask-image:linear-gradient(to_right,transparent,black_15%,black_85%,transparent)]">
-        <MarqueeRow donors={[...donorsPool].sort(() => Math.random() - 0.5)} />
-        <MarqueeRow donors={[...donorsPool].sort(() => Math.random() - 0.5)} />
-        <MarqueeRow donors={[...donorsPool].sort(() => Math.random() - 0.5)} />
-        <MarqueeRow donors={[...donorsPool].sort(() => Math.random() - 0.5)} />
-        <MarqueeRow donors={[...donorsPool].sort(() => Math.random() - 0.5)} />
+        <MarqueeRow 
+          donors={[...donorsPool].sort(() => Math.random() - 0.5)} 
+          onDonorClick={setSelectedDonor}
+        />
+        <MarqueeRow 
+          donors={[...donorsPool].sort(() => Math.random() - 0.5)} 
+          onDonorClick={setSelectedDonor}
+        />
+        <MarqueeRow 
+          donors={[...donorsPool].sort(() => Math.random() - 0.5)} 
+          onDonorClick={setSelectedDonor}
+        />
+        <MarqueeRow 
+          donors={[...donorsPool].sort(() => Math.random() - 0.5)} 
+          onDonorClick={setSelectedDonor}
+        />
+        <MarqueeRow 
+          donors={[...donorsPool].sort(() => Math.random() - 0.5)} 
+          onDonorClick={setSelectedDonor}
+        />
       </div>
+
+      <DonorModal 
+        donor={selectedDonor} 
+        onClose={() => setSelectedDonor(null)} 
+      />
     </section>
   );
 }
 
-function MarqueeRow({ donors }: { donors: typeof donorsPool }) {
+function MarqueeRow({ donors, onDonorClick }: { donors: typeof donorsPool; onDonorClick: (donor: any) => void }) {
   const rowRef = useRef<HTMLDivElement>(null);
   const animationRef = useRef<gsap.core.Tween | null>(null);
 
@@ -93,16 +116,17 @@ function MarqueeRow({ donors }: { donors: typeof donorsPool }) {
       >
         {/* Double the items for seamless loop */}
         {[...donors, ...donors].map((donor, index) => (
-          <DonorTag key={index} {...donor} />
+          <DonorTag key={index} {...donor} onClick={() => onDonorClick(donor)} />
         ))}
       </div>
     </div>
   );
 }
 
-function DonorTag({ group, name, location, age }: any) {
+function DonorTag({ group, name, location, age, onClick }: any) {
   return (
     <div
+      onClick={onClick}
       className="group flex min-w-[280px] cursor-pointer items-center gap-4 rounded-full border border-white/40 bg-white/20 p-2 pr-8 shadow-[0_4px_15px_rgba(0,0,0,0.03)] backdrop-blur-2xl transition-all duration-300 hover:border-blood-red/40 hover:shadow-[0_10px_30px_rgba(193,18,31,0.12)] hover:-translate-y-1"
     >
       <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-blood-red text-lg font-black text-white shadow-[0_6px_15px_rgba(193,18,31,0.3)]">
