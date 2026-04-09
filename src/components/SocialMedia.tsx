@@ -4,60 +4,92 @@ import { Send, Droplet, Users, Bell, ShieldCheck } from "lucide-react";
 
 export default function SocialMedia() {
   return (
-    <section className="mx-auto max-w-7xl px-4 py-24">
-      <div className="flex flex-col md:flex-row items-stretch justify-between gap-8">
-        {/* Left Side: Glass Card (60%) */}
+    <section className="mx-auto max-w-7xl px-4 py-8">
+      <div className="flex flex-col md:flex-row items-stretch justify-center gap-6">
+        {/* Left Side: Glass Card (approx 65%) */}
         <motion.div 
           initial={{ x: -50, opacity: 0 }}
           whileInView={{ x: 0, opacity: 1 }}
           viewport={{ once: true }}
-          className="glass relative flex-[0.6] flex flex-col items-center justify-center rounded-[8px] p-12 text-center shadow-2xl border border-white/40 overflow-hidden"
+          className="glass relative flex-[1.8] flex flex-col items-center justify-center rounded-[8px] p-8 text-center shadow-2xl border border-white/40 overflow-hidden"
         >
           <div className="relative z-10 w-full">
-            <h2 className="mb-4 text-4xl font-black tracking-tight text-gray-900 uppercase">Join Comunity</h2>
-            <p className="mx-auto mb-8 max-w-md text-gray-600 font-medium">
+            <h2 className="mb-2 text-3xl font-black tracking-tight text-gray-900 uppercase">JOIN THE COMMUNITY</h2>
+            <p className="mx-auto mb-6 max-w-xl text-sm text-gray-600 font-medium leading-relaxed">
               Be part of our growing network of life-savers. Get instant notifications for urgent blood requirements in your area.
             </p>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10">
-              <div className="flex flex-col items-center gap-2">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blood-red/10 text-blood-red">
-                  <Users className="h-6 w-6" />
-                </div>
-                <span className="text-xs font-bold text-gray-800 uppercase tracking-wider">10k+ Members</span>
-              </div>
-              <div className="flex flex-col items-center gap-2">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blood-red/10 text-blood-red">
-                  <Bell className="h-6 w-6" />
-                </div>
-                <span className="text-xs font-bold text-gray-800 uppercase tracking-wider">Live Alerts</span>
-              </div>
-              <div className="flex flex-col items-center gap-2">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blood-red/10 text-blood-red">
-                  <ShieldCheck className="h-6 w-6" />
-                </div>
-                <span className="text-xs font-bold text-gray-800 uppercase tracking-wider">Verified Only</span>
-              </div>
+            {/* Feature Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+              <FeatureCard 
+                icon={<Users className="h-5 w-5" />} 
+                title="10K+ Members" 
+                desc="Join a growing network" 
+              />
+              <FeatureCard 
+                icon={<Bell className="h-5 w-5" />} 
+                title="Live Alerts" 
+                desc="Get instant notifications" 
+              />
+              <FeatureCard 
+                icon={<ShieldCheck className="h-5 w-5" />} 
+                title="Verified Only" 
+                desc="Safe & trusted donors" 
+              />
             </div>
 
+            {/* Main CTA Button */}
             <div className="flex flex-col items-center gap-4">
-              <span className="text-sm font-bold text-gray-500 uppercase tracking-[3px]">Official Channel</span>
-              <SocialIcon icon={<Send className="h-10 w-10 rotate-[-20deg]" />} label="Telegram" />
+              <motion.button
+                whileHover={{ scale: 1.02, y: -1 }}
+                whileTap={{ scale: 0.98 }}
+                className="group relative flex items-center gap-3 rounded-xl bg-gradient-to-r from-[#F23030] to-[#C1121F] px-8 py-4 text-base font-bold text-white shadow-[0_8px_30px_rgba(193,18,31,0.25)] transition-all hover:shadow-[0_12px_40px_rgba(193,18,31,0.35)]"
+              >
+                <Send className="h-5 w-5 rotate-[-20deg] transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
+                Join Now on Telegram
+              </motion.button>
+
+              <div className="flex flex-col items-center gap-3">
+                <p className="text-[10px] font-semibold text-gray-500">
+                  <span className="opacity-60">Trusted by 10,000+ donors • Updated every minute</span>
+                </p>
+                
+                <div className="flex items-center gap-3">
+                  <div className="flex -space-x-2">
+                    {[1, 2, 3, 4].map((i) => (
+                      <img
+                        key={i}
+                        className="h-6 w-6 rounded-full border-2 border-white object-cover"
+                        src={`https://i.pravatar.cc/100?u=${i + 10}`}
+                        alt="User"
+                        referrerPolicy="no-referrer"
+                      />
+                    ))}
+                  </div>
+                  <div className="flex items-center gap-2 rounded-full bg-white/50 px-2 py-0.5 backdrop-blur-md">
+                    <div className="h-1.5 w-1.5 animate-pulse rounded-full bg-red-500" />
+                    <span className="text-[10px] font-bold text-gray-700">
+                      <span className="text-red-600">12</span> active requests in your area
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
           
-          {/* Continuous moving liquid background effect with slightly more presence */}
-          <div className="absolute inset-0 -z-10 overflow-hidden rounded-[8px] opacity-[0.12] bg-blood-red/5">
-            <div className="liquid-bg absolute inset-0" />
+          {/* Continuous moving liquid background effect - Enhanced for Apple Glass look */}
+          <div className="absolute inset-0 -z-10 overflow-hidden rounded-[8px] opacity-[0.15]">
+            <div className="liquid-bg absolute inset-0 scale-150 blur-3xl" />
           </div>
+          <div className="absolute inset-0 -z-20 bg-gradient-to-br from-white/40 to-white/10" />
         </motion.div>
 
-        {/* Right Side: Square Image (35%) */}
+        {/* Right Side: Image (approx 35%) */}
         <motion.div 
           initial={{ x: 50, opacity: 0 }}
           whileInView={{ x: 0, opacity: 1 }}
           viewport={{ once: true }}
-          className="flex-[0.35] aspect-square overflow-hidden rounded-[8px] shadow-2xl"
+          className="flex-[1] overflow-hidden rounded-[8px] shadow-2xl"
         >
           <img 
             src="https://blog.hocking.edu/hubfs/Images/Stock%20images/blood-donation_custom-4a7ebcf0e0864084e9035d1ddc48b84d884b12e8-s900-c85.jpg" 
@@ -68,6 +100,18 @@ export default function SocialMedia() {
         </motion.div>
       </div>
     </section>
+  );
+}
+
+function FeatureCard({ icon, title, desc }: { icon: React.ReactNode; title: string; desc: string }) {
+  return (
+    <div className="flex flex-col items-center rounded-xl border border-white/60 bg-white/40 p-3 shadow-sm backdrop-blur-md transition-all hover:bg-white/60 hover:shadow-md">
+      <div className="mb-1.5 flex h-8 w-8 items-center justify-center rounded-full bg-red-50 text-red-500 shadow-inner">
+        {icon}
+      </div>
+      <h4 className="mb-0.5 text-xs font-bold text-gray-900">{title}</h4>
+      <p className="text-[9px] font-medium text-gray-500">{desc}</p>
+    </div>
   );
 }
 
