@@ -4,27 +4,27 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const slides = [
   {
-    url: "https://images.unsplash.com/photo-1615461066841-6116ecaaba7f?auto=format&fit=crop&q=80&w=1920",
+    url: "https://surgmedia.com/wp-content/uploads/2020/10/2171-blood-donation.jpg",
     title: "Saving Lives Together",
     desc: "Your donation can save up to three lives."
   },
   {
-    url: "https://images.unsplash.com/photo-1579154235602-3c2c2aa59c1b?auto=format&fit=crop&q=80&w=1920",
+    url: "https://ichef.bbci.co.uk/news/480/cpsprodpb/a97f/live/81fd48e0-fddb-11ef-ab73-2916b85f325b.jpg.webp",
     title: "Advanced Medical Care",
     desc: "State-of-the-art facilities for a safe experience."
   },
   {
-    url: "https://images.unsplash.com/photo-1536856789446-79f526e24933?auto=format&fit=crop&q=80&w=1920",
+    url: "https://www.manipalhospitals.com/uploads/blog/Blood_Donation.png",
     title: "Community Support",
     desc: "A network of heroes ready to help."
   },
   {
-    url: "https://images.unsplash.com/photo-1581594632702-52c1137c2715?auto=format&fit=crop&q=80&w=1920",
+    url: "https://dam.northwell.edu/m/6e4d42b8cdaff73e/Drupal-TheWell_blood-donation_AS_567403348.jpg",
     title: "The Gift of Life",
     desc: "Be the reason someone smiles today."
   },
   {
-    url: "https://images.unsplash.com/photo-1584362946045-121f86995c3c?auto=format&fit=crop&q=80&w=1920",
+    url: "https://api.myfamilymd.org/uploads/blogs/photo_1730539917698.JPG",
     title: "Join the Movement",
     desc: "Register as a donor in less than 2 minutes."
   }
@@ -61,7 +61,7 @@ export default function ImageSlider() {
             <img
               src={slides[currentIndex].url}
               alt={slides[currentIndex].title}
-              className="h-full w-full object-cover"
+              className="h-full w-full object-cover object-center"
               referrerPolicy="no-referrer"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
