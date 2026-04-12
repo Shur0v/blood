@@ -128,7 +128,12 @@ function SocialIcon({ icon, label }: { icon: React.ReactNode; label: string }) {
   );
 }
 
-export function Footer() {
+interface FooterProps {
+  onOpenPolicy?: (type: 'terms' | 'privacy') => void;
+  onPageChange?: (page: string) => void;
+}
+
+export function Footer({ onOpenPolicy, onPageChange }: FooterProps) {
   return (
     <footer className="bg-black py-24 text-gray-400">
       <div className="mx-auto max-w-7xl px-4">
@@ -148,10 +153,11 @@ export function Footer() {
           <div>
             <h4 className="mb-6 text-xl font-bold text-white">Quick Links</h4>
             <ul className="flex flex-col gap-4 text-lg">
-              <li><a href="#" className="transition-colors hover:text-white">About Us</a></li>
-              <li><a href="#" className="transition-colors hover:text-white">Contact</a></li>
-              <li><a href="#" className="transition-colors hover:text-white">Privacy Policy</a></li>
-              <li><a href="#" className="transition-colors hover:text-white">Terms of Service</a></li>
+              <li><button onClick={() => onPageChange?.('home')} className="transition-colors hover:text-white text-left">About Us</button></li>
+              <li><button onClick={() => onPageChange?.('home')} className="transition-colors hover:text-white text-left">Contact</button></li>
+              <li><button onClick={() => onPageChange?.('privacy-policy')} className="transition-colors hover:text-white text-left">Privacy Policy (Full)</button></li>
+              <li><button onClick={() => onOpenPolicy?.('privacy')} className="transition-colors hover:text-white text-left">Privacy Summary</button></li>
+              <li><button onClick={() => onOpenPolicy?.('terms')} className="transition-colors hover:text-white text-left">Terms of Service</button></li>
             </ul>
           </div>
 

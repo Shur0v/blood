@@ -1,8 +1,15 @@
 import React from "react";
 import { motion } from "motion/react";
-import { Home, LayoutGrid, Search, Settings, Droplet } from "lucide-react";
+import { Home, BookOpen, Activity, Droplet, User } from "lucide-react";
 
-export default function Navbar() {
+interface NavbarProps {
+  currentPage: string;
+  onPageChange: (page: string) => void;
+  onAuthClick: () => void;
+  isLoggedIn: boolean;
+}
+
+export default function Navbar({ currentPage, onPageChange, onAuthClick, isLoggedIn }: NavbarProps) {
   return (
     <div className="fixed bottom-8 left-0 right-0 z-50 flex justify-center px-4">
       <motion.nav 
@@ -20,30 +27,50 @@ export default function Navbar() {
 
         {/* Navigation Icons */}
         <div className="flex items-center gap-2">
-          <NavItem icon={<Home className="h-4 w-4" />} active />
-          <NavItem icon={<LayoutGrid className="h-4 w-4" />} />
-          <NavItem icon={<Search className="h-4 w-4" />} />
-          <NavItem icon={<Settings className="h-4 w-4" />} />
+          <NavItem 
+            icon={<Home className="h-4 w-4" />} 
+            active={currentPage === "home"} 
+            onClick={() => onPageChange("home")}
+          />
+          <NavItem 
+            icon={<BookOpen className="h-4 w-4" />} 
+            active={currentPage === "blog"} 
+            onClick={() => onPageChange("blog")}
+          />
+          <NavItem 
+            icon={<Activity className="h-4 w-4" />} 
+            active={currentPage === "organ"} 
+            onClick={() => onPageChange("organ")}
+          />
         </div>
 
-        {/* Register Button */}
+        {/* Register/Profile Button */}
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          className="rounded-full bg-blood-red px-5 py-2 text-xs font-bold text-white shadow-lg shadow-blood-red/20 transition-all hover:bg-soft-crimson"
+          onClick={onAuthClick}
+          className="flex items-center gap-2 rounded-full bg-blood-red px-5 py-2 text-xs font-bold text-white shadow-lg shadow-blood-red/20 transition-all hover:bg-soft-crimson"
         >
-          Register
+          {isLoggedIn ? (
+            <>
+              <User className="h-3.5 w-3.5" />
+              Profile
+            </>
+          ) : (
+            "Register"
+          )}
         </motion.button>
       </motion.nav>
     </div>
   );
 }
 
-function NavItem({ icon, active = false }: { icon: React.ReactNode; active?: boolean }) {
+function NavItem({ icon, active = false, onClick }: { icon: React.ReactNode; active?: boolean; onClick?: () => void }) {
   return (
     <motion.button
       whileHover={{ scale: 1.1 }}
       whileTap={{ scale: 0.9 }}
+      onClick={onClick}
       className={`flex h-8 w-8 items-center justify-center rounded-full transition-all ${
         active ? "bg-blood-red text-white shadow-md shadow-blood-red/20" : "text-gray-300 hover:text-white"
       }`}
