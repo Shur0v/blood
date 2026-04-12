@@ -23,6 +23,14 @@ const donorsPool = [
 
 export default function FloatingDonorTags() {
   const [selectedDonor, setSelectedDonor] = useState<any>(null);
+  const [isMounted, setIsMounted] = useState(false);
+  
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Helper to safely get random donors only after mount to prevent hydration mismatch
+  const getDonors = () => isMounted ? [...donorsPool].sort(() => Math.random() - 0.5) : donorsPool;
 
   return (
     <section className="relative overflow-hidden py-24">
@@ -49,23 +57,23 @@ export default function FloatingDonorTags() {
 
       <div className="relative z-10 flex flex-col gap-4 [mask-image:linear-gradient(to_right,transparent,black_15%,black_85%,transparent)]">
         <MarqueeRow 
-          donors={[...donorsPool].sort(() => Math.random() - 0.5)} 
+          donors={getDonors()} 
           onDonorClick={setSelectedDonor}
         />
         <MarqueeRow 
-          donors={[...donorsPool].sort(() => Math.random() - 0.5)} 
+          donors={getDonors()} 
           onDonorClick={setSelectedDonor}
         />
         <MarqueeRow 
-          donors={[...donorsPool].sort(() => Math.random() - 0.5)} 
+          donors={getDonors()} 
           onDonorClick={setSelectedDonor}
         />
         <MarqueeRow 
-          donors={[...donorsPool].sort(() => Math.random() - 0.5)} 
+          donors={getDonors()} 
           onDonorClick={setSelectedDonor}
         />
         <MarqueeRow 
-          donors={[...donorsPool].sort(() => Math.random() - 0.5)} 
+          donors={getDonors()} 
           onDonorClick={setSelectedDonor}
         />
       </div>

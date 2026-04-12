@@ -1,30 +1,32 @@
+"use client";
+
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import Navbar from "./components/Navbar";
-import Hero from "./components/Hero";
-import OrganHero from "./components/OrganHero";
-import ImageSlider from "./components/ImageSlider";
-import FloatingDonorTags from "./components/FloatingDonorTags";
-import CTA from "./components/CTA";
-import SocialMedia, { Footer } from "./components/SocialMedia";
-import FluidBackground from "./components/FluidBackground";
-import ProcessSteps from "./components/ProcessSteps";
-import ImpactData from "./components/ImpactData";
-import Testimonials from "./components/Testimonials";
-import MobilePreview from "./components/MobilePreview";
-import { PolicyModal } from "./components/PolicyModal";
-import { FullPrivacyPage } from "./components/FullPrivacyPage";
-import AuthModal from "./components/AuthModal";
-import UnifiedDashboard from "./components/UnifiedDashboard";
-import DonationToggleModal from "./components/DonationToggleModal";
-import MedicalAidFund from "./components/MedicalAidFund";
+import Navbar from "../components/Navbar";
+import Hero from "../components/Hero";
+import OrganHero from "../components/OrganHero";
+import ImageSlider from "../components/ImageSlider";
+import FloatingDonorTags from "../components/FloatingDonorTags";
+import CTA from "../components/CTA";
+import SocialMedia, { Footer } from "../components/SocialMedia";
+import FluidBackground from "../components/FluidBackground";
+import ProcessSteps from "../components/ProcessSteps";
+import ImpactData from "../components/ImpactData";
+import Testimonials from "../components/Testimonials";
+import MobilePreview from "../components/MobilePreview";
+import { PolicyModal } from "../components/PolicyModal";
+import { FullPrivacyPage } from "../components/FullPrivacyPage";
+import AuthModal from "../components/AuthModal";
+import UnifiedDashboard from "../components/UnifiedDashboard";
+import DonationToggleModal from "../components/DonationToggleModal";
+import MedicalAidFund from "../components/MedicalAidFund";
 import { motion, useScroll, useSpring } from "motion/react";
 import { useState, useEffect } from "react";
 
-export default function App() {
+export default function Home() {
   const [currentPage, setCurrentPage] = useState("home");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);

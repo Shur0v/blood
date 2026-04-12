@@ -108,7 +108,7 @@ export default function MedicalAidFund() {
           <div className="lg:col-span-4 flex flex-col justify-between space-y-8">
             <div className="space-y-6">
               <motion.button
-                whileHover={{ scale: 1.02, shadow: "0 20px 40px -12px rgba(255, 49, 49, 0.3)" }}
+                whileHover={{ scale: 1.02, boxShadow: "0 20px 40px -12px rgba(255, 49, 49, 0.3)" }}
                 whileTap={{ scale: 0.98 }}
                 className="w-full rounded-2xl bg-gradient-to-r from-accent-red to-[#FF3131]/80 py-5 px-8 text-sm font-black uppercase tracking-[2px] text-white shadow-xl"
               >

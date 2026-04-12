@@ -23,6 +23,7 @@ interface Donor {
   organ: string;
   bloodGroup: string;
   location: string;
+  group?: string;
 }
 
 const organDonors: Donor[] = [
@@ -308,7 +309,7 @@ export default function OrganHero() {
       </div>
 
       <DonorModal 
-        donor={selectedDonor} 
+        donor={selectedDonor as any} 
         onClose={() => setSelectedDonor(null)} 
       />
     </section>
