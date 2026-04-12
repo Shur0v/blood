@@ -64,14 +64,14 @@ const Counter = ({ label, target, suffix, delay }: CounterProps) => {
       className="text-center"
     >
       <div className="mb-2 flex items-center justify-center">
-        <motion.span className="text-5xl font-black tracking-tighter bg-gradient-to-r from-accent-red to-[#101828] bg-clip-text text-transparent md:text-7xl">
+        <motion.span className="text-5xl font-black tracking-tighter text-[#101828] md:text-7xl">
           {rounded}
         </motion.span>
-        <span className="text-3xl font-black tracking-tighter bg-gradient-to-r from-accent-red to-[#101828] bg-clip-text text-transparent md:text-5xl">
+        <span className="text-3xl font-black tracking-tighter text-[#101828] md:text-5xl">
           {suffix}
         </span>
       </div>
-      <p className="text-xs font-bold uppercase tracking-[3px] text-[#101828]/60">
+      <p className="text-xs font-bold uppercase tracking-[3px] text-[#101828]">
         {label}
       </p>
     </motion.div>

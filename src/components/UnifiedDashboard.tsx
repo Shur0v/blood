@@ -111,7 +111,7 @@ export default function UnifiedDashboard({ isReady, onToggleReady }: UnifiedDash
               {/* Status Switch Integrated into Header */}
               <div className="flex justify-center md:justify-start">
                 <div className="flex items-center gap-4 rounded-3xl border border-[#101828]/5 bg-white/40 px-5 py-2.5 shadow-sm backdrop-blur-md">
-                  <span className={`font-mono text-[10px] font-black uppercase tracking-[2px] ${isReady ? "text-green-600" : "text-[#101828]/40"}`}>
+                  <span className={`font-mono text-[10px] font-black uppercase tracking-[2px] ${isReady ? "text-green-600" : "text-accent-red"}`}>
                     Status: {isReady ? "Active" : "Inactive"}
                   </span>
                   <button 
@@ -119,18 +119,21 @@ export default function UnifiedDashboard({ isReady, onToggleReady }: UnifiedDash
                     className={`relative flex h-8 w-24 items-center rounded-full p-1 transition-all duration-500 ${
                       isReady 
                         ? "bg-green-500 shadow-[0_0_20px_rgba(34,197,94,0.3)]" 
-                        : "bg-[#101828]/10"
+                        : "bg-accent-red/10 ring-1 ring-accent-red/20"
                     }`}
                   >
-                    <div className={`absolute left-3 text-[8px] font-black uppercase tracking-wider text-white transition-opacity duration-300 ${isReady ? "opacity-100" : "opacity-0"}`}>
+                    <div className={`absolute left-3 text-[8px] font-black uppercase tracking-wider transition-opacity duration-300 ${isReady ? "opacity-100 text-white" : "opacity-0"}`}>
                       Available
+                    </div>
+                    <div className={`absolute right-3 text-[7px] font-black uppercase tracking-wider transition-opacity duration-300 ${!isReady ? "opacity-100 text-accent-red" : "opacity-0"}`}>
+                      Unavailable
                     </div>
                     <motion.div 
                       animate={{ x: isReady ? 64 : 0 }}
                       transition={{ type: "spring", stiffness: 300, damping: 25 }}
                       className="relative z-10 flex h-6 w-6 items-center justify-center rounded-full bg-white shadow-md"
                     >
-                      <Power className={`h-3 w-3 ${isReady ? "text-green-500" : "text-gray-400"}`} />
+                      <Power className={`h-3 w-3 ${isReady ? "text-green-500" : "text-accent-red"}`} />
                     </motion.div>
                   </button>
                 </div>
@@ -155,7 +158,7 @@ export default function UnifiedDashboard({ isReady, onToggleReady }: UnifiedDash
                     <div className="flex items-center justify-between">
                       <div className="flex flex-col">
                         <label className="text-[10px] font-black uppercase tracking-widest text-[#101828]/40">Body Weight</label>
-                        <span className="text-lg font-black text-accent-red">{weight} kg</span>
+                        <span className={`text-lg font-black transition-colors ${weightUnknown ? "text-[#101828]/20" : "text-accent-red"}`}>{weight} kg</span>
                       </div>
                       <button 
                         onClick={() => setWeightUnknown(!weightUnknown)}
@@ -181,7 +184,7 @@ export default function UnifiedDashboard({ isReady, onToggleReady }: UnifiedDash
                     <div className="flex items-center justify-between">
                       <div className="flex flex-col">
                         <label className="text-[10px] font-black uppercase tracking-widest text-[#101828]/40">Hemoglobin Level</label>
-                        <span className="text-lg font-black text-accent-red">{hemoglobin} g/dL</span>
+                        <span className={`text-lg font-black transition-colors ${hemoglobinUnknown ? "text-[#101828]/20" : "text-accent-red"}`}>{hemoglobin} g/dL</span>
                       </div>
                       <button 
                         onClick={() => setHemoglobinUnknown(!hemoglobinUnknown)}
@@ -244,7 +247,7 @@ export default function UnifiedDashboard({ isReady, onToggleReady }: UnifiedDash
                           <div className="flex items-center justify-between">
                             <div className="flex flex-col">
                               <label className="text-[10px] font-black uppercase tracking-widest text-[#101828]/40">Average Glucose Level</label>
-                              <span className="text-lg font-black text-blue-600">{glucose} mg/dL</span>
+                              <span className={`text-lg font-black transition-colors ${glucoseUnknown ? "text-[#101828]/20" : "text-blue-600"}`}>{glucose} mg/dL</span>
                             </div>
                             <button 
                               onClick={() => setGlucoseUnknown(!glucoseUnknown)}

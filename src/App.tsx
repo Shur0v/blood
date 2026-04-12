@@ -20,6 +20,7 @@ import { FullPrivacyPage } from "./components/FullPrivacyPage";
 import AuthModal from "./components/AuthModal";
 import UnifiedDashboard from "./components/UnifiedDashboard";
 import DonationToggleModal from "./components/DonationToggleModal";
+import MedicalAidFund from "./components/MedicalAidFund";
 import { motion, useScroll, useSpring } from "motion/react";
 import { useState, useEffect } from "react";
 
@@ -28,7 +29,7 @@ export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isDonationModalOpen, setIsDonationModalOpen] = useState(false);
-  const [isReadyToDonate, setIsReadyToDonate] = useState(false);
+  const [isReadyToDonate, setIsReadyToDonate] = useState(true);
   const [policyModal, setPolicyModal] = useState<{ isOpen: boolean; type: 'terms' | 'privacy' }>({
     isOpen: false,
     type: 'terms'
@@ -93,6 +94,7 @@ export default function App() {
 
             <ProcessSteps />
             <ImageSlider />
+            <MedicalAidFund />
             <FloatingDonorTags />
             <ImpactData />
             <Testimonials />
