@@ -1,28 +1,32 @@
 import React from "react";
 import { motion } from "motion/react";
-import { Star, ShieldCheck } from "lucide-react";
+import { ArrowRight, MapPin } from "lucide-react";
+import Link from "next/link";
 
-const testimonials = [
+const blogs = [
   {
-    name: "Sarah Jenkins",
-    role: "Regular Donor",
-    avatar: "https://i.pravatar.cc/150?u=sarah",
-    text: "HemaFlow made it so easy to find urgent requests in my area. The real-time alerts are a game changer for the community.",
-    rating: 5
+    title: "How Stem Cell Therapy Saved My Son's Life",
+    snippet: "After months of searching, we finally found a matching donor. The journey was incredibly difficult, but the medical staff and the community made it possible...",
+    author: "Muntasir",
+    location: "Dhaka",
+    avatar: "https://i.pravatar.cc/150?img=11",
+    slug: "/blog/stem-cell-therapy-saved-my-son"
   },
   {
-    name: "David Chen",
-    role: "Recipient",
-    avatar: "https://i.pravatar.cc/150?u=david",
-    text: "I found a donor within hours thanks to this platform. The verified badge gives so much peace of mind during emergencies.",
-    rating: 5
+    title: "Demystifying the Platelet Donation Process",
+    snippet: "Many people fear donating platelets because it takes longer than whole blood. Here is what actually happens and why your contribution is so uniquely vital...",
+    author: "Sarah",
+    location: "Sylhet",
+    avatar: "https://i.pravatar.cc/150?img=5",
+    slug: "/blog/demystifying-platelet-donation"
   },
   {
-    name: "Elena Rodriguez",
-    role: "Medical Volunteer",
-    avatar: "https://i.pravatar.cc/150?u=elena",
-    text: "The glass UI is beautiful, but the functionality is even better. It's the most efficient blood donation system I've used.",
-    rating: 5
+    title: "10 Things to Know Before A Bone Marrow Transplant",
+    snippet: "Preparing for a transplant is overwhelming. To help others navigate this critical phase, I've compiled the most important steps for patients and their families...",
+    author: "Dr. Ahmed",
+    location: "Chittagong",
+    avatar: "https://i.pravatar.cc/150?img=12",
+    slug: "/blog/bone-marrow-transplant-prep"
   }
 ];
 
@@ -38,51 +42,53 @@ export default function Testimonials() {
         >
           Community Stories
         </motion.h2>
-        <div className="mt-2 h-1.5 w-24 bg-accent-red mx-auto rounded-full" />
+        <p className="mt-4 font-medium text-gray-500">Inspiring journeys and medical insights written by our users.</p>
+        <div className="mt-4 h-1.5 w-24 bg-accent-red mx-auto rounded-full" />
       </div>
 
       <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
-        {testimonials.map((t, i) => (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: i * 0.1 }}
-            className="glass group relative rounded-[24px] p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)] transition-all hover:shadow-[0_15px_40px_rgba(193,18,31,0.08)]"
-          >
-            <div className="mb-6 flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <img 
-                  src={t.avatar} 
-                  alt={t.name} 
-                  className="h-12 w-12 rounded-full border-2 border-white object-cover shadow-md"
-                  referrerPolicy="no-referrer"
-                />
-                <div>
-                  <h4 className="text-sm font-bold text-gray-900">{t.name}</h4>
-                  <p className="text-[10px] font-medium text-gray-500 uppercase tracking-wider">{t.role}</p>
+        {blogs.map((blog, i) => (
+          <Link href={blog.slug} key={i} className="block group h-full">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1 }}
+              className="glass soft-moving-bg relative flex h-full flex-col justify-between overflow-hidden rounded-[24px] p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)] transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(193,18,31,0.12)]"
+            >
+              <div>
+                <h3 className="mb-4 text-xl font-black leading-tight text-gray-900 group-hover:text-blood-red transition-colors">
+                  {blog.title}
+                </h3>
+                <p className="text-sm leading-relaxed text-gray-600 font-medium mb-8">
+                  {blog.snippet}
+                </p>
+              </div>
+
+              <div className="mt-auto border-t border-black/5 pt-6 flex items-center justify-between">
+                <div className="flex items-center gap-3 relative z-10">
+                  <img 
+                    src={blog.avatar} 
+                    alt={blog.author} 
+                    className="h-10 w-10 rounded-full border-2 border-white object-cover shadow-sm bg-white"
+                    referrerPolicy="no-referrer"
+                  />
+                  <div>
+                    <h4 className="text-sm font-bold text-gray-900">{blog.author}</h4>
+                    <div className="flex items-center gap-1 text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                      <MapPin className="h-3 w-3 text-accent-red" />
+                      {blog.location}
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Arrow Icon with Hover animation */}
+                <div className="relative z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white ring-1 ring-black/5 text-gray-900 transition-all duration-300 group-hover:bg-blood-red group-hover:text-white group-hover:ring-blood-red">
+                  <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-0.5" />
                 </div>
               </div>
-              <div className="flex items-center gap-1 rounded-full bg-green-50 px-2 py-1 text-green-600">
-                <ShieldCheck className="h-3 w-3" />
-                <span className="text-[8px] font-bold uppercase">Verified</span>
-              </div>
-            </div>
-
-            <div className="mb-4 flex gap-0.5">
-              {[...Array(t.rating)].map((_, i) => (
-                <Star key={i} className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-              ))}
-            </div>
-
-            <p className="text-sm leading-relaxed text-gray-600 font-medium italic">
-              "{t.text}"
-            </p>
-
-            {/* Subtle background glow */}
-            <div className="absolute -bottom-4 -right-4 -z-10 h-24 w-24 rounded-full bg-accent-red/5 blur-2xl transition-opacity group-hover:opacity-100" />
-          </motion.div>
+            </motion.div>
+          </Link>
         ))}
       </div>
     </section>
