@@ -19,9 +19,15 @@
   .glass {
     @apply bg-white/30 backdrop-blur-[25px] border border-white/40 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] ring-1 ring-white/20;
   }
-  
+
   .glass-dark {
     @apply bg-black/40 backdrop-blur-[20px] border border-white/10 shadow-2xl ring-1 ring-white/5;
+  }
+
+  .soft-moving-bg {
+    background: linear-gradient(-45deg, rgba(255, 182, 193, 0.15), rgba(176, 224, 230, 0.15), rgba(255, 223, 186, 0.15), rgba(221, 160, 221, 0.15));
+    background-size: 400% 400%;
+    animation: liquid-flow 20s ease infinite;
   }
 
   .liquid-bg {
@@ -31,9 +37,17 @@
   }
 
   @keyframes liquid-flow {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
+    0% {
+      background-position: 0% 50%;
+    }
+
+    50% {
+      background-position: 100% 50%;
+    }
+
+    100% {
+      background-position: 0% 50%;
+    }
   }
 
   .liquid-wave {
@@ -54,7 +68,12 @@
   }
 
   @keyframes wave {
-    0% { transform: translateX(0) rotate(0deg); }
-    100% { transform: translateX(-50%) rotate(360deg); }
+    0% {
+      transform: translateX(0) rotate(0deg);
+    }
+
+    100% {
+      transform: translateX(-50%) rotate(360deg);
+    }
   }
 }

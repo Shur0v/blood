@@ -17,7 +17,10 @@ import {
   Power,
   Upload,
   ChevronRight,
-  Info
+  Info,
+  BookOpen,
+  Ghost,
+  Send
 } from "lucide-react";
 
 const VACCINES = ["COVID-19", "HBV", "BCG", "Influenza", "MMR", "Polio", "Tetanus"];
@@ -39,6 +42,8 @@ interface UnifiedDashboardProps {
 export default function UnifiedDashboard({ isReady, onToggleReady }: UnifiedDashboardProps) {
   const [weight, setWeight] = useState(70);
   const [weightUnknown, setWeightUnknown] = useState(false);
+  const [height, setHeight] = useState(170);
+  const [heightUnknown, setHeightUnknown] = useState(false);
   const [hemoglobin, setHemoglobin] = useState(14.5);
   const [hemoglobinUnknown, setHemoglobinUnknown] = useState(false);
   const [isDiabetic, setIsDiabetic] = useState(false);
@@ -47,6 +52,14 @@ export default function UnifiedDashboard({ isReady, onToggleReady }: UnifiedDash
   const [selectedVaccines, setSelectedVaccines] = useState<string[]>([]);
   const [selectedAllergies, setSelectedAllergies] = useState<string[]>(["Dust"]);
   const [registeredOrgans, setRegisteredOrgans] = useState<string[]>([]);
+  const [blogStatus, setBlogStatus] = useState<"idle" | "submitting" | "success">("idle");
+  const [isAnonymous, setIsAnonymous] = useState(false);
+
+  const handleBlogSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setBlogStatus("submitting");
+    setTimeout(() => setBlogStatus("success"), 1500);
+  };
 
   const toggleVaccine = (v: string) => {
     setSelectedVaccines(prev => 
@@ -204,6 +217,42 @@ export default function UnifiedDashboard({ isReady, onToggleReady }: UnifiedDash
                         className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-[#101828]/10 accent-accent-red"
                       />
                     </div>
+                  </div>
+                </div>
+
+                {/* User Height (Full Width) */}
+                <div className="rounded-3xl bg-white/40 p-8 ring-2 ring-[#101828]/5 shadow-sm">
+                  <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-8">
+                    <div className="flex items-center gap-4">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-accent-red/10 text-accent-red">
+                        <Activity className="h-6 w-6" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-black text-[#101828] uppercase tracking-tight">Body Height</h3>
+                        <p className="text-[10px] font-bold text-[#101828]/40 uppercase tracking-widest">Physical Metrics</p>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => setHeightUnknown(!heightUnknown)}
+                      className={`rounded-full px-8 py-3 text-xs font-black uppercase tracking-widest transition-all ${heightUnknown ? "bg-accent-red text-white shadow-lg shadow-accent-red/20" : "bg-[#101828]/5 text-[#101828]/40 hover:bg-[#101828]/10"}`}
+                    >
+                      Don't Know
+                    </button>
+                  </div>
+                  
+                  <div className={heightUnknown ? "opacity-20 pointer-events-none transition-opacity" : "transition-opacity"}>
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-[#101828]/40">Height Overview</span>
+                      <span className={`text-xl font-black transition-colors ${heightUnknown ? "text-[#101828]/20" : "text-accent-red"}`}>{height} cm</span>
+                    </div>
+                    <input 
+                      type="range" 
+                      min="100" 
+                      max="250" 
+                      value={height}
+                      onChange={(e) => setHeight(parseInt(e.target.value))}
+                      className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-[#101828]/10 accent-accent-red"
+                    />
                   </div>
                 </div>
 
@@ -391,6 +440,91 @@ export default function UnifiedDashboard({ isReady, onToggleReady }: UnifiedDash
                   <ChevronRight className="h-4 w-4" />
                 </button>
               </div>
+            </div>
+          </div>
+
+          {/* Bottom Section: Share Your Journey (Blog) */}
+          <div className="mt-12 space-y-8">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10 text-blue-600">
+                <BookOpen className="h-6 w-6" />
+              </div>
+              <h2 className="text-2xl font-black uppercase tracking-tight text-[#101828]">Share Your Journey</h2>
+            </div>
+            
+            <div className="glass soft-moving-bg relative flex flex-col justify-between overflow-hidden rounded-[32px] p-8 transition-all">
+              <div>
+                <p className="text-xs font-medium text-gray-500 mb-6">Publish SEO-optimized stories to inspire globally.</p>
+
+                {blogStatus === "success" ? (
+                   <div className="flex flex-col items-center justify-center text-center py-12">
+                    <div className="mb-4 rounded-full bg-green-100 p-4 text-green-600">
+                      <CheckCircle2 className="h-8 w-8" />
+                    </div>
+                    <h4 className="text-lg font-bold text-gray-900">Story Submitted for Review!</h4>
+                    <p className="mt-2 text-sm text-gray-500">Once approved by an admin, it will be published to our SEO-optimized blog section.</p>
+                    <button 
+                      onClick={() => setBlogStatus("idle")}
+                      className="mt-6 rounded-xl bg-gray-100 px-6 py-2 text-sm font-bold text-gray-900 transition hover:bg-gray-200"
+                    >
+                      Write Another
+                    </button>
+                  </div>
+                ) : (
+                  <form onSubmit={handleBlogSubmit} className="space-y-4">
+                    <div>
+                      <label className="mb-1 flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-gray-500">
+                        <span>Story Title (Becomes &lt;h1&gt;)</span>
+                        <span className="text-blue-500">SEO Boost</span>
+                      </label>
+                      <input 
+                        type="text" 
+                        required
+                        className="w-full rounded-xl border border-[#101828]/10 bg-white/40 px-4 py-3 text-sm font-semibold outline-none transition focus:border-blue-500 focus:bg-white/60 focus:ring-1 focus:ring-blue-500" 
+                        placeholder="A Catchy SEO-Friendly Title..."
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-gray-500">Story Content</label>
+                      <textarea 
+                        required
+                        rows={5}
+                        className="w-full resize-none rounded-xl border border-[#101828]/10 bg-white/40 px-4 py-3 text-sm outline-none transition focus:border-blue-500 focus:bg-white/60 focus:ring-1 focus:ring-blue-500" 
+                        placeholder="Share your donor experience, medical advice, or community gratitude..."
+                      />
+                    </div>
+                  </form>
+                )}
+              </div>
+              
+              {blogStatus !== "success" && (
+                <div className="mt-8 pt-6 border-t border-black/5">
+                  <div className="mb-4 flex items-center justify-between rounded-xl bg-white/40 px-4 py-3 border border-[#101828]/10">
+                    <div className="flex items-center gap-2">
+                      <Ghost className={`h-5 w-5 transition-colors ${isAnonymous ? 'text-[#101828]' : 'text-gray-400'}`} />
+                      <span className="text-sm font-bold text-[#101828]">Post Anonymously</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setIsAnonymous(!isAnonymous)}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${isAnonymous ? 'bg-[#101828]' : 'bg-gray-300'}`}
+                    >
+                      <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${isAnonymous ? 'translate-x-6' : 'translate-x-1'}`} />
+                    </button>
+                  </div>
+                  <button 
+                    onClick={handleBlogSubmit}
+                    disabled={blogStatus === "submitting"}
+                    className="group flex w-full items-center justify-center gap-2 rounded-xl bg-[#101828] px-4 py-3.5 font-bold text-white transition hover:bg-gray-800 disabled:opacity-70"
+                  >
+                    {blogStatus === "submitting" ? "Submitting..." : "Submit for Admin Review"}
+                    <Send className="h-4 w-4 transition group-hover:translate-x-1" />
+                  </button>
+                  <p className="mt-3 text-center text-[10px] font-semibold text-[#101828]/60">
+                    * Approved stories use Semantic HTML (Article, Header) making them <strong className="text-[#101828]">easily indexed by Google & Search Engines</strong>.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>

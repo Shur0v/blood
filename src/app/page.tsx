@@ -16,6 +16,7 @@ import FluidBackground from "../components/FluidBackground";
 import ProcessSteps from "../components/ProcessSteps";
 import ImpactData from "../components/ImpactData";
 import Testimonials from "../components/Testimonials";
+import UserReports from "../components/UserReports";
 import MobilePreview from "../components/MobilePreview";
 import { PolicyModal } from "../components/PolicyModal";
 import { FullPrivacyPage } from "../components/FullPrivacyPage";
@@ -73,23 +74,23 @@ export default function Home() {
         style={{ scaleX }}
       />
 
-      <Navbar 
-        currentPage={currentPage} 
-        onPageChange={setCurrentPage} 
+      <Navbar
+        currentPage={currentPage}
+        onPageChange={setCurrentPage}
         onAuthClick={handleAuthClick}
         isLoggedIn={isLoggedIn}
       />
-      
+
       <main>
         {currentPage === "home" && (
           <>
             <Hero />
-            
+
             {isLoggedIn && (
               <div className="mx-auto max-w-7xl px-4 py-8">
-                <UnifiedDashboard 
-                  isReady={isReadyToDonate} 
-                  onToggleReady={handleToggleReady} 
+                <UnifiedDashboard
+                  isReady={isReadyToDonate}
+                  onToggleReady={handleToggleReady}
                 />
               </div>
             )}
@@ -100,6 +101,7 @@ export default function Home() {
             <FloatingDonorTags />
             <ImpactData />
             <Testimonials />
+            <UserReports />
             <MobilePreview />
             <CTA />
             <SocialMedia />
@@ -109,12 +111,12 @@ export default function Home() {
         {currentPage === "organ" && (
           <>
             <OrganHero />
-            
+
             {isLoggedIn && (
               <div className="mx-auto max-w-7xl px-4 py-8">
-                <UnifiedDashboard 
-                  isReady={isReadyToDonate} 
-                  onToggleReady={handleToggleReady} 
+                <UnifiedDashboard
+                  isReady={isReadyToDonate}
+                  onToggleReady={handleToggleReady}
                 />
               </div>
             )}
@@ -124,6 +126,7 @@ export default function Home() {
             <FloatingDonorTags />
             <ImpactData />
             <Testimonials />
+            <UserReports />
             <MobilePreview />
             <CTA />
             <SocialMedia />
@@ -137,7 +140,7 @@ export default function Home() {
               <p className="text-gray-500 mb-8">Stay updated with the latest breakthroughs in hematology and transplant medicine.</p>
               <div className="grid gap-6 text-left">
                 {[1, 2, 3].map(i => (
-                   <div key={i} className="p-6 rounded-[8px] border border-white/40 bg-white/10 hover:bg-white/20 transition-all cursor-pointer">
+                  <div key={i} className="p-6 rounded-[8px] border border-white/40 bg-white/10 hover:bg-white/20 transition-all cursor-pointer">
                     <div className="text-blood-red text-[10px] font-bold uppercase mb-2 tracking-widest">Medical News • 2 hours ago</div>
                     <h3 className="font-bold text-lg mb-2">The Future of Artificial Blood: A New Era in Emergency Care</h3>
                     <p className="text-sm text-gray-500 line-clamp-2">Researchers have developed a synthetic alternative that could revolutionize how we handle trauma cases in remote areas...</p>
@@ -151,26 +154,26 @@ export default function Home() {
         {currentPage === "privacy-policy" && <FullPrivacyPage />}
       </main>
 
-      <Footer 
-        onOpenPolicy={(type) => setPolicyModal({ isOpen: true, type })} 
-        onPageChange={setCurrentPage} 
+      <Footer
+        onOpenPolicy={(type) => setPolicyModal({ isOpen: true, type })}
+        onPageChange={setCurrentPage}
       />
 
-      <PolicyModal 
-        isOpen={policyModal.isOpen} 
-        type={policyModal.type} 
-        onClose={() => setPolicyModal(prev => ({ ...prev, isOpen: false }))} 
+      <PolicyModal
+        isOpen={policyModal.isOpen}
+        type={policyModal.type}
+        onClose={() => setPolicyModal(prev => ({ ...prev, isOpen: false }))}
       />
 
-      <AuthModal 
-        isOpen={isAuthModalOpen} 
-        onClose={() => setIsAuthModalOpen(false)} 
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
         onSuccess={() => setIsLoggedIn(true)}
       />
 
-      <DonationToggleModal 
-        isOpen={isDonationModalOpen} 
-        onClose={() => setIsDonationModalOpen(false)} 
+      <DonationToggleModal
+        isOpen={isDonationModalOpen}
+        onClose={() => setIsDonationModalOpen(false)}
         onConfirm={() => setIsReadyToDonate(true)}
       />
 
