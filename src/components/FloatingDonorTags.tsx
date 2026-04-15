@@ -36,8 +36,8 @@ export default function FloatingDonorTags() {
     <section className="relative overflow-hidden py-24">
       {/* Background Decorative Elements - Centered with side fade */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <div className="h-[500px] w-[500px] rounded-full bg-blood-red/10 blur-[120px]" />
-        <div className="absolute h-[700px] w-[700px] rounded-full bg-soft-crimson/5 blur-[160px]" />
+        <div className="h-[500px] w-[500px] rounded-full bg-primary-dark/10 blur-[120px]" />
+        <div className="absolute h-[700px] w-[700px] rounded-full bg-primary/5 blur-[160px]" />
       </div>
       
       {/* Side Fades to ensure opacity 0 on left/right */}
@@ -52,7 +52,7 @@ export default function FloatingDonorTags() {
         >
           Realtime active donor ready to help
         </motion.h2>
-        <div className="mt-2 h-1.5 w-24 bg-blood-red mx-auto rounded-full" />
+        <div className="mt-2 h-1.5 w-24 bg-primary-dark mx-auto rounded-full" />
       </div>
 
       <div className="relative z-10 flex flex-col gap-4 [mask-image:linear-gradient(to_right,transparent,black_15%,black_85%,transparent)]">
@@ -135,9 +135,9 @@ function DonorTag({ group, name, location, age, onClick }: any) {
   return (
     <div
       onClick={onClick}
-      className="group flex min-w-[280px] cursor-pointer items-center gap-4 rounded-full border border-white/40 bg-white/20 p-2 pr-8 shadow-[0_4px_15px_rgba(0,0,0,0.03)] backdrop-blur-2xl transition-all duration-300 hover:border-blood-red/40 hover:shadow-[0_10px_30px_rgba(193,18,31,0.12)] hover:-translate-y-1"
+      className="group flex min-w-[280px] cursor-pointer items-center gap-4 rounded-full border border-white/40 bg-white/20 p-2 pr-8 shadow-card backdrop-blur-2xl transition-all duration-300 hover:border-primary-dark/40 hover:shadow-card hover:-translate-y-1"
     >
-      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-blood-red text-lg font-black text-white shadow-[0_6px_15px_rgba(193,18,31,0.3)]">
+      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary-dark text-lg font-black text-white shadow-card">
         {group}
       </div>
       <div className="flex flex-col overflow-hidden">

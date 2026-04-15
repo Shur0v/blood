@@ -43,7 +43,7 @@ export default function Testimonials() {
           Community Stories
         </motion.h2>
         <p className="mt-4 font-medium text-gray-500">Inspiring journeys and medical insights written by our users.</p>
-        <div className="mt-4 h-1.5 w-24 bg-accent-red mx-auto rounded-full" />
+        <div className="mt-4 h-1.5 w-24 bg-primary mx-auto rounded-full" />
       </div>
 
       <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
@@ -54,10 +54,10 @@ export default function Testimonials() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="glass soft-moving-bg relative flex h-full flex-col justify-between overflow-hidden rounded-[24px] p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)] transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(193,18,31,0.12)]"
+              className="glass soft-moving-bg relative flex h-full flex-col justify-between overflow-hidden rounded-[24px] p-8 shadow-card transition-all duration-300 hover:-translate-y-2 hover:shadow-card"
             >
               <div>
-                <h3 className="mb-4 text-xl font-black leading-tight text-gray-900 group-hover:text-blood-red transition-colors">
+                <h3 className="mb-4 text-xl font-black leading-tight text-gray-900 group-hover:text-primary-dark transition-colors">
                   {blog.title}
                 </h3>
                 <p className="text-sm leading-relaxed text-gray-600 font-medium mb-8">
@@ -76,14 +76,14 @@ export default function Testimonials() {
                   <div>
                     <h4 className="text-sm font-bold text-gray-900">{blog.author}</h4>
                     <div className="flex items-center gap-1 text-[10px] font-bold text-gray-500 uppercase tracking-wider">
-                      <MapPin className="h-3 w-3 text-accent-red" />
+                      <MapPin className="h-3 w-3 text-primary" />
                       {blog.location}
                     </div>
                   </div>
                 </div>
                 
                 {/* Arrow Icon with Hover animation */}
-                <div className="relative z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white ring-1 ring-black/5 text-gray-900 transition-all duration-300 group-hover:bg-blood-red group-hover:text-white group-hover:ring-blood-red">
+                <div className="relative z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white ring-1 ring-black/5 text-gray-900 transition-all duration-300 group-hover:bg-primary-dark group-hover:text-white group-hover:ring-primary-dark">
                   <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-0.5" />
                 </div>
               </div>

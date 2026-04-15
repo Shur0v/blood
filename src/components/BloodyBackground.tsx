@@ -55,11 +55,11 @@ export default function BloodyBackground() {
       className="fixed inset-0 -z-20 overflow-hidden bg-[#FDFCFB]"
     >
       {/* Bloody Blobs */}
-      <div className="blob absolute h-[600px] w-[600px] rounded-full bg-blood-red/10 blur-[120px]" />
-      <div className="blob absolute h-[500px] w-[500px] rounded-full bg-soft-crimson/15 blur-[100px]" />
+      <div className="blob absolute h-[600px] w-[600px] rounded-full bg-primary-dark/10 blur-[120px]" />
+      <div className="blob absolute h-[500px] w-[500px] rounded-full bg-primary/15 blur-[100px]" />
       <div className="blob absolute h-[700px] w-[700px] rounded-full bg-orange-500/5 blur-[140px]" />
       <div className="blob absolute h-[400px] w-[400px] rounded-full bg-pink-500/10 blur-[80px]" />
-      <div className="blob absolute h-[800px] w-[800px] rounded-full bg-blood-red/5 blur-[160px]" />
+      <div className="blob absolute h-[800px] w-[800px] rounded-full bg-primary-dark/5 blur-[160px]" />
       
       {/* Subtle Texture Overlay */}
       <div className="absolute inset-0 opacity-[0.02] pointer-events-none" 

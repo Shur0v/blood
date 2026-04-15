@@ -17,6 +17,7 @@ import ProcessSteps from "../components/ProcessSteps";
 import ImpactData from "../components/ImpactData";
 import Testimonials from "../components/Testimonials";
 import UserReports from "../components/UserReports";
+import RequestOrgan from "../components/RequestOrgan";
 import MobilePreview from "../components/MobilePreview";
 import { PolicyModal } from "../components/PolicyModal";
 import { FullPrivacyPage } from "../components/FullPrivacyPage";
@@ -70,7 +71,7 @@ export default function Home() {
     <div className="relative min-h-screen">
       {/* Scroll Progress Bar */}
       <motion.div
-        className="fixed top-0 left-0 right-0 z-[100] h-1.5 origin-left bg-blood-red shadow-lg shadow-blood-red/50"
+        className="fixed top-0 left-0 right-0 z-[100] h-1.5 origin-left bg-primary-dark shadow-lg shadow-primary-dark/50"
         style={{ scaleX }}
       />
 
@@ -100,6 +101,7 @@ export default function Home() {
             <MedicalAidFund />
             <FloatingDonorTags />
             <ImpactData />
+            <RequestOrgan />
             <Testimonials />
             <UserReports />
             <MobilePreview />
@@ -125,6 +127,7 @@ export default function Home() {
             <ImageSlider />
             <FloatingDonorTags />
             <ImpactData />
+            <RequestOrgan />
             <Testimonials />
             <UserReports />
             <MobilePreview />
@@ -141,7 +144,7 @@ export default function Home() {
               <div className="grid gap-6 text-left">
                 {[1, 2, 3].map(i => (
                   <div key={i} className="p-6 rounded-[8px] border border-white/40 bg-white/10 hover:bg-white/20 transition-all cursor-pointer">
-                    <div className="text-blood-red text-[10px] font-bold uppercase mb-2 tracking-widest">Medical News • 2 hours ago</div>
+                    <div className="text-primary-dark text-[10px] font-bold uppercase mb-2 tracking-widest">Medical News • 2 hours ago</div>
                     <h3 className="font-bold text-lg mb-2">The Future of Artificial Blood: A New Era in Emergency Care</h3>
                     <p className="text-sm text-gray-500 line-clamp-2">Researchers have developed a synthetic alternative that could revolutionize how we handle trauma cases in remote areas...</p>
                   </div>

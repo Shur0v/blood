@@ -15,11 +15,11 @@ export default function Navbar({ currentPage, onPageChange, onAuthClick, isLogge
       <motion.nav 
         initial={{ y: 100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="flex items-center gap-4 rounded-full bg-black/40 backdrop-blur-xl border border-white/10 px-4 py-2 shadow-[0_20px_50px_rgba(0,0,0,0.3)]"
+        className="flex items-center gap-4 rounded-full bg-black/40 backdrop-blur-xl border border-white/10 px-4 py-2 shadow-card"
       >
         {/* Logo Section */}
         <div className="flex items-center gap-2 pr-2 border-r border-white/10">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blood-red">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-dark">
             <Droplet className="h-5 w-5 text-white fill-white" />
           </div>
           <span className="text-sm font-bold tracking-tight text-white">HemaFlow</span>
@@ -49,7 +49,7 @@ export default function Navbar({ currentPage, onPageChange, onAuthClick, isLogge
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={onAuthClick}
-          className="flex items-center gap-2 rounded-full bg-blood-red px-5 py-2 text-xs font-bold text-white shadow-lg shadow-blood-red/20 transition-all hover:bg-soft-crimson"
+          className="flex items-center gap-2 rounded-full bg-primary-dark px-5 py-2 text-xs font-bold text-white shadow-lg shadow-primary-dark/20 transition-all hover:bg-primary"
         >
           {isLoggedIn ? (
             <>
@@ -72,7 +72,7 @@ function NavItem({ icon, active = false, onClick }: { icon: React.ReactNode; act
       whileTap={{ scale: 0.9 }}
       onClick={onClick}
       className={`flex h-8 w-8 items-center justify-center rounded-full transition-all ${
-        active ? "bg-blood-red text-white shadow-md shadow-blood-red/20" : "text-gray-300 hover:text-white"
+        active ? "bg-primary-dark text-white shadow-md shadow-primary-dark/20" : "text-gray-300 hover:text-white"
       }`}
     >
       {icon}

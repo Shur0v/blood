@@ -32,7 +32,7 @@ export default function ProcessSteps() {
         >
           How it Works
         </motion.h2>
-        <div className="mt-2 h-1.5 w-24 bg-accent-red mx-auto rounded-full" />
+        <div className="mt-2 h-1.5 w-24 bg-primary mx-auto rounded-full" />
       </div>
 
       <div className="grid grid-cols-1 gap-12 md:grid-cols-3">
@@ -45,7 +45,7 @@ export default function ProcessSteps() {
             transition={{ delay: i * 0.1 }}
             className="flex flex-col items-center text-center"
           >
-            <div className="mb-8 flex h-20 w-20 items-center justify-center rounded-full bg-white shadow-[0_10px_30px_rgba(0,0,0,0.05)] border border-gray-50 text-accent-red transition-transform hover:scale-110">
+            <div className="mb-8 flex h-20 w-20 items-center justify-center rounded-full bg-white shadow-card border border-gray-50 text-primary transition-transform hover:scale-110">
               {step.icon}
             </div>
             <h3 className="mb-4 text-xl font-bold text-gray-900 uppercase tracking-tight">

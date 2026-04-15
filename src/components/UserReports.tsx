@@ -24,18 +24,18 @@ export default function UserReports() {
           Community Guardian
         </motion.h2>
         <p className="mt-4 text-gray-500 font-medium">Protect the community & share your suggestions to improve the platform.</p>
-        <div className="mt-4 h-1.5 w-24 bg-accent-red mx-auto rounded-full" />
+        <div className="mt-4 h-1.5 w-24 bg-primary mx-auto rounded-full" />
       </div>
 
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="glass soft-moving-bg relative flex flex-col justify-between overflow-hidden rounded-[24px] p-8 transition-all shadow-[0_15px_40px_rgba(193,18,31,0.08)]"
+        className="glass soft-moving-bg relative flex flex-col justify-between overflow-hidden rounded-[24px] p-8 transition-all shadow-card"
       >
         <div>
           <div className="mb-6 flex items-center gap-4 border-b border-black/5 pb-4">
-            <div className="rounded-xl bg-blood-red/10 p-3 text-blood-red">
+            <div className="rounded-xl bg-primary-dark/10 p-3 text-primary-dark">
               <ShieldAlert className="h-6 w-6" />
             </div>
             <div>
@@ -71,8 +71,8 @@ export default function UserReports() {
                       onClick={() => setReportType(type)}
                       className={`rounded-xl px-4 py-3 text-xs font-bold transition-all ${
                         reportType === type 
-                          ? "bg-blood-red text-white shadow-lg shadow-blood-red/20 ring-2 ring-blood-red/50" 
-                          : "bg-white/40 text-gray-600 hover:bg-white/60 ring-1 ring-black/5"
+                          ? "bg-primary-dark text-white shadow-lg shadow-primary-dark/20 ring-2 ring-primary-dark/50" 
+                          : "bg-glass text-gray-600 hover:bg-white/60 ring-1 ring-black/5"
                       }`}
                     >
                       {type}
@@ -88,7 +88,7 @@ export default function UserReports() {
                 <input 
                   type="text" 
                   required
-                  className="w-full rounded-xl border border-white/50 bg-white/40 px-4 py-3 text-sm outline-none transition focus:border-blood-red focus:bg-white/60 focus:ring-1 focus:ring-blood-red" 
+                  className="w-full rounded-xl border border-white/50 bg-glass px-4 py-3 text-sm outline-none transition focus:border-primary-dark focus:bg-white/60 focus:ring-1 focus:ring-primary-dark" 
                   placeholder={reportType === "Scam Report" ? "e.g. John Doe / +1 234 567 890" : "Give us a brief title..."}
                 />
               </div>
@@ -97,7 +97,7 @@ export default function UserReports() {
                 <textarea 
                   required
                   rows={5}
-                  className="w-full resize-none rounded-xl border border-white/50 bg-white/40 px-4 py-3 text-sm outline-none transition focus:border-blood-red focus:bg-white/60 focus:ring-1 focus:ring-blood-red" 
+                  className="w-full resize-none rounded-xl border border-white/50 bg-glass px-4 py-3 text-sm outline-none transition focus:border-primary-dark focus:bg-white/60 focus:ring-1 focus:ring-primary-dark" 
                   placeholder="Provide specific details..."
                 />
               </div>
@@ -109,7 +109,7 @@ export default function UserReports() {
           <button 
             disabled={reportStatus === "submitting"}
             onClick={handleReportSubmit}
-            className="mt-8 group flex w-full items-center justify-center gap-2 rounded-xl bg-blood-red px-4 py-3.5 font-bold text-white transition hover:bg-accent-red disabled:opacity-70"
+            className="mt-8 group flex w-full items-center justify-center gap-2 rounded-xl bg-primary-dark px-4 py-3.5 font-bold text-white transition hover:bg-primary disabled:opacity-70"
           >
             {reportStatus === "submitting" ? "Submitting..." : `Submit ${reportType}`}
             <Send className="h-4 w-4 transition group-hover:translate-x-1" />

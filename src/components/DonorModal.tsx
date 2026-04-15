@@ -35,7 +35,7 @@ export default function DonorModal({ donor, onClose }: DonorModalProps) {
             initial={{ scale: 0.9, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.9, opacity: 0, y: 20 }}
-            className="relative w-full max-w-md overflow-hidden rounded-3xl border border-white/60 bg-white/80 p-8 shadow-[0_20px_50px_rgba(0,0,0,0.1)] backdrop-blur-2xl"
+            className="relative w-full max-w-md overflow-hidden rounded-3xl border border-white/60 bg-white/80 p-8 shadow-card backdrop-blur-2xl"
           >
             {/* Close Button */}
             <button
@@ -48,7 +48,7 @@ export default function DonorModal({ donor, onClose }: DonorModalProps) {
             {/* Content */}
             <div className="flex flex-col items-center text-center">
               {/* Blood Group Badge */}
-              <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-blood-red text-3xl font-black text-white shadow-[0_10px_25px_rgba(193,18,31,0.3)]">
+              <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-primary-dark text-3xl font-black text-white shadow-card">
                 {donor.group}
               </div>
 
@@ -58,11 +58,11 @@ export default function DonorModal({ donor, onClose }: DonorModalProps) {
               
               <div className="mb-8 flex flex-col gap-3">
                 <div className="flex items-center justify-center gap-2 text-gray-600">
-                  <MapPin className="h-4 w-4 text-blood-red" />
+                  <MapPin className="h-4 w-4 text-primary-dark" />
                   <span className="text-sm font-bold">{donor.location}</span>
                 </div>
                 <div className="flex items-center justify-center gap-2 text-gray-600">
-                  <Phone className="h-4 w-4 text-blood-red" />
+                  <Phone className="h-4 w-4 text-primary-dark" />
                   <span className="text-sm font-bold">{donor.phone}</span>
                 </div>
               </div>
@@ -73,7 +73,7 @@ export default function DonorModal({ donor, onClose }: DonorModalProps) {
                   href={`tel:${donor.phone}`}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="flex w-full items-center justify-center gap-3 rounded-2xl bg-blood-red py-4 text-lg font-bold text-white shadow-lg shadow-blood-red/20 transition-all hover:bg-blood-red/90"
+                  className="flex w-full items-center justify-center gap-3 rounded-2xl bg-primary-dark py-4 text-lg font-bold text-white shadow-lg shadow-primary-dark/20 transition-all hover:bg-primary-dark/90"
                 >
                   <Phone className="h-5 w-5" />
                   Call Now
@@ -96,7 +96,7 @@ export default function DonorModal({ donor, onClose }: DonorModalProps) {
 
             {/* Decorative background glow */}
             <div className="absolute -left-20 -top-20 -z-10 h-40 w-40 rounded-full bg-blue-400/10 blur-3xl" />
-            <div className="absolute -right-20 -bottom-20 -z-10 h-40 w-40 rounded-full bg-blood-red/10 blur-3xl" />
+            <div className="absolute -right-20 -bottom-20 -z-10 h-40 w-40 rounded-full bg-primary-dark/10 blur-3xl" />
           </motion.div>
         </div>
       )}

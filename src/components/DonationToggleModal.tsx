@@ -42,7 +42,7 @@ export default function DonationToggleModal({ isOpen, onClose, onConfirm }: Dona
             </button>
 
             <div className="mb-6">
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-accent-red/20 text-accent-red">
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/20 text-primary">
                 <Calendar className="h-6 w-6" />
               </div>
               <h3 className="text-xl font-black uppercase tracking-tight text-white">Last Donation</h3>
@@ -58,7 +58,7 @@ export default function DonationToggleModal({ isOpen, onClose, onConfirm }: Dona
                   <Calendar className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-white/30" />
                   <input
                     type="date"
-                    className="w-full rounded-2xl border border-white/10 bg-white/5 py-4 pl-12 pr-4 text-white focus:border-accent-red/50 focus:outline-none focus:ring-1 focus:ring-accent-red/50"
+                    className="w-full rounded-2xl border border-white/10 bg-white/5 py-4 pl-12 pr-4 text-white focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/50"
                     value={date}
                     onChange={(e) => setDate(e.target.value)}
                   />
@@ -76,7 +76,7 @@ export default function DonationToggleModal({ isOpen, onClose, onConfirm }: Dona
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleConfirm}
-                  className="flex-[2] flex items-center justify-center gap-2 rounded-2xl bg-accent-red py-4 text-xs font-black uppercase tracking-widest text-white shadow-xl shadow-accent-red/20 transition-all hover:opacity-90"
+                  className="flex-[2] flex items-center justify-center gap-2 rounded-2xl bg-primary py-4 text-xs font-black uppercase tracking-widest text-white shadow-xl shadow-primary/20 transition-all hover:opacity-90"
                 >
                   <CheckCircle2 className="h-4 w-4" />
                   Confirm Status

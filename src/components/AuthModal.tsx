@@ -71,7 +71,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
             </button>
 
             <div className="mb-8 text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-accent-red/20 text-accent-red">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/20 text-primary">
                 <ShieldCheck className="h-8 w-8" />
               </div>
               <h2 className="text-3xl font-black tracking-tight text-white uppercase">
@@ -94,7 +94,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
                       required
                       type="email"
                       placeholder="name@example.com"
-                      className="w-full rounded-2xl border border-white/10 bg-white/5 py-4 pl-12 pr-4 text-white placeholder:text-white/20 focus:border-accent-red/50 focus:outline-none focus:ring-1 focus:ring-accent-red/50"
+                      className="w-full rounded-2xl border border-white/10 bg-white/5 py-4 pl-12 pr-4 text-white placeholder:text-white/20 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/50"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     />
@@ -109,7 +109,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
                       <input
                         required
                         type="date"
-                        className="w-full rounded-2xl border border-white/10 bg-white/5 py-4 pl-12 pr-4 text-white focus:border-accent-red/50 focus:outline-none focus:ring-1 focus:ring-accent-red/50"
+                        className="w-full rounded-2xl border border-white/10 bg-white/5 py-4 pl-12 pr-4 text-white focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/50"
                         value={formData.dob}
                         onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
                       />
@@ -119,13 +119,13 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
                     <label className="text-[10px] font-black uppercase tracking-widest text-white/40">Blood Group</label>
                     <select
                       required
-                      className="w-full rounded-2xl border border-white/10 bg-white/5 py-4 px-4 text-white focus:border-accent-red/50 focus:outline-none focus:ring-1 focus:ring-accent-red/50 appearance-none"
+                      className="w-full rounded-2xl border border-white/10 bg-white/5 py-4 px-4 text-white focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/50 appearance-none"
                       value={formData.bloodGroup}
                       onChange={(e) => setFormData({ ...formData, bloodGroup: e.target.value })}
                     >
-                      <option value="" disabled className="bg-[#101828]">Select</option>
+                      <option value="" disabled className="bg-text">Select</option>
                       {BLOOD_GROUPS.map(bg => (
-                        <option key={bg} value={bg} className="bg-[#101828]">{bg}</option>
+                        <option key={bg} value={bg} className="bg-text">{bg}</option>
                       ))}
                     </select>
                   </div>
@@ -139,7 +139,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
                       required
                       type="tel"
                       placeholder="+1..."
-                      className="w-full rounded-2xl border border-white/10 bg-white/5 py-4 pl-12 pr-4 text-white placeholder:text-white/20 focus:border-accent-red/50 focus:outline-none focus:ring-1 focus:ring-accent-red/50"
+                      className="w-full rounded-2xl border border-white/10 bg-white/5 py-4 pl-12 pr-4 text-white placeholder:text-white/20 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/50"
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                     />
@@ -150,7 +150,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   type="submit"
-                  className="group mt-4 flex w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-accent-red to-soft-crimson py-4 text-sm font-black uppercase tracking-widest text-white shadow-xl shadow-accent-red/20 transition-all hover:opacity-90"
+                  className="group mt-4 flex w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-primary to-primary py-4 text-sm font-black uppercase tracking-widest text-white shadow-xl shadow-primary/20 transition-all hover:opacity-90"
                 >
                   Send OTP
                   <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
@@ -165,7 +165,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
                       id={`otp-${index}`}
                       type="text"
                       maxLength={1}
-                      className="h-14 w-full rounded-xl border border-white/10 bg-white/5 text-center text-xl font-black text-white focus:border-accent-red/50 focus:outline-none focus:ring-1 focus:ring-accent-red/50"
+                      className="h-14 w-full rounded-xl border border-white/10 bg-white/5 text-center text-xl font-black text-white focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/50"
                       value={digit}
                       onChange={(e) => handleOtpChange(index, e.target.value)}
                     />
@@ -177,7 +177,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={handleVerify}
-                    className="w-full rounded-2xl bg-gradient-to-r from-accent-red to-soft-crimson py-4 text-sm font-black uppercase tracking-widest text-white shadow-xl shadow-accent-red/20 transition-all hover:opacity-90"
+                    className="w-full rounded-2xl bg-gradient-to-r from-primary to-primary py-4 text-sm font-black uppercase tracking-widest text-white shadow-xl shadow-primary/20 transition-all hover:opacity-90"
                   >
                     Verify & Login
                   </motion.button>

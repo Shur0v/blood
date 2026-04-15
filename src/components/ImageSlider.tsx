@@ -91,7 +91,7 @@ export default function ImageSlider() {
         <div className="absolute top-1/2 left-8 -translate-y-1/2">
           <button
             onClick={prevSlide}
-            className="glass flex h-14 w-14 items-center justify-center rounded-[8px] text-white transition-all hover:bg-white/40"
+            className="glass flex h-14 w-14 items-center justify-center rounded-[8px] text-white transition-all hover:bg-glass"
           >
             <ChevronLeft className="h-8 w-8" />
           </button>
@@ -99,7 +99,7 @@ export default function ImageSlider() {
         <div className="absolute top-1/2 right-8 -translate-y-1/2">
           <button
             onClick={nextSlide}
-            className="glass flex h-14 w-14 items-center justify-center rounded-[8px] text-white transition-all hover:bg-white/40"
+            className="glass flex h-14 w-14 items-center justify-center rounded-[8px] text-white transition-all hover:bg-glass"
           >
             <ChevronRight className="h-8 w-8" />
           </button>
@@ -112,7 +112,7 @@ export default function ImageSlider() {
               key={index}
               onClick={() => setCurrentIndex(index)}
               className={`h-2 rounded-full transition-all ${
-                currentIndex === index ? "w-8 bg-blood-red" : "w-2 bg-white/50"
+                currentIndex === index ? "w-8 bg-primary-dark" : "w-2 bg-white/50"
               }`}
             />
           ))}

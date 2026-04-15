@@ -43,7 +43,7 @@ export default function SocialMedia() {
               <motion.button
                 whileHover={{ scale: 1.02, y: -1 }}
                 whileTap={{ scale: 0.98 }}
-                className="group relative flex items-center gap-3 rounded-xl bg-gradient-to-r from-[#F23030] to-[#C1121F] px-8 py-4 text-base font-bold text-white shadow-[0_8px_30px_rgba(193,18,31,0.25)] transition-all hover:shadow-[0_12px_40px_rgba(193,18,31,0.35)]"
+                className="group relative flex items-center gap-3 rounded-xl bg-gradient-to-r from-[#F23030] to-primary-dark px-8 py-4 text-base font-bold text-white shadow-card transition-all hover:shadow-card"
               >
                 <Send className="h-5 w-5 rotate-[-20deg] transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
                 Join Now on Telegram
@@ -105,7 +105,7 @@ export default function SocialMedia() {
 
 function FeatureCard({ icon, title, desc }: { icon: React.ReactNode; title: string; desc: string }) {
   return (
-    <div className="flex flex-col items-center rounded-xl border border-white/60 bg-white/40 p-3 shadow-sm backdrop-blur-md transition-all hover:bg-white/60 hover:shadow-md">
+    <div className="flex flex-col items-center rounded-xl border border-white/60 bg-glass p-3 shadow-sm backdrop-blur-md transition-all hover:bg-white/60 hover:shadow-md">
       <div className="mb-1.5 flex h-8 w-8 items-center justify-center rounded-full bg-red-50 text-red-500 shadow-inner">
         {icon}
       </div>
@@ -120,7 +120,7 @@ function SocialIcon({ icon, label }: { icon: React.ReactNode; label: string }) {
     <motion.button
       whileHover={{ scale: 1.2, rotate: 10, backgroundColor: "#C1121F", color: "#FFFFFF" }}
       whileTap={{ scale: 0.9 }}
-      className="glass flex h-20 w-20 items-center justify-center rounded-[8px] text-gray-700 shadow-xl transition-all hover:shadow-blood-red/30"
+      className="glass flex h-20 w-20 items-center justify-center rounded-[8px] text-gray-700 shadow-xl transition-all hover:shadow-primary-dark/30"
     >
       {icon}
       <span className="sr-only">{label}</span>
@@ -140,7 +140,7 @@ export function Footer({ onOpenPolicy, onPageChange }: FooterProps) {
         <div className="grid grid-cols-1 gap-16 md:grid-cols-4">
           <div className="col-span-1 md:col-span-2">
             <div className="mb-8 flex items-center gap-2">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blood-red">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary-dark">
                 <Droplet className="h-7 w-7 text-white fill-white" />
               </div>
               <span className="text-3xl font-bold tracking-tight text-white">HemaFlow</span>

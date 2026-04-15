@@ -9,7 +9,7 @@ import { Shield, Lock, Eye, FileCheck, Info } from "lucide-react";
  */
 export const FullPrivacyPage = () => {
   return (
-    <main className="min-h-screen bg-[#F8F9FA] font-inter text-gray-800">
+    <main className="min-h-screen bg-bg font-inter text-gray-800">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 py-16">
         <div className="mx-auto max-w-4xl px-6">
@@ -18,10 +18,10 @@ export const FullPrivacyPage = () => {
             animate={{ opacity: 1, y: 0 }}
             className="flex items-center gap-4 mb-6"
           >
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-accent-red/10 text-accent-red">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
               <Shield className="h-6 w-6" />
             </div>
-            <span className="text-xs font-black uppercase tracking-[4px] text-accent-red">Compliance</span>
+            <span className="text-xs font-black uppercase tracking-[4px] text-primary">Compliance</span>
           </motion.div>
           <h1 className="text-4xl font-black tracking-tight text-gray-900 md:text-6xl mb-4">
             Privacy Policy
@@ -111,7 +111,7 @@ function Section({ icon, title, content }: { icon: React.ReactNode, title: strin
       className="relative"
     >
       <div className="flex items-center gap-3 mb-4">
-        <div className="text-accent-red">{icon}</div>
+        <div className="text-primary">{icon}</div>
         <h2 className="text-xl font-black tracking-tight text-gray-900 uppercase">{title}</h2>
       </div>
       <div className="text-gray-600 leading-relaxed text-base font-medium">

@@ -28,8 +28,8 @@ export default function ImpactData() {
       
       {/* Background Decorative Elements */}
       <div className="absolute top-0 left-0 h-full w-full pointer-events-none overflow-hidden">
-        <div className="absolute -top-24 -left-24 h-64 w-64 rounded-full bg-blood-red/5 blur-[100px]" />
-        <div className="absolute -bottom-24 -right-24 h-64 w-64 rounded-full bg-soft-crimson/5 blur-[100px]" />
+        <div className="absolute -top-24 -left-24 h-64 w-64 rounded-full bg-primary-dark/5 blur-[100px]" />
+        <div className="absolute -bottom-24 -right-24 h-64 w-64 rounded-full bg-primary/5 blur-[100px]" />
       </div>
     </section>
   );
@@ -64,14 +64,14 @@ const Counter = ({ label, target, suffix, delay }: CounterProps) => {
       className="text-center"
     >
       <div className="mb-2 flex items-center justify-center">
-        <motion.span className="text-5xl font-black tracking-tighter text-[#101828] md:text-7xl">
+        <motion.span className="text-5xl font-black tracking-tighter text-text md:text-7xl">
           {rounded}
         </motion.span>
-        <span className="text-3xl font-black tracking-tighter text-[#101828] md:text-5xl">
+        <span className="text-3xl font-black tracking-tighter text-text md:text-5xl">
           {suffix}
         </span>
       </div>
-      <p className="text-xs font-bold uppercase tracking-[3px] text-[#101828]">
+      <p className="text-xs font-bold uppercase tracking-[3px] text-text">
         {label}
       </p>
     </motion.div>

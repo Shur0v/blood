@@ -3,51 +3,115 @@
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --color-blood-red: #C1121F;
-  --color-soft-crimson: #E63946;
-  --color-accent-red: #FF3131;
-  --color-frosted-white: #F8F9FA;
+  
+  --color-primary: var(--primary);
+  --color-primary-dark: var(--primary-dark);
+  --color-primary-glow: var(--primary-glow);
+  --color-secondary: var(--secondary);
+  
+  --color-bg: var(--bg-app);
+  --color-text: var(--text-main);
+  --color-muted: var(--text-muted);
+  --color-inverse: var(--text-inverse);
+  
+  --color-glass: var(--glass-bg);
+  --color-glass-border: var(--glass-border);
+  --color-border: var(--border-main);
+  
+  --blur-glass: var(--glass-blur);
+  --shadow-card: var(--shadow-card);
+  --shadow-hover: var(--shadow-hover);
 }
 
 @layer base {
+  :root {
+    /* Brand Primary: Signature Red */
+    --primary: #FF3131; 
+    --primary-dark: #C1121F; 
+    --primary-glow: rgba(255, 49, 49, 0.15);
+    
+    /* Brand Secondary: Medical Purple / Accents */
+    --secondary: #8b5cf6;
+    
+    /* Backgrounds & Text */
+    --bg-app: #ffffff;
+    --text-main: #101828;
+    --text-muted: #6b7280;
+    --text-inverse: #ffffff;
+    
+    /* Glassmorphism System */
+    --glass-bg: rgba(255, 255, 255, 0.4); /* Frosted opacity */
+    --glass-border: rgba(16, 24, 40, 0.1); /* Thin highlight edge */
+    --glass-blur: 25px; /* Backdrop blur strength */
+    
+    --border-main: rgba(16, 24, 40, 0.1);
+    
+    /* Dynamic Elevation - Standard Card Shadow tinted with Primary */
+    --shadow-card: 0 8px 30px rgba(255, 49, 49, 0.04);
+    --shadow-hover: 0 15px 40px rgba(255, 49, 49, 0.15);
+  }
+
+  [data-theme='dark'] {
+    /* Alternative/Dark Theme Switcher */
+    --primary: #FF4444; 
+    --primary-dark: #cc0000;
+    --primary-glow: rgba(255, 68, 68, 0.25);
+    --secondary: #A78BFA;
+    
+    --bg-app: #0f172a;
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --text-inverse: #0f172a;
+    
+    --glass-bg: rgba(15, 23, 42, 0.5);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-blur: 20px;
+    
+    --border-main: rgba(255, 255, 255, 0.1);
+
+    /* Shadows intelligently adopt the primary theme color base */
+    --shadow-card: 0 8px 30px rgba(255, 68, 68, 0.08); 
+    --shadow-hover: 0 15px 40px rgba(255, 68, 68, 0.25);
+  }
+
   body {
-    @apply text-[#1A1A1A] font-sans overflow-x-hidden;
+    background-color: var(--bg-app);
+    color: var(--text-main);
+    @apply font-sans overflow-x-hidden transition-colors duration-300;
   }
 }
 
 @layer utilities {
   .glass {
-    @apply bg-white/30 backdrop-blur-[25px] border border-white/40 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] ring-1 ring-white/20;
+    background-color: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--shadow-card);
   }
 
   .glass-dark {
-    @apply bg-black/40 backdrop-blur-[20px] border border-white/10 shadow-2xl ring-1 ring-white/5;
+    @apply bg-black/40 border border-white/10 shadow-card ring-1 ring-white/5;
+    backdrop-filter: blur(var(--glass-blur));
   }
 
   .soft-moving-bg {
-    background: linear-gradient(-45deg, rgba(255, 182, 193, 0.15), rgba(176, 224, 230, 0.15), rgba(255, 223, 186, 0.15), rgba(221, 160, 221, 0.15));
+    /* Uses CSS vars dynamically for soft moving gradients like unified profiles */
+    background: linear-gradient(-45deg, var(--glass-bg), var(--primary-glow), var(--bg-app));
     background-size: 400% 400%;
     animation: liquid-flow 20s ease infinite;
   }
 
   .liquid-bg {
-    background: linear-gradient(45deg, #C1121F, #E63946, #FF8C00);
+    /* Dynamic Blobs / Fluid background gradient */
+    background: linear-gradient(45deg, var(--primary-dark), var(--primary), var(--secondary));
     background-size: 400% 400%;
     animation: liquid-flow 15s ease infinite;
   }
 
   @keyframes liquid-flow {
-    0% {
-      background-position: 0% 50%;
-    }
-
-    50% {
-      background-position: 100% 50%;
-    }
-
-    100% {
-      background-position: 0% 50%;
-    }
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
   }
 
   .liquid-wave {
@@ -62,18 +126,13 @@
     left: 0;
     width: 200%;
     height: 100%;
-    background: rgba(193, 18, 31, 0.1);
+    background: var(--primary-glow);
     border-radius: 40%;
     animation: wave 10s linear infinite;
   }
 
   @keyframes wave {
-    0% {
-      transform: translateX(0) rotate(0deg);
-    }
-
-    100% {
-      transform: translateX(-50%) rotate(360deg);
-    }
+    0% { transform: translateX(0) rotate(0deg); }
+    100% { transform: translateX(-50%) rotate(360deg); }
   }
 }

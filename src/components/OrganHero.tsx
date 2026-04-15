@@ -113,8 +113,8 @@ export default function OrganHero() {
 
   return (
     <section className="relative flex min-h-screen flex-col items-center justify-center px-4 pt-20 pb-32">
-      <div className="absolute top-1/4 left-1/4 h-64 w-64 rounded-full bg-blood-red/10 blur-[100px]" />
-      <div className="absolute bottom-1/4 right-1/4 h-96 w-96 rounded-full bg-soft-crimson/5 blur-[120px]" />
+      <div className="absolute top-1/4 left-1/4 h-64 w-64 rounded-full bg-primary-dark/10 blur-[100px]" />
+      <div className="absolute bottom-1/4 right-1/4 h-96 w-96 rounded-full bg-primary/5 blur-[120px]" />
 
       <div className="relative z-10 w-full max-w-7xl">
         <motion.div 
@@ -142,7 +142,7 @@ export default function OrganHero() {
             </motion.div>
 
             <h1 className="mb-6 text-4xl font-bold tracking-tight text-gray-900 md:text-6xl">
-              Give the Gift of <span className="text-blood-red">Life</span>.
+              Give the Gift of <span className="text-primary-dark">Life</span>.
             </h1>
             
             <p className="mx-auto mb-8 max-w-2xl text-base text-gray-500">
@@ -159,8 +159,8 @@ export default function OrganHero() {
                   onClick={() => setActiveOrgan(null)}
                   className={`flex h-12 flex-1 items-center justify-center rounded-[8px] text-[10px] font-bold transition-all sm:text-xs md:text-sm ${
                     activeOrgan === null
-                      ? "bg-blood-red text-white shadow-lg shadow-blood-red/30"
-                      : "glass text-gray-600 hover:border-blood-red/30 hover:text-blood-red"
+                      ? "bg-primary-dark text-white shadow-lg shadow-primary-dark/30"
+                      : "glass text-gray-600 hover:border-primary-dark/30 hover:text-primary-dark"
                   }`}
                 >
                   All
@@ -173,8 +173,8 @@ export default function OrganHero() {
                     onClick={() => setActiveOrgan(organ.name)}
                     className={`flex h-12 flex-1 items-center justify-center rounded-[8px] text-[10px] font-bold transition-all sm:text-xs md:text-sm ${
                       activeOrgan === organ.name
-                        ? "bg-blood-red text-white shadow-lg shadow-blood-red/30"
-                        : "glass text-gray-600 hover:border-blood-red/30 hover:text-blood-red"
+                        ? "bg-primary-dark text-white shadow-lg shadow-primary-dark/30"
+                        : "glass text-gray-600 hover:border-primary-dark/30 hover:text-primary-dark"
                     }`}
                   >
                     {organ.name}
@@ -196,8 +196,8 @@ export default function OrganHero() {
                       onClick={() => setActiveBloodGroup(null)}
                       className={`flex h-12 flex-1 items-center justify-center rounded-[8px] text-[10px] font-bold transition-all sm:text-xs md:text-sm ${
                         activeBloodGroup === null
-                          ? "bg-blood-red text-white shadow-lg shadow-blood-red/30"
-                          : "glass text-gray-600 hover:border-blood-red/30 hover:text-blood-red"
+                          ? "bg-primary-dark text-white shadow-lg shadow-primary-dark/30"
+                          : "glass text-gray-600 hover:border-primary-dark/30 hover:text-primary-dark"
                       }`}
                     >
                       All
@@ -210,8 +210,8 @@ export default function OrganHero() {
                         onClick={() => setActiveBloodGroup(group)}
                         className={`flex h-12 flex-1 items-center justify-center rounded-[8px] text-[10px] font-bold transition-all sm:text-xs md:text-sm ${
                           activeBloodGroup === group
-                            ? "bg-blood-red text-white shadow-lg shadow-blood-red/30"
-                            : "glass text-gray-600 hover:border-blood-red/30 hover:text-blood-red"
+                            ? "bg-primary-dark text-white shadow-lg shadow-primary-dark/30"
+                            : "glass text-gray-600 hover:border-primary-dark/30 hover:text-primary-dark"
                         }`}
                       >
                         {group}
@@ -225,7 +225,7 @@ export default function OrganHero() {
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => setIsSearchOpen(true)}
-                      className="flex h-12 w-12 items-center justify-center rounded-[8px] glass text-gray-600 hover:border-blood-red/30 hover:text-blood-red"
+                      className="flex h-12 w-12 items-center justify-center rounded-[8px] glass text-gray-600 hover:border-primary-dark/30 hover:text-primary-dark"
                     >
                       <Search className="h-5 w-5" />
                     </motion.button>
@@ -245,7 +245,7 @@ export default function OrganHero() {
                       placeholder="Search cities..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="h-12 w-full rounded-[8px] border-none bg-white/80 pl-12 pr-4 font-medium text-gray-900 shadow-xl outline-none ring-2 ring-blood-red/20 backdrop-blur-md focus:ring-blood-red"
+                      className="h-12 w-full rounded-[8px] border-none bg-white/80 pl-12 pr-4 font-medium text-gray-900 shadow-xl outline-none ring-2 ring-primary-dark/20 backdrop-blur-md focus:ring-primary-dark"
                     />
                   </div>
                   <motion.button
@@ -255,7 +255,7 @@ export default function OrganHero() {
                       setIsSearchOpen(false);
                       setSearchQuery("");
                     }}
-                    className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[8px] bg-blood-red text-white shadow-lg shadow-blood-red/30"
+                    className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[8px] bg-primary-dark text-white shadow-lg shadow-primary-dark/30"
                   >
                     <X className="h-5 w-5" />
                   </motion.button>
@@ -281,19 +281,19 @@ export default function OrganHero() {
                 y: -5, 
                 transition: { type: "spring", stiffness: 400, damping: 15 }
               }}
-              className="group relative flex items-center gap-3 cursor-pointer overflow-hidden rounded-[8px] border border-white/40 bg-white/20 p-2 pr-4 shadow-[0_4px_15px_rgba(0,0,0,0.03)] backdrop-blur-2xl transition-all duration-300 hover:border-blood-red/40 hover:shadow-[0_10px_30px_rgba(193,18,31,0.12)]"
+              className="group relative flex items-center gap-3 cursor-pointer overflow-hidden rounded-[8px] border border-white/40 bg-white/20 p-2 pr-4 shadow-card backdrop-blur-2xl transition-all duration-300 hover:border-primary-dark/40 hover:shadow-card"
             >
               <div className="absolute inset-0 rounded-[8px] ring-1 ring-inset ring-white/50" />
               
               <div className="relative z-10 flex w-full items-center">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[8px] bg-blood-red text-lg font-black text-white shadow-[0_6px_15px_rgba(193,18,31,0.3)]">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[8px] bg-primary-dark text-lg font-black text-white shadow-card">
                   {organs.find(o => o.name === donor.organ)?.icon || <Activity className="h-6 w-6" />}
                 </div>
 
                 <div className="ml-3 flex flex-1 flex-col overflow-hidden">
                   <div className="flex items-center justify-between">
                     <h3 className="truncate text-sm font-bold tracking-tight text-gray-900">{donor.name}</h3>
-                    <span className="text-[10px] font-black text-blood-red bg-blood-red/10 px-1.5 py-0.5 rounded ml-2">{donor.bloodGroup}</span>
+                    <span className="text-[10px] font-black text-primary-dark bg-primary-dark/10 px-1.5 py-0.5 rounded ml-2">{donor.bloodGroup}</span>
                   </div>
                   <div className="mt-0.5 flex flex-col text-[10px] font-medium text-gray-600">
                     <span className="truncate">{donor.phone}</span>
