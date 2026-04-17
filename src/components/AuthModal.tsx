@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { X, Mail, Calendar, Phone, ArrowRight, ShieldCheck } from "lucide-react";
+import { X, Mail, Calendar, Phone, ArrowRight, ShieldCheck, User, MapPin, ChevronDown } from "lucide-react";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -11,11 +11,13 @@ interface AuthModalProps {
 export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
   const [step, setStep] = useState<"register" | "otp">("register");
   const [formData, setFormData] = useState({
+    name: "",
     email: "",
-    dob: "",
+    city: "",
     phone: "",
     bloodGroup: ""
   });
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
 
   const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
@@ -80,12 +82,27 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
               <p className="mt-2 text-sm text-white/60">
                 {step === "register" 
                   ? "Create your life-saver profile in seconds." 
-                  : "We've sent a 6-digit code to your phone."}
+                  : "We've sent a 6-digit code to your email."}
               </p>
             </div>
 
             {step === "register" ? (
               <form onSubmit={handleRegister} className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-white/40">Full Name</label>
+                  <div className="relative">
+                    <User className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-white/30" />
+                    <input
+                      required
+                      type="text"
+                      placeholder="John Doe"
+                      className="w-full rounded-2xl border border-white/10 bg-white/5 py-4 pl-12 pr-4 text-white placeholder:text-white/20 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/50"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    />
+                  </div>
+                </div>
+
                 <div className="space-y-2">
                   <label className="text-[10px] font-black uppercase tracking-widest text-white/40">Email Address</label>
                   <div className="relative">
@@ -103,31 +120,64 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-white/40">Date of Birth</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-white/40">City Near You</label>
                     <div className="relative">
-                      <Calendar className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-white/30" />
+                      <MapPin className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-white/30" />
                       <input
                         required
-                        type="date"
-                        className="w-full rounded-2xl border border-white/10 bg-white/5 py-4 pl-12 pr-4 text-white focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/50"
-                        value={formData.dob}
-                        onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
+                        type="text"
+                        placeholder="e.g. Dhaka"
+                        className="w-full rounded-2xl border border-white/10 bg-white/5 py-4 pl-12 pr-4 text-white placeholder:text-white/20 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/50"
+                        value={formData.city}
+                        onChange={(e) => setFormData({ ...formData, city: e.target.value })}
                       />
                     </div>
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-2 relative">
                     <label className="text-[10px] font-black uppercase tracking-widest text-white/40">Blood Group</label>
-                    <select
-                      required
-                      className="w-full rounded-2xl border border-white/10 bg-white/5 py-4 px-4 text-white focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/50 appearance-none"
-                      value={formData.bloodGroup}
-                      onChange={(e) => setFormData({ ...formData, bloodGroup: e.target.value })}
-                    >
-                      <option value="" disabled className="bg-text">Select</option>
-                      {BLOOD_GROUPS.map(bg => (
-                        <option key={bg} value={bg} className="bg-text">{bg}</option>
-                      ))}
-                    </select>
+                    <div className="relative">
+                      <div 
+                        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                        className={`w-full cursor-pointer flex justify-between items-center rounded-2xl border border-white/10 bg-white/5 py-4 px-4 text-sm focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/50 ${!formData.bloodGroup ? 'text-white/40' : 'text-white font-medium'}`}
+                      >
+                        {formData.bloodGroup || 'Select'}
+                        <ChevronDown className={`h-4 w-4 text-white/30 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                      </div>
+                      
+                      <AnimatePresence>
+                        {isDropdownOpen && (
+                          <>
+                            <div 
+                              className="fixed inset-0 z-40" 
+                              onClick={() => setIsDropdownOpen(false)}
+                            />
+                            <motion.div
+                              initial={{ opacity: 0, y: -10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -10 }}
+                              className="absolute top-full left-0 w-full mt-2 z-50 rounded-2xl border border-white/10 bg-[#1a1a2e]/95 backdrop-blur-2xl p-2 shadow-2xl max-h-48 overflow-y-auto custom-scrollbar"
+                            >
+                              {BLOOD_GROUPS.map(bg => (
+                                <div
+                                  key={bg}
+                                  onClick={() => {
+                                    setFormData({ ...formData, bloodGroup: bg });
+                                    setIsDropdownOpen(false);
+                                  }}
+                                  className={`cursor-pointer rounded-xl px-4 py-3 text-sm font-bold transition-all ${
+                                    formData.bloodGroup === bg 
+                                      ? 'bg-primary border border-primary/50 text-white' 
+                                      : 'text-white/70 hover:bg-white/10 hover:text-white'
+                                  }`}
+                                >
+                                  {bg}
+                                </div>
+                              ))}
+                            </motion.div>
+                          </>
+                        )}
+                      </AnimatePresence>
+                    </div>
                   </div>
                 </div>
 
@@ -152,7 +202,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
                   type="submit"
                   className="group mt-4 flex w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-primary to-primary py-4 text-sm font-black uppercase tracking-widest text-white shadow-xl shadow-primary/20 transition-all hover:opacity-90"
                 >
-                  Send OTP
+                  Send OTP to Email
                   <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
                 </motion.button>
               </form>
@@ -185,7 +235,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
                     onClick={() => setStep("register")}
                     className="w-full text-xs font-bold text-white/40 transition-colors hover:text-white"
                   >
-                    Change phone number?
+                    Change email address?
                   </button>
                 </div>
               </div>
