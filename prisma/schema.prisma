@@ -4,7 +4,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -197,4 +196,28 @@ model TrashRecord {
   original_table String
   deleted_data   Json
   deleted_at     DateTime @default(now())
+}
+
+model MedicalAidRequest {
+  id                String   @id @default(uuid())
+  patient_name      String
+  hospital_name     String
+  amount_required   Float
+  email             String
+  phone             String
+  medical_note      String
+  prescription_url  String?
+  report_url        String?
+  status            String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  created_at        DateTime @default(now())
+}
+
+model PlatformSettings {
+  id                String   @id @default(uuid())
+  total_raised      Float    @default(0)
+  total_spent       Float    @default(0)
+  completed_ops     Int      @default(0)
+  uncompleted_ops   Int      @default(0)
+  weekly_donors     Int      @default(0)
+  updated_at        DateTime @updatedAt
 }

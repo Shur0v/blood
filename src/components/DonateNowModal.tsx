@@ -21,7 +21,6 @@ const DONATION_TIERS = [
     details: ["Basic hospital support", "Emergency blood processing", "Initial treatment"],
     impact: "Your $15 can support a patient's critical treatment for one full day.",
     icon: "🏥",
-    isPopular: true,
   },
   {
     amount: 30,
@@ -45,19 +44,23 @@ export default function DonateNowModal({ isOpen, onClose }: DonateNowModalProps)
   const [isProcessing, setIsProcessing] = useState(false);
 
   // Derive active amount safely
-  const activeAmount = customAmount !== "" ? parseFloat(customAmount) : selectedTier;
-  
-  // Find current tier context (or default to $50 context if custom is large)
-  const activeContext = 
-    customAmount !== "" ? 
-    { impact: `Your massive $${customAmount} contribution ensures top-priority medical continuity and saves multiple lives in tandem.`, title: "Custom Legacy Donation" } 
-    : DONATION_TIERS.find(t => t.amount === selectedTier) || DONATION_TIERS[0];
+  const activeAmountRaw = customAmount !== "" ? parseFloat(customAmount) : selectedTier;
+  // Make sure minimum logic applies if user enters something < 50
+  const isCustomEnabled = customAmount !== "";
+  const isValidCustomAmount = isCustomEnabled ? activeAmountRaw >= 50 : true;
+  const activeAmount = activeAmountRaw || 0;
+
+  // Find current tier context (or default to custom context)
+  const activeContext =
+    isCustomEnabled ?
+      { impact: `Your massive $${activeAmount || 0} contribution directly funds live-saving operations, ICU beds, and vital medicines.`, title: "Custom Heavy Donation" }
+      : DONATION_TIERS.find(t => t.amount === selectedTier) || DONATION_TIERS[0];
 
   const handleDonate = () => {
     setIsProcessing(true);
     setTimeout(() => {
       setIsProcessing(false);
-      onClose(); // In reality, this would bounce to Stripe/Checkout
+      onClose();
     }, 2000);
   };
 
@@ -101,19 +104,19 @@ export default function DonateNowModal({ isOpen, onClose }: DonateNowModalProps)
 
             {/* Scrollable Content */}
             <div className="overflow-y-auto px-6 sm:px-8 py-6 space-y-8 custom-scrollbar pb-32 sm:pb-8">
-              
+
               {/* Card Grid */}
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="text-xs font-black uppercase tracking-widest text-gray-400">Select Donation Amount</h3>
                   <span className="text-[10px] font-bold text-[#FF3131] bg-red-50 px-2 py-1 rounded border border-red-100 flex items-center gap-1">
-                    <Heart className="h-3 w-3 fill-current" /> 120 people donated this week
+                    <Heart className="h-3 w-3 fill-current" /> 36 people donated this week
                   </span>
                 </div>
-                
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {DONATION_TIERS.map((tier) => {
-                    const isSelected = selectedTier === tier.amount && customAmount === "";
+                    const isSelected = selectedTier === tier.amount && !isCustomEnabled;
                     return (
                       <div
                         key={tier.amount}
@@ -121,28 +124,22 @@ export default function DonateNowModal({ isOpen, onClose }: DonateNowModalProps)
                           setSelectedTier(tier.amount);
                           setCustomAmount("");
                         }}
-                        className={`relative cursor-pointer rounded-2xl border-2 p-4 transition-all duration-200 ${
-                          isSelected 
-                            ? "border-[#FF3131] bg-red-50/30 shadow-[0_4px_20px_-5px_rgba(255,49,49,0.2)] scale-[1.02]" 
-                            : "border-gray-100 bg-white hover:border-gray-200 hover:bg-gray-50 hover:scale-[1.01]"
-                        }`}
+                        className={`relative cursor-pointer rounded-2xl border-2 p-4 transition-all duration-200 ${isSelected
+                          ? "border-[#FF3131] bg-red-50/30 shadow-[0_4px_20px_-5px_rgba(255,49,49,0.2)] scale-[1.02]"
+                          : "border-gray-100 bg-white hover:border-gray-200 hover:bg-gray-50 hover:scale-[1.01]"
+                          }`}
                       >
-                        {tier.isPopular && (
-                          <div className="absolute -top-3 left-4 bg-gradient-to-r from-[#FF3131] to-rose-500 text-white text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full shadow-sm">
-                            Most Popular
-                          </div>
-                        )}
                         {isSelected && (
                           <div className="absolute top-4 right-4 text-[#FF3131]">
                             <CheckCircle2 className="h-5 w-5 fill-[#FF3131] text-white" />
                           </div>
                         )}
-                        
+
                         <div className="flex items-end gap-2 mb-3">
                           <span className="text-3xl font-black text-gray-900 leading-none">${tier.amount}</span>
                           <span className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">{tier.title}</span>
                         </div>
-                        
+
                         <ul className="space-y-1">
                           {tier.details.map((detail, idx) => (
                             <li key={idx} className="text-xs text-gray-600 flex items-center gap-1.5">
@@ -154,49 +151,64 @@ export default function DonateNowModal({ isOpen, onClose }: DonateNowModalProps)
                       </div>
                     );
                   })}
-                  
-                  {/* Custom Amount Card */}
-                  <div
-                    onClick={() => setCustomAmount("100")}
-                    className={`cursor-pointer rounded-2xl border-2 p-4 transition-all duration-200 flex flex-col justify-center ${
-                      customAmount !== ""
-                        ? "border-[#FF3131] bg-red-50/30 shadow-[0_4px_20px_-5px_rgba(255,49,49,0.2)] scale-[1.02]" 
-                        : "border-gray-100 bg-white hover:border-gray-200 hover:bg-gray-50"
+                </div>
+
+                {/* Custom Amount Card - Full Width below the grid */}
+                <div
+                  onClick={() => {
+                    if (customAmount === "") setCustomAmount("50");
+                  }}
+                  className={`mt-4 cursor-pointer rounded-2xl border-2 p-4 transition-all duration-200 flex flex-col justify-center w-full ${isCustomEnabled
+                    ? isValidCustomAmount
+                      ? "border-[#FF3131] bg-red-50/30 shadow-[0_4px_20px_-5px_rgba(255,49,49,0.2)] scale-[1.01]"
+                      : "border-orange-500 bg-orange-50/30 scale-[1.01]"
+                    : "border-gray-100 bg-white hover:border-gray-200 hover:bg-gray-50"
                     }`}
-                  >
-                    <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Custom Amount</p>
-                    <div className="relative">
-                      <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                      <input
-                        type="number"
-                        placeholder="Enter amount"
-                        className="w-full bg-white border border-gray-200 rounded-xl py-3 pl-10 pr-4 text-gray-900 font-bold focus:outline-none focus:border-[#FF3131] focus:ring-1 focus:ring-[#FF3131] transition-shadow"
-                        value={customAmount}
-                        onChange={(e) => {
-                          setCustomAmount(e.target.value);
-                          if(e.target.value !== "") setSelectedTier(0);
-                        }}
-                        onClick={(e) => e.stopPropagation()}
-                      />
-                    </div>
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">Custom Amount </p>
+                    {!isValidCustomAmount && isCustomEnabled && (
+                      <span className="text-[10px] font-bold text-orange-600 flex items-center gap-1">
+                        <AlertCircle className="h-3 w-3" /> Minimum allowed is $50
+                      </span>
+                    )}
+                  </div>
+                  <div className="relative">
+                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    <input
+                      type="number"
+                      min="50"
+                      placeholder="Enter amount"
+                      className={`w-full bg-white border rounded-xl py-4 pl-10 pr-4 text-gray-900 font-black text-xl focus:outline-none transition-shadow ${isCustomEnabled && !isValidCustomAmount ? "border-orange-500 focus:ring-orange-500/20" : "border-gray-200 focus:border-[#FF3131] focus:ring-1 focus:ring-[#FF3131]"
+                        }`}
+                      value={customAmount}
+                      onChange={(e) => {
+                        setCustomAmount(e.target.value);
+                      }}
+                      onClick={(e) => e.stopPropagation()}
+                    />
                   </div>
                 </div>
               </div>
 
               {/* Dynamic Impact Display */}
-              <motion.div 
-                key={activeAmount + "impact"}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
+              <motion.div
+                layout
                 className="bg-[#1a1a2e] rounded-2xl p-5 text-white shadow-lg relative overflow-hidden"
               >
                 <div className="absolute top-0 right-0 p-4 opacity-10">
                   <Heart className="w-24 h-24 text-white" />
                 </div>
                 <h4 className="text-[10px] font-black uppercase tracking-widest text-[#FF3131] mb-2">Your Direct Impact</h4>
-                <p className="text-lg sm:text-xl font-medium leading-relaxed max-w-[90%] font-serif">
+                <motion.p
+                  key={activeContext.impact}
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="text-lg sm:text-xl font-medium leading-relaxed max-w-[90%] font-serif"
+                >
                   "{activeContext?.impact}"
-                </p>
+                </motion.p>
               </motion.div>
 
               {/* Transparency Breakdown Chart */}
@@ -204,41 +216,43 @@ export default function DonateNowModal({ isOpen, onClose }: DonateNowModalProps)
                 <h3 className="text-xs font-black uppercase tracking-widest text-gray-400 mb-4 flex items-center gap-1.5">
                   <Info className="h-4 w-4" /> Fund Allocation Transparency
                 </h3>
-                
+
                 <div className="space-y-4">
-                  {/* Fake dynamic bars for trust */}
+                  {/* 90% */}
                   <div>
                     <div className="flex justify-between text-xs font-bold text-gray-700 mb-1">
-                      <span>Direct Medical Support</span>
-                      <span>50%</span>
+                      <span>Live Saving Operations, ICU & Medicine Costs</span>
+                      <span>90%</span>
                     </div>
                     <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
-                      <motion.div 
-                        initial={{ width: 0 }} animate={{ width: "50%" }} transition={{ delay: 0.1, duration: 1 }}
+                      <motion.div
+                        initial={{ width: 0 }} animate={{ width: "90%" }} transition={{ delay: 0.1, duration: 1 }}
                         className="h-full bg-[#1a1a2e]"
                       ></motion.div>
                     </div>
                   </div>
+                  {/* 9% */}
                   <div>
                     <div className="flex justify-between text-xs font-bold text-gray-700 mb-1">
-                      <span>Emergency Blood Processing</span>
-                      <span>30%</span>
+                      <span>Blood Processing Operations</span>
+                      <span>9%</span>
                     </div>
                     <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
-                      <motion.div 
-                        initial={{ width: 0 }} animate={{ width: "30%" }} transition={{ delay: 0.3, duration: 1 }}
+                      <motion.div
+                        initial={{ width: 0 }} animate={{ width: "9%" }} transition={{ delay: 0.3, duration: 1 }}
                         className="h-full bg-[#FF3131]"
                       ></motion.div>
                     </div>
                   </div>
+                  {/* 1% */}
                   <div>
                     <div className="flex justify-between text-xs text-gray-500 mb-1">
-                      <span>Platform & Logistics Overhead</span>
-                      <span>20%</span>
+                      <span>Zero-Profit Platform Running Cost</span>
+                      <span>1%</span>
                     </div>
                     <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
-                      <motion.div 
-                        initial={{ width: 0 }} animate={{ width: "20%" }} transition={{ delay: 0.5, duration: 1 }}
+                      <motion.div
+                        initial={{ width: 0 }} animate={{ width: "1%" }} transition={{ delay: 0.5, duration: 1 }}
                         className="h-full bg-gray-300"
                       ></motion.div>
                     </div>
@@ -255,14 +269,14 @@ export default function DonateNowModal({ isOpen, onClose }: DonateNowModalProps)
                 <span className="text-xs font-medium">SSL Secure 256-bit Encryption</span>
               </div>
               <div className="flex items-center gap-3 w-full sm:w-auto">
-                <button 
+                <button
                   onClick={onClose}
                   className="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-500 hover:text-gray-900 hover:bg-gray-200 transition-colors rounded-xl hidden sm:block"
                 >
                   Cancel
                 </button>
                 <button
-                  disabled={!activeAmount || isProcessing}
+                  disabled={isProcessing || (isCustomEnabled && !isValidCustomAmount)}
                   onClick={handleDonate}
                   className="flex-1 sm:flex-none relative overflow-hidden rounded-xl bg-gradient-to-r from-[#FF3131] to-rose-600 px-10 py-4 font-black uppercase tracking-widest text-white shadow-xl hover:shadow-red-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
                 >
