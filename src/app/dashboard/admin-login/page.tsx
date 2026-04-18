@@ -72,7 +72,7 @@ export default function AdminLogin() {
         </form>
 
         <div className="text-center mt-8 text-sm text-[var(--text-muted)]">
-          <p>HemaFlow Encrypted Portal &copy; {new Date().getFullYear()}</p>
+          <p>BloodNet Encrypted Portal &copy; {new Date().getFullYear()}</p>
         </div>
       </div>
     </div>

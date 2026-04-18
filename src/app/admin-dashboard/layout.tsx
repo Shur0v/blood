@@ -6,13 +6,14 @@ import { usePathname } from 'next/navigation';
 import { 
   LayoutDashboard, Users, AlertTriangle, UserMinus, Globe, 
   Droplet, Heart, Image as ImageIcon, PenTool, MousePointerClick, 
-  Map, Shield, Menu, X, Bell, Search, Settings
+  Map, Shield, Menu, X, Bell, Search, Settings, FileText
 } from 'lucide-react';
 
 const MENU_ITEMS = [
   { name: 'Dashboard Overview', href: '/admin-dashboard', icon: LayoutDashboard },
   { name: 'All User List', href: '/admin-dashboard/users', icon: Users },
   { name: 'Reports', href: '/admin-dashboard/reports', icon: AlertTriangle },
+  { name: 'Patient Aid Requests', href: '/admin-dashboard/financial-requests', icon: FileText },
   { name: 'Inactive Donors', href: '/admin-dashboard/inactive-donors', icon: UserMinus },
   { name: 'Total Regional Users', href: '/admin-dashboard/regional-users', icon: Globe },
   { name: 'Manual Blood Donor', href: '/admin-dashboard/manual-blood-donor', icon: Droplet },

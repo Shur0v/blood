@@ -16,7 +16,7 @@ const POLICY_DATA = {
   safety: "CRITICAL: Never pay any money before the donor arrives at the hospital.",
   data: "Your HemaID (Phone+DOB) is SHA protocols encrypted on our secure medical servers.",
   control: "Your profile is hidden until you toggle the 'Available' switch.",
-  zeroFee: "HemaFlow is 100% free to use. We never charge for matching.",
+  zeroFee: "BloodNet is 100% free to use. We never charge for matching.",
   noTracking: "We use self-hosted, anonymous analytics to protect your identity."
 };
 

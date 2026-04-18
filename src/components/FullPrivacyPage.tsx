@@ -5,7 +5,7 @@ import { Shield, Lock, Eye, FileCheck, Info } from "lucide-react";
 /**
  * GOOGLE ADSENSE COMPLIANT PAGE (/privacy-policy)
  * Required for AdSense Approval. 
- * Implements standard legal boilerplate + HemaFlow specific logic.
+ * Implements standard legal boilerplate + BloodNet specific logic.
  */
 export const FullPrivacyPage = () => {
   return (
@@ -27,7 +27,7 @@ export const FullPrivacyPage = () => {
             Privacy Policy
           </h1>
           <p className="text-lg text-gray-500 max-w-2xl">
-            Last updated: April 11, 2026. This policy describes how HemaFlow collects, uses, and protects your data to ensure a safe donation environment.
+            Last updated: April 11, 2026. This policy describes how BloodNet collects, uses, and protects your data to ensure a safe donation environment.
           </p>
         </div>
       </div>
@@ -39,7 +39,7 @@ export const FullPrivacyPage = () => {
           <Section 
             icon={<Info className="h-5 w-5" />}
             title="1. Introduction"
-            content="At HemaFlow, accessible from our platform, one of our main priorities is the privacy of our visitors. This Privacy Policy document contains types of information that is collected and recorded by HemaFlow and how we use it."
+            content="At BloodNet, accessible from our platform, one of our main priorities is the privacy of our visitors. This Privacy Policy document contains types of information that is collected and recorded by BloodNet and how we use it."
           />
 
           <Section 
@@ -47,7 +47,7 @@ export const FullPrivacyPage = () => {
             title="2. Log Files & Cookies"
             content={
               <div className="space-y-4">
-                <p>HemaFlow follows a standard procedure of using log files. These files log visitors when they visit websites. All hosting companies do this and a part of hosting services' analytics. The information collected by log files include internet protocol (IP) addresses, browser type, Internet Service Provider (ISP), date and time stamp, referring/exit pages, and possibly the number of clicks.</p>
+                <p>BloodNet follows a standard procedure of using log files. These files log visitors when they visit websites. All hosting companies do this and a part of hosting services' analytics. The information collected by log files include internet protocol (IP) addresses, browser type, Internet Service Provider (ISP), date and time stamp, referring/exit pages, and possibly the number of clicks.</p>
                 <p><strong>Google DoubleClick DART Cookie:</strong> Google is one of a third-party vendor on our site. It also uses cookies, known as DART cookies, to serve ads to our site visitors based upon their visit to our platform and other sites on the internet. However, visitors may choose to decline the use of DART cookies by visiting the Google ad and content network Privacy Policy.</p>
               </div>
             }
@@ -56,7 +56,7 @@ export const FullPrivacyPage = () => {
           <Section 
             icon={<Eye className="h-5 w-5" />}
             title="3. Third-Party Privacy Policies"
-            content="HemaFlow's Privacy Policy does not apply to other advertisers or websites. Thus, we are advising you to consult the respective Privacy Policies of these third-party ad servers for more detailed information. It may include their practices and instructions about how to opt-out of certain options."
+            content="BloodNet's Privacy Policy does not apply to other advertisers or websites. Thus, we are advising you to consult the respective Privacy Policies of these third-party ad servers for more detailed information. It may include their practices and instructions about how to opt-out of certain options."
           />
 
           <Section 
@@ -78,7 +78,7 @@ export const FullPrivacyPage = () => {
           <Section 
             icon={<AlertTriangle className="h-5 w-5" />}
             title="5. Medical Disclaimer"
-            content="HemaFlow is a matching platform and NOT a medical provider. We do not provide medical advice, diagnosis, or treatment. Always seek the advice of your physician or other qualified health provider with any questions you may have regarding a medical condition or donation process."
+            content="BloodNet is a matching platform and NOT a medical provider. We do not provide medical advice, diagnosis, or treatment. Always seek the advice of your physician or other qualified health provider with any questions you may have regarding a medical condition or donation process."
           />
 
           <Section 
@@ -94,7 +94,7 @@ export const FullPrivacyPage = () => {
       <footer className="bg-white border-t border-gray-200 py-12">
         <div className="mx-auto max-w-4xl px-6 text-center">
           <p className="text-sm text-gray-400">
-            © 2026 HemaFlow. All rights reserved. Built for life-saving connections.
+            © 2026 BloodNet. All rights reserved. Built for life-saving connections.
           </p>
         </div>
       </footer>

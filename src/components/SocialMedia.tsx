@@ -143,7 +143,7 @@ export function Footer({ onOpenPolicy, onPageChange }: FooterProps) {
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary-dark">
                 <Droplet className="h-7 w-7 text-white fill-white" />
               </div>
-              <span className="text-3xl font-bold tracking-tight text-white">HemaFlow</span>
+              <span className="text-3xl font-bold tracking-tight text-white">BloodNet</span>
             </div>
             <p className="max-w-md text-lg leading-relaxed">
               A premium blood donation platform dedicated to connecting donors and recipients with a modern, futuristic approach to healthcare.
@@ -164,7 +164,7 @@ export function Footer({ onOpenPolicy, onPageChange }: FooterProps) {
           <div>
             <h4 className="mb-6 text-xl font-bold text-white">Contact Info</h4>
             <ul className="flex flex-col gap-4 text-lg">
-              <li>info@hemaflow.com</li>
+              <li>info@bloodnet.com</li>
               <li>+880 1234 567 890</li>
               <li>Dhaka, Bangladesh</li>
             </ul>
@@ -172,7 +172,7 @@ export function Footer({ onOpenPolicy, onPageChange }: FooterProps) {
         </div>
 
         <div className="mt-24 border-t border-white/10 pt-12 text-center text-sm">
-          <p>&copy; 2026 HemaFlow. All rights reserved. Designed with premium glassmorphism.</p>
+          <p>&copy; 2026 BloodNet. All rights reserved. Designed with premium glassmorphism.</p>
         </div>
       </div>
     </footer>

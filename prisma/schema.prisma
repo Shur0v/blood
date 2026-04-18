@@ -1,0 +1,200 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                  String   @id @default(uuid())
+  name                String
+  email               String   @unique
+  mobile              String   @unique
+  blood_group         String
+  
+  location_city       String
+  location_country    String
+  location_lat        Float
+  location_lng        Float
+  place_id            String?
+  
+  is_active_donor     Boolean  @default(true)
+  verification_status String   @default("UNVERIFIED") // UNVERIFIED, PENDING, VERIFIED
+  last_donation_date  DateTime?
+  health_data         Json?
+  
+  created_at          DateTime @default(now())
+  updated_at          DateTime @updatedAt
+
+  OrganRequest        OrganRequest[]
+  SurveyAnswer        SurveyAnswer[]
+}
+
+model AdminUser {
+  id           String   @id @default(uuid())
+  admin_id     String   @unique
+  password     String
+  role         String   @default("MANAGER") // ADMIN, MANAGER
+  last_login   DateTime?
+  created_at   DateTime @default(now())
+}
+
+model OrganRequest {
+  id                 String   @id @default(uuid())
+  user_id            String?
+  name               String
+  contact            String
+  organ_type         String
+  
+  location_city      String
+  location_country   String
+  location_lat       Float
+  location_lng       Float
+  place_id           String?
+
+  medical_note       String?
+  prescription_image String?
+  status             String   @default("PENDING") // PENDING, VERIFIED, RESOLVED
+  
+  created_at         DateTime @default(now())
+  
+  User               User?    @relation(fields: [user_id], references: [id])
+}
+
+model Report {
+  id               String   @id @default(uuid())
+  reporter_id      String?  
+  reporter_contact String?
+  target_type      String   // USER, BLOG, ORGAN_REQ, etc.
+  target_id        String
+  message          String
+  status           String   @default("PENDING") // PENDING, UNDER_REVIEW, RESOLVED
+  created_at       DateTime @default(now())
+}
+
+model Survey {
+  id             String   @id @default(uuid())
+  title          String
+  description    String?
+  is_active      Boolean  @default(true)
+  created_at     DateTime @default(now())
+  
+  Questions      SurveyQuestion[]
+  Answers        SurveyAnswer[]
+}
+
+model SurveyQuestion {
+  id             String   @id @default(uuid())
+  survey_id      String
+  question_text  String
+  input_type     String   // TEXT, RADIO, CHECKBOX
+  
+  Survey         Survey   @relation(fields: [survey_id], references: [id], onDelete: Cascade)
+}
+
+model SurveyAnswer {
+  id             String   @id @default(uuid())
+  survey_id      String
+  user_id        String?
+  answers_json   Json
+  created_at     DateTime @default(now())
+  
+  Survey         Survey   @relation(fields: [survey_id], references: [id], onDelete: Cascade)
+  User           User?    @relation(fields: [user_id], references: [id], onDelete: SetNull)
+}
+
+model ManualBloodDonor {
+  id               String   @id @default(uuid())
+  name             String
+  email            String?
+  mobile           String   @unique
+  blood_group      String
+  
+  location_city    String
+  location_country String
+  location_lat     Float
+  location_lng     Float
+  place_id         String?
+  
+  is_active_donor  Boolean  @default(true)
+  verification_status String @default("VERIFIED")
+  last_donation_date DateTime?
+  health_data      Json?
+  
+  source           String
+  added_by_admin   String
+  created_at       DateTime @default(now())
+}
+
+model ManualOrganDonor {
+  id               String   @id @default(uuid())
+  name             String
+  email            String?
+  mobile           String   @unique
+  organ_type       String   // JSON string or array of pledged organs
+  
+  location_city    String
+  location_country String
+  location_lat     Float
+  location_lng     Float
+  place_id         String?
+  
+  source           String
+  added_by_admin   String
+  created_at       DateTime @default(now())
+}
+
+model Blog {
+  id          String   @id @default(uuid())
+  title       String
+  content     String
+  author_id   String
+  status      String   @default("DRAFT") // DRAFT, PUBLISHED
+  seo_title   String?
+  seo_desc    String?
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+}
+
+model HomepageSlider {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  image_url   String
+  order       Int      @default(0)
+  status      String   @default("ACTIVE") // ACTIVE, INACTIVE
+}
+
+model Policy {
+  id          String   @id @default(uuid())
+  type        String   @unique // TERMS, PRIVACY, etc.
+  content     String
+  version     String
+  updated_at  DateTime @updatedAt
+}
+
+model AnalyticsClickLog {
+  id          String   @id @default(uuid())
+  page        String
+  component   String
+  device_type String
+  created_at  DateTime @default(now())
+}
+
+model AnalyticsHeatmapLog {
+  id          String   @id @default(uuid())
+  page        String
+  device_type String
+  click_x     Float
+  click_y     Float
+  created_at  DateTime @default(now())
+}
+
+model TrashRecord {
+  id             String   @id @default(uuid())
+  original_table String
+  deleted_data   Json
+  deleted_at     DateTime @default(now())
+}

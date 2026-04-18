@@ -31,7 +31,7 @@ export default function MobilePreview() {
                 <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center">
                   <Heart className="h-4 w-4 text-white fill-white" />
                 </div>
-                <span className="text-sm font-black tracking-tight">HemaFlow</span>
+                <span className="text-sm font-black tracking-tight">BloodNet</span>
               </div>
 
               {/* Mockup UI Elements */}

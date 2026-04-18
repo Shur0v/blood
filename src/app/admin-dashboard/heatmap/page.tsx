@@ -99,7 +99,7 @@ export default function HeatmapPage() {
                  <div className="w-3 h-3 rounded-full bg-red-500"></div>
                  <div className="w-3 h-3 rounded-full bg-amber-500"></div>
                  <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
-                 <span className="text-xs text-gray-500 ml-2 font-mono">https://hemaflow.org / Desktop / Click Mode</span>
+                 <span className="text-xs text-gray-500 ml-2 font-mono">https://bloodnet.org / Desktop / Click Mode</span>
                </div>
                <div className="flex items-center gap-2 text-xs">
                  <span className="text-blue-500">Cold</span>

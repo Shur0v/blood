@@ -92,7 +92,7 @@ export default function UnifiedDashboard({ isReady, onToggleReady }: UnifiedDash
             <div className="relative">
               <div className="h-32 w-32 overflow-hidden rounded-[32px] border-4 border-white p-1 shadow-2xl">
                 <img 
-                  src="https://i.pravatar.cc/150?u=hemaflow_user" 
+                  src="https://i.pravatar.cc/150?u=bloodnet_user" 
                   alt="User" 
                   className="h-full w-full rounded-[24px] object-cover"
                   referrerPolicy="no-referrer"

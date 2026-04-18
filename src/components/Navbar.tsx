@@ -22,7 +22,7 @@ export default function Navbar({ currentPage, onPageChange, onAuthClick, isLogge
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-dark">
             <Droplet className="h-5 w-5 text-white fill-white" />
           </div>
-          <span className="text-sm font-bold tracking-tight text-white">HemaFlow</span>
+          <span className="text-sm font-bold tracking-tight text-white">BloodNet</span>
         </div>
 
         {/* Navigation Icons */}

@@ -51,7 +51,7 @@ export default function UserManagementLayout({ children }: { children: React.Rea
         <div className="p-6 flex items-center justify-between border-b border-[var(--border-main)]">
           <div className="flex items-center gap-2 text-[var(--primary)] font-bold text-xl">
             <HeartHandshake className="text-[var(--primary)]" />
-            <span>HemaFlow</span>
+            <span>BloodNet</span>
           </div>
           <button className="md:hidden text-[var(--text-main)]" onClick={() => setSidebarOpen(false)}>
             <X size={24} />

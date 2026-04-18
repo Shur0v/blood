@@ -160,7 +160,7 @@ export default function RequestOrgan() {
               <div className="mb-6 flex items-center gap-3">
                 <FileCheck className="h-5 w-5 text-primary" />
                 <p className="text-[10px] font-bold uppercase tracking-widest text-muted">
-                  By submitting, you confirm authorization to request organs on behalf of the registered account via the HemaFlow Global Network.
+                  By submitting, you confirm authorization to request organs on behalf of the registered account via the BloodNet Global Network.
                 </p>
               </div>
               <button 

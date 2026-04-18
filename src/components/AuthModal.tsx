@@ -10,6 +10,8 @@ interface AuthModalProps {
 
 export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
   const [step, setStep] = useState<"register" | "otp">("register");
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -22,9 +24,39 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
 
   const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    setStep("otp");
+    if (!formData.bloodGroup) {
+      setErrorMsg("Please select a blood group.");
+      return;
+    }
+
+    setIsLoading(true);
+    setErrorMsg("");
+    console.log("[AuthAPI] Initiating OTP Request for:", formData.email);
+
+    try {
+      const res = await fetch("/api/auth/otp/request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: formData.email })
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        console.warn("[AuthAPI] Failed OTP Request:", data);
+        setErrorMsg(data.error || "Failed to send OTP email.");
+        return;
+      }
+
+      console.log("[AuthAPI] OTP Dispatched successfully via Nodemailer.");
+      setStep("otp");
+    } catch (err) {
+      console.error("[AuthAPI] Network/System error on OTP request:", err);
+      setErrorMsg("System connection error. Please verify status.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleOtpChange = (index: number, value: string) => {
@@ -40,10 +72,52 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
     }
   };
 
-  const handleVerify = () => {
-    if (otp.every(digit => digit !== "")) {
+  const handleVerify = async () => {
+    const fullOtp = otp.join("");
+    if (fullOtp.length < 6) {
+      setErrorMsg("Please enter the complete 6-digit OTP.");
+      return;
+    }
+
+    setIsLoading(true);
+    setErrorMsg("");
+    console.log("[AuthAPI] Verifying OTP structure for:", formData.email);
+
+    try {
+      const payload = {
+        email: formData.email,
+        otp: fullOtp,
+        name: formData.name,
+        city: formData.city,
+        bloodGroup: formData.bloodGroup,
+        mobile: formData.phone,
+        country: "Unknown (Pending Map API)",
+        lat: 0.0,
+        lng: 0.0
+      };
+
+      const res = await fetch("/api/auth/otp/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        console.warn("[AuthAPI] OTP Verification Rejected:", data);
+        setErrorMsg(data.error || "Invalid or expired OTP code.");
+        return;
+      }
+
+      console.log("[AuthAPI] Authentication Successful! Active Session Details:", data.user);
       onSuccess();
       onClose();
+    } catch (err) {
+      console.error("[AuthAPI] Network error during verification:", err);
+      setErrorMsg("System error verifying OTP.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -77,13 +151,24 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
                 <ShieldCheck className="h-8 w-8" />
               </div>
               <h2 className="text-3xl font-black tracking-tight text-white uppercase">
-                {step === "register" ? "Join HemaFlow" : "Verify Identity"}
+                {step === "register" ? "Join BloodNet" : "Verify Identity"}
               </h2>
               <p className="mt-2 text-sm text-white/60">
-                {step === "register" 
-                  ? "Create your life-saver profile in seconds." 
+                {step === "register"
+                  ? "Create your life-saver profile in seconds."
                   : "We've sent a 6-digit code to your email."}
               </p>
+
+              <AnimatePresence>
+                {errorMsg && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                    className="mt-4 p-3 rounded-xl bg-red-500/20 border border-red-500/30 text-red-200 text-sm font-medium"
+                  >
+                    {errorMsg}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
             {step === "register" ? (
@@ -136,19 +221,19 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
                   <div className="space-y-2 relative">
                     <label className="text-[10px] font-black uppercase tracking-widest text-white/40">Blood Group</label>
                     <div className="relative">
-                      <div 
+                      <div
                         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                         className={`w-full cursor-pointer flex justify-between items-center rounded-2xl border border-white/10 bg-white/5 py-4 px-4 text-sm focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/50 ${!formData.bloodGroup ? 'text-white/40' : 'text-white font-medium'}`}
                       >
                         {formData.bloodGroup || 'Select'}
                         <ChevronDown className={`h-4 w-4 text-white/30 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
                       </div>
-                      
+
                       <AnimatePresence>
                         {isDropdownOpen && (
                           <>
-                            <div 
-                              className="fixed inset-0 z-40" 
+                            <div
+                              className="fixed inset-0 z-40"
                               onClick={() => setIsDropdownOpen(false)}
                             />
                             <motion.div
@@ -164,11 +249,10 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
                                     setFormData({ ...formData, bloodGroup: bg });
                                     setIsDropdownOpen(false);
                                   }}
-                                  className={`cursor-pointer rounded-xl px-4 py-3 text-sm font-bold transition-all ${
-                                    formData.bloodGroup === bg 
-                                      ? 'bg-primary border border-primary/50 text-white' 
+                                  className={`cursor-pointer rounded-xl px-4 py-3 text-sm font-bold transition-all ${formData.bloodGroup === bg
+                                      ? 'bg-primary border border-primary/50 text-white'
                                       : 'text-white/70 hover:bg-white/10 hover:text-white'
-                                  }`}
+                                    }`}
                                 >
                                   {bg}
                                 </div>
@@ -200,10 +284,11 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   type="submit"
-                  className="group mt-4 flex w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-primary to-primary py-4 text-sm font-black uppercase tracking-widest text-white shadow-xl shadow-primary/20 transition-all hover:opacity-90"
+                  disabled={isLoading}
+                  className="group mt-4 flex w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-primary to-primary py-4 text-sm font-black uppercase tracking-widest text-white shadow-xl shadow-primary/20 transition-all hover:opacity-90 disabled:opacity-50"
                 >
-                  Send OTP to Email
-                  <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+                  {isLoading ? "Processing..." : "Send OTP to Email"}
+                  {!isLoading && <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />}
                 </motion.button>
               </form>
             ) : (
@@ -227,11 +312,12 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={handleVerify}
-                    className="w-full rounded-2xl bg-gradient-to-r from-primary to-primary py-4 text-sm font-black uppercase tracking-widest text-white shadow-xl shadow-primary/20 transition-all hover:opacity-90"
+                    disabled={isLoading}
+                    className="w-full rounded-2xl bg-gradient-to-r from-primary to-primary py-4 text-sm font-black uppercase tracking-widest text-white shadow-xl shadow-primary/20 transition-all hover:opacity-90 disabled:opacity-50"
                   >
-                    Verify & Login
+                    {isLoading ? "Verifying..." : "Verify & Login"}
                   </motion.button>
-                  <button 
+                  <button
                     onClick={() => setStep("register")}
                     className="w-full text-xs font-bold text-white/40 transition-colors hover:text-white"
                   >

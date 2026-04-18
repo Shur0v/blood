@@ -72,7 +72,7 @@ export default function UserManagementLogin() {
         </form>
 
         <div className="text-center mt-8 text-sm text-[var(--text-muted)]">
-          <p>HemaFlow Internal System &copy; {new Date().getFullYear()}</p>
+          <p>BloodNet Internal System &copy; {new Date().getFullYear()}</p>
         </div>
       </div>
     </div>

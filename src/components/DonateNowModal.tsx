@@ -1,0 +1,280 @@
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "motion/react";
+import { X, Heart, ShieldCheck, CheckCircle2, DollarSign, Lock, AlertCircle, Info } from "lucide-react";
+
+interface DonateNowModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+const DONATION_TIERS = [
+  {
+    amount: 5,
+    title: "Basic Medical Support",
+    details: ["Essential medicines", "Syringe & basic supplies", "First response support"],
+    impact: "Your $5 can provide immediate essential medicines for emergency arrivals.",
+    icon: "💊",
+  },
+  {
+    amount: 15,
+    title: "1 Day Medical Cost",
+    details: ["Basic hospital support", "Emergency blood processing", "Initial treatment"],
+    impact: "Your $15 can support a patient's critical treatment for one full day.",
+    icon: "🏥",
+    isPopular: true,
+  },
+  {
+    amount: 30,
+    title: "Emergency Support",
+    details: ["Blood donor coordination", "Lab testing assistance", "Medical transport"],
+    impact: "Your $30 covers extensive lab testing and rapid emergency transportation.",
+    icon: "🚑",
+  },
+  {
+    amount: 50,
+    title: "Critical Patient Support",
+    details: ["Multiple day treatment", "Blood + medicine assistance", "Priority response"],
+    impact: "Your $50 provides comprehensive multi-day treatment for a critical patient.",
+    icon: "❤️‍🩹",
+  }
+];
+
+export default function DonateNowModal({ isOpen, onClose }: DonateNowModalProps) {
+  const [selectedTier, setSelectedTier] = useState<number>(15);
+  const [customAmount, setCustomAmount] = useState<string>("");
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  // Derive active amount safely
+  const activeAmount = customAmount !== "" ? parseFloat(customAmount) : selectedTier;
+  
+  // Find current tier context (or default to $50 context if custom is large)
+  const activeContext = 
+    customAmount !== "" ? 
+    { impact: `Your massive $${customAmount} contribution ensures top-priority medical continuity and saves multiple lives in tandem.`, title: "Custom Legacy Donation" } 
+    : DONATION_TIERS.find(t => t.amount === selectedTier) || DONATION_TIERS[0];
+
+  const handleDonate = () => {
+    setIsProcessing(true);
+    setTimeout(() => {
+      setIsProcessing(false);
+      onClose(); // In reality, this would bounce to Stripe/Checkout
+    }, 2000);
+  };
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-[200] flex items-end justify-center sm:items-center sm:px-4">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
+          />
+
+          <motion.div
+            initial={{ y: "100%", opacity: 0.5, scale: 0.95 }}
+            animate={{ y: 0, opacity: 1, scale: 1 }}
+            exit={{ y: "100%", opacity: 0, scale: 0.95 }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            className="relative w-full max-w-3xl overflow-hidden rounded-t-[32px] sm:rounded-[32px] bg-white shadow-2xl flex flex-col max-h-[90vh] z-10"
+          >
+            {/* Header section fixed */}
+            <div className="bg-white px-6 sm:px-8 py-5 border-b border-gray-100 flex items-center justify-between sticky top-0 z-20">
+              <div>
+                <h2 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight flex items-center gap-2">
+                  <Heart className="h-6 w-6 text-[#FF3131] fill-[#FF3131]" />
+                  Support a Life Today
+                </h2>
+                <p className="text-xs sm:text-sm text-gray-500 mt-1 font-medium max-w-sm leading-relaxed">
+                  Your small contribution can save lives by supporting emergency blood and medical needs.
+                </p>
+              </div>
+              <button
+                onClick={onClose}
+                className="h-10 w-10 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Scrollable Content */}
+            <div className="overflow-y-auto px-6 sm:px-8 py-6 space-y-8 custom-scrollbar pb-32 sm:pb-8">
+              
+              {/* Card Grid */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-xs font-black uppercase tracking-widest text-gray-400">Select Donation Amount</h3>
+                  <span className="text-[10px] font-bold text-[#FF3131] bg-red-50 px-2 py-1 rounded border border-red-100 flex items-center gap-1">
+                    <Heart className="h-3 w-3 fill-current" /> 120 people donated this week
+                  </span>
+                </div>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {DONATION_TIERS.map((tier) => {
+                    const isSelected = selectedTier === tier.amount && customAmount === "";
+                    return (
+                      <div
+                        key={tier.amount}
+                        onClick={() => {
+                          setSelectedTier(tier.amount);
+                          setCustomAmount("");
+                        }}
+                        className={`relative cursor-pointer rounded-2xl border-2 p-4 transition-all duration-200 ${
+                          isSelected 
+                            ? "border-[#FF3131] bg-red-50/30 shadow-[0_4px_20px_-5px_rgba(255,49,49,0.2)] scale-[1.02]" 
+                            : "border-gray-100 bg-white hover:border-gray-200 hover:bg-gray-50 hover:scale-[1.01]"
+                        }`}
+                      >
+                        {tier.isPopular && (
+                          <div className="absolute -top-3 left-4 bg-gradient-to-r from-[#FF3131] to-rose-500 text-white text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full shadow-sm">
+                            Most Popular
+                          </div>
+                        )}
+                        {isSelected && (
+                          <div className="absolute top-4 right-4 text-[#FF3131]">
+                            <CheckCircle2 className="h-5 w-5 fill-[#FF3131] text-white" />
+                          </div>
+                        )}
+                        
+                        <div className="flex items-end gap-2 mb-3">
+                          <span className="text-3xl font-black text-gray-900 leading-none">${tier.amount}</span>
+                          <span className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">{tier.title}</span>
+                        </div>
+                        
+                        <ul className="space-y-1">
+                          {tier.details.map((detail, idx) => (
+                            <li key={idx} className="text-xs text-gray-600 flex items-center gap-1.5">
+                              <div className={`h-1 w-1 rounded-full ${isSelected ? "bg-[#FF3131]" : "bg-gray-300"}`}></div>
+                              {detail}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    );
+                  })}
+                  
+                  {/* Custom Amount Card */}
+                  <div
+                    onClick={() => setCustomAmount("100")}
+                    className={`cursor-pointer rounded-2xl border-2 p-4 transition-all duration-200 flex flex-col justify-center ${
+                      customAmount !== ""
+                        ? "border-[#FF3131] bg-red-50/30 shadow-[0_4px_20px_-5px_rgba(255,49,49,0.2)] scale-[1.02]" 
+                        : "border-gray-100 bg-white hover:border-gray-200 hover:bg-gray-50"
+                    }`}
+                  >
+                    <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Custom Amount</p>
+                    <div className="relative">
+                      <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                      <input
+                        type="number"
+                        placeholder="Enter amount"
+                        className="w-full bg-white border border-gray-200 rounded-xl py-3 pl-10 pr-4 text-gray-900 font-bold focus:outline-none focus:border-[#FF3131] focus:ring-1 focus:ring-[#FF3131] transition-shadow"
+                        value={customAmount}
+                        onChange={(e) => {
+                          setCustomAmount(e.target.value);
+                          if(e.target.value !== "") setSelectedTier(0);
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Dynamic Impact Display */}
+              <motion.div 
+                key={activeAmount + "impact"}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="bg-[#1a1a2e] rounded-2xl p-5 text-white shadow-lg relative overflow-hidden"
+              >
+                <div className="absolute top-0 right-0 p-4 opacity-10">
+                  <Heart className="w-24 h-24 text-white" />
+                </div>
+                <h4 className="text-[10px] font-black uppercase tracking-widest text-[#FF3131] mb-2">Your Direct Impact</h4>
+                <p className="text-lg sm:text-xl font-medium leading-relaxed max-w-[90%] font-serif">
+                  "{activeContext?.impact}"
+                </p>
+              </motion.div>
+
+              {/* Transparency Breakdown Chart */}
+              <div className="pt-2">
+                <h3 className="text-xs font-black uppercase tracking-widest text-gray-400 mb-4 flex items-center gap-1.5">
+                  <Info className="h-4 w-4" /> Fund Allocation Transparency
+                </h3>
+                
+                <div className="space-y-4">
+                  {/* Fake dynamic bars for trust */}
+                  <div>
+                    <div className="flex justify-between text-xs font-bold text-gray-700 mb-1">
+                      <span>Direct Medical Support</span>
+                      <span>50%</span>
+                    </div>
+                    <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+                      <motion.div 
+                        initial={{ width: 0 }} animate={{ width: "50%" }} transition={{ delay: 0.1, duration: 1 }}
+                        className="h-full bg-[#1a1a2e]"
+                      ></motion.div>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex justify-between text-xs font-bold text-gray-700 mb-1">
+                      <span>Emergency Blood Processing</span>
+                      <span>30%</span>
+                    </div>
+                    <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+                      <motion.div 
+                        initial={{ width: 0 }} animate={{ width: "30%" }} transition={{ delay: 0.3, duration: 1 }}
+                        className="h-full bg-[#FF3131]"
+                      ></motion.div>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex justify-between text-xs text-gray-500 mb-1">
+                      <span>Platform & Logistics Overhead</span>
+                      <span>20%</span>
+                    </div>
+                    <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+                      <motion.div 
+                        initial={{ width: 0 }} animate={{ width: "20%" }} transition={{ delay: 0.5, duration: 1 }}
+                        className="h-full bg-gray-300"
+                      ></motion.div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Bottom Actions Fixed Footer */}
+            <div className="bg-gray-50 border-t border-gray-200 p-4 sm:p-6 flex flex-col sm:flex-row items-center gap-4 sticky bottom-0 z-20">
+              <div className="flex-1 w-full flex items-center justify-center sm:justify-start gap-2 text-gray-500">
+                <Lock className="h-4 w-4 text-green-600" />
+                <span className="text-xs font-medium">SSL Secure 256-bit Encryption</span>
+              </div>
+              <div className="flex items-center gap-3 w-full sm:w-auto">
+                <button 
+                  onClick={onClose}
+                  className="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-500 hover:text-gray-900 hover:bg-gray-200 transition-colors rounded-xl hidden sm:block"
+                >
+                  Cancel
+                </button>
+                <button
+                  disabled={!activeAmount || isProcessing}
+                  onClick={handleDonate}
+                  className="flex-1 sm:flex-none relative overflow-hidden rounded-xl bg-gradient-to-r from-[#FF3131] to-rose-600 px-10 py-4 font-black uppercase tracking-widest text-white shadow-xl hover:shadow-red-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
+                >
+                  {isProcessing ? "Processing..." : `Continue to Donate ${activeAmount ? '$' + activeAmount : ''}`}
+                  <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                </button>
+              </div>
+            </div>
+
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
+  );
+}
