@@ -1,22 +1,124 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Table, TableRow, TableCell } from '@/src/admin-dashboard/components/common/Table';
 import { Card } from '@/src/admin-dashboard/components/common/Card';
 import { Pagination } from '@/src/admin-dashboard/components/common/Pagination';
 import { Globe2, MapPin, TrendingUp, Search, Map } from 'lucide-react';
 
-const MOCK_REGIONS = [
-  { id: 'REG-1', country: 'United States', city: 'New York', total: 8400, active: 6200, inactive: 2200, blood: 7800, organ: 1200, pending: 45, growth: '+12%' },
-  { id: 'REG-2', country: 'Bangladesh', city: 'Dhaka', total: 5200, active: 4800, inactive: 400, blood: 5100, organ: 150, pending: 120, growth: '+25%' },
-  { id: 'REG-3', country: 'United Kingdom', city: 'London', total: 3100, active: 2100, inactive: 1000, blood: 2800, organ: 800, pending: 12, growth: '+4%' },
-  { id: 'REG-4', country: 'Australia', city: 'Sydney', total: 1800, active: 1100, inactive: 700, blood: 1600, organ: 400, pending: 8, growth: '+2%' },
-];
+interface RegionRow {
+  id: string;
+  country: string;
+  city: string;
+  total: number;
+  active: number;
+  inactive: number;
+  blood: number;
+  organ: number;
+  pending: number;
+  growth: string;
+}
+
+interface RegionMeta {
+  globalReach: number;
+  totalHubs: number;
+  highestDensity: {
+    country: string;
+    users: number;
+  };
+  topGrowthZone: {
+    city: string;
+    country: string;
+    growth: string;
+  };
+}
+
+const PAGE_SIZE = 20;
 
 export default function RegionalUsersPage() {
+  const [rows, setRows] = useState<RegionRow[]>([]);
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [meta, setMeta] = useState<RegionMeta>({
+    globalReach: 0,
+    totalHubs: 0,
+    highestDensity: { country: 'N/A', users: 0 },
+    topGrowthZone: { city: 'N/A', country: 'N/A', growth: '+0%' },
+  });
 
-  // API Integration Note: Geographic filtering logic should match platform algorithms: GET /api/admin/analytics/regions
-  
+  useEffect(() => {
+    setPage(1);
+  }, [search]);
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    const loadData = async () => {
+      setIsLoading(true);
+      try {
+        const params = new URLSearchParams({
+          page: String(page),
+          limit: String(PAGE_SIZE),
+        });
+        if (search.trim()) {
+          params.set('search', search.trim());
+        }
+        const res = await fetch(`/api/admin/analytics/regions?${params.toString()}`, {
+          method: 'GET',
+          credentials: 'include',
+          cache: 'no-store',
+        });
+        const payload = await res.json();
+
+        if (!res.ok || !payload.success) {
+          if (!isCancelled) {
+            setRows([]);
+            setTotalItems(0);
+            setTotalPages(1);
+          }
+          return;
+        }
+
+        if (!isCancelled) {
+          setRows(payload.data ?? []);
+          setMeta(
+            payload.meta ?? {
+              globalReach: 0,
+              totalHubs: 0,
+              highestDensity: { country: 'N/A', users: 0 },
+              topGrowthZone: { city: 'N/A', country: 'N/A', growth: '+0%' },
+            },
+          );
+          setTotalItems(payload.pagination?.total ?? 0);
+          setTotalPages(payload.pagination?.totalPages ?? 1);
+        }
+      } catch (error) {
+        if (!isCancelled) {
+          setRows([]);
+          setTotalItems(0);
+          setTotalPages(1);
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    void loadData();
+    const timer = setInterval(() => {
+      void loadData();
+    }, 15000);
+
+    return () => {
+      isCancelled = true;
+      clearInterval(timer);
+    };
+  }, [page, search]);
+
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -34,7 +136,7 @@ export default function RegionalUsersPage() {
             <p className="text-gray-500 text-sm font-medium">Global Reach</p>
           </div>
           <div className="flex items-end gap-2">
-            <p className="text-2xl font-bold">42</p>
+            <p className="text-2xl font-bold">{meta.globalReach.toLocaleString()}</p>
             <p className="text-sm text-gray-500 mb-1">Countries</p>
           </div>
         </Card>
@@ -45,7 +147,7 @@ export default function RegionalUsersPage() {
             <p className="text-gray-500 text-sm font-medium">Total Hubs</p>
           </div>
           <div className="flex items-end gap-2">
-            <p className="text-2xl font-bold">1,204</p>
+            <p className="text-2xl font-bold">{meta.totalHubs.toLocaleString()}</p>
             <p className="text-sm text-gray-500 mb-1">Cities</p>
           </div>
         </Card>
@@ -56,8 +158,8 @@ export default function RegionalUsersPage() {
             <p className="text-red-600 text-sm font-medium">Highest Density</p>
           </div>
           <div className="flex flex-col">
-            <p className="text-lg font-bold text-red-700 dark:text-red-400">United States</p>
-            <p className="text-xs text-red-500">12,400 Users Total</p>
+            <p className="text-lg font-bold text-red-700 dark:text-red-400">{meta.highestDensity.country}</p>
+            <p className="text-xs text-red-500">{meta.highestDensity.users.toLocaleString()} Users Total</p>
           </div>
         </Card>
 
@@ -67,8 +169,8 @@ export default function RegionalUsersPage() {
             <p className="text-gray-500 text-sm font-medium">Top Growth Zone</p>
           </div>
           <div className="flex flex-col">
-            <p className="text-lg font-bold">Dhaka, BD</p>
-            <p className="text-xs text-emerald-500 font-bold">+25% this month</p>
+            <p className="text-lg font-bold">{meta.topGrowthZone.city}, {meta.topGrowthZone.country}</p>
+            <p className="text-xs text-emerald-500 font-bold">{meta.topGrowthZone.growth} this month</p>
           </div>
         </Card>
       </div>
@@ -88,11 +190,17 @@ export default function RegionalUsersPage() {
           <h3 className="font-bold">Regional Distribution Table</h3>
           <div className="relative w-64">
              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-             <input type="text" placeholder="Search country or city..." className="w-full bg-white dark:bg-[#0f1115] border border-gray-200 dark:border-gray-700 rounded-lg pl-9 pr-3 py-1.5 text-sm focus:ring-1 focus:ring-red-500 outline-none" />
+             <input
+               type="text"
+               value={search}
+               onChange={(e) => setSearch(e.target.value)}
+               placeholder="Search country or city..."
+               className="w-full bg-white dark:bg-[#0f1115] border border-gray-200 dark:border-gray-700 rounded-lg pl-9 pr-3 py-1.5 text-sm focus:ring-1 focus:ring-red-500 outline-none"
+             />
           </div>
         </div>
         <Table headers={['Region', 'Total Users', 'Active/Inactive', 'Donation Setup', 'Pending Reviews', 'Growth', 'Actions']}>
-          {MOCK_REGIONS.map((region) => (
+          {rows.map((region) => (
             <TableRow key={region.id}>
               <TableCell>
                 <p className="font-bold text-gray-900 dark:text-gray-100">{region.country}</p>
@@ -132,7 +240,19 @@ export default function RegionalUsersPage() {
             </TableRow>
           ))}
         </Table>
-        <Pagination currentPage={1} totalPages={31} onPageChange={() => {}} />
+        {!isLoading && rows.length === 0 && (
+          <div className="px-6 py-8 text-sm font-semibold text-gray-500">No regional data found.</div>
+        )}
+        {isLoading && (
+          <div className="px-6 py-8 text-sm font-semibold text-gray-500">Loading regional analytics...</div>
+        )}
+        <Pagination
+          currentPage={page}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          pageSize={PAGE_SIZE}
+          onPageChange={setPage}
+        />
       </div>
     </div>
   );

@@ -1,4 +1,7 @@
 import nodemailer from 'nodemailer';
+import { getAppEnv } from '@/src/backend/config/env';
+
+const env = getAppEnv();
 
 /**
  * Mailer Transporter instance using generic SMTP/Nodemailer Setup.
@@ -6,12 +9,12 @@ import nodemailer from 'nodemailer';
  * Future extension: Can be swapped with Resend/SendGrid APIs if needed without changing signature.
  */
 export const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || 'smtp.gmail.com',
-  port: parseInt(process.env.SMTP_PORT || '465'),
+  host: env.SMTP_HOST,
+  port: env.SMTP_PORT,
   secure: true,
   auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
+    user: env.SMTP_USER,
+    pass: env.SMTP_PASS,
   },
 });
 
@@ -23,7 +26,7 @@ export const transporter = nodemailer.createTransport({
 export const sendOtpEmail = async (toEmail: string, otp: string) => {
   try {
     await transporter.sendMail({
-      from: `"BloodNet Admin" <${process.env.SMTP_USER}>`,
+      from: `"BloodNet Admin" <${env.SMTP_USER}>`,
       to: toEmail,
       subject: 'BloodNet Login Verification Code',
       html: `

@@ -1,36 +1,197 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "motion/react";
 import { gsap } from "gsap";
 import DonorModal from "./DonorModal";
+import useViewerGeo from "./useViewerGeo";
+import { maskPhoneTail } from "../lib/phoneMask";
 
-const donorsPool = [
-  { group: "A+", name: "Imran Khan", location: "Dhaka", age: "25+", phone: "+880 1712 345678" },
-  { group: "B+", name: "Sara Ahmed", location: "Chittagong", age: "30+", phone: "+880 1812 987654" },
-  { group: "O-", name: "John Doe", location: "Sylhet", age: "22+", phone: "+880 1912 112233" },
-  { group: "AB+", name: "Mila Kunis", location: "Rajshahi", age: "28+", phone: "+880 1612 445566" },
-  { group: "A-", name: "Alex Hales", location: "Khulna", age: "35+", phone: "+880 1512 778899" },
-  { group: "B-", name: "David Warner", location: "Barisal", age: "27+", phone: "+880 1412 009988" },
-  { group: "O+", name: "Virat Kohli", location: "Rangpur", age: "32+", phone: "+880 1312 334455" },
-  { group: "AB-", name: "Steve Smith", location: "Mymensingh", age: "29+", phone: "+880 1212 667788" },
-  { group: "A+", name: "Babar Azam", location: "Comilla", age: "26+", phone: "+880 1112 990011" },
-  { group: "B+", name: "Kane Williamson", location: "Gazipur", age: "31+", phone: "+880 1012 223344" },
-  { group: "O+", name: "Rohit Sharma", location: "Dhaka", age: "34+", phone: "+880 1722 556677" },
-  { group: "A-", name: "Joe Root", location: "Sylhet", age: "32+", phone: "+880 1822 889900" },
-  { group: "B-", name: "Ben Stokes", location: "Khulna", age: "29+", phone: "+880 1922 112244" },
-  { group: "AB+", name: "Glenn Maxwell", location: "Chittagong", age: "33+", phone: "+880 1622 334455" },
-  { group: "O-", name: "Rashid Khan", location: "Rajshahi", age: "24+", phone: "+880 1522 667788" },
-];
+interface PublicDonorRow {
+  id: string;
+  name: string;
+  blood_group: string;
+  location_city: string;
+  location_country: string;
+  mobile: string;
+  verification_status?: string | null;
+  hemoglobin?: string | null;
+  last_donation_date?: string | null;
+}
+
+interface PublicDonorApiResponse {
+  success: boolean;
+  data?: PublicDonorRow[];
+  pagination?: {
+    nextCursor: string | null;
+  };
+}
+
+interface FloatingDonor {
+  id: string;
+  group: string;
+  name: string;
+  location: string;
+  country: string;
+  phone: string;
+  maskedPhone: string;
+  verificationStatus?: string | null;
+  hemoglobin?: string | null;
+  lastDonationDate?: string | null;
+}
+
+const DEVICE_SEED_KEY = "bloodnet_device_seed_v1";
+
+const xmur3 = (str: string) => {
+  let h = 1779033703 ^ str.length;
+  for (let i = 0; i < str.length; i += 1) {
+    h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
+    h = (h << 13) | (h >>> 19);
+  }
+  return () => {
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    h ^= h >>> 16;
+    return h >>> 0;
+  };
+};
+
+const mulberry32 = (seed: number) => {
+  let t = seed;
+  return () => {
+    t += 0x6d2b79f5;
+    let r = Math.imul(t ^ (t >>> 15), 1 | t);
+    r ^= r + Math.imul(r ^ (r >>> 7), 61 | r);
+    return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
+  };
+};
+
+const shuffleWithSeed = <T,>(arr: T[], seedText: string): T[] => {
+  const next = [...arr];
+  const hash = xmur3(seedText);
+  const rng = mulberry32(hash());
+  for (let i = next.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(rng() * (i + 1));
+    [next[i], next[j]] = [next[j], next[i]];
+  }
+  return next;
+};
+
+const getDeviceSeed = () => {
+  if (typeof window === "undefined") return "server-seed";
+  try {
+    const existing = localStorage.getItem(DEVICE_SEED_KEY);
+    if (existing && existing.trim().length > 0) {
+      return existing;
+    }
+    const generated = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+    localStorage.setItem(DEVICE_SEED_KEY, generated);
+    return generated;
+  } catch {
+    return "fallback-seed";
+  }
+};
 
 export default function FloatingDonorTags() {
+  const viewerGeo = useViewerGeo();
   const [selectedDonor, setSelectedDonor] = useState<any>(null);
-  const [isMounted, setIsMounted] = useState(false);
-  
+  const [pool, setPool] = useState<FloatingDonor[]>([]);
+  const [seed, setSeed] = useState("initial-seed");
+
   useEffect(() => {
-    setIsMounted(true);
+    setSeed(getDeviceSeed());
   }, []);
 
-  // Helper to safely get random donors only after mount to prevent hydration mismatch
-  const getDonors = () => isMounted ? [...donorsPool].sort(() => Math.random() - 0.5) : donorsPool;
+  useEffect(() => {
+    let cancelled = false;
+
+    const toFloating = (row: PublicDonorRow): FloatingDonor => ({
+      id: row.id,
+      group: row.blood_group,
+      name: row.name,
+      location: row.location_city,
+      country: row.location_country,
+      phone: row.mobile,
+      maskedPhone: maskPhoneTail(row.mobile),
+      verificationStatus: row.verification_status ?? null,
+      hemoglobin: row.hemoglobin ?? null,
+      lastDonationDate: row.last_donation_date ?? null,
+    });
+
+    const fetchRealtimeDonors = async () => {
+      try {
+        const collected: PublicDonorRow[] = [];
+        let cursor: string | null = null;
+        let pageCount = 0;
+
+        while (pageCount < 4 && collected.length < 64) {
+          const params = new URLSearchParams({ limit: "16" });
+          if (cursor) params.set("cursor", cursor);
+          if (viewerGeo.city) params.set("viewerCity", viewerGeo.city);
+          if (viewerGeo.country && (viewerGeo.city || viewerGeo.source === "geo")) {
+            params.set("viewerCountry", viewerGeo.country);
+          }
+
+          const res = await fetch(`/api/public/donors?${params.toString()}`, {
+            method: "GET",
+            cache: "no-store",
+          });
+          const payload = (await res.json()) as PublicDonorApiResponse;
+          if (!res.ok || !payload.success) break;
+
+          const rows = payload.data || [];
+          collected.push(...rows);
+          cursor = payload.pagination?.nextCursor || null;
+          pageCount += 1;
+          if (!cursor || rows.length === 0) break;
+        }
+
+        if (cancelled) return;
+
+        const mapped = collected.map(toFloating);
+        if (mapped.length === 0) {
+          setPool([]);
+          return;
+        }
+
+        const normalizedViewerCountry = viewerGeo.country?.trim().toLowerCase();
+        const countryMatches = normalizedViewerCountry
+          ? mapped.filter((d) => d.country?.trim().toLowerCase() === normalizedViewerCountry)
+          : [];
+        const rest = normalizedViewerCountry
+          ? mapped.filter((d) => d.country?.trim().toLowerCase() !== normalizedViewerCountry)
+          : mapped;
+
+        const prioritized = countryMatches.length > 0
+          ? [
+              ...shuffleWithSeed(countryMatches, `${seed}-local`),
+              ...shuffleWithSeed(rest, `${seed}-global`),
+            ]
+          : shuffleWithSeed(mapped, `${seed}-all`);
+
+        setPool(prioritized);
+      } catch {
+        if (!cancelled) setPool([]);
+      }
+    };
+
+    void fetchRealtimeDonors();
+    const interval = setInterval(fetchRealtimeDonors, 20000);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [seed, viewerGeo.city, viewerGeo.country]);
+
+  const rows = useMemo(() => {
+    if (pool.length === 0) return [[], [], [], [], []] as FloatingDonor[][];
+    const rowCount = 5;
+    const rowSize = Math.min(Math.max(Math.ceil(pool.length / rowCount), 8), 16);
+    return Array.from({ length: rowCount }, (_, rowIndex) =>
+      Array.from({ length: rowSize }, (_, cardIndex) => {
+        const idx = (rowIndex * 7 + cardIndex) % pool.length;
+        return pool[idx];
+      }),
+    );
+  }, [pool]);
 
   return (
     <section className="relative overflow-hidden py-24">
@@ -55,28 +216,21 @@ export default function FloatingDonorTags() {
         <div className="mt-2 h-1.5 w-24 bg-primary-dark mx-auto rounded-full" />
       </div>
 
-      <div className="relative z-10 flex flex-col gap-4 [mask-image:linear-gradient(to_right,transparent,black_15%,black_85%,transparent)]">
-        <MarqueeRow 
-          donors={getDonors()} 
-          onDonorClick={setSelectedDonor}
-        />
-        <MarqueeRow 
-          donors={getDonors()} 
-          onDonorClick={setSelectedDonor}
-        />
-        <MarqueeRow 
-          donors={getDonors()} 
-          onDonorClick={setSelectedDonor}
-        />
-        <MarqueeRow 
-          donors={getDonors()} 
-          onDonorClick={setSelectedDonor}
-        />
-        <MarqueeRow 
-          donors={getDonors()} 
-          onDonorClick={setSelectedDonor}
-        />
-      </div>
+      {pool.length === 0 ? (
+        <div className="relative z-10 mx-auto max-w-4xl rounded-[10px] border border-white/40 bg-white/20 p-8 text-center text-sm font-semibold text-gray-700 backdrop-blur-xl">
+          Live donor stream is preparing nearby profiles.
+        </div>
+      ) : (
+        <div className="relative z-10 flex flex-col gap-4 [mask-image:linear-gradient(to_right,transparent,black_15%,black_85%,transparent)]">
+          {rows.map((row, index) => (
+            <MarqueeRow
+              key={`row-${index}`}
+              donors={row}
+              onDonorClick={setSelectedDonor}
+            />
+          ))}
+        </div>
+      )}
 
       <DonorModal 
         donor={selectedDonor} 
@@ -86,12 +240,12 @@ export default function FloatingDonorTags() {
   );
 }
 
-function MarqueeRow({ donors, onDonorClick }: { donors: typeof donorsPool; onDonorClick: (donor: any) => void }) {
+function MarqueeRow({ donors, onDonorClick }: { donors: FloatingDonor[]; onDonorClick: (donor: FloatingDonor) => void }) {
   const rowRef = useRef<HTMLDivElement>(null);
   const animationRef = useRef<gsap.core.Tween | null>(null);
 
   useEffect(() => {
-    if (!rowRef.current) return;
+    if (!rowRef.current || donors.length === 0) return;
 
     const row = rowRef.current;
     const totalWidth = row.scrollWidth / 2;
@@ -131,7 +285,7 @@ function MarqueeRow({ donors, onDonorClick }: { donors: typeof donorsPool; onDon
   );
 }
 
-function DonorTag({ group, name, location, age, onClick }: any) {
+function DonorTag({ group, name, location, maskedPhone, onClick }: { group: string; name: string; location: string; maskedPhone: string; onClick: () => void }) {
   return (
     <div
       onClick={onClick}
@@ -145,7 +299,7 @@ function DonorTag({ group, name, location, age, onClick }: any) {
         <div className="flex items-center gap-2 text-[10px] font-medium text-gray-500 uppercase tracking-wider">
           <span>{location}</span>
           <span className="h-1 w-1 rounded-full bg-gray-300" />
-          <span>Age {age}</span>
+          <span>{maskedPhone}</span>
         </div>
       </div>
     </div>

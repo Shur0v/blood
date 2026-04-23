@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  engineType = "binary"
 }
 
 datasource db {
@@ -12,12 +13,18 @@ model User {
   email               String   @unique
   mobile              String   @unique
   blood_group         String
+  profile_image_url   String?
   
   location_city       String
   location_country    String
+  location_formatted  String?
   location_lat        Float
   location_lng        Float
   place_id            String?
+  phone_country_name  String?
+  phone_country_code  String?
+  phone_dial_code     String?
+  phone_local_number  String?
   
   is_active_donor     Boolean  @default(true)
   verification_status String   @default("UNVERIFIED") // UNVERIFIED, PENDING, VERIFIED
@@ -29,6 +36,13 @@ model User {
 
   OrganRequest        OrganRequest[]
   SurveyAnswer        SurveyAnswer[]
+  OrganPledge         OrganPledge[]
+  VerificationDocument VerificationDocument[]
+  DonorStatusHistory  DonorStatusHistory[]
+  ServiceCities       UserServiceCity[]
+  AuthRiskEvents      AuthRiskEvent[]
+
+  @@index([is_active_donor, blood_group, location_country, location_city, updated_at])
 }
 
 model AdminUser {
@@ -45,21 +59,42 @@ model OrganRequest {
   user_id            String?
   name               String
   contact            String
+  contact_country_name String?
+  contact_country_code String?
+  contact_dial_code    String?
+  contact_local_number String?
+  contact_full_number  String?
   organ_type         String
   
   location_city      String
   location_country   String
+  location_formatted String?
   location_lat       Float
   location_lng       Float
   place_id           String?
 
   medical_note       String?
   prescription_image String?
+  prescription_images Json?
   status             String   @default("PENDING") // PENDING, VERIFIED, RESOLVED
   
   created_at         DateTime @default(now())
   
   User               User?    @relation(fields: [user_id], references: [id])
+  Attachments        OrganRequestAttachment[]
+
+  @@index([status, created_at(sort: Desc)])
+}
+
+model OrganRequestAttachment {
+  id               String   @id @default(uuid())
+  organ_request_id String
+  file_url         String
+  created_at       DateTime @default(now())
+
+  OrganRequest     OrganRequest @relation(fields: [organ_request_id], references: [id], onDelete: Cascade)
+
+  @@index([organ_request_id, created_at(sort: Desc)])
 }
 
 model Report {
@@ -71,6 +106,8 @@ model Report {
   message          String
   status           String   @default("PENDING") // PENDING, UNDER_REVIEW, RESOLVED
   created_at       DateTime @default(now())
+
+  @@index([status, created_at(sort: Desc)])
 }
 
 model Survey {
@@ -109,10 +146,15 @@ model ManualBloodDonor {
   name             String
   email            String?
   mobile           String   @unique
+  phone_country_name  String?
+  phone_country_code  String?
+  phone_dial_code     String?
+  phone_local_number  String?
   blood_group      String
   
   location_city    String
   location_country String
+  location_formatted String?
   location_lat     Float
   location_lng     Float
   place_id         String?
@@ -125,6 +167,8 @@ model ManualBloodDonor {
   source           String
   added_by_admin   String
   created_at       DateTime @default(now())
+
+  @@index([is_active_donor, blood_group, location_country, location_city, created_at])
 }
 
 model ManualOrganDonor {
@@ -132,10 +176,16 @@ model ManualOrganDonor {
   name             String
   email            String?
   mobile           String   @unique
+  phone_country_name  String?
+  phone_country_code  String?
+  phone_dial_code     String?
+  phone_local_number  String?
+  blood_group      String?
   organ_type       String   // JSON string or array of pledged organs
   
   location_city    String
   location_country String
+  location_formatted String?
   location_lat     Float
   location_lng     Float
   place_id         String?
@@ -143,6 +193,8 @@ model ManualOrganDonor {
   source           String
   added_by_admin   String
   created_at       DateTime @default(now())
+
+  @@index([location_country, location_city, created_at])
 }
 
 model Blog {
@@ -150,11 +202,24 @@ model Blog {
   title       String
   content     String
   author_id   String
-  status      String   @default("DRAFT") // DRAFT, PUBLISHED
+  author_type String   @default("ADMIN") // ADMIN | USER
+  is_anonymous Boolean @default(false)
+  status      String   @default("DRAFT") // DRAFT, PUBLISHED, ARCHIVED
+  slug        String?  @unique
+  canonical_url String?
+  meta_title  String?
+  meta_description String?
+  primary_keyword String?
+  secondary_keywords Json?
+  published_at DateTime?
+  word_count  Int      @default(0)
   seo_title   String?
   seo_desc    String?
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
+
+  @@index([status, created_at(sort: Desc)])
+  @@index([status, published_at(sort: Desc)])
 }
 
 model HomepageSlider {
@@ -180,15 +245,29 @@ model AnalyticsClickLog {
   component   String
   device_type String
   created_at  DateTime @default(now())
+
+  @@index([page, created_at(sort: Desc)])
+  @@index([device_type, created_at(sort: Desc)])
 }
 
 model AnalyticsHeatmapLog {
   id          String   @id @default(uuid())
   page        String
   device_type String
-  click_x     Float
-  click_y     Float
+  event_type  String   @default("click") // click | scroll
+  session_id  String?
+  click_x     Float?
+  click_y     Float?
+  viewport_w  Int?
+  viewport_h  Int?
+  scroll_depth Int?
   created_at  DateTime @default(now())
+
+  @@index([page, created_at(sort: Desc)])
+  @@index([page, event_type, created_at(sort: Desc)])
+  @@index([device_type, created_at(sort: Desc)])
+  @@index([session_id, created_at(sort: Desc)])
+  @@index([event_type, created_at(sort: Desc)])
 }
 
 model TrashRecord {
@@ -205,11 +284,18 @@ model MedicalAidRequest {
   amount_required   Float
   email             String
   phone             String
+  phone_country_name  String?
+  phone_country_code  String?
+  phone_dial_code     String?
+  phone_local_number  String?
+  phone_full_number   String?
   medical_note      String
   prescription_url  String?
   report_url        String?
   status            String   @default("PENDING") // PENDING, APPROVED, REJECTED
   created_at        DateTime @default(now())
+
+  @@index([status, created_at(sort: Desc)])
 }
 
 model PlatformSettings {
@@ -219,5 +305,166 @@ model PlatformSettings {
   completed_ops     Int      @default(0)
   uncompleted_ops   Int      @default(0)
   weekly_donors     Int      @default(0)
+  donor_requests    Int      @default(0)
   updated_at        DateTime @updatedAt
+}
+
+model OtpVerification {
+  id         String   @id @default(uuid())
+  email      String   @unique
+  code       String
+  expires_at DateTime
+  created_at DateTime @default(now())
+}
+
+model OrganPledge {
+  id           String   @id @default(uuid())
+  user_id      String
+  organ_type   String
+  is_active    Boolean  @default(true)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  User         User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, organ_type])
+  @@index([organ_type, is_active, updated_at])
+}
+
+model VerificationDocument {
+  id                String   @id @default(uuid())
+  user_id           String
+  document_type     String   // PRESCRIPTION | MEDICAL_REPORT | OTHER
+  asset_url         String
+  review_status     String   @default("PENDING") // PENDING | APPROVED | REJECTED
+  reviewer_admin_id String?
+  rejection_reason  String?
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+
+  User              User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([review_status, created_at(sort: Desc)])
+  @@index([user_id, created_at(sort: Desc)])
+}
+
+model MediaAsset {
+  id             String   @id @default(uuid())
+  owner_user_id  String?
+  category       String   // PROFILE | BLOG | SLIDER | VERIFICATION | MEDICAL_AID | OTHER
+  storage_key    String   @unique
+  public_url     String
+  mime_type      String
+  width          Int?
+  height         Int?
+  size_bytes     Int
+  created_at     DateTime @default(now())
+}
+
+model DonorStatusHistory {
+  id                 String   @id @default(uuid())
+  user_id            String
+  previous_is_active Boolean
+  new_is_active      Boolean
+  last_donation_date DateTime?
+  changed_at         DateTime @default(now())
+
+  User               User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id, changed_at(sort: Desc)])
+}
+
+model UserServiceCity {
+  id                 String   @id @default(uuid())
+  user_id            String
+  city               String
+  country            String
+  formatted_location String
+  lat                Float
+  lng                Float
+  provider_place_id  String
+  locked_until       DateTime
+  created_at         DateTime @default(now())
+
+  User               User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, provider_place_id])
+  @@index([city, country, created_at(sort: Desc)])
+  @@index([user_id, locked_until])
+}
+
+model DeviceFingerprint {
+  id               String   @id @default(uuid())
+  fingerprint_hash String   @unique
+  first_seen_at    DateTime @default(now())
+  last_seen_at     DateTime @default(now())
+  signup_count     Int      @default(0)
+  risk_score       Int      @default(0)
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+
+  @@index([risk_score, updated_at(sort: Desc)])
+}
+
+model NetworkFingerprint {
+  id            String   @id @default(uuid())
+  ip_hash       String   @unique
+  asn           String?
+  geo_country   String?
+  first_seen_at DateTime @default(now())
+  last_seen_at  DateTime @default(now())
+  risk_score    Int      @default(0)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  @@index([risk_score, updated_at(sort: Desc)])
+}
+
+model AuthRiskEvent {
+  id               String   @id @default(uuid())
+  user_id          String?
+  event_type       String
+  reason           String
+  fingerprint_hash String?
+  ip_hash          String?
+  score_delta      Int      @default(0)
+  created_at       DateTime @default(now())
+
+  User             User?    @relation(fields: [user_id], references: [id], onDelete: SetNull)
+
+  @@index([created_at(sort: Desc)])
+  @@index([event_type, created_at(sort: Desc)])
+  @@index([fingerprint_hash, created_at(sort: Desc)])
+  @@index([ip_hash, created_at(sort: Desc)])
+}
+
+model RestrictedIdentity {
+  id               String   @id @default(uuid())
+  user_id          String?
+  fingerprint_hash String?
+  ip_hash          String?
+  reason           String
+  is_active        Boolean  @default(true)
+  created_at       DateTime @default(now())
+  created_by_admin String
+
+  @@index([is_active, created_at(sort: Desc)])
+  @@index([user_id, is_active])
+  @@index([fingerprint_hash, is_active])
+  @@index([ip_hash, is_active])
+}
+
+model TranslatedContent {
+  id              String   @id @default(uuid())
+  source_hash     String
+  source_text     String
+  locale          String
+  content_type    String
+  content_version String?
+  translated_text String
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  @@unique([source_hash, locale, content_type, content_version])
+  @@index([locale, content_type, updated_at(sort: Desc)])
 }

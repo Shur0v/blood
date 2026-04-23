@@ -1,16 +1,6 @@
-import { UserRepository } from '../repositories/UserRepository';
-
-// This abstracts OTP state into memory temporarily.
-// In production, this should ideally be Redis or a Database VerificationToken model.
-const otpStore = new Map<string, { code: string; expiresAt: number }>();
+import { getPrisma } from '../config/db';
 
 export class AuthService {
-  private userRepo: UserRepository;
-
-  constructor() {
-    this.userRepo = new UserRepository();
-  }
-
   /**
    * Generates a secure numeric 6-digit OTP
    */
@@ -19,33 +9,49 @@ export class AuthService {
   }
 
   /**
-   * Stores the OTP for a target email temporarily for 10 minutes
+   * Stores the OTP for a target email for 10 minutes in DB.
    * @param email Target user email
    * @param otp 6-digit string
    */
-  public storeOTP(email: string, otp: string) {
-    const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
-    otpStore.set(email, { code: otp, expiresAt });
+  public async storeOTP(email: string, otp: string) {
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+    await getPrisma().otpVerification.upsert({
+      where: { email },
+      update: { code: otp, expires_at: expiresAt },
+      create: { email, code: otp, expires_at: expiresAt },
+    });
   }
 
   /**
    * Verifies an OTP request
    * @returns boolean Validation success
    */
-  public verifyOTP(email: string, otp: string): boolean {
-    const record = otpStore.get(email);
+  public async verifyOTP(email: string, otp: string): Promise<boolean> {
+    const record = await getPrisma().otpVerification.findUnique({
+      where: { email },
+    });
+
     if (!record) return false;
 
-    if (Date.now() > record.expiresAt) {
-      otpStore.delete(email);
+    if (Date.now() > new Date(record.expires_at).getTime()) {
+      await this.invalidateOTP(email);
       return false; // Expired
     }
 
     if (record.code === otp) {
-      otpStore.delete(email); // Invalidate once used
       return true;
     }
 
     return false;
+  }
+
+  /**
+   * Explicitly invalidates an OTP after full auth flow succeeds
+   */
+  public async invalidateOTP(email: string) {
+    await getPrisma().otpVerification.deleteMany({
+      where: { email },
+    });
   }
 }

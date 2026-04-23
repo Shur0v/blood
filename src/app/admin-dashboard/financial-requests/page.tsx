@@ -16,9 +16,27 @@ import {
   Mail, 
   Phone,
   Eye,
-  Edit3
+  Edit3,
+  Trash2
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+
+const parseStoredUrls = (raw?: string | null): string[] => {
+  if (!raw) return [];
+  const trimmed = raw.trim();
+  if (!trimmed) return [];
+  if (trimmed.startsWith("[")) {
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (Array.isArray(parsed)) {
+        return parsed.filter((v): v is string => typeof v === "string" && v.length > 0);
+      }
+    } catch {
+      return [];
+    }
+  }
+  return [trimmed];
+};
 
 export default function FinancialRequestsPage() {
   const [requests, setRequests] = useState<any[]>([]);
@@ -27,7 +45,8 @@ export default function FinancialRequestsPage() {
     total_spent: 15000,
     completed_ops: 37,
     uncompleted_ops: 19,
-    weekly_donors: 120
+    weekly_donors: 120,
+    donor_requests: 0,
   });
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -37,6 +56,7 @@ export default function FinancialRequestsPage() {
   const [isEditingStats, setIsEditingStats] = useState(false);
   const [editFormData, setEditFormData] = useState({ ...stats });
   const [isSaving, setIsSaving] = useState(false);
+  const [deletingRequestId, setDeletingRequestId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchStats();
@@ -45,11 +65,19 @@ export default function FinancialRequestsPage() {
 
   const fetchStats = async () => {
     try {
-      const res = await fetch("/api/public/platform-stats");
+      const res = await fetch("/api/public/platform-stats", { cache: "no-store" });
       const json = await res.json();
       if (json.success && json.data) {
-        setStats(json.data);
-        setEditFormData(json.data);
+        const normalized = {
+          total_raised: Number(json.data.total_raised ?? 13500),
+          total_spent: Number(json.data.total_spent ?? 15000),
+          completed_ops: Number(json.data.completed_ops ?? 37),
+          uncompleted_ops: Number(json.data.uncompleted_ops ?? 19),
+          weekly_donors: Number(json.data.weekly_donors ?? 120),
+          donor_requests: Number(json.data.donor_requests ?? 0),
+        };
+        setStats(normalized);
+        setEditFormData(normalized);
       }
     } catch (e) {
       console.log("Stats fetch error - falling back to defaults", e);
@@ -58,7 +86,10 @@ export default function FinancialRequestsPage() {
 
   const fetchRequests = async () => {
     try {
-      const res = await fetch("/api/admin/aid-requests");
+      const res = await fetch("/api/admin/aid-requests", {
+        credentials: "include",
+        cache: "no-store",
+      });
       const json = await res.json();
       if (json.success && json.data) {
         setRequests(json.data);
@@ -72,16 +103,18 @@ export default function FinancialRequestsPage() {
     try {
       const res = await fetch("/api/admin/aid-requests", {
         method: "PATCH",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, status: newStatus })
       });
       if (res.ok) {
-        setRequests(requests.map(req => 
+        setRequests(requests.map(req =>
           req.id === id ? { ...req, status: newStatus } : req
         ));
         if (selectedRequest && selectedRequest.id === id) {
           setSelectedRequest({ ...selectedRequest, status: newStatus });
         }
+        fetchStats();
       }
     } catch (e) {
       console.error("Failed to update status");
@@ -93,18 +126,65 @@ export default function FinancialRequestsPage() {
     try {
       const res = await fetch("/api/admin/platform-stats", {
         method: "PUT",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editFormData)
+        body: JSON.stringify({
+          total_raised: Number(editFormData.total_raised ?? 0),
+          total_spent: Number(editFormData.total_spent ?? 0),
+          completed_ops: Number(editFormData.completed_ops ?? 0),
+          uncompleted_ops: Number(editFormData.uncompleted_ops ?? 0),
+          weekly_donors: Number(editFormData.weekly_donors ?? 0),
+          donor_requests: Number(editFormData.donor_requests ?? 0),
+          donorRequests: Number(editFormData.donor_requests ?? 0),
+        })
       });
       const json = await res.json();
       if (json.success && json.data) {
-        setStats(json.data);
+        const normalized = {
+          total_raised: Number(json.data.total_raised ?? 13500),
+          total_spent: Number(json.data.total_spent ?? 15000),
+          completed_ops: Number(json.data.completed_ops ?? 37),
+          uncompleted_ops: Number(json.data.uncompleted_ops ?? 19),
+          weekly_donors: Number(json.data.weekly_donors ?? 120),
+          donor_requests: Number(json.data.donor_requests ?? 0),
+        };
+        setStats(normalized);
+        setEditFormData(normalized);
         setIsEditingStats(false);
       }
     } catch (error) {
       console.error(error);
     }
     setIsSaving(false);
+  };
+
+  const handleDeleteRequest = async (id: string) => {
+    const confirmed = window.confirm("Are you sure you want to delete this aid request permanently?");
+    if (!confirmed) return;
+
+    setDeletingRequestId(id);
+    try {
+      const res = await fetch("/api/admin/aid-requests", {
+        method: "DELETE",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      });
+      const payload = await res.json();
+      if (!res.ok || !payload.success) {
+        return;
+      }
+
+      setRequests((prev) => prev.filter((req) => req.id !== id));
+      if (selectedRequest?.id === id) {
+        setSelectedRequest(null);
+      }
+      void fetchStats();
+    } catch (error) {
+      console.error("Failed to delete request", error);
+    } finally {
+      setDeletingRequestId(null);
+    }
   };
 
   return (
@@ -247,12 +327,22 @@ export default function FinancialRequestsPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <button 
-                      onClick={() => setSelectedRequest(req)}
-                      className="inline-flex items-center gap-2 bg-white dark:bg-[#1a1b23] border border-gray-200 dark:border-gray-700 shadow-sm px-3 py-1.5 rounded-lg text-xs font-bold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                    >
-                      <Eye size={14}/> Review Case
-                    </button>
+                    <div className="inline-flex items-center gap-2">
+                      <button 
+                        onClick={() => setSelectedRequest(req)}
+                        className="inline-flex items-center gap-2 bg-white dark:bg-[#1a1b23] border border-gray-200 dark:border-gray-700 shadow-sm px-3 py-1.5 rounded-lg text-xs font-bold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                      >
+                        <Eye size={14}/> Review Case
+                      </button>
+                      <button
+                        onClick={() => void handleDeleteRequest(req.id)}
+                        disabled={deletingRequestId === req.id}
+                        className="inline-flex items-center gap-1 rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-bold text-red-600 transition-colors hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        <Trash2 size={14} />
+                        {deletingRequestId === req.id ? "Deleting..." : "Delete"}
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -300,7 +390,7 @@ export default function FinancialRequestsPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                 <div className="space-y-4">
                   <div>
                     <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 flex items-center gap-1.5 mb-2"><Hospital size={14}/> Medical Authority</p>
@@ -311,6 +401,11 @@ export default function FinancialRequestsPage() {
                     <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
                       <p className="flex items-center gap-2"><Mail size={14} className="text-gray-400"/> {selectedRequest.email}</p>
                       <p className="flex items-center gap-2"><Phone size={14} className="text-gray-400"/> {selectedRequest.phone}</p>
+                      {selectedRequest.phone_country_name && (
+                        <p className="text-xs text-gray-500">
+                          {selectedRequest.phone_country_name} ({selectedRequest.phone_dial_code}) · Local: {selectedRequest.phone_local_number}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -326,24 +421,62 @@ export default function FinancialRequestsPage() {
               {/* Uploaded Documents */}
               <div className="mb-8">
                  <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">Attached Verified Documents</p>
-                 <div className="flex gap-4">
-                    <div className="flex-1 bg-gray-100 dark:bg-gray-800 rounded-xl h-24 flex items-center justify-center border border-dashed border-gray-300 dark:border-gray-600 text-gray-400 relative group cursor-pointer hover:bg-gray-200">
-                      <div className="text-center">
-                        <FileText className="h-6 w-6 mx-auto mb-1 opacity-50" />
-                        <span className="text-xs font-bold">Prescription.jpg</span>
-                      </div>
+                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div className="rounded-xl border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900/60 p-3">
+                      <p className="mb-2 text-xs font-black uppercase tracking-widest text-gray-500">Prescriptions</p>
+                      {parseStoredUrls(selectedRequest.prescription_url).length === 0 ? (
+                        <p className="text-xs font-semibold text-gray-400">No Prescription</p>
+                      ) : (
+                        <div className="space-y-2">
+                          {parseStoredUrls(selectedRequest.prescription_url).map((url, idx) => (
+                            <a
+                              key={`${url}-${idx}`}
+                              href={url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-blue-600 hover:bg-blue-50 dark:border-gray-700 dark:bg-[#141821] dark:text-blue-300 dark:hover:bg-[#1a2231]"
+                            >
+                              <FileText className="h-4 w-4" />
+                              Open Prescription {idx + 1}
+                            </a>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                    <div className="flex-1 bg-gray-100 dark:bg-gray-800 rounded-xl h-24 flex items-center justify-center border border-dashed border-gray-300 dark:border-gray-600 text-gray-400 relative group cursor-pointer hover:bg-gray-200">
-                      <div className="text-center">
-                        <FileText className="h-6 w-6 mx-auto mb-1 opacity-50" />
-                        <span className="text-xs font-bold">Medical_Report.pdf</span>
-                      </div>
+                    <div className="rounded-xl border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900/60 p-3">
+                      <p className="mb-2 text-xs font-black uppercase tracking-widest text-gray-500">Medical Reports</p>
+                      {parseStoredUrls(selectedRequest.report_url).length === 0 ? (
+                        <p className="text-xs font-semibold text-gray-400">No Medical Report</p>
+                      ) : (
+                        <div className="space-y-2">
+                          {parseStoredUrls(selectedRequest.report_url).map((url, idx) => (
+                            <a
+                              key={`${url}-${idx}`}
+                              href={url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-blue-600 hover:bg-blue-50 dark:border-gray-700 dark:bg-[#141821] dark:text-blue-300 dark:hover:bg-[#1a2231]"
+                            >
+                              <FileText className="h-4 w-4" />
+                              Open Medical Report {idx + 1}
+                            </a>
+                          ))}
+                        </div>
+                      )}
                     </div>
                  </div>
               </div>
 
               {/* Action Buttons */}
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-800">
+                <button
+                  onClick={() => void handleDeleteRequest(selectedRequest.id)}
+                  disabled={deletingRequestId === selectedRequest.id}
+                  className="px-6 py-3 text-xs font-black uppercase tracking-widest text-red-600 bg-red-50 hover:bg-red-100 transition-colors rounded-xl flex items-center gap-2 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  <Trash2 size={16} />
+                  {deletingRequestId === selectedRequest.id ? "Deleting..." : "Delete Request"}
+                </button>
                 <button 
                   onClick={() => setSelectedRequest(null)}
                   className="px-6 py-3 text-xs font-black uppercase tracking-widest text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors rounded-xl"
@@ -452,6 +585,15 @@ export default function FinancialRequestsPage() {
                     type="number"
                     value={editFormData.weekly_donors}
                     onChange={e => setEditFormData({...editFormData, weekly_donors: Number(e.target.value)})}
+                    className="w-full border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 text-sm bg-gray-50 dark:bg-[#0f1115] focus:outline-none focus:ring-2 focus:ring-rose-500/20 text-gray-900 dark:text-white font-bold"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-1">Total Donation Requests</label>
+                  <input
+                    type="number"
+                    value={editFormData.donor_requests}
+                    onChange={e => setEditFormData({...editFormData, donor_requests: Number(e.target.value)})}
                     className="w-full border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 text-sm bg-gray-50 dark:bg-[#0f1115] focus:outline-none focus:ring-2 focus:ring-rose-500/20 text-gray-900 dark:text-white font-bold"
                   />
                 </div>

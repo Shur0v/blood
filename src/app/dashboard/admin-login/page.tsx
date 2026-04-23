@@ -8,11 +8,37 @@ export default function AdminLogin() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Navigate directly to admin dashboard
-    router.push('/dashboard/admin');
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const res = await fetch('/api/auth/admin/login', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          adminId: email.trim(),
+          password,
+        }),
+      });
+
+      const payload = await res.json();
+      if (!res.ok || !payload.success) {
+        setError(payload.message || 'Login failed');
+        return;
+      }
+
+      router.push('/admin-dashboard');
+    } catch (loginError) {
+      setError('Unable to connect. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -63,11 +89,18 @@ export default function AdminLogin() {
 
             <button
               type="submit"
+              disabled={isLoading}
               className="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 px-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 mt-4 hover:shadow-[0_10px_25px_rgba(168,85,247,0.3)]"
             >
-              Secure Login
+              {isLoading ? 'Signing in...' : 'Secure Login'}
               <ArrowRight size={20} />
             </button>
+
+            {error && (
+              <p className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-500">
+                {error}
+              </p>
+            )}
           </div>
         </form>
 

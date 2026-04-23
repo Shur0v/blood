@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { 
   HeartHandshake, 
   UserCheck, 
@@ -15,6 +15,7 @@ import {
   Menu,
   X
 } from 'lucide-react';
+import { useEffect } from 'react';
 
 const MENU_ITEMS = [
   { name: 'Organ Request', href: '/dashboard/user-management/organ-request', icon: HeartHandshake },
@@ -25,8 +26,53 @@ const MENU_ITEMS = [
 ];
 
 export default function UserManagementLayout({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
   const pathname = usePathname();
   const [isSidebarOpen, setSidebarOpen] = useState(false);
+  const [isCheckingSession, setIsCheckingSession] = useState(true);
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+    } finally {
+      router.push('/dashboard');
+    }
+  };
+
+  useEffect(() => {
+    const verifySession = async () => {
+      try {
+        const res = await fetch('/api/auth/session', {
+          method: 'GET',
+          credentials: 'include',
+          cache: 'no-store',
+        });
+
+        if (!res.ok) {
+          router.replace('/dashboard/user-login');
+          return;
+        }
+
+        const payload = await res.json();
+        const role = payload?.user?.role;
+        if (!role || !['ADMIN', 'MANAGER'].includes(role)) {
+          router.replace('/dashboard/user-login');
+          return;
+        }
+      } catch (error) {
+        router.replace('/dashboard/user-login');
+        return;
+      } finally {
+        setIsCheckingSession(false);
+      }
+    };
+
+    verifySession();
+  }, [router]);
+
+  if (isCheckingSession) {
+    return <div className="min-h-screen bg-[var(--bg-app)]" />;
+  }
 
   // Derive page title from pathname
   const getCurrentPageTitle = () => {
@@ -86,13 +132,13 @@ export default function UserManagementLayout({ children }: { children: React.Rea
         </nav>
 
         <div className="p-4 border-t border-[var(--border-main)]">
-          <Link 
-            href="/dashboard"
-            className="flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-500/10 rounded-xl transition-colors"
+          <button
+            onClick={handleLogout}
+            className="flex w-full items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-500/10 rounded-xl transition-colors"
           >
             <LogOut size={20} />
             <span>Exit Dashboard</span>
-          </Link>
+          </button>
         </div>
       </aside>
 

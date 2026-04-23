@@ -1,15 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   ShieldCheck, 
   Activity, 
-  Heart, 
-  Brain, 
-  Eye, 
   Stethoscope, 
-  Syringe, 
   Thermometer, 
-  Microscope,
   CheckCircle2,
   Circle,
   MapPin,
@@ -20,26 +15,46 @@ import {
   Info,
   BookOpen,
   Ghost,
-  Send
+  Send,
+  Camera,
+  UserCircle2
 } from "lucide-react";
+import OrganIcon from "./OrganIcon";
+import { ORGAN_CATALOG, normalizeOrganList } from "../lib/organCatalog";
 
 const VACCINES = ["COVID-19", "HBV", "BCG", "Influenza", "MMR", "Polio", "Tetanus"];
 const ALLERGIES = ["Peanuts", "Penicillin", "Latex", "Pollen", "Dust", "None"];
-const ORGANS = [
-  { name: "Heart", icon: <Heart className="h-6 w-6" /> },
-  { name: "Kidney", icon: <Activity className="h-6 w-6" /> },
-  { name: "Liver", icon: <Stethoscope className="h-6 w-6" /> },
-  { name: "Eyes", icon: <Eye className="h-6 w-6" /> },
-  { name: "Lungs", icon: <Thermometer className="h-6 w-6" /> },
-  { name: "Pancreas", icon: <Brain className="h-6 w-6" /> }
-];
+const ORGANS = ORGAN_CATALOG.map((name) => ({
+  name,
+  icon: <OrganIcon organ={name} className="h-6 w-6" />,
+}));
 
 interface UnifiedDashboardProps {
   isReady: boolean;
   onToggleReady: (ready: boolean) => void;
+  mode?: "self" | "admin";
+  targetUserId?: string;
+  profile: {
+    name: string;
+    city: string;
+    country: string;
+    bloodGroup: string;
+    verificationStatus: string;
+    profileImageUrl?: string | null;
+    healthData?: Record<string, unknown>;
+    activeOrgans?: string[];
+    serviceCities?: Array<{
+      id: string;
+      city: string;
+      country: string;
+      formatted_location: string;
+      remainingDays: number;
+      canRemove: boolean;
+    }>;
+  } | null;
 }
 
-export default function UnifiedDashboard({ isReady, onToggleReady }: UnifiedDashboardProps) {
+export default function UnifiedDashboard({ isReady, onToggleReady, mode = "self", targetUserId, profile }: UnifiedDashboardProps) {
   const [weight, setWeight] = useState(70);
   const [weightUnknown, setWeightUnknown] = useState(false);
   const [height, setHeight] = useState(170);
@@ -54,11 +69,355 @@ export default function UnifiedDashboard({ isReady, onToggleReady }: UnifiedDash
   const [registeredOrgans, setRegisteredOrgans] = useState<string[]>([]);
   const [blogStatus, setBlogStatus] = useState<"idle" | "submitting" | "success">("idle");
   const [isAnonymous, setIsAnonymous] = useState(false);
+  const [storyTitle, setStoryTitle] = useState("");
+  const [storyContent, setStoryContent] = useState("");
+  const [storyMessage, setStoryMessage] = useState("");
+  const [verificationFile, setVerificationFile] = useState<File | null>(null);
+  const [verificationState, setVerificationState] = useState<"idle" | "uploading" | "success" | "error">("idle");
+  const [verificationMessage, setVerificationMessage] = useState<string>("");
+  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [profileImageUrl, setProfileImageUrl] = useState<string | null>(profile?.profileImageUrl ?? null);
+  const [imageState, setImageState] = useState<"idle" | "uploading" | "error">("idle");
+  const [serviceCities, setServiceCities] = useState<UnifiedDashboardProps["profile"]["serviceCities"]>([]);
+  const [cityInput, setCityInput] = useState("");
+  const [citySuggestions, setCitySuggestions] = useState<Array<{
+    city: string;
+    country: string;
+    formatted_location: string;
+    latitude: number;
+    longitude: number;
+    provider_place_id: string;
+    token: string;
+  }>>([]);
+  const [cityLoading, setCityLoading] = useState(false);
+  const [cityMessage, setCityMessage] = useState("");
+  const hydratedRef = useRef(false);
+  const healthEndpoint = mode === "admin" && targetUserId ? `/api/admin/users/${targetUserId}/health` : "/api/users/me/health";
+  const organsEndpoint = mode === "admin" && targetUserId ? `/api/admin/users/${targetUserId}/organs` : "/api/users/me/organs";
+  const verificationEndpoint = mode === "admin" && targetUserId ? `/api/admin/users/${targetUserId}/verification-documents` : "/api/users/me/verification-documents";
+  const profileEndpoint = mode === "admin" && targetUserId ? `/api/admin/users/${targetUserId}` : "/api/users/me/profile";
 
-  const handleBlogSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  useEffect(() => {
+    if (!profile) return;
+
+    const health = (profile.healthData ?? {}) as Record<string, unknown>;
+    setWeight(typeof health.weight === "number" ? health.weight : 70);
+    setWeightUnknown(Boolean(health.weightUnknown));
+    setHeight(typeof health.height === "number" ? health.height : 170);
+    setHeightUnknown(Boolean(health.heightUnknown));
+    setHemoglobin(typeof health.hemoglobin === "number" ? health.hemoglobin : 14.5);
+    setHemoglobinUnknown(Boolean(health.hemoglobinUnknown));
+    setIsDiabetic(Boolean(health.isDiabetic));
+    setGlucose(typeof health.glucose === "number" ? health.glucose : 95);
+    setGlucoseUnknown(Boolean(health.glucoseUnknown));
+    setSelectedVaccines(Array.isArray(health.vaccinations) ? health.vaccinations.filter((v): v is string => typeof v === "string") : []);
+    setSelectedAllergies(Array.isArray(health.allergies) ? health.allergies.filter((a): a is string => typeof a === "string") : ["Dust"]);
+    setRegisteredOrgans(normalizeOrganList(profile.activeOrgans ?? []));
+    setProfileImageUrl(profile.profileImageUrl ?? null);
+    setServiceCities(profile.serviceCities ?? []);
+    hydratedRef.current = true;
+  }, [profile]);
+
+  useEffect(() => {
+    if (mode !== "self") return;
+    if (cityInput.trim().length < 2) {
+      setCitySuggestions([]);
+      return;
+    }
+    let cancelled = false;
+    const timer = setTimeout(async () => {
+      try {
+        setCityLoading(true);
+        const res = await fetch(`/api/location/cities?text=${encodeURIComponent(cityInput.trim())}`, {
+          method: "GET",
+          cache: "no-store",
+        });
+        const payload = await res.json();
+        if (cancelled) return;
+        if (!res.ok || !payload.success) {
+          setCitySuggestions([]);
+          return;
+        }
+        setCitySuggestions(payload.data || []);
+      } catch {
+        if (!cancelled) setCitySuggestions([]);
+      } finally {
+        if (!cancelled) setCityLoading(false);
+      }
+    }, 400);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [cityInput, mode]);
+
+  const showCityMessage = (message: string) => {
+    setCityMessage(message);
+    setTimeout(() => setCityMessage(""), 4000);
+  };
+
+  const addServiceCity = async (city: {
+    city: string;
+    country: string;
+    formatted_location: string;
+    latitude: number;
+    longitude: number;
+    provider_place_id: string;
+    token: string;
+  }) => {
+    try {
+      const res = await fetch("/api/users/me/service-cities", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(city),
+      });
+      const payload = await res.json();
+      if (!res.ok || !payload.success) {
+        showCityMessage(payload.message || "Failed to add city.");
+        return;
+      }
+      setServiceCities(payload.data || []);
+      setCityInput("");
+      setCitySuggestions([]);
+    } catch {
+      showCityMessage("Failed to add city.");
+    }
+  };
+
+  const removeServiceCity = async (cityId: string, canRemove: boolean, remainingDays?: number) => {
+    if (!canRemove) {
+      showCityMessage(`You can remove city after ${remainingDays ?? 0} day(s).`);
+      return;
+    }
+    try {
+      const res = await fetch(`/api/users/me/service-cities/${cityId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      const payload = await res.json();
+      if (!res.ok || !payload.success) {
+        showCityMessage(payload.message || "Failed to remove city.");
+        return;
+      }
+      setServiceCities(payload.data || []);
+    } catch {
+      showCityMessage("Failed to remove city.");
+    }
+  };
+
+  const persistHealth = async () => {
+    try {
+      setSaveState("saving");
+      const res = await fetch(healthEndpoint, {
+        method: "PATCH",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          weight,
+          weightUnknown,
+          height,
+          heightUnknown,
+          hemoglobin,
+          hemoglobinUnknown,
+          isDiabetic,
+          glucose,
+          glucoseUnknown,
+          vaccinations: selectedVaccines,
+          allergies: selectedAllergies,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to save health profile");
+      }
+
+      setSaveState("saved");
+      setTimeout(() => setSaveState("idle"), 1200);
+    } catch (error) {
+      setSaveState("error");
+    }
+  };
+
+  useEffect(() => {
+    if (!hydratedRef.current || !profile) return;
+
+    const timer = setTimeout(() => {
+      void persistHealth();
+    }, 700);
+
+    return () => clearTimeout(timer);
+  }, [
+    weight,
+    weightUnknown,
+    height,
+    heightUnknown,
+    hemoglobin,
+    hemoglobinUnknown,
+    isDiabetic,
+    glucose,
+    glucoseUnknown,
+    selectedVaccines,
+    selectedAllergies,
+    profile,
+    healthEndpoint,
+  ]);
+
+  useEffect(() => {
+    if (!hydratedRef.current || !profile) return;
+
+    const timer = setTimeout(async () => {
+      try {
+        setSaveState("saving");
+        const res = await fetch(organsEndpoint, {
+          method: "PATCH",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ organs: registeredOrgans }),
+        });
+
+        if (!res.ok) {
+          throw new Error("Failed to save organs");
+        }
+
+        setSaveState("saved");
+        setTimeout(() => setSaveState("idle"), 1200);
+      } catch (error) {
+        setSaveState("error");
+      }
+    }, 700);
+
+    return () => clearTimeout(timer);
+  }, [registeredOrgans, profile, organsEndpoint]);
+
+  const handleBlogSubmit = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (!storyTitle.trim() || !storyContent.trim()) {
+      setStoryMessage("Please provide both title and description.");
+      return;
+    }
     setBlogStatus("submitting");
-    setTimeout(() => setBlogStatus("success"), 1500);
+    setStoryMessage("");
+    try {
+      const res = await fetch("/api/users/me/blogs", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: storyTitle.trim(),
+          content: storyContent.trim(),
+          isAnonymous,
+        }),
+      });
+      const payload = await res.json();
+      if (!res.ok || !payload.success) {
+        setStoryMessage(payload.message || "Failed to submit story.");
+        setBlogStatus("idle");
+        return;
+      }
+      setBlogStatus("success");
+      setStoryTitle("");
+      setStoryContent("");
+      setIsAnonymous(false);
+      setStoryMessage("");
+    } catch {
+      setStoryMessage("Failed to submit story.");
+      setBlogStatus("idle");
+    }
+  };
+
+  const submitVerificationDocument = async () => {
+    if (!verificationFile) {
+      setVerificationState("error");
+      setVerificationMessage("Select a file first.");
+      return;
+    }
+
+    try {
+      setVerificationState("uploading");
+      setVerificationMessage("");
+
+      const uploadForm = new FormData();
+      uploadForm.append("file", verificationFile);
+      uploadForm.append("category", "VERIFICATION");
+
+      const uploadRes = await fetch("/api/uploads/image", {
+        method: "POST",
+        body: uploadForm,
+        credentials: "include",
+      });
+      const uploadPayload = await uploadRes.json();
+      if (!uploadRes.ok || !uploadPayload.success) {
+        throw new Error(uploadPayload.message || "Failed to upload verification file.");
+      }
+
+      const rawUrl = uploadPayload.data?.url as string | undefined;
+      if (!rawUrl) {
+        throw new Error("Upload finished but URL was not returned.");
+      }
+      const assetUrl = rawUrl.startsWith("/") ? `${window.location.origin}${rawUrl}` : rawUrl;
+
+      const res = await fetch(verificationEndpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          assetUrl,
+          documentType: "MEDICAL_REPORT",
+        }),
+      });
+      const payload = await res.json();
+      if (!res.ok || !payload.success) {
+        throw new Error(payload.message || "Failed to submit verification request.");
+      }
+
+      setVerificationState("success");
+      setVerificationMessage("Verification document submitted. Admin review is pending.");
+      setVerificationFile(null);
+    } catch (error) {
+      setVerificationState("error");
+      setVerificationMessage(error instanceof Error ? error.message : "Verification upload failed.");
+    }
+  };
+
+  const handleProfileImageChange = async (file: File | null) => {
+    if (!file) return;
+    try {
+      setImageState("uploading");
+      const form = new FormData();
+      form.append("file", file);
+      form.append("category", "PROFILE");
+
+      const uploadRes = await fetch("/api/uploads/image", {
+        method: "POST",
+        credentials: "include",
+        body: form,
+      });
+      const uploadPayload = await uploadRes.json();
+      if (!uploadRes.ok || !uploadPayload.success || !uploadPayload.data?.url) {
+        throw new Error(uploadPayload.message || "Failed to upload profile image.");
+      }
+
+      const rawUrl = uploadPayload.data.url as string;
+      const imageUrl = rawUrl.startsWith("/") ? `${window.location.origin}${rawUrl}` : rawUrl;
+
+      const patchRes = await fetch(profileEndpoint, {
+        method: "PATCH",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ profileImageUrl: imageUrl }),
+      });
+      const patchPayload = await patchRes.json();
+      if (!patchRes.ok || !patchPayload.success) {
+        throw new Error(patchPayload.message || "Failed to save profile image.");
+      }
+
+      setProfileImageUrl(imageUrl);
+      setImageState("idle");
+    } catch (error) {
+      setImageState("error");
+      setTimeout(() => setImageState("idle"), 2000);
+    }
   };
 
   const toggleVaccine = (v: string) => {
@@ -91,35 +450,112 @@ export default function UnifiedDashboard({ isReady, onToggleReady }: UnifiedDash
           <div className="mb-12 flex flex-col items-center gap-8 md:flex-row md:items-start">
             <div className="relative">
               <div className="h-32 w-32 overflow-hidden rounded-[32px] border-4 border-white p-1 shadow-2xl">
-                <img 
-                  src="https://i.pravatar.cc/150?u=bloodnet_user" 
-                  alt="User" 
-                  className="h-full w-full rounded-[24px] object-cover"
-                  referrerPolicy="no-referrer"
-                />
+                {profileImageUrl ? (
+                  <img
+                    src={profileImageUrl}
+                    alt="User"
+                    className="h-full w-full rounded-[24px] object-cover"
+                    referrerPolicy="no-referrer"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center rounded-[24px] bg-white/70 text-text/50">
+                    <UserCircle2 className="h-16 w-16" />
+                  </div>
+                )}
               </div>
               <div className="absolute -bottom-2 -right-2 flex h-10 w-10 items-center justify-center rounded-2xl bg-primary text-white shadow-xl ring-4 ring-white">
-                <ShieldCheck className="h-6 w-6" />
+                {profile?.verificationStatus === "VERIFIED" ? <ShieldCheck className="h-6 w-6" /> : <Camera className="h-5 w-5" />}
               </div>
+              <label className="absolute -bottom-12 left-1/2 -translate-x-1/2 cursor-pointer rounded-full border border-border/10 bg-white/80 px-4 py-1.5 text-[10px] font-black uppercase tracking-widest text-text shadow-sm transition hover:bg-white">
+                {imageState === "uploading" ? "Uploading..." : "Change Photo"}
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => void handleProfileImageChange(e.target.files?.[0] || null)}
+                />
+              </label>
             </div>
 
             <div className="flex-1 text-center md:text-left">
               <div className="mb-2 flex flex-col items-center gap-3 md:flex-row">
-                <h1 className="text-4xl font-black tracking-tight text-text uppercase">Alex Shurov</h1>
-                <span className="rounded-full bg-primary/10 px-4 py-1 text-[10px] font-black uppercase tracking-widest text-primary ring-1 ring-primary/20">
-                  Verified Elite Donor
-                </span>
+                <h1 className="text-4xl font-black tracking-tight text-text uppercase">{profile?.name ?? "Donor Profile"}</h1>
+                {profile?.verificationStatus === "VERIFIED" && (
+                  <span className="rounded-full bg-primary/10 px-4 py-1 text-[10px] font-black uppercase tracking-widest text-primary ring-1 ring-primary/20">
+                    Verified Elite Donor
+                  </span>
+                )}
               </div>
               <div className="mb-8 flex flex-wrap justify-center gap-6 md:justify-start">
                 <div className="flex items-center gap-2 text-sm font-bold text-text/60">
-                  <MapPin className="h-4 w-4 text-primary" />
-                  Dhaka, Bangladesh
-                </div>
-                <div className="flex items-center gap-2 text-sm font-bold text-text/60">
                   <Droplet className="h-4 w-4 text-primary" />
-                  Blood Group: <span className="text-primary">AB+</span>
+                  Blood Group: <span className="text-primary">{profile?.bloodGroup ?? "N/A"}</span>
                 </div>
+                {saveState !== "idle" && (
+                  <div className="text-xs font-bold text-primary">
+                    {saveState === "saving" ? "Saving..." : saveState === "saved" ? "Saved" : "Save failed"}
+                  </div>
+                )}
               </div>
+              {mode === "self" && (
+                <div className="mb-8 rounded-2xl border border-border/10 bg-white/60 p-4">
+                  <div className="mb-2 flex items-center justify-between">
+                    <p className="text-xs font-black uppercase tracking-widest text-text/50">Manage Service Cities</p>
+                    <p className="text-[10px] font-bold text-text/40">{serviceCities?.length ?? 0}/5</p>
+                  </div>
+                  <div className="mb-3 flex flex-wrap gap-2">
+                    {(serviceCities || []).map((city, idx) => (
+                      <span key={city.id} className="inline-flex items-center gap-2 rounded-full border border-border/10 bg-white px-3 py-1 text-xs font-semibold text-text/80">
+                        {idx < 2 && <MapPin className="h-3.5 w-3.5 text-primary" />}
+                        {city.city}, {city.country}
+                        {city.canRemove ? (
+                          <button
+                            type="button"
+                            onClick={() => void removeServiceCity(city.id, true)}
+                            className="rounded-full bg-red-500/10 px-1.5 py-0.5 text-[10px] font-black text-red-600"
+                          >
+                            ×
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => void removeServiceCity(city.id, false, city.remainingDays)}
+                            className="rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-black text-amber-700"
+                          >
+                            {city.remainingDays}d
+                          </button>
+                        )}
+                      </span>
+                    ))}
+                  </div>
+                  {(serviceCities?.length ?? 0) < 5 && (
+                    <div className="relative">
+                      <input
+                        value={cityInput}
+                        onChange={(e) => setCityInput(e.target.value)}
+                        placeholder="Add another city..."
+                        className="w-full rounded-xl border border-border/10 bg-white px-3 py-2 text-sm text-text outline-none focus:border-primary/50"
+                      />
+                      {cityLoading && <span className="absolute right-3 top-2.5 text-[10px] font-bold text-text/40">Loading...</span>}
+                      {citySuggestions.length > 0 && (
+                        <div className="absolute z-20 mt-1 max-h-44 w-full overflow-y-auto rounded-xl border border-border/10 bg-white p-1 shadow-lg">
+                          {citySuggestions.map((suggestion) => (
+                            <button
+                              key={suggestion.provider_place_id}
+                              type="button"
+                              onClick={() => void addServiceCity(suggestion)}
+                              className="w-full rounded-lg px-3 py-2 text-left text-sm font-semibold text-text/80 hover:bg-primary/5"
+                            >
+                              {suggestion.city}, {suggestion.country}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {cityMessage && <p className="mt-2 text-xs font-semibold text-amber-700">{cityMessage}</p>}
+                </div>
+              )}
 
               {/* Status Switch Integrated into Header */}
               <div className="flex justify-center md:justify-start">
@@ -366,7 +802,7 @@ export default function UnifiedDashboard({ isReady, onToggleReady }: UnifiedDash
               <div className="space-y-8">
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-500/10 text-purple-600">
-                    <Heart className="h-6 w-6" />
+                    <OrganIcon organ="Kidney" className="h-6 w-6" />
                   </div>
                   <h2 className="text-2xl font-black uppercase tracking-tight text-text">Organ Registry</h2>
                 </div>
@@ -401,7 +837,7 @@ export default function UnifiedDashboard({ isReady, onToggleReady }: UnifiedDash
                 </div>
 
                 {/* High-end Drag & Drop Zone */}
-                <div className="group relative cursor-pointer overflow-hidden rounded-[32px] border-2 border-dashed border-border/10 bg-glass p-12 text-center transition-all hover:border-primary/40 hover:bg-white/60">
+                <div className="group relative overflow-hidden rounded-[32px] border-2 border-dashed border-border/10 bg-glass p-12 text-center transition-all hover:border-primary/40 hover:bg-white/60">
                   <div className="relative z-10">
                     <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-transform group-hover:scale-110">
                       <Upload className="h-8 w-8" />
@@ -409,18 +845,42 @@ export default function UnifiedDashboard({ isReady, onToggleReady }: UnifiedDash
                     <h3 className="mb-2 text-lg font-black text-text">Medical Credentials</h3>
                     <p className="text-xs font-medium text-text/40 leading-relaxed">
                       Drag and drop your vaccine cards or hospital registry proof here. <br />
-                      Supports PDF, PNG, JPG (Max 5MB)
+                      Supports PNG, JPG, WEBP (Max 10MB)
                     </p>
-                    <button className="mt-8 rounded-full bg-text px-8 py-3 text-[10px] font-black uppercase tracking-widest text-white transition-all hover:bg-primary">
-                      Browse Files
-                    </button>
+                    <div className="mt-8 flex flex-col items-center gap-3">
+                      <label className="cursor-pointer rounded-full bg-text px-8 py-3 text-[10px] font-black uppercase tracking-widest text-white transition-all hover:bg-primary">
+                        Browse Files
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => setVerificationFile(e.target.files?.[0] || null)}
+                        />
+                      </label>
+                      {verificationFile && (
+                        <p className="text-xs font-semibold text-text/70">{verificationFile.name}</p>
+                      )}
+                      <button
+                        type="button"
+                        onClick={submitVerificationDocument}
+                        disabled={verificationState === "uploading" || !verificationFile}
+                        className="rounded-full border border-border/20 bg-white px-6 py-2 text-[10px] font-black uppercase tracking-widest text-text transition-all hover:bg-primary hover:text-white disabled:opacity-50"
+                      >
+                        {verificationState === "uploading" ? "Submitting..." : "Submit Verification"}
+                      </button>
+                      {verificationMessage && (
+                        <p className={`text-xs font-semibold ${verificationState === "error" ? "text-red-600" : "text-green-600"}`}>
+                          {verificationMessage}
+                        </p>
+                      )}
+                    </div>
                   </div>
                   <div className="absolute inset-0 bg-gradient-to-b from-transparent to-primary/5 opacity-0 transition-opacity group-hover:opacity-100" />
                 </div>
 
                 {/* Verification Status List */}
                 <div className="space-y-4">
-                  <VerificationItem label="Identity Verified" status="completed" />
+                  <VerificationItem label="Identity Verified" status={profile?.verificationStatus === "VERIFIED" ? "completed" : "pending"} />
                   <VerificationItem label="Blood Type Confirmed" status="completed" />
                   <VerificationItem label="Medical History Review" status="pending" />
                 </div>
@@ -454,7 +914,7 @@ export default function UnifiedDashboard({ isReady, onToggleReady }: UnifiedDash
             
             <div className="glass soft-moving-bg relative flex flex-col justify-between overflow-hidden rounded-[32px] p-8 transition-all">
               <div>
-                <p className="text-xs font-medium text-gray-500 mb-6">Publish SEO-optimized stories to inspire globally.</p>
+                <p className="text-xs font-medium text-gray-500 mb-6">Share your real donor journey so others can learn and stay prepared.</p>
 
                 {blogStatus === "success" ? (
                    <div className="flex flex-col items-center justify-center text-center py-12">
@@ -462,9 +922,12 @@ export default function UnifiedDashboard({ isReady, onToggleReady }: UnifiedDash
                       <CheckCircle2 className="h-8 w-8" />
                     </div>
                     <h4 className="text-lg font-bold text-gray-900">Story Submitted for Review!</h4>
-                    <p className="mt-2 text-sm text-gray-500">Once approved by an admin, it will be published to our SEO-optimized blog section.</p>
+                    <p className="mt-2 text-sm text-gray-500">Once approved by the manager, it will appear in Community Stories and the main Blog page.</p>
                     <button 
-                      onClick={() => setBlogStatus("idle")}
+                      onClick={() => {
+                        setBlogStatus("idle");
+                        setStoryMessage("");
+                      }}
                       className="mt-6 rounded-xl bg-gray-100 px-6 py-2 text-sm font-bold text-gray-900 transition hover:bg-gray-200"
                     >
                       Write Another
@@ -474,23 +937,26 @@ export default function UnifiedDashboard({ isReady, onToggleReady }: UnifiedDash
                   <form onSubmit={handleBlogSubmit} className="space-y-4">
                     <div>
                       <label className="mb-1 flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-gray-500">
-                        <span>Story Title (Becomes &lt;h1&gt;)</span>
-                        <span className="text-blue-500">SEO Boost</span>
+                        <span>Title (used as blog link)</span>
                       </label>
                       <input 
                         type="text" 
                         required
+                        value={storyTitle}
+                        onChange={(evt) => setStoryTitle(evt.target.value)}
                         className="w-full rounded-xl border border-border/10 bg-glass px-4 py-3 text-sm font-semibold outline-none transition focus:border-blue-500 focus:bg-white/60 focus:ring-1 focus:ring-blue-500" 
-                        placeholder="A Catchy SEO-Friendly Title..."
+                        placeholder="Write your story title..."
                       />
                     </div>
                     <div>
-                      <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-gray-500">Story Content</label>
+                      <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-gray-500">Description</label>
                       <textarea 
                         required
+                        value={storyContent}
+                        onChange={(evt) => setStoryContent(evt.target.value)}
                         rows={5}
-                        className="w-full resize-none rounded-xl border border-border/10 bg-glass px-4 py-3 text-sm outline-none transition focus:border-blue-500 focus:bg-white/60 focus:ring-1 focus:ring-blue-500" 
-                        placeholder="Share your donor experience, medical advice, or community gratitude..."
+                        className="w-full min-h-[220px] resize-y rounded-xl border border-border/10 bg-glass px-4 py-3 text-sm outline-none transition focus:border-blue-500 focus:bg-white/60 focus:ring-1 focus:ring-blue-500 lg:min-h-[600px]" 
+                        placeholder="Share your full experience..."
                       />
                     </div>
                   </form>
@@ -513,16 +979,16 @@ export default function UnifiedDashboard({ isReady, onToggleReady }: UnifiedDash
                     </button>
                   </div>
                   <button 
-                    onClick={handleBlogSubmit}
+                    onClick={() => void handleBlogSubmit()}
                     disabled={blogStatus === "submitting"}
                     className="group flex w-full items-center justify-center gap-2 rounded-xl bg-text px-4 py-3.5 font-bold text-white transition hover:bg-gray-800 disabled:opacity-70"
                   >
                     {blogStatus === "submitting" ? "Submitting..." : "Submit for Admin Review"}
                     <Send className="h-4 w-4 transition group-hover:translate-x-1" />
                   </button>
-                  <p className="mt-3 text-center text-[10px] font-semibold text-text/60">
-                    * Approved stories use Semantic HTML (Article, Header) making them <strong className="text-text">easily indexed by Google & Search Engines</strong>.
-                  </p>
+                  {storyMessage && (
+                    <p className="mt-3 text-center text-xs font-semibold text-red-600">{storyMessage}</p>
+                  )}
                 </div>
               )}
             </div>

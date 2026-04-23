@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { X, Heart, ShieldCheck, CheckCircle2, DollarSign, Lock, AlertCircle, Info } from "lucide-react";
 
@@ -42,6 +42,30 @@ export default function DonateNowModal({ isOpen, onClose }: DonateNowModalProps)
   const [selectedTier, setSelectedTier] = useState<number>(15);
   const [customAmount, setCustomAmount] = useState<string>("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [weeklyDonors, setWeeklyDonors] = useState<number>(36);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const loadWeeklyDonors = async () => {
+      try {
+        const res = await fetch("/api/public/platform-stats", {
+          method: "GET",
+          cache: "no-store",
+        });
+        const payload = await res.json();
+        if (!res.ok || !payload.success || !payload.data) return;
+        const next = Number(payload.data.weekly_donors);
+        if (Number.isFinite(next) && next >= 0) {
+          setWeeklyDonors(next);
+        }
+      } catch (error) {
+        // keep last known value
+      }
+    };
+
+    void loadWeeklyDonors();
+  }, [isOpen]);
 
   // Derive active amount safely
   const activeAmountRaw = customAmount !== "" ? parseFloat(customAmount) : selectedTier;
@@ -110,7 +134,7 @@ export default function DonateNowModal({ isOpen, onClose }: DonateNowModalProps)
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="text-xs font-black uppercase tracking-widest text-gray-400">Select Donation Amount</h3>
                   <span className="text-[10px] font-bold text-[#FF3131] bg-red-50 px-2 py-1 rounded border border-red-100 flex items-center gap-1">
-                    <Heart className="h-3 w-3 fill-current" /> 36 people donated this week
+                    <Heart className="h-3 w-3 fill-current" /> {weeklyDonors} people donated this week
                   </span>
                 </div>
 

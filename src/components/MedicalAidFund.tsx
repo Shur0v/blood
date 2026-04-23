@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Heart, X, Hospital, Mail, Phone, DollarSign, FileText, User, Activity, ArrowRight, ShieldAlert, ImagePlus } from "lucide-react";
+import { Heart, X, Hospital, Mail, DollarSign, FileText, User, Activity, ArrowRight, ShieldAlert, ImagePlus } from "lucide-react";
 import DonateNowModal from "./DonateNowModal"; // High-Converting Donation Modal
+import CountryPhoneInput, { emptyPhoneValue, type PhoneFieldValue } from "./CountryPhoneInput";
 
 export default function MedicalAidFund() {
   const [isModalOpen, setIsModalOpen] = useState(false); // Verification Form Modal
@@ -9,32 +10,143 @@ export default function MedicalAidFund() {
   
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [prescriptionFiles, setPrescriptionFiles] = useState<File[]>([]);
+  const [reportFiles, setReportFiles] = useState<File[]>([]);
   
   const [formData, setFormData] = useState({
     patientName: "",
     hospitalName: "",
     amountRequired: "",
     email: "",
-    phone: "",
     medicalNote: "",
   });
+  const [phoneValue, setPhoneValue] = useState<PhoneFieldValue>(emptyPhoneValue());
+  const [isPhoneValid, setIsPhoneValid] = useState(false);
+  const [stats, setStats] = useState({
+    total_raised: 13500,
+    total_spent: 15000,
+    completed_ops: 37,
+    donor_requests: 0,
+  });
+
+  const fetchStats = async () => {
+    try {
+      const res = await fetch("/api/public/platform-stats", {
+        method: "GET",
+        cache: "no-store",
+      });
+      const payload = await res.json();
+      if (!res.ok || !payload.success || !payload.data) {
+        return;
+      }
+      setStats((prev) => ({
+        ...prev,
+        total_raised: Number(payload.data.total_raised ?? prev.total_raised),
+        total_spent: Number(payload.data.total_spent ?? prev.total_spent),
+        completed_ops: Number(payload.data.completed_ops ?? prev.completed_ops),
+        donor_requests: Number(payload.data.donor_requests ?? prev.donor_requests),
+      }));
+    } catch (error) {
+      // keep previous snapshot
+    }
+  };
+
+  useEffect(() => {
+    void fetchStats();
+  }, []);
+
+  const uploadImageAsset = async (file: File) => {
+    const form = new FormData();
+    form.append("file", file);
+    form.append("category", "MEDICAL_AID");
+
+    const uploadRes = await fetch("/api/uploads/image", {
+      method: "POST",
+      body: form,
+      credentials: "include",
+    });
+    const uploadPayload = await uploadRes.json();
+    if (!uploadRes.ok || !uploadPayload.success) {
+      throw new Error(uploadPayload.message || "Image upload failed.");
+    }
+
+    const returnedUrl: string = uploadPayload.data?.url || "";
+    if (!returnedUrl) {
+      throw new Error("Upload URL missing from server response.");
+    }
+
+    if (returnedUrl.startsWith("/")) {
+      return `${window.location.origin}${returnedUrl}`;
+    }
+
+    return returnedUrl;
+  };
+
+  const uploadImageAssets = async (files: File[]) => {
+    const results = await Promise.all(files.map((file) => uploadImageAsset(file)));
+    return results.filter(Boolean);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitError(null);
     setIsLoading(true);
-    
-    setTimeout(() => {
-      setIsLoading(false);
+
+    try {
+      if (prescriptionFiles.length === 0 || reportFiles.length === 0) {
+        throw new Error("Please upload at least one image for both prescription and medical report.");
+      }
+      if (!isPhoneValid || !phoneValue.fullPhoneNumber) {
+        throw new Error("Please provide a valid contact phone number.");
+      }
+
+      const [prescriptionUrls, reportUrls] = await Promise.all([
+        uploadImageAssets(prescriptionFiles),
+        uploadImageAssets(reportFiles),
+      ]);
+
+      const res = await fetch("/api/public/aid-requests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...formData,
+          phone: phoneValue.fullPhoneNumber,
+          phoneData: {
+            country_name: phoneValue.countryName,
+            country_code: phoneValue.countryCode,
+            dial_code: phoneValue.dialCode,
+            local_phone_number: phoneValue.localPhoneNumber,
+            full_phone_number: phoneValue.fullPhoneNumber,
+          },
+          prescriptionUrls,
+          reportUrls,
+        }),
+      });
+      const payload = await res.json();
+      if (!res.ok || !payload.success) {
+        throw new Error(payload.message || "Failed to submit aid request.");
+      }
+
+      void fetchStats();
       setSuccess(true);
       setTimeout(() => {
         setSuccess(false);
         setIsModalOpen(false);
         setFormData({ 
           patientName: "", hospitalName: "", amountRequired: "", 
-          email: "", phone: "", medicalNote: ""
+          email: "", medicalNote: ""
         });
+        setPhoneValue(emptyPhoneValue());
+        setIsPhoneValid(false);
+        setPrescriptionFiles([]);
+        setReportFiles([]);
       }, 3500);
-    }, 1500);
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : "Submission failed. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -111,23 +223,23 @@ export default function MedicalAidFund() {
               
               <motion.div whileHover={{ y: -5 }} className="rounded-3xl border border-white/20 bg-white/10 p-8 shadow-2xl backdrop-blur-xl transition-all">
                 <p className="text-[10px] font-black uppercase tracking-widest text-white/70 mb-2">Total Raised</p>
-                <div className="text-4xl font-black text-white tracking-tight drop-shadow-md">$13,500+</div>
+                <div className="text-4xl font-black text-white tracking-tight drop-shadow-md">${stats.total_raised.toLocaleString()}+</div>
               </motion.div>
               
               <motion.div whileHover={{ y: -5 }} className="rounded-3xl border border-white/20 bg-white/10 p-8 shadow-2xl backdrop-blur-xl transition-all">
                 <p className="text-[10px] font-black uppercase tracking-widest text-white/70 mb-2">Total Spent</p>
-                <div className="text-4xl font-black text-white tracking-tight drop-shadow-md">$15,000+</div>
+                <div className="text-4xl font-black text-white tracking-tight drop-shadow-md">${stats.total_spent.toLocaleString()}+</div>
               </motion.div>
               
               <motion.div whileHover={{ y: -5 }} className="rounded-3xl border border-white/40 bg-white/20 p-8 shadow-2xl backdrop-blur-xl transition-all relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-4 opacity-10"><Activity className="w-16 h-16"/></div>
                 <p className="text-[10px] font-black uppercase tracking-widest text-white mb-2">Projects Completed</p>
-                <div className="text-4xl font-black text-white tracking-tight drop-shadow-lg">37</div>
+                <div className="text-4xl font-black text-white tracking-tight drop-shadow-lg">{stats.completed_ops.toLocaleString()}</div>
               </motion.div>
               
               <motion.div whileHover={{ y: -5 }} className="rounded-3xl border border-white/20 bg-white/10 p-8 shadow-2xl backdrop-blur-xl transition-all">
-                <p className="text-[10px] font-black uppercase tracking-widest text-white/70 mb-2">Donor Requests</p>
-                <div className="text-4xl font-black text-white tracking-tight drop-shadow-md">156</div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-white/70 mb-2">Donation Requests</p>
+                <div className="text-4xl font-black text-white tracking-tight drop-shadow-md">{stats.donor_requests.toLocaleString()}</div>
               </motion.div>
               
             </div>
@@ -152,16 +264,16 @@ export default function MedicalAidFund() {
               initial={{ scale: 0.95, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 20 }}
-              className="glass relative w-full max-w-2xl overflow-hidden rounded-[32px] bg-white p-8 shadow-2xl ring-1 ring-black/5 backdrop-blur-3xl max-h-[90vh] overflow-y-auto custom-scrollbar"
+              className="glass relative w-full max-w-2xl overflow-hidden rounded-[32px] bg-[#0b1220]/95 p-8 shadow-2xl ring-1 ring-white/10 backdrop-blur-3xl max-h-[90vh] overflow-y-auto custom-scrollbar"
             >
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="absolute right-6 top-6 text-text/30 transition-colors hover:text-text"
+                className="absolute right-6 top-6 text-white/60 transition-colors hover:text-white"
               >
                 <X className="h-6 w-6" />
               </button>
 
-              <div className="mb-6 text-center text-text">
+              <div className="mb-6 text-center text-white">
                 <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary">
                   <Activity className="h-6 w-6 animate-pulse" />
                 </div>
@@ -188,13 +300,13 @@ export default function MedicalAidFund() {
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-text/50">Patient Full Name</label>
+                      <label className="text-[10px] font-black uppercase tracking-widest text-white/90">Patient Full Name</label>
                       <div className="relative">
-                        <User className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-text/30" />
+                        <User className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-white/60" />
                         <input
                           required
                           type="text"
-                          className="w-full rounded-xl border border-black/10 bg-gray-50 py-3.5 pl-12 pr-4 text-text placeholder:text-text/30 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/50"
+                          className="w-full rounded-xl border border-white/15 bg-white/10 py-3.5 pl-12 pr-4 text-white placeholder:text-white/45 focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/60"
                           value={formData.patientName}
                           onChange={(e) => setFormData({ ...formData, patientName: e.target.value })}
                         />
@@ -202,14 +314,14 @@ export default function MedicalAidFund() {
                     </div>
                     
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-text/50">Amount Needed (USD)</label>
+                      <label className="text-[10px] font-black uppercase tracking-widest text-white/90">Amount Needed (USD)</label>
                       <div className="relative">
-                        <DollarSign className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-text/30" />
+                        <DollarSign className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-white/60" />
                         <input
                           required
                           type="number"
                           placeholder="e.g. 5000"
-                          className="w-full rounded-xl border border-black/10 bg-gray-50 py-3.5 pl-12 pr-4 text-text placeholder:text-text/30 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/50"
+                          className="w-full rounded-xl border border-white/15 bg-white/10 py-3.5 pl-12 pr-4 text-white placeholder:text-white/45 focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/60"
                           value={formData.amountRequired}
                           onChange={(e) => setFormData({ ...formData, amountRequired: e.target.value })}
                         />
@@ -218,14 +330,14 @@ export default function MedicalAidFund() {
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-text/50">Hospital / Medical Authority Details</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-white/90">Hospital / Medical Authority Details</label>
                     <div className="relative">
-                      <Hospital className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-text/30" />
+                      <Hospital className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-white/60" />
                       <input
                         required
                         type="text"
                         placeholder="Name of Hospital and Doctor handling the case"
-                        className="w-full rounded-xl border border-black/10 bg-gray-50 py-3.5 pl-12 pr-4 text-text placeholder:text-text/30 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/50"
+                        className="w-full rounded-xl border border-white/15 bg-white/10 py-3.5 pl-12 pr-4 text-white placeholder:text-white/45 focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/60"
                         value={formData.hospitalName}
                         onChange={(e) => setFormData({ ...formData, hospitalName: e.target.value })}
                       />
@@ -234,42 +346,38 @@ export default function MedicalAidFund() {
 
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-text/50">Contact Email</label>
+                      <label className="text-[10px] font-black uppercase tracking-widest text-white/90">Contact Email</label>
                       <div className="relative">
-                        <Mail className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-text/30" />
+                        <Mail className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-white/60" />
                         <input
                           required
                           type="email"
-                          className="w-full rounded-xl border border-black/10 bg-gray-50 py-3.5 pl-12 pr-4 text-text focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/50"
+                          className="w-full rounded-xl border border-white/15 bg-white/10 py-3.5 pl-12 pr-4 text-white focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/60"
                           value={formData.email}
                           onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                         />
                       </div>
                     </div>
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-text/50">Contact Phone</label>
-                      <div className="relative">
-                        <Phone className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-text/30" />
-                        <input
-                          required
-                          type="tel"
-                          className="w-full rounded-xl border border-black/10 bg-gray-50 py-3.5 pl-12 pr-4 text-text focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/50"
-                          value={formData.phone}
-                          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                        />
-                      </div>
-                    </div>
+                    <CountryPhoneInput
+                      label="Contact Phone"
+                      required
+                      compact
+                      forceWhiteText
+                      value={phoneValue}
+                      onChange={setPhoneValue}
+                      onValidityChange={(valid) => setIsPhoneValid(valid)}
+                    />
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-text/50">Medical Condition / Note</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-white/90">Medical Condition / Note</label>
                     <div className="relative">
-                      <FileText className="absolute left-4 top-4 h-5 w-5 text-text/30" />
+                      <FileText className="absolute left-4 top-4 h-5 w-5 text-white/60" />
                       <textarea
                         required
                         rows={3}
                         placeholder="Explain why financial aid is immediately necessary..."
-                        className="w-full rounded-xl border border-black/10 bg-gray-50 py-4 pl-12 pr-4 text-text placeholder:text-text/30 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/50 custom-scrollbar resize-none"
+                        className="w-full rounded-xl border border-white/15 bg-white/10 py-4 pl-12 pr-4 text-white placeholder:text-white/45 focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/60 custom-scrollbar resize-none"
                         value={formData.medicalNote}
                         onChange={(e) => setFormData({ ...formData, medicalNote: e.target.value })}
                       />
@@ -279,43 +387,75 @@ export default function MedicalAidFund() {
                   {/* Document Upload Section */}
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-text/50">Prescription Image</label>
-                      <div className="relative group cursor-pointer">
-                        <input
-                          required
-                          type="file"
-                          accept="image/*"
-                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                        />
-                        <div className="w-full rounded-xl border-2 border-dashed border-black/10 bg-gray-50 py-4 px-4 text-center group-hover:border-primary/50 group-hover:bg-primary/5 transition-all flex flex-col items-center justify-center gap-1">
-                          <ImagePlus className="h-5 w-5 text-text/40 group-hover:text-primary" />
-                          <span className="text-xs font-bold text-text/50 group-hover:text-primary">Upload Prescription</span>
+                      <label className="text-[10px] font-black uppercase tracking-widest text-white/90">Prescription Image</label>
+                        <div className="relative group cursor-pointer">
+                          <input
+                            required
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            onChange={(e) => setPrescriptionFiles(Array.from(e.target.files || []))}
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                          />
+                          <div className="w-full rounded-xl border-2 border-dashed border-white/20 bg-white/10 py-4 px-4 text-center group-hover:border-primary/60 group-hover:bg-primary/10 transition-all flex flex-col items-center justify-center gap-1">
+                            <ImagePlus className="h-5 w-5 text-white/70 group-hover:text-primary" />
+                            <span className="text-xs font-bold text-white/80 group-hover:text-primary">
+                              {prescriptionFiles.length > 0 ? `${prescriptionFiles.length} file(s) selected` : "Upload Prescription(s)"}
+                            </span>
+                            {prescriptionFiles.length > 0 && (
+                              <div className="max-h-12 w-full overflow-y-auto text-[10px] font-medium text-white/75">
+                                {prescriptionFiles.map((file, idx) => (
+                                  <p key={`${file.name}-${idx}`} className="truncate">
+                                    {file.name}
+                                  </p>
+                                ))}
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
                     
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-text/50">Medical Report Image</label>
-                      <div className="relative group cursor-pointer">
-                        <input
-                          required
-                          type="file"
-                          accept="image/*"
-                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                        />
-                        <div className="w-full rounded-xl border-2 border-dashed border-black/10 bg-gray-50 py-4 px-4 text-center group-hover:border-primary/50 group-hover:bg-primary/5 transition-all flex flex-col items-center justify-center gap-1">
-                          <ImagePlus className="h-5 w-5 text-text/40 group-hover:text-primary" />
-                          <span className="text-xs font-bold text-text/50 group-hover:text-primary">Upload Main Report</span>
+                      <label className="text-[10px] font-black uppercase tracking-widest text-white/90">Medical Report Image</label>
+                        <div className="relative group cursor-pointer">
+                          <input
+                            required
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            onChange={(e) => setReportFiles(Array.from(e.target.files || []))}
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                          />
+                          <div className="w-full rounded-xl border-2 border-dashed border-white/20 bg-white/10 py-4 px-4 text-center group-hover:border-primary/60 group-hover:bg-primary/10 transition-all flex flex-col items-center justify-center gap-1">
+                            <ImagePlus className="h-5 w-5 text-white/70 group-hover:text-primary" />
+                            <span className="text-xs font-bold text-white/80 group-hover:text-primary">
+                              {reportFiles.length > 0 ? `${reportFiles.length} file(s) selected` : "Upload Main Report(s)"}
+                            </span>
+                            {reportFiles.length > 0 && (
+                              <div className="max-h-12 w-full overflow-y-auto text-[10px] font-medium text-white/75">
+                                {reportFiles.map((file, idx) => (
+                                  <p key={`${file.name}-${idx}`} className="truncate">
+                                    {file.name}
+                                  </p>
+                                ))}
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
                   </div>
+
+                  {submitError && (
+                    <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-xs font-semibold text-red-700">
+                      {submitError}
+                    </div>
+                  )}
 
                   <motion.button
                     whileHover={{ scale: 1.01 }}
                     whileTap={{ scale: 0.99 }}
                     type="submit"
-                    disabled={isLoading}
+                    disabled={isLoading || !isPhoneValid}
                     className="w-full rounded-xl bg-gradient-to-r from-primary to-rose-500 py-4 text-sm font-black uppercase tracking-widest text-white shadow-xl hover:opacity-90 disabled:opacity-50 mt-4"
                   >
                     {isLoading ? "Transmitting to Secure Vault..." : "Submit Verification Request"}

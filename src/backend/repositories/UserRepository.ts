@@ -1,4 +1,4 @@
-import { prisma } from '../config/db';
+import { getPrisma } from '../config/db';
 import { Prisma } from '@prisma/client';
 
 /**
@@ -8,31 +8,31 @@ import { Prisma } from '@prisma/client';
  */
 export class UserRepository {
   async findByEmail(email: string) {
-    return await prisma.user.findUnique({
+    return await getPrisma().user.findUnique({
       where: { email },
     });
   }
 
   async findByMobile(mobile: string) {
-    return await prisma.user.findUnique({
+    return await getPrisma().user.findUnique({
       where: { mobile },
     });
   }
 
   async findById(id: string) {
-    return await prisma.user.findUnique({
+    return await getPrisma().user.findUnique({
       where: { id },
     });
   }
 
   async createUser(data: Prisma.UserCreateInput) {
-    return await prisma.user.create({
+    return await getPrisma().user.create({
       data,
     });
   }
 
   async updateVerificationStatus(id: string, status: string) {
-    return await prisma.user.update({
+    return await getPrisma().user.update({
       where: { id },
       data: { verification_status: status },
     });
@@ -43,7 +43,7 @@ export class UserRepository {
    * Future extension: Replace precise string matching with PostGIS / Haversine distance calculations
    */
   async findActiveDonorsByCity(city: string, country?: string) {
-    return await prisma.user.findMany({
+    return await getPrisma().user.findMany({
       where: {
         is_active_donor: true,
         location_city: {

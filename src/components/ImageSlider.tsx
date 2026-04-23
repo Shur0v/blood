@@ -1,50 +1,88 @@
 import { motion, AnimatePresence } from "motion/react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import type { HomepageSlide } from "@/src/types/homepageSlide";
 
-const slides = [
+const fallbackSlides: HomepageSlide[] = [
   {
-    url: "https://surgmedia.com/wp-content/uploads/2020/10/2171-blood-donation.jpg",
+    id: "fallback-1",
+    order: 1,
+    status: "ACTIVE",
     title: "Saving Lives Together",
-    desc: "Your donation can save up to three lives."
+    image_url: "https://surgmedia.com/wp-content/uploads/2020/10/2171-blood-donation.jpg",
+    description: "Your donation can save up to three lives."
   },
   {
-    url: "https://ichef.bbci.co.uk/news/480/cpsprodpb/a97f/live/81fd48e0-fddb-11ef-ab73-2916b85f325b.jpg.webp",
+    id: "fallback-2",
+    order: 2,
+    status: "ACTIVE",
     title: "Advanced Medical Care",
-    desc: "State-of-the-art facilities for a safe experience."
+    image_url: "https://ichef.bbci.co.uk/news/480/cpsprodpb/a97f/live/81fd48e0-fddb-11ef-ab73-2916b85f325b.jpg.webp",
+    description: "State-of-the-art facilities for a safe experience."
   },
   {
-    url: "https://www.manipalhospitals.com/uploads/blog/Blood_Donation.png",
+    id: "fallback-3",
+    order: 3,
+    status: "ACTIVE",
     title: "Community Support",
-    desc: "A network of heroes ready to help."
-  },
-  {
-    url: "https://dam.northwell.edu/m/6e4d42b8cdaff73e/Drupal-TheWell_blood-donation_AS_567403348.jpg",
-    title: "The Gift of Life",
-    desc: "Be the reason someone smiles today."
-  },
-  {
-    url: "https://api.myfamilymd.org/uploads/blogs/photo_1730539917698.JPG",
-    title: "Join the Movement",
-    desc: "Register as a donor in less than 2 minutes."
+    image_url: "https://www.manipalhospitals.com/uploads/blog/Blood_Donation.png",
+    description: "A network of heroes ready to help."
   }
 ];
 
 export default function ImageSlider() {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [slides, setSlides] = useState<HomepageSlide[]>(fallbackSlides);
 
-  const nextSlide = () => {
-    setCurrentIndex((prev) => (prev + 1) % slides.length);
-  };
+  const loadSlides = useCallback(async () => {
+    try {
+      const res = await fetch("/api/public/homepage-slides", {
+        method: "GET",
+        cache: "no-store",
+      });
 
-  const prevSlide = () => {
-    setCurrentIndex((prev) => (prev - 1 + slides.length) % slides.length);
-  };
+      if (!res.ok) return;
+      const payload = await res.json();
+      if (!payload?.success || !Array.isArray(payload.data) || payload.data.length === 0) return;
+
+      setSlides(payload.data);
+      setCurrentIndex((prev) => (prev >= payload.data.length ? 0 : prev));
+    } catch (error) {
+      // keep fallback slides
+    }
+  }, []);
+
+  useEffect(() => {
+    let mounted = true;
+    void (async () => {
+      if (!mounted) return;
+      await loadSlides();
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, [loadSlides]);
+
+  useEffect(() => {
+    const refreshTimer = setInterval(() => {
+      void loadSlides();
+    }, 10000);
+    return () => clearInterval(refreshTimer);
+  }, [loadSlides]);
+
+  const nextSlide = useCallback(() => {
+    setCurrentIndex((prev) => (prev + 1) % Math.max(slides.length, 1));
+  }, [slides.length]);
+
+  const prevSlide = useCallback(() => {
+    setCurrentIndex((prev) => (prev - 1 + slides.length) % Math.max(slides.length, 1));
+  }, [slides.length]);
 
   useEffect(() => {
     const timer = setInterval(nextSlide, 5000);
     return () => clearInterval(timer);
-  }, []);
+  }, [nextSlide]);
 
   return (
     <section className="mx-auto max-w-7xl px-4 py-24">
@@ -59,7 +97,7 @@ export default function ImageSlider() {
             className="absolute inset-0"
           >
             <img
-              src={slides[currentIndex].url}
+              src={slides[currentIndex].image_url}
               alt={slides[currentIndex].title}
               className="h-full w-full object-cover object-center"
               referrerPolicy="no-referrer"
@@ -81,7 +119,7 @@ export default function ImageSlider() {
                 transition={{ delay: 0.4 }}
                 className="text-xl text-gray-300"
               >
-                {slides[currentIndex].desc}
+                {slides[currentIndex].description || ""}
               </motion.p>
             </div>
           </motion.div>

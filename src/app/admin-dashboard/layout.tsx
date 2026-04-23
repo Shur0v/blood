@@ -2,12 +2,13 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { 
   LayoutDashboard, Users, AlertTriangle, UserMinus, Globe, 
   Droplet, Heart, Image as ImageIcon, PenTool, MousePointerClick, 
   Map, Shield, Menu, X, Bell, Search, Settings, FileText
 } from 'lucide-react';
+import { useEffect } from 'react';
 
 const MENU_ITEMS = [
   { name: 'Dashboard Overview', href: '/admin-dashboard', icon: LayoutDashboard },
@@ -22,12 +23,50 @@ const MENU_ITEMS = [
   { name: 'Write Blog', href: '/admin-dashboard/write-blog', icon: PenTool },
   { name: 'Total Click Count', href: '/admin-dashboard/click-analytics', icon: MousePointerClick },
   { name: 'Heatmap', href: '/admin-dashboard/heatmap', icon: Map },
+  { name: 'Spam Monitor', href: '/admin-dashboard/spam-monitor', icon: AlertTriangle },
   { name: 'Policy Update', href: '/admin-dashboard/policy', icon: Shield },
 ];
 
 export default function AdminDashboardLayout({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
   const pathname = usePathname();
   const [isSidebarOpen, setSidebarOpen] = useState(false);
+  const [isCheckingSession, setIsCheckingSession] = useState(true);
+
+  useEffect(() => {
+    const verifyAdminSession = async () => {
+      try {
+        const res = await fetch('/api/auth/session', {
+          method: 'GET',
+          credentials: 'include',
+          cache: 'no-store',
+        });
+
+        if (!res.ok) {
+          router.replace('/dashboard/admin-login');
+          return;
+        }
+
+        const payload = await res.json();
+        const role = payload?.user?.role;
+        if (!role || !['ADMIN', 'MANAGER'].includes(role)) {
+          router.replace('/dashboard/admin-login');
+          return;
+        }
+      } catch (error) {
+        router.replace('/dashboard/admin-login');
+        return;
+      } finally {
+        setIsCheckingSession(false);
+      }
+    };
+
+    verifyAdminSession();
+  }, [router]);
+
+  if (isCheckingSession) {
+    return <div className="min-h-screen bg-gray-50 dark:bg-[#0f1115]" />;
+  }
 
   const getCurrentPageTitle = () => {
     const route = MENU_ITEMS.find(item => item.href === pathname);

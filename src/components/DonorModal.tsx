@@ -1,12 +1,15 @@
 import React from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { X, Phone, MapPin, User, Droplet, MessageSquare } from "lucide-react";
+import { X, Phone, MapPin, Droplet, CalendarDays } from "lucide-react";
 
 interface Donor {
   name: string;
   phone: string;
   group: string;
   location: string;
+  verificationStatus?: string | null;
+  hemoglobin?: string | null;
+  lastDonationDate?: string | null;
 }
 
 interface DonorModalProps {
@@ -16,6 +19,12 @@ interface DonorModalProps {
 
 export default function DonorModal({ donor, onClose }: DonorModalProps) {
   if (!donor) return null;
+  const isVerified = donor.verificationStatus === "VERIFIED";
+  const hasHemoglobin = donor.hemoglobin && donor.hemoglobin.trim().length > 0;
+  const hasLastDonationDate = donor.lastDonationDate && donor.lastDonationDate.trim().length > 0;
+  const formattedLastDonationDate = hasLastDonationDate
+    ? new Date(donor.lastDonationDate as string).toLocaleDateString()
+    : null;
 
   return (
     <AnimatePresence>
@@ -67,6 +76,23 @@ export default function DonorModal({ donor, onClose }: DonorModalProps) {
                 </div>
               </div>
 
+              {(hasHemoglobin || formattedLastDonationDate) && (
+                <div className="mb-6 flex flex-col gap-2 rounded-2xl bg-white/60 px-4 py-3 text-left">
+                  {hasHemoglobin && (
+                    <div className="flex items-center gap-2 text-gray-700">
+                      <Droplet className="h-4 w-4 text-primary-dark" />
+                      <span className="text-xs font-semibold">Hemoglobin: {donor.hemoglobin} g/dL</span>
+                    </div>
+                  )}
+                  {formattedLastDonationDate && (
+                    <div className="flex items-center gap-2 text-gray-700">
+                      <CalendarDays className="h-4 w-4 text-primary-dark" />
+                      <span className="text-xs font-semibold">Last Donation: {formattedLastDonationDate}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Action Buttons */}
               <div className="flex w-full flex-col gap-3">
                 <motion.a
@@ -78,20 +104,13 @@ export default function DonorModal({ donor, onClose }: DonorModalProps) {
                   <Phone className="h-5 w-5" />
                   Call Now
                 </motion.a>
-                
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="flex w-full items-center justify-center gap-3 rounded-2xl bg-gray-900 py-4 text-lg font-bold text-white shadow-lg shadow-black/10 transition-all hover:bg-gray-800"
-                >
-                  <MessageSquare className="h-5 w-5" />
-                  Send Message
-                </motion.button>
               </div>
 
-              <p className="mt-6 text-xs font-bold uppercase tracking-widest text-gray-400">
-                Verified Life Saver
-              </p>
+              {isVerified && (
+                <p className="mt-6 text-xs font-bold uppercase tracking-widest text-gray-400">
+                  Verified Life Saver
+                </p>
+              )}
             </div>
 
             {/* Decorative background glow */}

@@ -1,15 +1,43 @@
 import React from "react";
 import { motion, useMotionValue, useTransform, animate } from "motion/react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
-const stats = [
-  { label: "Lives Saved", value: 12000, suffix: "k+", target: 12 },
-  { label: "Countries", value: 45, suffix: "", target: 45 },
-  { label: "Active Donors", value: 25000, suffix: "k+", target: 25 },
-  { label: "Success Rate", value: 99, suffix: "%", target: 99 }
+const defaultStats = [
+  { label: "Lives Saved", suffix: "k+", target: 12 },
+  { label: "Countries", suffix: "", target: 45 },
+  { label: "Active Donors", suffix: "k+", target: 25 },
+  { label: "Success Rate", suffix: "%", target: 99 }
 ];
 
 export default function ImpactData() {
+  const [stats, setStats] = useState(defaultStats);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const load = async () => {
+      try {
+        const res = await fetch('/api/public/policy-content', {
+          method: 'GET',
+          cache: 'no-store',
+          signal: controller.signal,
+        });
+        const payload = await res.json();
+        if (!res.ok || !payload.success || !payload.data) return;
+
+        setStats([
+          { label: "Lives Saved", suffix: "k+", target: Number(payload.data.impactLivesSaved ?? 12) },
+          { label: "Countries", suffix: "", target: Number(payload.data.impactCountries ?? 45) },
+          { label: "Active Donors", suffix: "k+", target: Number(payload.data.impactActiveDonors ?? 25) },
+          { label: "Success Rate", suffix: "%", target: Number(payload.data.impactSuccessRate ?? 99) },
+        ]);
+      } catch {
+        // keep defaults
+      }
+    };
+    void load();
+    return () => controller.abort();
+  }, []);
+
   return (
     <section className="relative overflow-hidden py-24 bg-gray-50/50">
       <div className="mx-auto max-w-7xl px-4">

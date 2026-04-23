@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Shield, FileText, AlertTriangle, CheckCircle2, X } from "lucide-react";
 
@@ -11,14 +11,10 @@ import { Shield, FileText, AlertTriangle, CheckCircle2, X } from "lucide-react";
  * ---------------------------------------------------------
  */
 
-const POLICY_DATA = {
-  transport: "Recipient covers 100% round-trip donor transport costs.",
-  safety: "CRITICAL: Never pay any money before the donor arrives at the hospital.",
-  data: "Your HemaID (Phone+DOB) is SHA protocols encrypted on our secure medical servers.",
-  control: "Your profile is hidden until you toggle the 'Available' switch.",
-  zeroFee: "BloodNet is 100% free to use. We never charge for matching.",
-  noTracking: "We use self-hosted, anonymous analytics to protect your identity."
-};
+const FALLBACK_TERMS =
+  "By using BloodNet, you agree to provide authentic donor and recipient information and use the platform only for lawful, ethical medical coordination.";
+const FALLBACK_PRIVACY =
+  "We collect only required profile and donation-related data to match donors and recipients safely. We do not sell your personal data.";
 
 interface PolicyModalProps {
   isOpen: boolean;
@@ -27,6 +23,36 @@ interface PolicyModalProps {
 }
 
 export const PolicyModal = ({ isOpen, onClose, type }: PolicyModalProps) => {
+  const [termsOfService, setTermsOfService] = useState(FALLBACK_TERMS);
+  const [privacySummary, setPrivacySummary] = useState(FALLBACK_PRIVACY);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const controller = new AbortController();
+    const load = async () => {
+      try {
+        const res = await fetch('/api/public/policy-content', {
+          method: 'GET',
+          cache: 'no-store',
+          signal: controller.signal,
+        });
+        const payload = await res.json();
+        if (!res.ok || !payload.success) return;
+        setTermsOfService(payload.data.termsOfService || FALLBACK_TERMS);
+        setPrivacySummary(payload.data.privacySummary || FALLBACK_PRIVACY);
+      } catch {
+        // fallback content remains
+      }
+    };
+    void load();
+    return () => controller.abort();
+  }, [isOpen]);
+
+  const activeText = useMemo(
+    () => (type === 'terms' ? termsOfService : privacySummary),
+    [privacySummary, termsOfService, type],
+  );
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -72,44 +98,16 @@ export const PolicyModal = ({ isOpen, onClose, type }: PolicyModalProps) => {
                   <span className="text-[10px] font-black uppercase tracking-widest">Safety Protocol</span>
                 </div>
                 <p className="text-sm font-bold text-white leading-relaxed">
-                  {POLICY_DATA.safety}
+                  CRITICAL: Never pay any money before the donor arrives at the hospital.
                 </p>
               </div>
 
-              {/* Policy Points */}
-              <div className="space-y-4">
-                {type === 'terms' ? (
-                  <>
-                    <PolicyPoint 
-                      icon={<CheckCircle2 className="h-4 w-4" />} 
-                      title="Transportation" 
-                      description={POLICY_DATA.transport} 
-                    />
-                    <PolicyPoint 
-                      icon={<CheckCircle2 className="h-4 w-4" />} 
-                      title="Zero-Fee Platform" 
-                      description={POLICY_DATA.zeroFee} 
-                    />
-                  </>
-                ) : (
-                  <>
-                    <PolicyPoint 
-                      icon={<CheckCircle2 className="h-4 w-4" />} 
-                      title="SHA protocols Encryption" 
-                      description={POLICY_DATA.data} 
-                    />
-                    <PolicyPoint 
-                      icon={<CheckCircle2 className="h-4 w-4" />} 
-                      title="Full Privacy Control" 
-                      description={POLICY_DATA.control} 
-                    />
-                    <PolicyPoint 
-                      icon={<CheckCircle2 className="h-4 w-4" />} 
-                      title="Anonymous Analytics" 
-                      description={POLICY_DATA.noTracking} 
-                    />
-                  </>
-                )}
+              <div className="rounded-2xl border border-white/20 bg-black/20 p-4">
+                <PolicyPoint
+                  icon={<CheckCircle2 className="h-4 w-4" />}
+                  title={type === 'terms' ? 'Terms of Service' : 'Privacy Summary'}
+                  description={activeText}
+                />
               </div>
             </div>
 

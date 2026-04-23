@@ -1,6 +1,11 @@
 import { motion } from "motion/react";
 
-export default function CTA() {
+interface CTAProps {
+  onSignUpClick?: () => void;
+  showSignUpButton?: boolean;
+}
+
+export default function CTA({ onSignUpClick, showSignUpButton = true }: CTAProps) {
   return (
     <section className="mx-auto max-w-7xl px-4 py-24">
       <motion.div
@@ -20,17 +25,20 @@ export default function CTA() {
             </p>
           </div>
 
-          <motion.button
-            whileHover={{ scale: 1.05, boxShadow: "0 0 40px rgba(255,255,255,0.4)" }}
-            whileTap={{ scale: 0.95 }}
-            className="group relative overflow-hidden rounded-[8px] bg-white px-12 py-6 text-xl font-bold text-primary-dark shadow-2xl transition-all"
-          >
-            <span className="relative z-10">Sign Up Now</span>
-            <div className="absolute inset-0 -z-10 translate-y-full bg-primary-dark/10 transition-transform group-hover:translate-y-0" />
-            
-            {/* Glossy Reflection Effect */}
-            <div className="absolute top-0 -left-full h-full w-full bg-gradient-to-r from-transparent via-white/40 to-transparent transition-all duration-1000 group-hover:left-full" />
-          </motion.button>
+          {showSignUpButton && (
+            <motion.button
+              whileHover={{ scale: 1.05, boxShadow: "0 0 40px rgba(255,255,255,0.4)" }}
+              whileTap={{ scale: 0.95 }}
+              onClick={onSignUpClick}
+              className="group relative overflow-hidden rounded-[8px] bg-white px-12 py-6 text-xl font-bold text-primary-dark shadow-2xl transition-all"
+            >
+              <span className="relative z-10">Sign Up Now</span>
+              <div className="absolute inset-0 -z-10 translate-y-full bg-primary-dark/10 transition-transform group-hover:translate-y-0" />
+              
+              {/* Glossy Reflection Effect */}
+              <div className="absolute top-0 -left-full h-full w-full bg-gradient-to-r from-transparent via-white/40 to-transparent transition-all duration-1000 group-hover:left-full" />
+            </motion.button>
+          )}
         </div>
 
         {/* Floating Glows */}
