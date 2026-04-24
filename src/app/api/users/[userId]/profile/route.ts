@@ -29,6 +29,7 @@ export async function GET(req: Request, context: { params: Promise<{ userId: str
       email: user.email,
       mobile: user.mobile,
       bloodGroup: user.blood_group,
+      dateOfBirth: user.date_of_birth,
       profileImageUrl: user.profile_image_url,
       city: user.location_city,
       country: user.location_country,

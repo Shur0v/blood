@@ -6,7 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { 
   LayoutDashboard, Users, AlertTriangle, UserMinus, Globe, 
   Droplet, Heart, Image as ImageIcon, PenTool, MousePointerClick, 
-  Map, Shield, Menu, X, Bell, Search, Settings, FileText
+  Map, Shield, Menu, X, Bell, Search, Settings, FileText, Palette
 } from 'lucide-react';
 import { useEffect } from 'react';
 
@@ -23,6 +23,7 @@ const MENU_ITEMS = [
   { name: 'Write Blog', href: '/admin-dashboard/write-blog', icon: PenTool },
   { name: 'Total Click Count', href: '/admin-dashboard/click-analytics', icon: MousePointerClick },
   { name: 'Heatmap', href: '/admin-dashboard/heatmap', icon: Map },
+  { name: 'Theme Control', href: '/admin-dashboard/theme-control', icon: Palette },
   { name: 'Spam Monitor', href: '/admin-dashboard/spam-monitor', icon: AlertTriangle },
   { name: 'Policy Update', href: '/admin-dashboard/policy', icon: Shield },
 ];

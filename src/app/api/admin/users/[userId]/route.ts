@@ -10,6 +10,7 @@ const UserPatchSchema = z.object({
   email: z.string().email().optional(),
   mobile: z.string().min(3).max(30).optional(),
   bloodGroup: z.string().min(1).max(10).optional(),
+  dateOfBirth: z.string().datetime().nullable().optional(),
   profileImageUrl: z.string().url().nullable().optional(),
   city: z.string().min(1).max(120).optional(),
   country: z.string().min(1).max(120).optional(),
@@ -62,6 +63,7 @@ export async function GET(req: Request, context: { params: Promise<{ userId: str
       email: user.email,
       mobile: user.mobile,
       bloodGroup: user.blood_group,
+      dateOfBirth: user.date_of_birth,
       profileImageUrl: user.profile_image_url,
       city: user.location_city,
       country: user.location_country,
@@ -113,6 +115,7 @@ export async function PATCH(req: Request, context: { params: Promise<{ userId: s
     email?: string;
     mobile?: string;
     blood_group?: string;
+    date_of_birth?: Date | null;
     profile_image_url?: string | null;
     location_city?: string;
     location_country?: string;
@@ -126,6 +129,7 @@ export async function PATCH(req: Request, context: { params: Promise<{ userId: s
   if (payload.email !== undefined) updateData.email = payload.email;
   if (payload.mobile !== undefined) updateData.mobile = payload.mobile;
   if (payload.bloodGroup !== undefined) updateData.blood_group = payload.bloodGroup;
+  if (payload.dateOfBirth !== undefined) updateData.date_of_birth = payload.dateOfBirth ? new Date(payload.dateOfBirth) : null;
   if (payload.profileImageUrl !== undefined) updateData.profile_image_url = payload.profileImageUrl;
   if (payload.city !== undefined) updateData.location_city = payload.city;
   if (payload.country !== undefined) updateData.location_country = payload.country;
@@ -179,6 +183,7 @@ export async function PATCH(req: Request, context: { params: Promise<{ userId: s
         email: updated.email,
         mobile: updated.mobile,
         bloodGroup: updated.blood_group,
+        dateOfBirth: updated.date_of_birth,
         profileImageUrl: updated.profile_image_url,
         city: updated.location_city,
         country: updated.location_country,

@@ -248,6 +248,7 @@ export default function OrganHero() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setActiveOrgan(null)}
+                  data-analytics-component="Organ Filter All"
                   className={`flex h-12 flex-1 items-center justify-center rounded-[8px] text-[10px] font-bold transition-all sm:text-xs md:text-sm ${
                     activeOrgan === null
                       ? "bg-primary-dark text-white shadow-lg shadow-primary-dark/30"
@@ -262,6 +263,7 @@ export default function OrganHero() {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => setActiveOrgan(organ.name)}
+                    data-analytics-component={`Organ Filter ${organ.name}`}
                     className={`flex h-12 flex-1 items-center justify-center rounded-[8px] text-[10px] font-bold transition-all sm:text-xs md:text-sm ${
                       activeOrgan === organ.name
                         ? "bg-primary-dark text-white shadow-lg shadow-primary-dark/30"
@@ -280,6 +282,7 @@ export default function OrganHero() {
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => setActiveBloodGroup(null)}
+                      data-analytics-component="Organ Blood Filter All"
                       className={`flex h-12 flex-1 items-center justify-center rounded-[8px] text-[10px] font-bold transition-all sm:text-xs md:text-sm ${
                         activeBloodGroup === null
                           ? "bg-primary-dark text-white shadow-lg shadow-primary-dark/30"
@@ -294,6 +297,7 @@ export default function OrganHero() {
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={() => setActiveBloodGroup(group)}
+                        data-analytics-component={`Organ Blood Filter ${group}`}
                         className={`flex h-12 flex-1 items-center justify-center rounded-[8px] text-[10px] font-bold transition-all sm:text-xs md:text-sm ${
                           activeBloodGroup === group
                             ? "bg-primary-dark text-white shadow-lg shadow-primary-dark/30"
@@ -310,6 +314,7 @@ export default function OrganHero() {
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => setIsSearchOpen(true)}
+                      data-analytics-component="Organ Search Open"
                       className="flex h-12 w-12 items-center justify-center rounded-[8px] glass text-gray-600 hover:border-primary-dark/30 hover:text-primary-dark"
                     >
                       <Search className="h-5 w-5" />
@@ -336,6 +341,7 @@ export default function OrganHero() {
                       setIsSearchOpen(false);
                       setSearchQuery("");
                     }}
+                    data-analytics-component="Organ Search Close"
                     className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[8px] bg-primary-dark text-white shadow-lg shadow-primary-dark/30"
                   >
                     <X className="h-5 w-5" />
@@ -363,6 +369,7 @@ export default function OrganHero() {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: index * 0.05 }}
                 onClick={() => setSelectedDonor({ ...donor, group: donor.organ })}
+                data-analytics-component="Organ Donor Card Open"
                 whileHover={{
                   y: -5,
                   transition: { type: "spring", stiffness: 400, damping: 15 }
@@ -399,6 +406,7 @@ export default function OrganHero() {
               type="button"
               onClick={() => void handleLoadMore()}
               disabled={isLoadingMore}
+              data-analytics-component="Organ Donor Show More"
               className="rounded-[8px] bg-primary-dark px-8 py-3 text-sm font-bold text-white shadow-lg transition hover:bg-primary-dark/90 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isLoadingMore ? "Loading..." : "Show More"}

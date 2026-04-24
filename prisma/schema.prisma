@@ -14,6 +14,7 @@ model User {
   mobile              String   @unique
   blood_group         String
   profile_image_url   String?
+  date_of_birth       DateTime?
   
   location_city       String
   location_country    String
@@ -306,6 +307,7 @@ model PlatformSettings {
   uncompleted_ops   Int      @default(0)
   weekly_donors     Int      @default(0)
   donor_requests    Int      @default(0)
+  ui_theme          String   @default("classic")
   updated_at        DateTime @updatedAt
 }
 

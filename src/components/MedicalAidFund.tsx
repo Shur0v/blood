@@ -206,6 +206,10 @@ export default function MedicalAidFund() {
                     <ArrowRight className="h-6 w-6 transition-transform group-hover:translate-x-2" />
                   </div>
                 </motion.button>
+                <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-white/35 bg-white/15 px-3 py-1.5 text-xs font-bold tracking-wide text-white/95 backdrop-blur-sm shadow-md">
+                  <ShieldAlert className="h-3.5 w-3.5" />
+                  SSL Encrypted
+                </div>
               </div>
 
               <button 

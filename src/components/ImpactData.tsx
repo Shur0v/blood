@@ -25,9 +25,9 @@ export default function ImpactData() {
         if (!res.ok || !payload.success || !payload.data) return;
 
         setStats([
-          { label: "Lives Saved", suffix: "k+", target: Number(payload.data.impactLivesSaved ?? 12) },
+          { label: "lives Impacted This Year", suffix: "+", target: Number(payload.data.impactLivesSaved ?? 12) },
           { label: "Countries", suffix: "", target: Number(payload.data.impactCountries ?? 45) },
-          { label: "Active Donors", suffix: "k+", target: Number(payload.data.impactActiveDonors ?? 25) },
+          { label: "Active Heroes", suffix: "+", target: Number(payload.data.impactActiveDonors ?? 25) },
           { label: "Success Rate", suffix: "%", target: Number(payload.data.impactSuccessRate ?? 99) },
         ]);
       } catch {
@@ -43,17 +43,17 @@ export default function ImpactData() {
       <div className="mx-auto max-w-7xl px-4">
         <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
           {stats.map((stat, i) => (
-            <Counter 
-              key={i} 
-              label={stat.label} 
-              target={stat.target} 
-              suffix={stat.suffix} 
-              delay={i * 0.1} 
+            <Counter
+              key={i}
+              label={stat.label}
+              target={stat.target}
+              suffix={stat.suffix}
+              delay={i * 0.1}
             />
           ))}
         </div>
       </div>
-      
+
       {/* Background Decorative Elements */}
       <div className="absolute top-0 left-0 h-full w-full pointer-events-none overflow-hidden">
         <div className="absolute -top-24 -left-24 h-64 w-64 rounded-full bg-primary-dark/5 blur-[100px]" />

@@ -40,25 +40,6 @@ const buildCityRoutes = (baseUrl: string, rows: CityRow[]) => {
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = getPublicBaseUrl();
-  const prisma = getPrisma();
-  const [blogs, cityRows] = await Promise.all([
-    prisma.blog.findMany({
-      where: { status: 'PUBLISHED', slug: { not: null } },
-      select: { slug: true, updated_at: true },
-    }),
-    prisma.$queryRaw<CityRow[]>`
-      SELECT city, country FROM (
-        SELECT usc.city, usc.country FROM "UserServiceCity" usc
-        UNION
-        SELECT u.location_city AS city, u.location_country AS country FROM "User" u
-        UNION
-        SELECT mbd.location_city AS city, mbd.location_country AS country FROM "ManualBloodDonor" mbd
-        UNION
-        SELECT mod.location_city AS city, mod.location_country AS country FROM "ManualOrganDonor" mod
-      ) loc
-    `,
-  ]);
-
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: `${baseUrl}/`, lastModified: new Date() },
     { url: `${baseUrl}/blog`, lastModified: new Date() },
@@ -66,14 +47,38 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/privacy`, lastModified: new Date() },
   ];
 
-  const blogRoutes: MetadataRoute.Sitemap = blogs
-    .filter((row) => row.slug)
-    .map((row) => ({
-      url: `${baseUrl}/blog/${row.slug}`,
-      lastModified: row.updated_at,
-    }));
+  try {
+    const prisma = getPrisma();
+    const [blogs, cityRows] = await Promise.all([
+      prisma.blog.findMany({
+        where: { status: 'PUBLISHED', slug: { not: null } },
+        select: { slug: true, updated_at: true },
+      }),
+      prisma.$queryRaw<CityRow[]>`
+        SELECT city, country FROM (
+          SELECT usc.city, usc.country FROM "UserServiceCity" usc
+          UNION
+          SELECT u.location_city AS city, u.location_country AS country FROM "User" u
+          UNION
+          SELECT mbd.location_city AS city, mbd.location_country AS country FROM "ManualBloodDonor" mbd
+          UNION
+          SELECT mod.location_city AS city, mod.location_country AS country FROM "ManualOrganDonor" mod
+        ) loc
+      `,
+    ]);
 
-  const cityRoutes = buildCityRoutes(baseUrl, cityRows);
+    const blogRoutes: MetadataRoute.Sitemap = blogs
+      .filter((row) => row.slug)
+      .map((row) => ({
+        url: `${baseUrl}/blog/${row.slug}`,
+        lastModified: row.updated_at,
+      }));
 
-  return [...staticRoutes, ...blogRoutes, ...cityRoutes];
+    const cityRoutes = buildCityRoutes(baseUrl, cityRows);
+    return [...staticRoutes, ...blogRoutes, ...cityRoutes];
+  } catch (error) {
+    console.error('[sitemap] Falling back to static routes:', error);
+    return staticRoutes;
+  }
+
 }

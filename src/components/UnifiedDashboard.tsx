@@ -56,13 +56,17 @@ interface UnifiedDashboardProps {
 
 export default function UnifiedDashboard({ isReady, onToggleReady, mode = "self", targetUserId, profile }: UnifiedDashboardProps) {
   const [weight, setWeight] = useState(70);
+  const [weightTouched, setWeightTouched] = useState(false);
   const [weightUnknown, setWeightUnknown] = useState(false);
   const [height, setHeight] = useState(170);
+  const [heightTouched, setHeightTouched] = useState(false);
   const [heightUnknown, setHeightUnknown] = useState(false);
   const [hemoglobin, setHemoglobin] = useState(14.5);
+  const [hemoglobinTouched, setHemoglobinTouched] = useState(false);
   const [hemoglobinUnknown, setHemoglobinUnknown] = useState(false);
   const [isDiabetic, setIsDiabetic] = useState(false);
   const [glucose, setGlucose] = useState(95);
+  const [glucoseTouched, setGlucoseTouched] = useState(false);
   const [glucoseUnknown, setGlucoseUnknown] = useState(false);
   const [selectedVaccines, setSelectedVaccines] = useState<string[]>([]);
   const [selectedAllergies, setSelectedAllergies] = useState<string[]>(["Dust"]);
@@ -101,15 +105,43 @@ export default function UnifiedDashboard({ isReady, onToggleReady, mode = "self"
     if (!profile) return;
 
     const health = (profile.healthData ?? {}) as Record<string, unknown>;
-    setWeight(typeof health.weight === "number" ? health.weight : 70);
-    setWeightUnknown(Boolean(health.weightUnknown));
-    setHeight(typeof health.height === "number" ? health.height : 170);
-    setHeightUnknown(Boolean(health.heightUnknown));
-    setHemoglobin(typeof health.hemoglobin === "number" ? health.hemoglobin : 14.5);
-    setHemoglobinUnknown(Boolean(health.hemoglobinUnknown));
+    const hasExplicitTouchedFlag = (key: string) => health[key] === true;
+    const hasNumericValue = (key: string) => typeof health[key] === "number";
+    const resolveTouched = (key: string, fallbackValue: number, unknown: boolean) => {
+      if (unknown) return true;
+      if (hasExplicitTouchedFlag(`${key}Touched`)) return true;
+      if (!hasNumericValue(key)) return false;
+      return Number(health[key]) !== fallbackValue;
+    };
+
+    const nextWeightUnknown = Boolean(health.weightUnknown);
+    const nextWeight = typeof health.weight === "number" ? health.weight : 70;
+    const nextWeightTouched = resolveTouched("weight", 70, nextWeightUnknown);
+    setWeight(nextWeight);
+    setWeightUnknown(nextWeightUnknown);
+    setWeightTouched(nextWeightTouched);
+
+    const nextHeightUnknown = Boolean(health.heightUnknown);
+    const nextHeight = typeof health.height === "number" ? health.height : 170;
+    const nextHeightTouched = resolveTouched("height", 170, nextHeightUnknown);
+    setHeight(nextHeight);
+    setHeightUnknown(nextHeightUnknown);
+    setHeightTouched(nextHeightTouched);
+
+    const nextHemoglobinUnknown = Boolean(health.hemoglobinUnknown);
+    const nextHemoglobin = typeof health.hemoglobin === "number" ? health.hemoglobin : 14.5;
+    const nextHemoglobinTouched = resolveTouched("hemoglobin", 14.5, nextHemoglobinUnknown);
+    setHemoglobin(nextHemoglobin);
+    setHemoglobinUnknown(nextHemoglobinUnknown);
+    setHemoglobinTouched(nextHemoglobinTouched);
+
     setIsDiabetic(Boolean(health.isDiabetic));
-    setGlucose(typeof health.glucose === "number" ? health.glucose : 95);
-    setGlucoseUnknown(Boolean(health.glucoseUnknown));
+    const nextGlucoseUnknown = Boolean(health.glucoseUnknown);
+    const nextGlucose = typeof health.glucose === "number" ? health.glucose : 95;
+    const nextGlucoseTouched = resolveTouched("glucose", 95, nextGlucoseUnknown);
+    setGlucose(nextGlucose);
+    setGlucoseUnknown(nextGlucoseUnknown);
+    setGlucoseTouched(nextGlucoseTouched);
     setSelectedVaccines(Array.isArray(health.vaccinations) ? health.vaccinations.filter((v): v is string => typeof v === "string") : []);
     setSelectedAllergies(Array.isArray(health.allergies) ? health.allergies.filter((a): a is string => typeof a === "string") : ["Dust"]);
     setRegisteredOrgans(normalizeOrganList(profile.activeOrgans ?? []));
@@ -214,14 +246,14 @@ export default function UnifiedDashboard({ isReady, onToggleReady, mode = "self"
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          weight,
+          weight: weightTouched && !weightUnknown ? weight : null,
           weightUnknown,
-          height,
+          height: heightTouched && !heightUnknown ? height : null,
           heightUnknown,
-          hemoglobin,
+          hemoglobin: hemoglobinTouched && !hemoglobinUnknown ? hemoglobin : null,
           hemoglobinUnknown,
           isDiabetic,
-          glucose,
+          glucose: glucoseTouched && !glucoseUnknown ? glucose : null,
           glucoseUnknown,
           vaccinations: selectedVaccines,
           allergies: selectedAllergies,
@@ -249,13 +281,17 @@ export default function UnifiedDashboard({ isReady, onToggleReady, mode = "self"
     return () => clearTimeout(timer);
   }, [
     weight,
+    weightTouched,
     weightUnknown,
     height,
+    heightTouched,
     heightUnknown,
     hemoglobin,
+    hemoglobinTouched,
     hemoglobinUnknown,
     isDiabetic,
     glucose,
+    glucoseTouched,
     glucoseUnknown,
     selectedVaccines,
     selectedAllergies,
@@ -607,22 +643,31 @@ export default function UnifiedDashboard({ isReady, onToggleReady, mode = "self"
                     <div className="flex items-center justify-between">
                       <div className="flex flex-col">
                         <label className="text-[10px] font-black uppercase tracking-widest text-text/40">Body Weight</label>
-                        <span className={`text-lg font-black transition-colors ${weightUnknown ? "text-text/20" : "text-primary"}`}>{weight} kg</span>
+                        <span className={`text-lg font-black transition-colors ${(!weightTouched || weightUnknown) ? "text-text/20" : "text-primary"}`}>
+                          {!weightTouched ? "--" : weightUnknown ? "Not set" : `${weight} kg`}
+                        </span>
                       </div>
                       <button 
-                        onClick={() => setWeightUnknown(!weightUnknown)}
+                        onClick={() => {
+                          setWeightTouched(true);
+                          setWeightUnknown(!weightUnknown);
+                        }}
                         className={`rounded-full px-5 py-2 text-[10px] font-black uppercase tracking-widest transition-all ${weightUnknown ? "bg-primary text-white shadow-lg shadow-primary/20" : "bg-text/5 text-text/40 hover:bg-text/10"}`}
                       >
                         Don't Know
                       </button>
                     </div>
-                    <div className={weightUnknown ? "opacity-20 pointer-events-none" : ""}>
+                    <div className={weightUnknown ? "opacity-20 pointer-events-none" : !weightTouched ? "opacity-40" : ""}>
                       <input 
                         type="range" 
                         min="40" 
                         max="150" 
                         value={weight}
-                        onChange={(e) => setWeight(parseInt(e.target.value))}
+                        onChange={(e) => {
+                          setWeightTouched(true);
+                          setWeightUnknown(false);
+                          setWeight(parseInt(e.target.value));
+                        }}
                         className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-text/10 accent-primary"
                       />
                     </div>
@@ -633,23 +678,32 @@ export default function UnifiedDashboard({ isReady, onToggleReady, mode = "self"
                     <div className="flex items-center justify-between">
                       <div className="flex flex-col">
                         <label className="text-[10px] font-black uppercase tracking-widest text-text/40">Hemoglobin Level</label>
-                        <span className={`text-lg font-black transition-colors ${hemoglobinUnknown ? "text-text/20" : "text-primary"}`}>{hemoglobin} g/dL</span>
+                        <span className={`text-lg font-black transition-colors ${(!hemoglobinTouched || hemoglobinUnknown) ? "text-text/20" : "text-primary"}`}>
+                          {!hemoglobinTouched ? "--" : hemoglobinUnknown ? "Not set" : `${hemoglobin} g/dL`}
+                        </span>
                       </div>
                       <button 
-                        onClick={() => setHemoglobinUnknown(!hemoglobinUnknown)}
+                        onClick={() => {
+                          setHemoglobinTouched(true);
+                          setHemoglobinUnknown(!hemoglobinUnknown);
+                        }}
                         className={`rounded-full px-5 py-2 text-[10px] font-black uppercase tracking-widest transition-all ${hemoglobinUnknown ? "bg-primary text-white shadow-lg shadow-primary/20" : "bg-text/5 text-text/40 hover:bg-text/10"}`}
                       >
                         Don't Know
                       </button>
                     </div>
-                    <div className={hemoglobinUnknown ? "opacity-20 pointer-events-none" : ""}>
+                    <div className={hemoglobinUnknown ? "opacity-20 pointer-events-none" : !hemoglobinTouched ? "opacity-40" : ""}>
                       <input 
                         type="range" 
                         min="8" 
                         max="20" 
                         step="0.1"
                         value={hemoglobin}
-                        onChange={(e) => setHemoglobin(parseFloat(e.target.value))}
+                        onChange={(e) => {
+                          setHemoglobinTouched(true);
+                          setHemoglobinUnknown(false);
+                          setHemoglobin(parseFloat(e.target.value));
+                        }}
                         className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-text/10 accent-primary"
                       />
                     </div>
@@ -669,24 +723,33 @@ export default function UnifiedDashboard({ isReady, onToggleReady, mode = "self"
                       </div>
                     </div>
                     <button 
-                      onClick={() => setHeightUnknown(!heightUnknown)}
+                      onClick={() => {
+                        setHeightTouched(true);
+                        setHeightUnknown(!heightUnknown);
+                      }}
                       className={`rounded-full px-8 py-3 text-xs font-black uppercase tracking-widest transition-all ${heightUnknown ? "bg-primary text-white shadow-lg shadow-primary/20" : "bg-text/5 text-text/40 hover:bg-text/10"}`}
                     >
                       Don't Know
                     </button>
                   </div>
                   
-                  <div className={heightUnknown ? "opacity-20 pointer-events-none transition-opacity" : "transition-opacity"}>
+                  <div className={heightUnknown ? "opacity-20 pointer-events-none transition-opacity" : !heightTouched ? "opacity-40 transition-opacity" : "transition-opacity"}>
                     <div className="flex items-center justify-between mb-3">
                       <span className="text-[10px] font-black uppercase tracking-widest text-text/40">Height Overview</span>
-                      <span className={`text-xl font-black transition-colors ${heightUnknown ? "text-text/20" : "text-primary"}`}>{height} cm</span>
+                      <span className={`text-xl font-black transition-colors ${(!heightTouched || heightUnknown) ? "text-text/20" : "text-primary"}`}>
+                        {!heightTouched ? "--" : heightUnknown ? "Not set" : `${height} cm`}
+                      </span>
                     </div>
                     <input 
                       type="range" 
                       min="100" 
                       max="250" 
                       value={height}
-                      onChange={(e) => setHeight(parseInt(e.target.value))}
+                      onChange={(e) => {
+                        setHeightTouched(true);
+                        setHeightUnknown(false);
+                        setHeight(parseInt(e.target.value));
+                      }}
                       className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-text/10 accent-primary"
                     />
                   </div>
@@ -732,22 +795,31 @@ export default function UnifiedDashboard({ isReady, onToggleReady, mode = "self"
                           <div className="flex items-center justify-between">
                             <div className="flex flex-col">
                               <label className="text-[10px] font-black uppercase tracking-widest text-text/40">Average Glucose Level</label>
-                              <span className={`text-lg font-black transition-colors ${glucoseUnknown ? "text-text/20" : "text-blue-600"}`}>{glucose} mg/dL</span>
+                              <span className={`text-lg font-black transition-colors ${(!glucoseTouched || glucoseUnknown) ? "text-text/20" : "text-blue-600"}`}>
+                                {!glucoseTouched ? "--" : glucoseUnknown ? "Not set" : `${glucose} mg/dL`}
+                              </span>
                             </div>
                             <button 
-                              onClick={() => setGlucoseUnknown(!glucoseUnknown)}
+                              onClick={() => {
+                                setGlucoseTouched(true);
+                                setGlucoseUnknown(!glucoseUnknown);
+                              }}
                               className={`rounded-full px-5 py-2 text-[10px] font-black uppercase tracking-widest transition-all ${glucoseUnknown ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20" : "bg-text/5 text-text/40 hover:bg-text/10"}`}
                             >
                               Don't Know
                             </button>
                           </div>
-                          <div className={glucoseUnknown ? "opacity-20 pointer-events-none" : ""}>
+                          <div className={glucoseUnknown ? "opacity-20 pointer-events-none" : !glucoseTouched ? "opacity-40" : ""}>
                             <input 
                               type="range" 
                               min="50" 
                               max="300" 
                               value={glucose}
-                              onChange={(e) => setGlucose(parseInt(e.target.value))}
+                              onChange={(e) => {
+                                setGlucoseTouched(true);
+                                setGlucoseUnknown(false);
+                                setGlucose(parseInt(e.target.value));
+                              }}
                               className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-text/10 accent-blue-600"
                             />
                           </div>

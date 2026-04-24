@@ -66,17 +66,11 @@ export default function DonationToggleModal({ isOpen, onClose, onConfirm }: Dona
               </div>
 
               <div className="flex gap-3">
-                <button 
-                  onClick={onClose}
-                  className="flex-1 rounded-2xl border border-white/10 bg-white/5 py-4 text-xs font-black uppercase tracking-widest text-white/60 transition-all hover:bg-white/10 hover:text-white"
-                >
-                  Skip
-                </button>
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleConfirm}
-                  className="flex-[2] flex items-center justify-center gap-2 rounded-2xl bg-primary py-4 text-xs font-black uppercase tracking-widest text-white shadow-xl shadow-primary/20 transition-all hover:opacity-90"
+                  className="w-full flex items-center justify-center gap-2 rounded-2xl bg-primary py-4 text-xs font-black uppercase tracking-widest text-white shadow-xl shadow-primary/20 transition-all hover:opacity-90"
                 >
                   <CheckCircle2 className="h-4 w-4" />
                   Confirm Status

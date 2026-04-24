@@ -24,6 +24,7 @@ const VerifyOtpSchema = z.object({
   otp: z.string().length(6),
   // Registration expansion fallback payload if the user doesn't already exist
   name: z.string().optional(),
+  dateOfBirth: z.string().datetime().optional(),
   mobile: z.string().optional(),
   phone: z.object({
     country_name: z.string().min(1),
@@ -127,7 +128,7 @@ export class AuthController {
         return NextResponse.json({ error: 'Invalid payload format' }, { status: 400 });
       }
 
-      const { email, otp, name, mobile, phone, bloodGroup, location, locations, deviceFingerprint } = parsed.data;
+      const { email, otp, name, dateOfBirth, mobile, phone, bloodGroup, location, locations, deviceFingerprint } = parsed.data;
       const fingerprintHash = getFingerprintHash(deviceFingerprint);
       const ipHash = getIpHash(req);
 
@@ -174,7 +175,7 @@ export class AuthController {
 
         // Complete registration if payload contains everything
         const submittedLocations = locations?.length ? locations : (location ? [location] : []);
-        if (!name || !normalizedMobile || !bloodGroup || submittedLocations.length === 0) {
+        if (!name || !dateOfBirth || !normalizedMobile || !bloodGroup || submittedLocations.length === 0) {
           return NextResponse.json({ 
             error: 'User does not exist. Full registration payload required to continue.' 
           }, { status: 404 }); // 404 triggers FE to send full register payload instead of just login
@@ -236,6 +237,7 @@ export class AuthController {
               name,
               email,
               mobile: normalizedMobile,
+              date_of_birth: new Date(dateOfBirth),
               ...(phoneValidation?.ok && {
                 phone_country_name: phoneValidation.normalized.country_name,
                 phone_country_code: phoneValidation.normalized.country_code,

@@ -3,36 +3,10 @@ import { useState, useEffect, useCallback } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { HomepageSlide } from "@/src/types/homepageSlide";
 
-const fallbackSlides: HomepageSlide[] = [
-  {
-    id: "fallback-1",
-    order: 1,
-    status: "ACTIVE",
-    title: "Saving Lives Together",
-    image_url: "https://surgmedia.com/wp-content/uploads/2020/10/2171-blood-donation.jpg",
-    description: "Your donation can save up to three lives."
-  },
-  {
-    id: "fallback-2",
-    order: 2,
-    status: "ACTIVE",
-    title: "Advanced Medical Care",
-    image_url: "https://ichef.bbci.co.uk/news/480/cpsprodpb/a97f/live/81fd48e0-fddb-11ef-ab73-2916b85f325b.jpg.webp",
-    description: "State-of-the-art facilities for a safe experience."
-  },
-  {
-    id: "fallback-3",
-    order: 3,
-    status: "ACTIVE",
-    title: "Community Support",
-    image_url: "https://www.manipalhospitals.com/uploads/blog/Blood_Donation.png",
-    description: "A network of heroes ready to help."
-  }
-];
-
 export default function ImageSlider() {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [slides, setSlides] = useState<HomepageSlide[]>(fallbackSlides);
+  const [slides, setSlides] = useState<HomepageSlide[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const loadSlides = useCallback(async () => {
     try {
@@ -43,12 +17,14 @@ export default function ImageSlider() {
 
       if (!res.ok) return;
       const payload = await res.json();
-      if (!payload?.success || !Array.isArray(payload.data) || payload.data.length === 0) return;
+      if (!payload?.success || !Array.isArray(payload.data)) return;
 
       setSlides(payload.data);
       setCurrentIndex((prev) => (prev >= payload.data.length ? 0 : prev));
     } catch (error) {
-      // keep fallback slides
+      // no-op: keep latest DB-loaded state
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
@@ -83,6 +59,18 @@ export default function ImageSlider() {
     const timer = setInterval(nextSlide, 5000);
     return () => clearInterval(timer);
   }, [nextSlide]);
+
+  if (isLoading) {
+    return (
+      <section className="mx-auto max-w-7xl px-4 py-24">
+        <div className="relative h-[600px] w-full overflow-hidden rounded-[8px] bg-gray-200/60 shadow-2xl" />
+      </section>
+    );
+  }
+
+  if (slides.length === 0) {
+    return null;
+  }
 
   return (
     <section className="mx-auto max-w-7xl px-4 py-24">
@@ -129,6 +117,7 @@ export default function ImageSlider() {
         <div className="absolute top-1/2 left-8 -translate-y-1/2">
           <button
             onClick={prevSlide}
+            data-analytics-component="Homepage Slider Previous"
             className="glass flex h-14 w-14 items-center justify-center rounded-[8px] text-white transition-all hover:bg-glass"
           >
             <ChevronLeft className="h-8 w-8" />
@@ -137,6 +126,7 @@ export default function ImageSlider() {
         <div className="absolute top-1/2 right-8 -translate-y-1/2">
           <button
             onClick={nextSlide}
+            data-analytics-component="Homepage Slider Next"
             className="glass flex h-14 w-14 items-center justify-center rounded-[8px] text-white transition-all hover:bg-glass"
           >
             <ChevronRight className="h-8 w-8" />
@@ -149,6 +139,7 @@ export default function ImageSlider() {
             <button
               key={index}
               onClick={() => setCurrentIndex(index)}
+              data-analytics-component={`Homepage Slider Dot ${index + 1}`}
               className={`h-2 rounded-full transition-all ${
                 currentIndex === index ? "w-8 bg-primary-dark" : "w-2 bg-white/50"
               }`}

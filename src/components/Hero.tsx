@@ -315,6 +315,7 @@ export default function Hero() {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => setActiveGroup(null)}
+                    data-analytics-component="Blood Filter All"
                     className={`flex h-12 flex-1 items-center justify-center rounded-[8px] text-[10px] font-bold transition-all sm:text-xs md:text-sm ${
                       activeGroup === null
                         ? "bg-primary-dark text-white shadow-lg shadow-primary-dark/30"
@@ -329,6 +330,7 @@ export default function Hero() {
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => setActiveGroup(group)}
+                      data-analytics-component={`Blood Filter ${group}`}
                       className={`flex h-12 flex-1 items-center justify-center rounded-[8px] text-[10px] font-bold transition-all sm:text-xs md:text-sm ${
                         activeGroup === group
                           ? "bg-primary-dark text-white shadow-lg shadow-primary-dark/30"
@@ -345,6 +347,7 @@ export default function Hero() {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => setIsSearchOpen(true)}
+                    data-analytics-component="Blood Search Open"
                     className="flex h-12 w-12 items-center justify-center rounded-[8px] glass text-gray-600 hover:border-primary-dark/30 hover:text-primary-dark"
                   >
                     <Search className="h-5 w-5" />
@@ -371,6 +374,7 @@ export default function Hero() {
                     setIsSearchOpen(false);
                     setSearchQuery("");
                   }}
+                  data-analytics-component="Blood Search Close"
                   className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[8px] bg-primary-dark text-white shadow-lg shadow-primary-dark/30"
                 >
                   <X className="h-5 w-5" />
@@ -397,6 +401,7 @@ export default function Hero() {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: index * 0.05 }}
                 onClick={() => setSelectedDonor(donor)}
+                data-analytics-component="Blood Donor Card Open"
                 whileHover={{
                   y: -5,
                   transition: { type: "spring", stiffness: 400, damping: 15 }
@@ -435,6 +440,7 @@ export default function Hero() {
               type="button"
               onClick={() => void handleLoadMore()}
               disabled={isLoadingMore}
+              data-analytics-component="Blood Donor Show More"
               className="rounded-[8px] bg-primary-dark px-8 py-3 text-sm font-bold text-white shadow-lg transition hover:bg-primary-dark/90 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isLoadingMore ? "Loading..." : "Show More"}

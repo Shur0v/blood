@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { X, Mail, ArrowRight, ShieldCheck, User, MapPin, ChevronDown, CheckCircle2 } from "lucide-react";
+import { X, Mail, ArrowRight, ShieldCheck, User, MapPin, ChevronDown, CheckCircle2, CalendarDays } from "lucide-react";
 import {
   getCountries,
   getCountryCallingCode,
@@ -49,6 +49,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
     name: "",
     email: "",
     bloodGroup: "",
+    dateOfBirth: "",
   });
   const [phoneData, setPhoneData] = useState({
     countryName: "",
@@ -65,12 +66,34 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
   const [locationSuggestions, setLocationSuggestions] = useState<LocationSuggestion[]>([]);
   const [isFetchingLocations, setIsFetchingLocations] = useState(false);
   const [locationLookupError, setLocationLookupError] = useState("");
+  const [isDobPickerOpen, setIsDobPickerOpen] = useState(false);
+  const [dobDay, setDobDay] = useState<number | "">("");
+  const [dobMonth, setDobMonth] = useState<number | "">("");
+  const [dobYear, setDobYear] = useState<number | "">("");
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
 
   const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
   const MAX_CITIES = 5;
+  const MONTHS = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+  const currentYear = new Date().getFullYear();
+  const YEARS = Array.from({ length: 100 }, (_, index) => currentYear - 18 - index);
+  const DAYS_IN_MONTH = dobMonth && dobYear ? new Date(Number(dobYear), Number(dobMonth), 0).getDate() : 31;
+  const DAY_OPTIONS = Array.from({ length: DAYS_IN_MONTH }, (_, index) => index + 1);
   const minCharsReached = locationInput.trim().length >= 2;
   const normalizedCountrySearch = countrySearch.trim().toLowerCase();
   const filteredCountryOptions = COUNTRY_OPTIONS.filter((item) => {
@@ -124,6 +147,20 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
     Boolean(phoneData.localPhoneNumber) &&
     Boolean(phoneData.fullPhoneNumber) &&
     !phoneError;
+
+  useEffect(() => {
+    if (!formData.dateOfBirth) {
+      setDobDay("");
+      setDobMonth("");
+      setDobYear("");
+      return;
+    }
+    const parsed = new Date(formData.dateOfBirth);
+    if (Number.isNaN(parsed.getTime())) return;
+    setDobDay(parsed.getDate());
+    setDobMonth(parsed.getMonth() + 1);
+    setDobYear(parsed.getFullYear());
+  }, [formData.dateOfBirth]);
 
   const getDeviceFingerprint = () => {
     if (typeof window === "undefined") return "";
@@ -194,7 +231,25 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
 
   const isRegisterSubmitDisabled =
     authMode === "register" &&
-    (!formData.name || !formData.email || !formData.bloodGroup || selectedLocations.length === 0 || !isPhoneValid);
+    (!formData.name || !formData.email || !formData.bloodGroup || !formData.dateOfBirth || selectedLocations.length === 0 || !isPhoneValid);
+
+  const formatDobLabel = (dob: string) => {
+    if (!dob) return "";
+    const parsed = new Date(dob);
+    if (Number.isNaN(parsed.getTime())) return "";
+    return parsed.toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" });
+  };
+
+  const applyDobSelection = () => {
+    if (!dobDay || !dobMonth || !dobYear) {
+      setErrorMsg("Please select day, month and year.");
+      return;
+    }
+    const value = `${dobYear}-${String(dobMonth).padStart(2, "0")}-${String(dobDay).padStart(2, "0")}`;
+    setFormData((prev) => ({ ...prev, dateOfBirth: value }));
+    setIsDobPickerOpen(false);
+    setErrorMsg("");
+  };
 
   const handleRequestOtp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -265,6 +320,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
         deviceFingerprint: getDeviceFingerprint(),
         ...(authMode === "register" && selectedLocations.length > 0 && {
           name: formData.name,
+          dateOfBirth: new Date(formData.dateOfBirth).toISOString(),
           bloodGroup: formData.bloodGroup,
           mobile: phoneData.fullPhoneNumber,
           phone: {
@@ -367,6 +423,24 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       />
                     </div>
+                  </div>
+                )}
+
+                {authMode === "register" && (
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-white/40">Date of Birth</label>
+                    <button
+                      type="button"
+                      onClick={() => setIsDobPickerOpen(true)}
+                      className={`relative w-full rounded-2xl border bg-white/5 py-4 pl-12 pr-4 text-left transition focus:outline-none focus:ring-1 ${
+                        formData.dateOfBirth
+                          ? "border-emerald-400/60 text-white ring-1 ring-emerald-400/40"
+                          : "border-white/10 text-white/40 focus:border-primary/50 focus:ring-primary/50"
+                      }`}
+                    >
+                      <CalendarDays className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-white/30" />
+                      {formData.dateOfBirth ? formatDobLabel(formData.dateOfBirth) : "Select your date of birth"}
+                    </button>
                   </div>
                 )}
 
@@ -658,6 +732,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
                     setSelectedLocations([]);
                     setLocationInput("");
                     setLocationSuggestions([]);
+                    setFormData((prev) => ({ ...prev, dateOfBirth: "" }));
                     setPhoneData({
                       countryName: "",
                       countryCode: "",
@@ -709,6 +784,73 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
                 </div>
               </div>
             )}
+
+            <AnimatePresence>
+              {isDobPickerOpen && (
+                <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    onClick={() => setIsDobPickerOpen(false)}
+                    className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+                  />
+                  <motion.div
+                    initial={{ scale: 0.95, opacity: 0, y: 10 }}
+                    animate={{ scale: 1, opacity: 1, y: 0 }}
+                    exit={{ scale: 0.95, opacity: 0, y: 10 }}
+                    className="relative w-full max-w-sm rounded-3xl border border-white/10 bg-[#0f172acc] p-5 shadow-2xl backdrop-blur-2xl"
+                  >
+                    <div className="mb-3 text-center">
+                      <h3 className="text-sm font-black uppercase tracking-wider text-white">Select Date of Birth</h3>
+                      <p className="mt-1 text-[11px] text-white/50">Scroll each column and choose day, month, year.</p>
+                    </div>
+                    <div className="grid grid-cols-3 gap-3">
+                      <select
+                        size={3}
+                        value={dobDay}
+                        onChange={(e) => setDobDay(Number(e.target.value))}
+                        className="h-36 rounded-xl border border-white/10 bg-white/5 px-2 py-2 text-center text-sm font-semibold text-white focus:outline-none"
+                      >
+                        <option value="" disabled>Day</option>
+                        {DAY_OPTIONS.map((day) => (
+                          <option key={day} value={day}>{day}</option>
+                        ))}
+                      </select>
+                      <select
+                        size={3}
+                        value={dobMonth}
+                        onChange={(e) => setDobMonth(Number(e.target.value))}
+                        className="h-36 rounded-xl border border-white/10 bg-white/5 px-2 py-2 text-center text-sm font-semibold text-white focus:outline-none"
+                      >
+                        <option value="" disabled>Month</option>
+                        {MONTHS.map((month, index) => (
+                          <option key={month} value={index + 1}>{month}</option>
+                        ))}
+                      </select>
+                      <select
+                        size={3}
+                        value={dobYear}
+                        onChange={(e) => setDobYear(Number(e.target.value))}
+                        className="h-36 rounded-xl border border-white/10 bg-white/5 px-2 py-2 text-center text-sm font-semibold text-white focus:outline-none"
+                      >
+                        <option value="" disabled>Year</option>
+                        {YEARS.map((year) => (
+                          <option key={year} value={year}>{year}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={applyDobSelection}
+                      className="mt-4 w-full rounded-2xl bg-primary py-3 text-xs font-black uppercase tracking-widest text-white shadow-lg shadow-primary/20"
+                    >
+                      Confirm Date of Birth
+                    </button>
+                  </motion.div>
+                </div>
+              )}
+            </AnimatePresence>
           </motion.div>
         </div>
       )}

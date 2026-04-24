@@ -5,14 +5,14 @@ import { getPrisma } from '@/src/backend/config/db';
 import { ADMIN_ROLES, getSessionFromRequest, hasRequiredRole } from '@/src/backend/utils/session';
 
 const HealthSchema = z.object({
-  weight: z.number().optional(),
+  weight: z.number().nullable().optional(),
   weightUnknown: z.boolean().optional(),
-  height: z.number().optional(),
+  height: z.number().nullable().optional(),
   heightUnknown: z.boolean().optional(),
-  hemoglobin: z.number().optional(),
+  hemoglobin: z.number().nullable().optional(),
   hemoglobinUnknown: z.boolean().optional(),
   isDiabetic: z.boolean().optional(),
-  glucose: z.number().optional(),
+  glucose: z.number().nullable().optional(),
   glucoseUnknown: z.boolean().optional(),
   vaccinations: z.array(z.string()).optional(),
   allergies: z.array(z.string()).optional(),

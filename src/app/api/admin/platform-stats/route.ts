@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from 'zod';
 import { getPrisma } from "@/src/backend/config/db";
 import { ADMIN_ROLES, getSessionFromRequest, hasRequiredRole } from '@/src/backend/utils/session';
+import { DEFAULT_UI_THEME, UI_THEME_KEYS } from "@/src/lib/uiTheme";
 
 const StatsSchema = z
   .object({
@@ -12,10 +13,13 @@ const StatsSchema = z
     weekly_donors: z.coerce.number().int().min(0),
     donor_requests: z.coerce.number().int().min(0).optional(),
     donorRequests: z.coerce.number().int().min(0).optional(),
+    ui_theme: z.enum(UI_THEME_KEYS).optional(),
+    uiTheme: z.enum(UI_THEME_KEYS).optional(),
   })
   .transform((data) => ({
     ...data,
     donor_requests: data.donor_requests ?? data.donorRequests ?? 0,
+    ui_theme: data.ui_theme ?? data.uiTheme ?? DEFAULT_UI_THEME,
   }));
 
 export async function PUT(req: Request) {
@@ -35,7 +39,7 @@ export async function PUT(req: Request) {
       return NextResponse.json({ success: false, message: 'Invalid platform stats payload.' }, { status: 400 });
     }
 
-    const { total_raised, total_spent, completed_ops, uncompleted_ops, weekly_donors, donor_requests } = parsed.data;
+    const { total_raised, total_spent, completed_ops, uncompleted_ops, weekly_donors, donor_requests, ui_theme } = parsed.data;
 
     let stats = await prisma.platformSettings.findFirst();
 
@@ -49,6 +53,7 @@ export async function PUT(req: Request) {
           uncompleted_ops,
           weekly_donors,
           donor_requests,
+          ui_theme,
         }
       });
     } else {
@@ -60,6 +65,7 @@ export async function PUT(req: Request) {
           uncompleted_ops,
           weekly_donors,
           donor_requests,
+          ui_theme,
         }
       });
     }

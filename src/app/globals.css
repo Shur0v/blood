@@ -51,8 +51,8 @@
     --shadow-hover: 0 15px 40px rgba(255, 49, 49, 0.15);
   }
 
-  [data-theme='dark'] {
-    /* Alternative/Dark Theme Switcher */
+  [data-theme='midnight'] {
+    /* Midnight Pulse Theme */
     --primary: #FF4444; 
     --primary-dark: #cc0000;
     --primary-glow: rgba(255, 68, 68, 0.25);
@@ -74,10 +74,63 @@
     --shadow-hover: 0 15px 40px rgba(255, 68, 68, 0.25);
   }
 
+  [data-theme='ocean'] {
+    --primary: #1D9BF0;
+    --primary-dark: #0B5FA6;
+    --primary-glow: rgba(29, 155, 240, 0.22);
+    --secondary: #00BFA6;
+
+    --bg-app: #f4fbff;
+    --text-main: #0b2339;
+    --text-muted: #4d6476;
+    --text-inverse: #ffffff;
+
+    --glass-bg: rgba(255, 255, 255, 0.55);
+    --glass-border: rgba(12, 96, 154, 0.14);
+    --glass-blur: 24px;
+
+    --border-main: rgba(12, 96, 154, 0.15);
+    --shadow-card: 0 8px 30px rgba(11, 95, 166, 0.08);
+    --shadow-hover: 0 15px 40px rgba(29, 155, 240, 0.2);
+  }
+
+  [data-theme='emerald'] {
+    --primary: #10B981;
+    --primary-dark: #047857;
+    --primary-glow: rgba(16, 185, 129, 0.22);
+    --secondary: #0EA5E9;
+
+    --bg-app: #f6fffb;
+    --text-main: #0f2b20;
+    --text-muted: #5e7f73;
+    --text-inverse: #ffffff;
+
+    --glass-bg: rgba(255, 255, 255, 0.52);
+    --glass-border: rgba(4, 120, 87, 0.12);
+    --glass-blur: 24px;
+
+    --border-main: rgba(4, 120, 87, 0.14);
+    --shadow-card: 0 8px 30px rgba(4, 120, 87, 0.08);
+    --shadow-hover: 0 15px 40px rgba(16, 185, 129, 0.2);
+  }
+
   body {
     background-color: var(--bg-app);
     color: var(--text-main);
     @apply font-sans overflow-x-hidden transition-colors duration-300;
+  }
+
+  html.lenis,
+  html.lenis body {
+    height: auto;
+  }
+
+  .lenis.lenis-smooth {
+    scroll-behavior: auto;
+  }
+
+  .lenis.lenis-smooth [data-lenis-prevent] {
+    overscroll-behavior: contain;
   }
 
   select {
@@ -91,7 +144,7 @@
     background-size: 14px;
   }
 
-  [data-theme='dark'] select {
+  [data-theme='midnight'] select {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
   }
 

@@ -19,7 +19,14 @@ const EnvSchema = z.object({
   GEOAPIFY_API_KEY: z.string().min(1),
   NEXT_PUBLIC_SITE_URL: z.string().url().optional(),
   NEXT_PUBLIC_BASE_URL: z.string().url().optional(),
-  GOOGLE_TRANSLATE_API_KEY: z.string().min(1).optional(),
+  GOOGLE_TRANSLATE_API_KEY: z.preprocess(
+    (value) => {
+      if (typeof value !== 'string') return value;
+      const trimmed = value.trim();
+      return trimmed.length === 0 ? undefined : trimmed;
+    },
+    z.string().min(1).optional(),
+  ),
   R2_ACCOUNT_ID: z.string().optional(),
   R2_ACCESS_KEY_ID: z.string().optional(),
   R2_SECRET_ACCESS_KEY: z.string().optional(),
