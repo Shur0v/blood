@@ -8,6 +8,7 @@ import {
   validatePhoneNumberLength,
   type CountryCode,
 } from "libphonenumber-js/min";
+import WheelDatePickerModal from "@/src/components/WheelDatePickerModal";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -67,33 +68,16 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
   const [isFetchingLocations, setIsFetchingLocations] = useState(false);
   const [locationLookupError, setLocationLookupError] = useState("");
   const [isDobPickerOpen, setIsDobPickerOpen] = useState(false);
-  const [dobDay, setDobDay] = useState<number | "">("");
-  const [dobMonth, setDobMonth] = useState<number | "">("");
-  const [dobYear, setDobYear] = useState<number | "">("");
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
 
   const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
   const MAX_CITIES = 5;
-  const MONTHS = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
   const currentYear = new Date().getFullYear();
-  const YEARS = Array.from({ length: 100 }, (_, index) => currentYear - 18 - index);
-  const DAYS_IN_MONTH = dobMonth && dobYear ? new Date(Number(dobYear), Number(dobMonth), 0).getDate() : 31;
-  const DAY_OPTIONS = Array.from({ length: DAYS_IN_MONTH }, (_, index) => index + 1);
+  const maxDobDate = new Date();
+  maxDobDate.setFullYear(maxDobDate.getFullYear() - 18);
+  const minDobDate = new Date(currentYear - 100, 0, 1);
   const minCharsReached = locationInput.trim().length >= 2;
   const normalizedCountrySearch = countrySearch.trim().toLowerCase();
   const filteredCountryOptions = COUNTRY_OPTIONS.filter((item) => {
@@ -147,20 +131,6 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
     Boolean(phoneData.localPhoneNumber) &&
     Boolean(phoneData.fullPhoneNumber) &&
     !phoneError;
-
-  useEffect(() => {
-    if (!formData.dateOfBirth) {
-      setDobDay("");
-      setDobMonth("");
-      setDobYear("");
-      return;
-    }
-    const parsed = new Date(formData.dateOfBirth);
-    if (Number.isNaN(parsed.getTime())) return;
-    setDobDay(parsed.getDate());
-    setDobMonth(parsed.getMonth() + 1);
-    setDobYear(parsed.getFullYear());
-  }, [formData.dateOfBirth]);
 
   const getDeviceFingerprint = () => {
     if (typeof window === "undefined") return "";
@@ -240,17 +210,6 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
     return parsed.toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" });
   };
 
-  const applyDobSelection = () => {
-    if (!dobDay || !dobMonth || !dobYear) {
-      setErrorMsg("Please select day, month and year.");
-      return;
-    }
-    const value = `${dobYear}-${String(dobMonth).padStart(2, "0")}-${String(dobDay).padStart(2, "0")}`;
-    setFormData((prev) => ({ ...prev, dateOfBirth: value }));
-    setIsDobPickerOpen(false);
-    setErrorMsg("");
-  };
-
   const handleRequestOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (authMode === "register" && !formData.bloodGroup) {
@@ -291,8 +250,8 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
     }
   };
 
-  const handleOtpChange = (index: number, value: string) => {
-    if (value.length > 1) return;
+  const handleOtpChange = (index: number, rawValue: string) => {
+    const value = rawValue.replace(/\D/g, "").slice(0, 1);
     const newOtp = [...otp];
     newOtp[index] = value;
     setOtp(newOtp);
@@ -301,6 +260,22 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
       const nextInput = document.getElementById(`otp-${index + 1}`);
       nextInput?.focus();
     }
+  };
+
+  const handleOtpPaste = (index: number, event: React.ClipboardEvent<HTMLInputElement>) => {
+    event.preventDefault();
+    const pasted = event.clipboardData.getData("text").replace(/\D/g, "");
+    if (!pasted) return;
+
+    const updated = [...otp];
+    for (let i = 0; i < pasted.length && index + i < updated.length; i += 1) {
+      updated[index + i] = pasted[i];
+    }
+    setOtp(updated);
+
+    const nextIndex = Math.min(index + pasted.length, updated.length - 1);
+    const target = document.getElementById(`otp-${nextIndex}`);
+    target?.focus();
   };
 
   const handleVerify = async () => {
@@ -757,10 +732,13 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
                       key={index}
                       id={`otp-${index}`}
                       type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                       maxLength={1}
                       className="h-12 sm:h-14 min-w-0 w-full rounded-xl border border-white/10 bg-white/5 text-center text-lg sm:text-xl font-black text-white focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/50"
                       value={digit}
                       onChange={(e) => handleOtpChange(index, e.target.value)}
+                      onPaste={(e) => handleOtpPaste(index, e)}
                     />
                   ))}
                 </div>
@@ -786,72 +764,21 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
               )}
             </div>
 
-            <AnimatePresence>
-              {isDobPickerOpen && (
-                <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    onClick={() => setIsDobPickerOpen(false)}
-                    className="absolute inset-0 bg-black/70 backdrop-blur-sm"
-                  />
-                  <motion.div
-                    initial={{ scale: 0.95, opacity: 0, y: 10 }}
-                    animate={{ scale: 1, opacity: 1, y: 0 }}
-                    exit={{ scale: 0.95, opacity: 0, y: 10 }}
-                    className="relative w-full max-w-sm rounded-3xl border border-white/10 bg-[#0f172acc] p-5 shadow-2xl backdrop-blur-2xl"
-                  >
-                    <div className="mb-3 text-center">
-                      <h3 className="text-sm font-black uppercase tracking-wider text-white">Select Date of Birth</h3>
-                      <p className="mt-1 text-[11px] text-white/50">Scroll each column and choose day, month, year.</p>
-                    </div>
-                    <div className="grid grid-cols-3 gap-3">
-                      <select
-                        size={3}
-                        value={dobDay}
-                        onChange={(e) => setDobDay(Number(e.target.value))}
-                        className="h-36 rounded-xl border border-white/10 bg-white/5 px-2 py-2 text-center text-sm font-semibold text-white focus:outline-none"
-                      >
-                        <option value="" disabled>Day</option>
-                        {DAY_OPTIONS.map((day) => (
-                          <option key={day} value={day}>{day}</option>
-                        ))}
-                      </select>
-                      <select
-                        size={3}
-                        value={dobMonth}
-                        onChange={(e) => setDobMonth(Number(e.target.value))}
-                        className="h-36 rounded-xl border border-white/10 bg-white/5 px-2 py-2 text-center text-sm font-semibold text-white focus:outline-none"
-                      >
-                        <option value="" disabled>Month</option>
-                        {MONTHS.map((month, index) => (
-                          <option key={month} value={index + 1}>{month}</option>
-                        ))}
-                      </select>
-                      <select
-                        size={3}
-                        value={dobYear}
-                        onChange={(e) => setDobYear(Number(e.target.value))}
-                        className="h-36 rounded-xl border border-white/10 bg-white/5 px-2 py-2 text-center text-sm font-semibold text-white focus:outline-none"
-                      >
-                        <option value="" disabled>Year</option>
-                        {YEARS.map((year) => (
-                          <option key={year} value={year}>{year}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={applyDobSelection}
-                      className="mt-4 w-full rounded-2xl bg-primary py-3 text-xs font-black uppercase tracking-widest text-white shadow-lg shadow-primary/20"
-                    >
-                      Confirm Date of Birth
-                    </button>
-                  </motion.div>
-                </div>
-              )}
-            </AnimatePresence>
+            <WheelDatePickerModal
+              isOpen={isDobPickerOpen}
+              onClose={() => setIsDobPickerOpen(false)}
+              onConfirm={(value) => {
+                setFormData((prev) => ({ ...prev, dateOfBirth: value }));
+                setErrorMsg("");
+              }}
+              initialDate={formData.dateOfBirth}
+              title="Select Date of Birth"
+              subtitle="Use arrows and keep the selected value in the center row."
+              confirmLabel="Confirm Date of Birth"
+              minDate={minDobDate}
+              maxDate={maxDobDate}
+              theme="dark"
+            />
           </motion.div>
         </div>
       )}

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { X, Calendar, CheckCircle2 } from "lucide-react";
+import WheelDatePickerModal from "@/src/components/WheelDatePickerModal";
 
 interface DonationToggleModalProps {
   isOpen: boolean;
@@ -10,6 +11,14 @@ interface DonationToggleModalProps {
 
 export default function DonationToggleModal({ isOpen, onClose, onConfirm }: DonationToggleModalProps) {
   const [date, setDate] = useState("");
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+
+  const formatDateLabel = (value: string) => {
+    if (!value) return "Select approximate date";
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) return "Select approximate date";
+    return parsed.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+  };
 
   const handleConfirm = () => {
     onConfirm(date || "Not specified");
@@ -56,12 +65,17 @@ export default function DonationToggleModal({ isOpen, onClose, onConfirm }: Dona
                 <label className="text-[10px] font-black uppercase tracking-widest text-white/40">Approximate Date</label>
                 <div className="relative">
                   <Calendar className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-white/30" />
-                  <input
-                    type="date"
-                    className="w-full rounded-2xl border border-white/10 bg-white/5 py-4 pl-12 pr-4 text-white focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/50"
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                  />
+                  <button
+                    type="button"
+                    onClick={() => setIsDatePickerOpen(true)}
+                    className={`w-full rounded-2xl border bg-white/5 py-4 pl-12 pr-4 text-left text-sm transition focus:outline-none focus:ring-1 ${
+                      date
+                        ? "border-emerald-400/60 text-white ring-1 ring-emerald-400/40"
+                        : "border-white/10 text-white/50 focus:border-primary/50 focus:ring-primary/50"
+                    }`}
+                  >
+                    {formatDateLabel(date)}
+                  </button>
                 </div>
               </div>
 
@@ -78,6 +92,20 @@ export default function DonationToggleModal({ isOpen, onClose, onConfirm }: Dona
               </div>
             </div>
           </motion.div>
+
+          <WheelDatePickerModal
+            isOpen={isDatePickerOpen}
+            onClose={() => setIsDatePickerOpen(false)}
+            onConfirm={(value) => setDate(value)}
+            initialDate={date}
+            title="Select Last Donation Date"
+            subtitle="Use arrows and keep the selected value in the center row."
+            confirmLabel="Apply Date"
+            allowClear
+            clearLabel="Not Specified"
+            maxDate={new Date()}
+            theme="dark"
+          />
         </div>
       )}
     </AnimatePresence>

@@ -6,13 +6,17 @@ import { ADMIN_ROLES, getSessionFromRequest, hasRequiredRole } from '@/src/backe
 
 const HealthSchema = z.object({
   weight: z.number().nullable().optional(),
+  weightTouched: z.boolean().optional(),
   weightUnknown: z.boolean().optional(),
   height: z.number().nullable().optional(),
+  heightTouched: z.boolean().optional(),
   heightUnknown: z.boolean().optional(),
   hemoglobin: z.number().nullable().optional(),
+  hemoglobinTouched: z.boolean().optional(),
   hemoglobinUnknown: z.boolean().optional(),
   isDiabetic: z.boolean().optional(),
   glucose: z.number().nullable().optional(),
+  glucoseTouched: z.boolean().optional(),
   glucoseUnknown: z.boolean().optional(),
   vaccinations: z.array(z.string()).optional(),
   allergies: z.array(z.string()).optional(),

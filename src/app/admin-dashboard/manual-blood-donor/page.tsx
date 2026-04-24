@@ -4,9 +4,10 @@ import React from 'react';
 import { Card } from '@/src/admin-dashboard/components/common/Card';
 import { Table, TableRow, TableCell } from '@/src/admin-dashboard/components/common/Table';
 import { Badge } from '@/src/admin-dashboard/components/common/Badge';
-import { UploadCloud, CheckCircle2, AlertCircle } from 'lucide-react';
+import { UploadCloud, CheckCircle2, AlertCircle, CalendarDays } from 'lucide-react';
 import CityLocationAutocomplete, { type LocationSuggestion } from '@/src/components/CityLocationAutocomplete';
 import CountryPhoneInput, { emptyPhoneValue, type PhoneFieldValue } from '@/src/components/CountryPhoneInput';
+import WheelDatePickerModal from '@/src/components/WheelDatePickerModal';
 
 interface ManualBloodDonorRow {
   id: string;
@@ -24,6 +25,7 @@ export default function ManualBloodDonorPage() {
   const [isPhoneValid, setIsPhoneValid] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [isDeleting, setIsDeleting] = React.useState<string | null>(null);
+  const [isLastDonationPickerOpen, setIsLastDonationPickerOpen] = React.useState(false);
   const [submitMessage, setSubmitMessage] = React.useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [recentEntries, setRecentEntries] = React.useState<ManualBloodDonorRow[]>([]);
   const [formData, setFormData] = React.useState({
@@ -177,6 +179,13 @@ export default function ManualBloodDonorPage() {
     }
   };
 
+  const formatDateLabel = (value: string) => {
+    if (!value) return 'Select date';
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) return 'Select date';
+    return parsed.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+  };
+
   // API Integration Note: 
   // Form submits to POST /api/admin/donors/manual
   // Table fetches from GET /api/admin/donors/manual?type=blood
@@ -254,7 +263,18 @@ export default function ManualBloodDonorPage() {
             </div>
             <div>
                <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Last Donation Date</label>
-               <input type="date" value={formData.lastDonationDate} onChange={(e) => setFormData((prev) => ({ ...prev, lastDonationDate: e.target.value }))} className="w-full bg-gray-50 dark:bg-[#0f1115] border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm outline-none" />
+               <button
+                 type="button"
+                 onClick={() => setIsLastDonationPickerOpen(true)}
+                 className={`w-full flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm outline-none transition ${
+                   formData.lastDonationDate
+                     ? 'border-emerald-400/60 bg-emerald-50 text-gray-800 dark:bg-emerald-500/10 dark:text-white'
+                     : 'border-gray-200 bg-gray-50 text-gray-500 dark:border-gray-700 dark:bg-[#0f1115] dark:text-gray-400'
+                 }`}
+               >
+                 <CalendarDays className="h-4 w-4" />
+                 <span>{formatDateLabel(formData.lastDonationDate)}</span>
+               </button>
             </div>
             
             {/* Health Vitals */}
@@ -340,6 +360,20 @@ export default function ManualBloodDonorPage() {
           )}
         </Card>
       </form>
+
+      <WheelDatePickerModal
+        isOpen={isLastDonationPickerOpen}
+        onClose={() => setIsLastDonationPickerOpen(false)}
+        onConfirm={(value) => setFormData((prev) => ({ ...prev, lastDonationDate: value }))}
+        initialDate={formData.lastDonationDate}
+        title="Select Last Donation Date"
+        subtitle="Use arrows and keep the selected value in the center row."
+        confirmLabel="Apply Date"
+        allowClear
+        clearLabel="Clear Date"
+        maxDate={new Date()}
+        theme="light"
+      />
 
       {/* Added Donors List preview */}
       <div className="pt-8">

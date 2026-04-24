@@ -107,6 +107,8 @@ export default function UnifiedDashboard({
   const [cityLoading, setCityLoading] = useState(false);
   const [cityMessage, setCityMessage] = useState("");
   const hydratedRef = useRef(false);
+  const skipNextHealthAutosaveRef = useRef(false);
+  const skipNextOrgansAutosaveRef = useRef(false);
   const healthEndpoint = mode === "admin" && targetUserId ? `/api/admin/users/${targetUserId}/health` : "/api/users/me/health";
   const organsEndpoint = mode === "admin" && targetUserId ? `/api/admin/users/${targetUserId}/organs` : "/api/users/me/organs";
   const verificationEndpoint = mode === "admin" && targetUserId ? `/api/admin/users/${targetUserId}/verification-documents` : "/api/users/me/verification-documents";
@@ -165,6 +167,9 @@ export default function UnifiedDashboard({
     setProfileImageUrl(profileImage ?? null);
     setServiceCities(profileServiceCities ?? []);
     hydratedRef.current = true;
+    // Prevent first autosave pass from writing pre-hydration default state.
+    skipNextHealthAutosaveRef.current = true;
+    skipNextOrgansAutosaveRef.current = true;
   }, [profileId, profileHealthData, profileActiveOrgans, profileImage, profileServiceCities]);
 
   useEffect(() => {
@@ -264,13 +269,17 @@ export default function UnifiedDashboard({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           weight: weightTouched && !weightUnknown ? weight : null,
+          weightTouched,
           weightUnknown,
           height: heightTouched && !heightUnknown ? height : null,
+          heightTouched,
           heightUnknown,
           hemoglobin: hemoglobinTouched && !hemoglobinUnknown ? hemoglobin : null,
+          hemoglobinTouched,
           hemoglobinUnknown,
           isDiabetic,
           glucose: glucoseTouched && !glucoseUnknown ? glucose : null,
+          glucoseTouched,
           glucoseUnknown,
           vaccinations: selectedVaccines,
           allergies: selectedAllergies,
@@ -294,7 +303,11 @@ export default function UnifiedDashboard({
   };
 
   useEffect(() => {
-    if (!hydratedRef.current || !profile) return;
+    if (!hydratedRef.current || !profileId) return;
+    if (skipNextHealthAutosaveRef.current) {
+      skipNextHealthAutosaveRef.current = false;
+      return;
+    }
 
     const timer = setTimeout(() => {
       void persistHealth();
@@ -317,12 +330,16 @@ export default function UnifiedDashboard({
     glucoseUnknown,
     selectedVaccines,
     selectedAllergies,
-    profile,
+    profileId,
     healthEndpoint,
   ]);
 
   useEffect(() => {
-    if (!hydratedRef.current || !profile) return;
+    if (!hydratedRef.current || !profileId) return;
+    if (skipNextOrgansAutosaveRef.current) {
+      skipNextOrgansAutosaveRef.current = false;
+      return;
+    }
 
     const timer = setTimeout(async () => {
       try {
@@ -350,7 +367,7 @@ export default function UnifiedDashboard({
     }, 700);
 
     return () => clearTimeout(timer);
-  }, [registeredOrgans, profile, organsEndpoint]);
+  }, [registeredOrgans, profileId, organsEndpoint]);
 
   const handleBlogSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -510,7 +527,7 @@ export default function UnifiedDashboard({
         <div className="p-8 md:p-12">
           {/* Header Section */}
           <div className="mb-12 flex flex-col items-center gap-8 md:flex-row md:items-start">
-            <div className="relative">
+            <div className="relative pb-14 md:pb-0">
               <div className="h-32 w-32 overflow-hidden rounded-[32px] border-4 border-white p-1 shadow-2xl">
                 {profileImageUrl ? (
                   <img
@@ -528,7 +545,7 @@ export default function UnifiedDashboard({
               <div className="absolute -bottom-2 -right-2 flex h-10 w-10 items-center justify-center rounded-2xl bg-primary text-white shadow-xl ring-4 ring-white">
                 {profile?.verificationStatus === "VERIFIED" ? <ShieldCheck className="h-6 w-6" /> : <Camera className="h-5 w-5" />}
               </div>
-              <label className="absolute -bottom-12 left-1/2 -translate-x-1/2 cursor-pointer rounded-full border border-border/10 bg-white/80 px-4 py-1.5 text-[10px] font-black uppercase tracking-widest text-text shadow-sm transition hover:bg-white">
+              <label className="absolute bottom-0 left-1/2 -translate-x-1/2 cursor-pointer whitespace-nowrap rounded-full border border-border/10 bg-white/80 px-4 py-1.5 text-[10px] font-black uppercase tracking-widest text-text shadow-sm transition hover:bg-white">
                 {imageState === "uploading" ? "Uploading..." : "Change Photo"}
                 <input
                   type="file"
