@@ -11,6 +11,9 @@ const THEME_DESCRIPTIONS: Record<UiThemeKey, string> = {
   emerald: "Green + slate palette focused on trust and accessibility.",
 };
 
+const THEME_STORAGE_KEY = "bloodnet_ui_theme";
+const THEME_EVENT = "bloodnet-theme-updated";
+
 export default function ThemeControlPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -23,6 +26,7 @@ export default function ThemeControlPage() {
 
   const applyTheme = (theme: UiThemeKey) => {
     document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem(THEME_STORAGE_KEY, theme);
   };
 
   const fetchTheme = async () => {
@@ -75,6 +79,8 @@ export default function ThemeControlPage() {
       }
 
       setPersistedTheme(selectedTheme);
+      localStorage.setItem(THEME_STORAGE_KEY, selectedTheme);
+      window.dispatchEvent(new Event(THEME_EVENT));
       setMessage("Theme updated globally. Reloading pages will use this style.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to update theme.");

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import ClickTracker from "@/src/components/ClickTracker";
 import SmoothScrollProvider from "@/src/components/SmoothScrollProvider";
+import ThemeRuntimeSync from "@/src/components/ThemeRuntimeSync";
 import { getPublicBaseUrl } from "@/src/backend/config/env";
 import { getPrisma } from "@/src/backend/config/db";
 import { DEFAULT_UI_THEME, normalizeUiTheme } from "@/src/lib/uiTheme";
@@ -51,6 +52,7 @@ export default async function RootLayout({
   return (
     <html lang="en" data-theme={uiTheme}>
       <body className="antialiased">
+        <ThemeRuntimeSync />
         <ClickTracker />
         <SmoothScrollProvider>{children}</SmoothScrollProvider>
       </body>
