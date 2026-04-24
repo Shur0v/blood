@@ -13,6 +13,19 @@ import { z } from 'zod';
 const authService = new AuthService();
 const userRepo = new UserRepository();
 
+const resolveCookieDomain = (): string | undefined => {
+  if (process.env.NODE_ENV !== 'production') return undefined;
+  const configuredUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_SITE_URL;
+  if (!configuredUrl) return undefined;
+  try {
+    const hostname = new URL(configuredUrl).hostname;
+    if (!hostname || hostname === 'localhost') return undefined;
+    return hostname.startsWith('.') ? hostname : `.${hostname}`;
+  } catch {
+    return undefined;
+  }
+};
+
 // Zod schemas for strict request validation
 const RequestOtpSchema = z.object({
   email: z.string().email(),
@@ -327,7 +340,8 @@ export class AuthController {
       // Build strictly secure HTTP-only response payload
       const response = NextResponse.json({ 
         message: 'Authentication successful',
-        user: { id: targetUser.id, name: targetUser.name, email: targetUser.email, role: 'USER' }
+        user: { id: targetUser.id, name: targetUser.name, email: targetUser.email, role: 'USER' },
+        sessionToken: token,
       }, { status: 200 });
 
       // Append cookie headers natively
@@ -338,7 +352,8 @@ export class AuthController {
         httpOnly: true,
         path: '/',
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
+        sameSite: 'lax',
+        domain: resolveCookieDomain(),
         maxAge: 365 * 24 * 60 * 60, // 1 year in seconds
       });
 
