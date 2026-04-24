@@ -33,30 +33,30 @@ export default async function BlogListingPage() {
   const userIds = [...new Set(rows.filter((row) => row.author_type === "USER").map((row) => row.author_id))];
   const users = userIds.length
     ? await prisma.user.findMany({
-        where: { id: { in: userIds } },
-        select: { id: true, name: true, profile_image_url: true, location_city: true },
-      })
+      where: { id: { in: userIds } },
+      select: { id: true, name: true, profile_image_url: true, location_city: true },
+    })
     : [];
   const userMap = new Map(users.map((user) => [user.id, user]));
 
   const heroTitle =
     locale !== DEFAULT_LOCALE
       ? await translateTextCached({
-          prisma,
-          sourceText: "Medical Insights For Safer Blood And Organ Support",
-          locale,
-          contentType: "blog-hero:title",
-        })
+        prisma,
+        sourceText: "Medical Insights For Safer Blood And Organ Support",
+        locale,
+        contentType: "blog-hero:title",
+      })
       : "Medical Insights For Safer Blood And Organ Support";
   const heroDesc =
     locale !== DEFAULT_LOCALE
       ? await translateTextCached({
-          prisma,
-          sourceText:
-            "Long-form, text-only articles focused on emergency donor response, recipient safety, and real-world care workflows.",
-          locale,
-          contentType: "blog-hero:desc",
-        })
+        prisma,
+        sourceText:
+          "Long-form, text-only articles focused on emergency donor response, recipient safety, and real-world care workflows.",
+        locale,
+        contentType: "blog-hero:desc",
+      })
       : "Long-form, text-only articles focused on emergency donor response, recipient safety, and real-world care workflows.";
 
   const localizedRows = await Promise.all(
@@ -100,7 +100,7 @@ export default async function BlogListingPage() {
             {heroDesc}
           </p>
         </section>
-
+        {/* hello */}
         <div className="mt-8 grid gap-6 md:grid-cols-2">
           {localizedRows.map((post, index) => {
             const author = userMap.get(post.author_id);
