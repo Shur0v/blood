@@ -174,10 +174,8 @@ export default function FloatingDonorTags() {
     };
 
     void fetchRealtimeDonors();
-    const interval = setInterval(fetchRealtimeDonors, 20000);
     return () => {
       cancelled = true;
-      clearInterval(interval);
     };
   }, [seed, viewerGeo.city, viewerGeo.country]);
 

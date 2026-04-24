@@ -40,13 +40,6 @@ export default function ImageSlider() {
     };
   }, [loadSlides]);
 
-  useEffect(() => {
-    const refreshTimer = setInterval(() => {
-      void loadSlides();
-    }, 10000);
-    return () => clearInterval(refreshTimer);
-  }, [loadSlides]);
-
   const nextSlide = useCallback(() => {
     setCurrentIndex((prev) => (prev + 1) % Math.max(slides.length, 1));
   }, [slides.length]);

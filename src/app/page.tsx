@@ -279,26 +279,6 @@ export default function Home() {
   }, [profileData]);
 
   useEffect(() => {
-    const refreshOnFocus = () => {
-      void loadSession({ silent: true });
-    };
-
-    const onVisibilityChange = () => {
-      if (document.visibilityState === "visible") {
-        void loadSession({ silent: true });
-      }
-    };
-
-    window.addEventListener("focus", refreshOnFocus);
-    document.addEventListener("visibilitychange", onVisibilityChange);
-
-    return () => {
-      window.removeEventListener("focus", refreshOnFocus);
-      document.removeEventListener("visibilitychange", onVisibilityChange);
-    };
-  }, [loadSession]);
-
-  useEffect(() => {
     if (typeof window === "undefined") return;
     const wantsProfile = new URLSearchParams(window.location.search).get("profile") === "1";
     if (!wantsProfile || profileIntentHandledRef.current) return;

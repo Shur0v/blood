@@ -234,40 +234,6 @@ export default function Hero() {
     }
   };
 
-  useEffect(() => {
-    const interval = setInterval(async () => {
-      try {
-        if (nextCursor) {
-          return;
-        }
-        const params = buildBaseParams();
-
-        const res = await fetch(`/api/public/donors?${params.toString()}`, {
-          method: "GET",
-          cache: "no-store",
-        });
-        const payload = (await res.json()) as DonorApiResponse;
-        if (!res.ok || !payload.success) {
-          setIsDonorApiDown(true);
-          return;
-        }
-
-        const mapped = mapRows(payload.data || []);
-
-        setDonors(mapped);
-        setNextCursor(payload.pagination?.nextCursor ?? null);
-        const nextTotal = Number(payload.meta?.globalTotal ?? payload.pagination?.total ?? 0);
-        setTotalActiveDonors(nextTotal);
-        persistCache(mapped, nextTotal);
-        setIsDonorApiDown(false);
-      } catch (error) {
-        setIsDonorApiDown(true);
-      }
-    }, 12000);
-
-    return () => clearInterval(interval);
-  }, [activeGroup, normalizedSearch, viewerGeo.city, viewerGeo.country, nextCursor]);
-
   const hasNoResults = useMemo(() => donors.length === 0, [donors]);
 
   return (
