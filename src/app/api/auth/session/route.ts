@@ -3,21 +3,9 @@ import { UserRepository } from '@/src/backend/repositories/UserRepository';
 import { getPrisma } from '@/src/backend/config/db';
 import { ADMIN_ROLES, getSessionFromRequest, SESSION_COOKIE } from '@/src/backend/utils/session';
 import { signToken } from '@/src/backend/utils/jwt';
+import { resolveSessionCookieDomain } from '@/src/backend/utils/cookieDomain';
 
 const userRepo = new UserRepository();
-
-const resolveCookieDomain = (): string | undefined => {
-  if (process.env.NODE_ENV !== 'production') return undefined;
-  const configuredUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_SITE_URL;
-  if (!configuredUrl) return undefined;
-  try {
-    const hostname = new URL(configuredUrl).hostname;
-    if (!hostname || hostname === 'localhost') return undefined;
-    return hostname.startsWith('.') ? hostname : `.${hostname}`;
-  } catch {
-    return undefined;
-  }
-};
 
 export async function GET(req: Request) {
   const session = getSessionFromRequest(req);
@@ -47,7 +35,7 @@ export async function GET(req: Request) {
       path: '/',
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      domain: resolveCookieDomain(),
+      domain: resolveSessionCookieDomain(),
       maxAge: 365 * 24 * 60 * 60,
     });
     return response;
@@ -86,7 +74,7 @@ export async function GET(req: Request) {
     path: '/',
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
-    domain: resolveCookieDomain(),
+    domain: resolveSessionCookieDomain(),
     maxAge: 365 * 24 * 60 * 60,
   });
   return response;

@@ -34,6 +34,7 @@ interface UnifiedDashboardProps {
   onToggleReady: (ready: boolean) => void;
   onHealthDataSaved?: (healthData: Record<string, unknown>) => void;
   onOrgansSaved?: (organs: string[]) => void;
+  onSessionExpired?: () => void;
   mode?: "self" | "admin";
   targetUserId?: string;
   profile: {
@@ -62,6 +63,7 @@ export default function UnifiedDashboard({
   onToggleReady,
   onHealthDataSaved,
   onOrgansSaved,
+  onSessionExpired,
   mode = "self",
   targetUserId,
   profile,
@@ -107,8 +109,10 @@ export default function UnifiedDashboard({
   const [cityLoading, setCityLoading] = useState(false);
   const [cityMessage, setCityMessage] = useState("");
   const hydratedRef = useRef(false);
+  const profileImageInputRef = useRef<HTMLInputElement | null>(null);
   const skipNextHealthAutosaveRef = useRef(false);
   const skipNextOrgansAutosaveRef = useRef(false);
+  const sessionExpiredRef = useRef(false);
   const healthEndpoint = mode === "admin" && targetUserId ? `/api/admin/users/${targetUserId}/health` : "/api/users/me/health";
   const organsEndpoint = mode === "admin" && targetUserId ? `/api/admin/users/${targetUserId}/organs` : "/api/users/me/organs";
   const verificationEndpoint = mode === "admin" && targetUserId ? `/api/admin/users/${targetUserId}/verification-documents` : "/api/users/me/verification-documents";
@@ -287,6 +291,10 @@ export default function UnifiedDashboard({
       });
 
       if (!res.ok) {
+        if (res.status === 401 || res.status === 403) {
+          sessionExpiredRef.current = true;
+          onSessionExpired?.();
+        }
         throw new Error("Failed to save health profile");
       }
 
@@ -304,6 +312,7 @@ export default function UnifiedDashboard({
 
   useEffect(() => {
     if (!hydratedRef.current || !profileId) return;
+    if (sessionExpiredRef.current) return;
     if (skipNextHealthAutosaveRef.current) {
       skipNextHealthAutosaveRef.current = false;
       return;
@@ -336,6 +345,7 @@ export default function UnifiedDashboard({
 
   useEffect(() => {
     if (!hydratedRef.current || !profileId) return;
+    if (sessionExpiredRef.current) return;
     if (skipNextOrgansAutosaveRef.current) {
       skipNextOrgansAutosaveRef.current = false;
       return;
@@ -352,6 +362,10 @@ export default function UnifiedDashboard({
         });
 
         if (!res.ok) {
+          if (res.status === 401 || res.status === 403) {
+            sessionExpiredRef.current = true;
+            onSessionExpired?.();
+          }
           throw new Error("Failed to save organs");
         }
 
@@ -499,6 +513,11 @@ export default function UnifiedDashboard({
     }
   };
 
+  const openProfileImagePicker = () => {
+    if (imageState === "uploading") return;
+    profileImageInputRef.current?.click();
+  };
+
   const toggleVaccine = (v: string) => {
     setSelectedVaccines(prev => 
       prev.includes(v) ? prev.filter(item => item !== v) : [...prev, v]
@@ -527,8 +546,14 @@ export default function UnifiedDashboard({
         <div className="p-8 md:p-12">
           {/* Header Section */}
           <div className="mb-12 flex flex-col items-center gap-8 md:flex-row md:items-start">
-            <div className="relative pb-14 md:pb-0">
-              <div className="h-32 w-32 overflow-hidden rounded-[32px] border-4 border-white p-1 shadow-2xl">
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => void openProfileImagePicker()}
+                className="group relative block h-32 w-32 overflow-hidden rounded-[32px] border-4 border-white p-1 shadow-2xl transition-transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:cursor-not-allowed disabled:opacity-70"
+                disabled={imageState === "uploading"}
+                aria-label={imageState === "uploading" ? "Uploading profile photo" : "Change profile photo"}
+              >
                 {profileImageUrl ? (
                   <img
                     src={profileImageUrl}
@@ -541,19 +566,22 @@ export default function UnifiedDashboard({
                     <UserCircle2 className="h-16 w-16" />
                   </div>
                 )}
-              </div>
-              <div className="absolute -bottom-2 -right-2 flex h-10 w-10 items-center justify-center rounded-2xl bg-primary text-white shadow-xl ring-4 ring-white">
+                {imageState === "uploading" && (
+                  <div className="absolute inset-0 flex items-center justify-center rounded-[24px] bg-black/35 text-[10px] font-black uppercase tracking-widest text-white">
+                    Uploading...
+                  </div>
+                )}
+              </button>
+              <input
+                ref={profileImageInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => void handleProfileImageChange(e.target.files?.[0] || null)}
+              />
+              <div className="pointer-events-none absolute bottom-0 right-0 flex h-11 w-11 translate-x-1/2 translate-y-1/2 items-center justify-center rounded-full bg-primary text-white shadow-xl ring-4 ring-white">
                 {profile?.verificationStatus === "VERIFIED" ? <ShieldCheck className="h-6 w-6" /> : <Camera className="h-5 w-5" />}
               </div>
-              <label className="absolute bottom-0 left-1/2 -translate-x-1/2 cursor-pointer whitespace-nowrap rounded-full border border-border/10 bg-white/80 px-4 py-1.5 text-[10px] font-black uppercase tracking-widest text-text shadow-sm transition hover:bg-white">
-                {imageState === "uploading" ? "Uploading..." : "Change Photo"}
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => void handleProfileImageChange(e.target.files?.[0] || null)}
-                />
-              </label>
             </div>
 
             <div className="flex-1 text-center md:text-left">

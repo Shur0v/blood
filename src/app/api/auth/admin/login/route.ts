@@ -3,6 +3,7 @@ import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import { getPrisma } from '@/src/backend/config/db';
 import { signToken } from '@/src/backend/utils/jwt';
+import { resolveSessionCookieDomain } from '@/src/backend/utils/cookieDomain';
 
 const LoginSchema = z.object({
   adminId: z.string().min(2),
@@ -10,19 +11,6 @@ const LoginSchema = z.object({
 });
 
 const looksHashed = (value: string): boolean => value.startsWith('$2a$') || value.startsWith('$2b$') || value.startsWith('$2y$');
-
-const resolveCookieDomain = (): string | undefined => {
-  if (process.env.NODE_ENV !== 'production') return undefined;
-  const configuredUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_SITE_URL;
-  if (!configuredUrl) return undefined;
-  try {
-    const hostname = new URL(configuredUrl).hostname;
-    if (!hostname || hostname === 'localhost') return undefined;
-    return hostname.startsWith('.') ? hostname : `.${hostname}`;
-  } catch {
-    return undefined;
-  }
-};
 
 export async function POST(req: Request) {
   try {
@@ -73,7 +61,7 @@ export async function POST(req: Request) {
       path: '/',
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      domain: resolveCookieDomain(),
+      domain: resolveSessionCookieDomain(),
       maxAge: 365 * 24 * 60 * 60,
     });
 

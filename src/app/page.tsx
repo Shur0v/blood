@@ -82,7 +82,8 @@ const readCachedJson = <T,>(key: string): T | null => {
 
 export default function Home() {
   const profileIntentHandledRef = useRef(false);
-  const unauthorizedSessionStreakRef = useRef(0);
+  const sessionUserRef = useRef<SessionUser | null>(null);
+  const lastSilentSessionCheckRef = useRef(0);
   const [currentPage, setCurrentPage] = useState("home");
   const [isProfileView, setIsProfileView] = useState(false);
   const [sessionUser, setSessionUser] = useState<SessionUser | null>(() => readCachedJson<SessionUser>(USER_SESSION_CACHE_KEY));
@@ -115,7 +116,34 @@ export default function Home() {
     };
   }, [currentPage, isProfileView]);
 
+  useEffect(() => {
+    sessionUserRef.current = sessionUser;
+  }, [sessionUser]);
+
+  const clearClientSession = useCallback(() => {
+    setSessionUser(null);
+    setProfileData(null);
+    setIsProfileView(false);
+    setProfileLoadError("");
+    if (typeof window !== "undefined") {
+      try {
+        window.localStorage.removeItem(USER_SESSION_CACHE_KEY);
+        window.localStorage.removeItem(USER_PROFILE_CACHE_KEY);
+      } catch {
+        // ignore storage failures
+      }
+    }
+  }, []);
+
   const loadSession = useCallback(async ({ silent = false }: { silent?: boolean } = {}) => {
+    if (silent) {
+      const now = Date.now();
+      if (now - lastSilentSessionCheckRef.current < 10000) {
+        return;
+      }
+      lastSilentSessionCheckRef.current = now;
+    }
+
     if (!silent) {
       setIsSessionLoading(true);
     }
@@ -128,25 +156,20 @@ export default function Home() {
 
       if (!res.ok) {
         if (res.status === 401 || res.status === 403) {
-          const shouldSoftKeepSession = Boolean(sessionUser) && unauthorizedSessionStreakRef.current < 1;
-          if (shouldSoftKeepSession) {
-            unauthorizedSessionStreakRef.current += 1;
-          } else {
-            const cachedUser = readCachedJson<SessionUser>(USER_SESSION_CACHE_KEY);
-            if (cachedUser) {
-              setSessionUser(cachedUser);
-            } else {
-              unauthorizedSessionStreakRef.current = 0;
-              setSessionUser(null);
-            }
-          }
+          clearClientSession();
         }
         return;
       }
 
       const data = await res.json();
-      unauthorizedSessionStreakRef.current = 0;
-      setSessionUser(data.user || null);
+      const nextUser = (data.user || null) as SessionUser | null;
+      setSessionUser((prev) => {
+        if (!prev && !nextUser) return prev;
+        if (prev && nextUser && prev.id === nextUser.id && prev.role === nextUser.role && prev.email === nextUser.email && prev.name === nextUser.name) {
+          return prev;
+        }
+        return nextUser;
+      });
     } catch (error) {
       // keep previous session on transient network/server failures
     } finally {
@@ -154,10 +177,11 @@ export default function Home() {
         setIsSessionLoading(false);
       }
     }
-  }, [sessionUser]);
+  }, [clearClientSession]);
 
   const loadProfile = useCallback(async () => {
-    if (!sessionUser) return;
+    const currentSession = sessionUserRef.current;
+    if (!currentSession) return;
     setIsProfileLoading(true);
     setProfileLoadError("");
     try {
@@ -168,6 +192,10 @@ export default function Home() {
       });
 
       if (!res.ok) {
+        if (res.status === 401 || res.status === 403) {
+          clearClientSession();
+          return;
+        }
         const cachedProfile = readCachedJson<ProfileData>(USER_PROFILE_CACHE_KEY);
         if (cachedProfile) {
           setProfileData(cachedProfile);
@@ -206,7 +234,7 @@ export default function Home() {
     } finally {
       setIsProfileLoading(false);
     }
-  }, [sessionUser]);
+  }, [clearClientSession]);
 
   useEffect(() => {
     void loadSession({ silent: false });
@@ -370,6 +398,7 @@ export default function Home() {
               <UnifiedDashboard
                 isReady={isReadyToDonate}
                 onToggleReady={handleToggleReady}
+                onSessionExpired={clearClientSession}
                 onHealthDataSaved={(healthData) => {
                   setProfileData((prev) => (prev ? { ...prev, healthData } : prev));
                 }}

@@ -8,23 +8,11 @@ import { validateStructuredPhone } from '../utils/phone';
 import { MAX_SERVICE_CITIES, buildLockedUntil } from '../services/ServiceCityService';
 import { ensureNotRestricted, getFingerprintHash, getIpHash, recordRiskEvent } from '../utils/risk';
 import { getPrisma } from '../config/db';
+import { resolveSessionCookieDomain } from '../utils/cookieDomain';
 import { z } from 'zod';
 
 const authService = new AuthService();
 const userRepo = new UserRepository();
-
-const resolveCookieDomain = (): string | undefined => {
-  if (process.env.NODE_ENV !== 'production') return undefined;
-  const configuredUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_SITE_URL;
-  if (!configuredUrl) return undefined;
-  try {
-    const hostname = new URL(configuredUrl).hostname;
-    if (!hostname || hostname === 'localhost') return undefined;
-    return hostname.startsWith('.') ? hostname : `.${hostname}`;
-  } catch {
-    return undefined;
-  }
-};
 
 // Zod schemas for strict request validation
 const RequestOtpSchema = z.object({
@@ -353,7 +341,7 @@ export class AuthController {
         path: '/',
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
-        domain: resolveCookieDomain(),
+        domain: resolveSessionCookieDomain(),
         maxAge: 365 * 24 * 60 * 60, // 1 year in seconds
       });
 
@@ -374,6 +362,14 @@ export class AuthController {
   static async logout() {
     const response = NextResponse.json({ message: 'Logged out successfully' }, { status: 200 });
     response.cookies.delete('bloodnet_session');
+    const domain = resolveSessionCookieDomain();
+    if (domain) {
+      response.cookies.delete({
+        name: 'bloodnet_session',
+        path: '/',
+        domain,
+      });
+    }
     return response;
   }
 }
