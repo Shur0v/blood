@@ -373,7 +373,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
             initial={{ scale: 0.9, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.9, opacity: 0, y: 20 }}
-            className="glass relative w-full max-w-md overflow-hidden rounded-[24px] sm:rounded-[32px] bg-white/10 p-5 sm:p-8 shadow-2xl ring-1 ring-white/20 backdrop-blur-2xl"
+            className="glass relative flex max-h-[92vh] w-full max-w-md flex-col overflow-hidden rounded-[24px] bg-white/10 p-5 shadow-2xl ring-1 ring-white/20 backdrop-blur-2xl sm:rounded-[32px] sm:p-8"
           >
             <button
               onClick={onClose}
@@ -407,8 +407,9 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
               </AnimatePresence>
             </div>
 
-            {step === "register" ? (
-              <form onSubmit={handleRequestOtp} className="space-y-4">
+            <div className="flex-1 overflow-y-auto custom-scrollbar px-1 py-4">
+              {step === "register" ? (
+                <form onSubmit={handleRequestOtp} className="space-y-4 pb-4">
                 {authMode === "register" && (
                   <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-white/40">Full Name</label>
@@ -467,7 +468,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
                         <MapPin className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-white/30" />
                         <input
                           type="text"
-                          required
+                          required={selectedLocations.length === 0}
                           placeholder="Search your city"
                           value={locationInput}
                           onChange={(e) => {
@@ -748,9 +749,9 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
                 >
                   {authMode === "register" ? "Already have an account? Login" : "Need a new account? Register"}
                 </button>
-              </form>
-            ) : (
-              <div className="space-y-8">
+                </form>
+              ) : (
+                <div className="space-y-8 pb-4">
                 <div className="grid grid-cols-6 gap-2 sm:gap-3">
                   {otp.map((digit, index) => (
                     <input
@@ -782,8 +783,9 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
                     Change email address?
                   </button>
                 </div>
-              </div>
-            )}
+                </div>
+              )}
+            </div>
 
             <AnimatePresence>
               {isDobPickerOpen && (

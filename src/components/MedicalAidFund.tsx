@@ -186,19 +186,12 @@ export default function MedicalAidFund() {
             </p>
 
             <div className="flex flex-col items-center lg:items-start gap-6">
-              <div className="relative">
-                {/* Outer Glow for the White Button */}
-                <motion.div
-                  animate={{ scale: [1, 1.05, 1], opacity: [0.3, 0.6, 0.3] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                  className="absolute -inset-2 rounded-2xl bg-white blur-xl"
-                ></motion.div>
-                
+              <div className="flex flex-col items-center gap-3 lg:items-start">
                 <motion.button
                   onClick={() => setIsDonateModalOpen(true)}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="group relative inline-flex items-center justify-center gap-3 overflow-hidden rounded-2xl bg-white px-12 py-5 font-black uppercase tracking-widest text-[#FF3131] shadow-2xl transition-all w-full md:w-auto text-lg hover:bg-gray-50"
+                  className="group inline-flex w-full items-center justify-center gap-3 overflow-hidden rounded-2xl bg-white px-12 py-5 text-lg font-black uppercase tracking-widest text-[#FF3131] shadow-2xl transition-all hover:bg-gray-50 md:w-auto"
                 >
                   <div className="relative flex items-center gap-3">
                     <Heart className="h-6 w-6 text-[#FF3131] fill-[#FF3131] animate-[pulse_1.5s_ease-in-out_infinite]" />
@@ -206,7 +199,7 @@ export default function MedicalAidFund() {
                     <ArrowRight className="h-6 w-6 transition-transform group-hover:translate-x-2" />
                   </div>
                 </motion.button>
-                <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-white/35 bg-white/15 px-3 py-1.5 text-xs font-bold tracking-wide text-white/95 backdrop-blur-sm shadow-md">
+                <div className="inline-flex items-center gap-2 rounded-full border border-white/35 bg-white/15 px-3 py-1.5 text-xs font-bold tracking-wide text-white/95 backdrop-blur-sm">
                   <ShieldAlert className="h-3.5 w-3.5" />
                   SSL Encrypted
                 </div>
