@@ -289,7 +289,7 @@ function DonorTag({ group, name, location, maskedPhone, onClick }: { group: stri
   return (
     <div
       onClick={onClick}
-      className="group flex min-w-[280px] cursor-pointer items-center gap-4 rounded-full border border-white/40 bg-white/20 p-2 pr-8 shadow-card backdrop-blur-2xl transition-all duration-300 hover:border-primary-dark/40 hover:shadow-card hover:-translate-y-1"
+      className="group flex min-w-[240px] sm:min-w-[280px] cursor-pointer items-center gap-3 sm:gap-4 rounded-full border border-white/40 bg-white/20 p-2 pr-5 sm:pr-8 shadow-card backdrop-blur-2xl transition-all duration-300 hover:border-primary-dark/40 hover:shadow-card hover:-translate-y-1"
     >
       <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary-dark text-lg font-black text-white shadow-card">
         {group}

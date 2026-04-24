@@ -34,6 +34,7 @@ async function resolveUiTheme() {
   try {
     const prisma = getPrisma();
     const settings = await prisma.platformSettings.findFirst({
+      orderBy: [{ updated_at: "desc" }, { id: "desc" }],
       select: { ui_theme: true },
     });
     return normalizeUiTheme(settings?.ui_theme);

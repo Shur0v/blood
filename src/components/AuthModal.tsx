@@ -407,9 +407,9 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
               </AnimatePresence>
             </div>
 
-            <div className="flex-1 overflow-y-auto custom-scrollbar px-1 py-4">
+            <div className="flex-1 overflow-y-auto custom-scrollbar px-1 py-5">
               {step === "register" ? (
-                <form onSubmit={handleRequestOtp} className="space-y-4 pb-4">
+                <form onSubmit={handleRequestOtp} noValidate className="space-y-4 pb-0">
                 {authMode === "register" && (
                   <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-white/40">Full Name</label>
@@ -468,7 +468,6 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
                         <MapPin className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-white/30" />
                         <input
                           type="text"
-                          required={selectedLocations.length === 0}
                           placeholder="Search your city"
                           value={locationInput}
                           onChange={(e) => {

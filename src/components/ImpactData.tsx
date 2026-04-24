@@ -3,9 +3,9 @@ import { motion, useMotionValue, useTransform, animate } from "motion/react";
 import { useEffect, useState } from "react";
 
 const defaultStats = [
-  { label: "Lives Saved", suffix: "k+", target: 12 },
+  { label: "lives Impacted", suffix: "+", target: 12 },
   { label: "Countries", suffix: "", target: 45 },
-  { label: "Active Donors", suffix: "k+", target: 25 },
+  { label: "Active Heroes", suffix: "+", target: 25 },
   { label: "Success Rate", suffix: "%", target: 99 }
 ];
 

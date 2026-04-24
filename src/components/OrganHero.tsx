@@ -275,9 +275,9 @@ export default function OrganHero() {
                 ))}
               </div>
 
-              <div className="relative flex h-14 w-full items-center gap-2">
+              <div className="relative flex h-14 w-full items-center gap-2 overflow-hidden">
                 <div ref={controlsWrapperRef} className="flex w-full items-center gap-2">
-                  <div className="flex w-[90%] items-center gap-1.5 md:gap-2">
+                  <div className="flex min-w-0 flex-1 items-center gap-1.5 md:gap-2">
                     <motion.button
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
@@ -309,7 +309,7 @@ export default function OrganHero() {
                     ))}
                   </div>
 
-                  <div className="flex w-[10%] items-center justify-end">
+                  <div className="flex shrink-0 items-center justify-end">
                     <motion.button
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}

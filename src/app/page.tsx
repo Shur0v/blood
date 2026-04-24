@@ -28,7 +28,7 @@ import UnifiedDashboard from "../components/UnifiedDashboard";
 import DonationToggleModal from "../components/DonationToggleModal";
 import MedicalAidFund from "../components/MedicalAidFund";
 import { motion, useScroll, useSpring } from "motion/react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 
 interface SessionUser {
   id: string;
@@ -68,13 +68,17 @@ interface ProfileData {
 
 export default function Home() {
   const profileIntentHandledRef = useRef(false);
+  const unauthorizedSessionStreakRef = useRef(0);
   const [currentPage, setCurrentPage] = useState("home");
   const [isProfileView, setIsProfileView] = useState(false);
   const [sessionUser, setSessionUser] = useState<SessionUser | null>(null);
+  const [isSessionLoading, setIsSessionLoading] = useState(true);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isDonationModalOpen, setIsDonationModalOpen] = useState(false);
   const [isReadyToDonate, setIsReadyToDonate] = useState(true);
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
+  const [isProfileLoading, setIsProfileLoading] = useState(false);
+  const [profileLoadError, setProfileLoadError] = useState("");
   const [policyModal, setPolicyModal] = useState<{ isOpen: boolean; type: 'terms' | 'privacy' }>({
     isOpen: false,
     type: 'terms'
@@ -97,55 +101,108 @@ export default function Home() {
     };
   }, [currentPage, isProfileView]);
 
-  useEffect(() => {
-    const loadSession = async () => {
-      try {
-        const res = await fetch("/api/auth/session", {
-          method: "GET",
-          credentials: "include",
-          cache: "no-store",
-        });
+  const loadSession = useCallback(async ({ silent = false }: { silent?: boolean } = {}) => {
+    if (!silent) {
+      setIsSessionLoading(true);
+    }
+    try {
+      const res = await fetch("/api/auth/session", {
+        method: "GET",
+        credentials: "include",
+        cache: "no-store",
+      });
 
-        if (!res.ok) {
-          setSessionUser(null);
-          return;
+      if (!res.ok) {
+        if (res.status === 401 || res.status === 403) {
+          const shouldSoftKeepSession = Boolean(sessionUser) && unauthorizedSessionStreakRef.current < 1;
+          if (shouldSoftKeepSession) {
+            unauthorizedSessionStreakRef.current += 1;
+          } else {
+            unauthorizedSessionStreakRef.current = 0;
+            setSessionUser(null);
+          }
         }
-
-        const data = await res.json();
-        setSessionUser(data.user || null);
-      } catch (error) {
-        setSessionUser(null);
+        return;
       }
-    };
 
-    loadSession();
-  }, []);
+      const data = await res.json();
+      unauthorizedSessionStreakRef.current = 0;
+      setSessionUser(data.user || null);
+    } catch (error) {
+      // keep previous session on transient network/server failures
+    } finally {
+      if (!silent) {
+        setIsSessionLoading(false);
+      }
+    }
+  }, [sessionUser]);
+
+  const loadProfile = useCallback(async () => {
+    if (!sessionUser) return;
+    setIsProfileLoading(true);
+    setProfileLoadError("");
+    try {
+      const res = await fetch("/api/users/me/profile", {
+        method: "GET",
+        credentials: "include",
+        cache: "no-store",
+      });
+
+      if (!res.ok) {
+        setProfileLoadError("Unable to load profile right now.");
+        return;
+      }
+
+      const payload = await res.json();
+      if (!payload.success) {
+        setProfileLoadError("Unable to load profile right now.");
+        return;
+      }
+
+      setProfileData(payload.data);
+      setIsReadyToDonate(Boolean(payload.data.isActiveDonor));
+    } catch (error) {
+      setProfileLoadError("Unable to load profile right now.");
+    } finally {
+      setIsProfileLoading(false);
+    }
+  }, [sessionUser]);
+
+  useEffect(() => {
+    void loadSession({ silent: false });
+  }, [loadSession]);
 
   useEffect(() => {
     if (!sessionUser || !isProfileView) return;
+    void loadProfile();
+  }, [isProfileView, sessionUser?.id, loadProfile]);
 
-    const loadProfile = async () => {
-      try {
-        const res = await fetch("/api/users/me/profile", {
-          method: "GET",
-          credentials: "include",
-          cache: "no-store",
-        });
+  useEffect(() => {
+    if (!sessionUser) {
+      setProfileData(null);
+      setProfileLoadError("");
+    }
+  }, [sessionUser]);
 
-        if (!res.ok) return;
+  useEffect(() => {
+    const refreshOnFocus = () => {
+      void loadSession({ silent: true });
+    };
 
-        const payload = await res.json();
-        if (!payload.success) return;
-
-        setProfileData(payload.data);
-        setIsReadyToDonate(Boolean(payload.data.isActiveDonor));
-      } catch (error) {
-        // keep UI state as-is
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        void loadSession({ silent: true });
       }
     };
 
-    void loadProfile();
-  }, [isProfileView, sessionUser]);
+    window.addEventListener("focus", refreshOnFocus);
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
+    return () => {
+      window.removeEventListener("focus", refreshOnFocus);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+    };
+  }, [loadSession]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -206,7 +263,7 @@ export default function Home() {
   };
 
   return (
-    <div className="relative min-h-screen">
+    <div className="relative min-h-screen overflow-x-hidden">
       {/* Scroll Progress Bar */}
       <motion.div
         className="fixed top-0 left-0 right-0 z-[100] h-1.5 origin-left bg-primary-dark shadow-lg shadow-primary-dark/50"
@@ -224,11 +281,32 @@ export default function Home() {
       <main>
         {isProfileView && sessionUser && (
           <div className="mx-auto max-w-7xl px-4 py-24">
-            <UnifiedDashboard
-              isReady={isReadyToDonate}
-              onToggleReady={handleToggleReady}
-              profile={profileData}
-            />
+            {(isSessionLoading || isProfileLoading) && !profileData ? (
+              <div className="rounded-3xl border border-border/20 bg-glass p-8 text-center text-sm font-semibold text-text/70">
+                Loading your profile...
+              </div>
+            ) : profileLoadError && !profileData ? (
+              <div className="rounded-3xl border border-red-300/40 bg-red-50/40 p-8 text-center">
+                <p className="text-sm font-semibold text-red-700">{profileLoadError}</p>
+                <button
+                  type="button"
+                  onClick={() => void loadProfile()}
+                  className="mt-4 rounded-xl bg-primary-dark px-6 py-2 text-xs font-bold uppercase tracking-widest text-white"
+                >
+                  Retry
+                </button>
+              </div>
+            ) : !profileData ? (
+              <div className="rounded-3xl border border-border/20 bg-glass p-8 text-center text-sm font-semibold text-text/70">
+                Refreshing profile data...
+              </div>
+            ) : (
+              <UnifiedDashboard
+                isReady={isReadyToDonate}
+                onToggleReady={handleToggleReady}
+                profile={profileData}
+              />
+            )}
           </div>
         )}
 

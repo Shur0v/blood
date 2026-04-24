@@ -339,7 +339,7 @@ export class AuthController {
         path: '/',
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
-        maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
+        maxAge: 365 * 24 * 60 * 60, // 1 year in seconds
       });
 
       // OTP should be consumed only after full auth process succeeds

@@ -7,9 +7,14 @@ const userRepo = new UserRepository();
 
 export async function GET(req: Request) {
   const session = getSessionFromRequest(req);
+  const noStoreHeaders = {
+    'Cache-Control': 'no-store, no-cache, must-revalidate',
+    Pragma: 'no-cache',
+    Expires: '0',
+  };
 
   if (!session) {
-    return NextResponse.json({ authenticated: false }, { status: 401 });
+    return NextResponse.json({ authenticated: false }, { status: 401, headers: noStoreHeaders });
   }
 
   if (ADMIN_ROLES.includes(session.role as (typeof ADMIN_ROLES)[number])) {
@@ -19,12 +24,12 @@ export async function GET(req: Request) {
         id: session.user_id,
         role: session.role,
       },
-    });
+    }, { headers: noStoreHeaders });
   }
 
   const user = await userRepo.findById(session.user_id);
   if (!user) {
-    return NextResponse.json({ authenticated: false }, { status: 401 });
+    return NextResponse.json({ authenticated: false }, { status: 401, headers: noStoreHeaders });
   }
 
   const restricted = await getPrisma().restrictedIdentity.findFirst({
@@ -34,7 +39,7 @@ export async function GET(req: Request) {
     },
   });
   if (restricted) {
-    return NextResponse.json({ authenticated: false, message: 'Account is restricted.' }, { status: 403 });
+    return NextResponse.json({ authenticated: false, message: 'Account is restricted.' }, { status: 403, headers: noStoreHeaders });
   }
 
   return NextResponse.json({
@@ -45,5 +50,5 @@ export async function GET(req: Request) {
       email: user.email,
       role: session.role,
     },
-  });
+  }, { headers: noStoreHeaders });
 }

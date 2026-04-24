@@ -4,9 +4,17 @@ import { getPrisma } from "@/src/backend/config/db";
 import { ADMIN_ROLES, getSessionFromRequest, hasRequiredRole } from "@/src/backend/utils/session";
 import { DEFAULT_UI_THEME, UI_THEME_KEYS } from "@/src/lib/uiTheme";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 const ThemeSchema = z.object({
   uiTheme: z.enum(UI_THEME_KEYS),
 });
+
+const getLatestSettings = async (prisma: ReturnType<typeof getPrisma>) =>
+  prisma.platformSettings.findFirst({
+    orderBy: [{ updated_at: "desc" }, { id: "desc" }],
+  });
 
 export async function GET(req: Request) {
   const session = getSessionFromRequest(req);
@@ -19,7 +27,7 @@ export async function GET(req: Request) {
 
   try {
     const prisma = getPrisma();
-    let settings = await prisma.platformSettings.findFirst();
+    let settings = await getLatestSettings(prisma);
     if (!settings) {
       settings = await prisma.platformSettings.create({
         data: {
@@ -34,7 +42,7 @@ export async function GET(req: Request) {
         uiTheme: settings.ui_theme || DEFAULT_UI_THEME,
         updatedAt: settings.updated_at,
       },
-    });
+    }, { headers: { "Cache-Control": "no-store, max-age=0" } });
   } catch {
     return NextResponse.json({ success: false, message: "Failed to load theme settings." }, { status: 500 });
   }
@@ -56,7 +64,7 @@ export async function PUT(req: Request) {
     }
 
     const prisma = getPrisma();
-    let settings = await prisma.platformSettings.findFirst();
+    let settings = await getLatestSettings(prisma);
     if (!settings) {
       settings = await prisma.platformSettings.create({
         data: {
@@ -77,7 +85,7 @@ export async function PUT(req: Request) {
         updatedAt: settings.updated_at,
       },
       message: "Theme updated successfully.",
-    });
+    }, { headers: { "Cache-Control": "no-store, max-age=0" } });
   } catch {
     return NextResponse.json({ success: false, message: "Failed to update theme." }, { status: 500 });
   }

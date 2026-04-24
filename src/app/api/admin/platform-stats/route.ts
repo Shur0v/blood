@@ -19,7 +19,7 @@ const StatsSchema = z
   .transform((data) => ({
     ...data,
     donor_requests: data.donor_requests ?? data.donorRequests ?? 0,
-    ui_theme: data.ui_theme ?? data.uiTheme ?? DEFAULT_UI_THEME,
+    ui_theme: data.ui_theme ?? data.uiTheme,
   }));
 
 export async function PUT(req: Request) {
@@ -41,7 +41,9 @@ export async function PUT(req: Request) {
 
     const { total_raised, total_spent, completed_ops, uncompleted_ops, weekly_donors, donor_requests, ui_theme } = parsed.data;
 
-    let stats = await prisma.platformSettings.findFirst();
+    let stats = await prisma.platformSettings.findFirst({
+      orderBy: [{ updated_at: "desc" }, { id: "desc" }],
+    });
 
     if (stats) {
       stats = await prisma.platformSettings.update({
@@ -53,7 +55,7 @@ export async function PUT(req: Request) {
           uncompleted_ops,
           weekly_donors,
           donor_requests,
-          ui_theme,
+          ...(ui_theme !== undefined ? { ui_theme } : {}),
         }
       });
     } else {
@@ -65,7 +67,7 @@ export async function PUT(req: Request) {
           uncompleted_ops,
           weekly_donors,
           donor_requests,
-          ui_theme,
+          ui_theme: ui_theme ?? DEFAULT_UI_THEME,
         }
       });
     }

@@ -12,26 +12,26 @@ interface NavbarProps {
 
 export default function Navbar({ currentPage, onPageChange, onAuthClick, onHomeClick, isLoggedIn }: NavbarProps) {
   return (
-    <div className="fixed bottom-8 left-0 right-0 z-50 flex justify-center px-4">
+    <div className="fixed bottom-8 left-0 right-0 z-50 flex justify-center px-3 sm:px-4">
       <motion.nav 
         initial={{ y: 100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="flex items-center gap-4 rounded-full bg-black/40 backdrop-blur-xl border border-white/10 px-4 py-2 shadow-card"
+        className="flex w-full max-w-[min(100%,680px)] items-center justify-between gap-2 rounded-full border border-white/10 bg-black/40 px-3 py-2 shadow-card backdrop-blur-xl sm:gap-4 sm:px-4"
       >
         {/* Logo Section */}
         <button
           onClick={onHomeClick}
-          className="flex items-center gap-2 pr-2 border-r border-white/10"
+          className="flex shrink-0 items-center gap-2 border-r border-white/10 pr-2"
           type="button"
         >
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-dark">
             <Droplet className="h-5 w-5 text-white fill-white" />
           </div>
-          <span className="text-sm font-bold tracking-tight text-white">BloodNet</span>
+          <span className="hidden text-sm font-bold tracking-tight text-white sm:inline">BloodNet</span>
         </button>
 
         {/* Navigation Icons */}
-        <div className="flex items-center gap-2">
+        <div className="flex min-w-0 items-center justify-center gap-1 sm:gap-2">
           <NavItem 
             icon={<Home className="h-4 w-4" />} 
             active={currentPage === "home"} 
@@ -58,7 +58,7 @@ export default function Navbar({ currentPage, onPageChange, onAuthClick, onHomeC
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={onAuthClick}
-          className="flex items-center gap-2 rounded-full bg-primary-dark px-5 py-2 text-xs font-bold text-white shadow-lg shadow-primary-dark/20 transition-all hover:bg-primary"
+          className="flex shrink-0 items-center gap-2 rounded-full bg-primary-dark px-3 py-2 text-xs font-bold text-white shadow-lg shadow-primary-dark/20 transition-all hover:bg-primary sm:px-5"
         >
           {isLoggedIn ? (
             <>

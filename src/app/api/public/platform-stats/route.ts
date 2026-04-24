@@ -5,7 +5,9 @@ import { DEFAULT_UI_THEME } from "@/src/lib/uiTheme";
 export async function GET() {
   try {
     const prisma = getPrisma();
-    let stats = await prisma.platformSettings.findFirst();
+    let stats = await prisma.platformSettings.findFirst({
+      orderBy: [{ updated_at: "desc" }, { id: "desc" }],
+    });
     
     if (!stats) {
       stats = await prisma.platformSettings.create({

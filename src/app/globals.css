@@ -24,6 +24,27 @@
 }
 
 @layer base {
+  html,
+  body,
+  #__next {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  main,
+  section {
+    max-width: 100%;
+  }
+
+  img,
+  svg,
+  video,
+  canvas {
+    max-width: 100%;
+    height: auto;
+  }
+
   :root {
     /* Brand Primary: Signature Red */
     --primary: #FF3131; 

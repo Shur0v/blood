@@ -86,7 +86,11 @@ export function middleware(request: NextRequest) {
   }
 
   const isApiRoute = pathname.startsWith('/api/');
-  if (pathname.startsWith('/api/admin/')) {
+  if (
+    pathname.startsWith('/api/admin/') ||
+    pathname.startsWith('/api/auth/') ||
+    pathname.startsWith('/api/users/me/')
+  ) {
     response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
   }
   applySecurityHeaders(response, isApiRoute);
@@ -97,4 +101,3 @@ export function middleware(request: NextRequest) {
 export const config = {
   matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
 };
-

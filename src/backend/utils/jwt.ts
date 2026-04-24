@@ -27,7 +27,7 @@ export interface JwtPayload {
  * @returns {string} Signed JWT token
  */
 export const signToken = (payload: JwtPayload): string => {
-  return jwt.sign(payload, getJwtSecret(), { expiresIn: '7d' });
+  return jwt.sign(payload, getJwtSecret(), { expiresIn: '365d' });
 };
 
 /**
