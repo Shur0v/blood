@@ -66,17 +66,31 @@ interface ProfileData {
   }>;
 }
 
+const USER_SESSION_CACHE_KEY = "bloodnet:user-session:v1";
+const USER_PROFILE_CACHE_KEY = "bloodnet:user-profile:v1";
+
+const readCachedJson = <T,>(key: string): T | null => {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(key);
+    if (!raw) return null;
+    return JSON.parse(raw) as T;
+  } catch {
+    return null;
+  }
+};
+
 export default function Home() {
   const profileIntentHandledRef = useRef(false);
   const unauthorizedSessionStreakRef = useRef(0);
   const [currentPage, setCurrentPage] = useState("home");
   const [isProfileView, setIsProfileView] = useState(false);
-  const [sessionUser, setSessionUser] = useState<SessionUser | null>(null);
-  const [isSessionLoading, setIsSessionLoading] = useState(true);
+  const [sessionUser, setSessionUser] = useState<SessionUser | null>(() => readCachedJson<SessionUser>(USER_SESSION_CACHE_KEY));
+  const [isSessionLoading, setIsSessionLoading] = useState(() => !Boolean(readCachedJson<SessionUser>(USER_SESSION_CACHE_KEY)));
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isDonationModalOpen, setIsDonationModalOpen] = useState(false);
   const [isReadyToDonate, setIsReadyToDonate] = useState(true);
-  const [profileData, setProfileData] = useState<ProfileData | null>(null);
+  const [profileData, setProfileData] = useState<ProfileData | null>(() => readCachedJson<ProfileData>(USER_PROFILE_CACHE_KEY));
   const [isProfileLoading, setIsProfileLoading] = useState(false);
   const [profileLoadError, setProfileLoadError] = useState("");
   const [policyModal, setPolicyModal] = useState<{ isOpen: boolean; type: 'terms' | 'privacy' }>({
@@ -118,8 +132,13 @@ export default function Home() {
           if (shouldSoftKeepSession) {
             unauthorizedSessionStreakRef.current += 1;
           } else {
-            unauthorizedSessionStreakRef.current = 0;
-            setSessionUser(null);
+            const cachedUser = readCachedJson<SessionUser>(USER_SESSION_CACHE_KEY);
+            if (cachedUser) {
+              setSessionUser(cachedUser);
+            } else {
+              unauthorizedSessionStreakRef.current = 0;
+              setSessionUser(null);
+            }
           }
         }
         return;
@@ -149,20 +168,41 @@ export default function Home() {
       });
 
       if (!res.ok) {
-        setProfileLoadError("Unable to load profile right now.");
+        const cachedProfile = readCachedJson<ProfileData>(USER_PROFILE_CACHE_KEY);
+        if (cachedProfile) {
+          setProfileData(cachedProfile);
+          setIsReadyToDonate(Boolean(cachedProfile.isActiveDonor));
+          setProfileLoadError("");
+        } else {
+          setProfileLoadError("Unable to load profile right now.");
+        }
         return;
       }
 
       const payload = await res.json();
       if (!payload.success) {
-        setProfileLoadError("Unable to load profile right now.");
+        const cachedProfile = readCachedJson<ProfileData>(USER_PROFILE_CACHE_KEY);
+        if (cachedProfile) {
+          setProfileData(cachedProfile);
+          setIsReadyToDonate(Boolean(cachedProfile.isActiveDonor));
+          setProfileLoadError("");
+        } else {
+          setProfileLoadError("Unable to load profile right now.");
+        }
         return;
       }
 
       setProfileData(payload.data);
       setIsReadyToDonate(Boolean(payload.data.isActiveDonor));
     } catch (error) {
-      setProfileLoadError("Unable to load profile right now.");
+      const cachedProfile = readCachedJson<ProfileData>(USER_PROFILE_CACHE_KEY);
+      if (cachedProfile) {
+        setProfileData(cachedProfile);
+        setIsReadyToDonate(Boolean(cachedProfile.isActiveDonor));
+        setProfileLoadError("");
+      } else {
+        setProfileLoadError("Unable to load profile right now.");
+      }
     } finally {
       setIsProfileLoading(false);
     }
@@ -183,6 +223,32 @@ export default function Home() {
       setProfileLoadError("");
     }
   }, [sessionUser]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      if (sessionUser) {
+        window.localStorage.setItem(USER_SESSION_CACHE_KEY, JSON.stringify(sessionUser));
+      } else {
+        window.localStorage.removeItem(USER_SESSION_CACHE_KEY);
+      }
+    } catch {
+      // ignore storage failures
+    }
+  }, [sessionUser]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      if (profileData) {
+        window.localStorage.setItem(USER_PROFILE_CACHE_KEY, JSON.stringify(profileData));
+      } else {
+        window.localStorage.removeItem(USER_PROFILE_CACHE_KEY);
+      }
+    } catch {
+      // ignore storage failures
+    }
+  }, [profileData]);
 
   useEffect(() => {
     const refreshOnFocus = () => {

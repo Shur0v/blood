@@ -13,10 +13,10 @@ interface NavbarProps {
 export default function Navbar({ currentPage, onPageChange, onAuthClick, onHomeClick, isLoggedIn }: NavbarProps) {
   return (
     <div className="fixed bottom-8 left-0 right-0 z-50 flex justify-center px-3 sm:px-4">
-      <motion.nav 
+      <motion.nav
         initial={{ y: 100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="flex w-full max-w-[min(100%,680px)] items-center justify-between gap-2 rounded-full border border-white/10 bg-black/40 px-3 py-2 shadow-card backdrop-blur-xl sm:gap-4 sm:px-4"
+        className="flex w-full max-w-[min(100%,560px)] items-center justify-between gap-2 rounded-full border border-white/10 bg-black/40 px-3 py-2 shadow-card backdrop-blur-xl sm:gap-4 sm:px-4"
       >
         {/* Logo Section */}
         <button
