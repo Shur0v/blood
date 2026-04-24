@@ -32,9 +32,12 @@ const ORGANS = ORGAN_CATALOG.map((name) => ({
 interface UnifiedDashboardProps {
   isReady: boolean;
   onToggleReady: (ready: boolean) => void;
+  onHealthDataSaved?: (healthData: Record<string, unknown>) => void;
+  onOrgansSaved?: (organs: string[]) => void;
   mode?: "self" | "admin";
   targetUserId?: string;
   profile: {
+    id: string;
     name: string;
     city: string;
     country: string;
@@ -54,7 +57,15 @@ interface UnifiedDashboardProps {
   } | null;
 }
 
-export default function UnifiedDashboard({ isReady, onToggleReady, mode = "self", targetUserId, profile }: UnifiedDashboardProps) {
+export default function UnifiedDashboard({
+  isReady,
+  onToggleReady,
+  onHealthDataSaved,
+  onOrgansSaved,
+  mode = "self",
+  targetUserId,
+  profile,
+}: UnifiedDashboardProps) {
   const [weight, setWeight] = useState(70);
   const [weightTouched, setWeightTouched] = useState(false);
   const [weightUnknown, setWeightUnknown] = useState(false);
@@ -101,10 +112,16 @@ export default function UnifiedDashboard({ isReady, onToggleReady, mode = "self"
   const verificationEndpoint = mode === "admin" && targetUserId ? `/api/admin/users/${targetUserId}/verification-documents` : "/api/users/me/verification-documents";
   const profileEndpoint = mode === "admin" && targetUserId ? `/api/admin/users/${targetUserId}` : "/api/users/me/profile";
 
+  const profileId = profile?.id;
+  const profileHealthData = profile?.healthData;
+  const profileActiveOrgans = profile?.activeOrgans;
+  const profileImage = profile?.profileImageUrl;
+  const profileServiceCities = profile?.serviceCities;
+
   useEffect(() => {
     if (!profile) return;
 
-    const health = (profile.healthData ?? {}) as Record<string, unknown>;
+    const health = (profileHealthData ?? {}) as Record<string, unknown>;
     const hasExplicitTouchedFlag = (key: string) => health[key] === true;
     const hasNumericValue = (key: string) => typeof health[key] === "number";
     const resolveTouched = (key: string, fallbackValue: number, unknown: boolean) => {
@@ -144,11 +161,11 @@ export default function UnifiedDashboard({ isReady, onToggleReady, mode = "self"
     setGlucoseTouched(nextGlucoseTouched);
     setSelectedVaccines(Array.isArray(health.vaccinations) ? health.vaccinations.filter((v): v is string => typeof v === "string") : []);
     setSelectedAllergies(Array.isArray(health.allergies) ? health.allergies.filter((a): a is string => typeof a === "string") : ["Dust"]);
-    setRegisteredOrgans(normalizeOrganList(profile.activeOrgans ?? []));
-    setProfileImageUrl(profile.profileImageUrl ?? null);
-    setServiceCities(profile.serviceCities ?? []);
+    setRegisteredOrgans(normalizeOrganList(profileActiveOrgans ?? []));
+    setProfileImageUrl(profileImage ?? null);
+    setServiceCities(profileServiceCities ?? []);
     hydratedRef.current = true;
-  }, [profile]);
+  }, [profileId, profileHealthData, profileActiveOrgans, profileImage, profileServiceCities]);
 
   useEffect(() => {
     if (mode !== "self") return;
@@ -264,6 +281,11 @@ export default function UnifiedDashboard({ isReady, onToggleReady, mode = "self"
         throw new Error("Failed to save health profile");
       }
 
+      const payload = await res.json();
+      if (payload?.success && payload.data && typeof payload.data === "object" && onHealthDataSaved) {
+        onHealthDataSaved(payload.data as Record<string, unknown>);
+      }
+
       setSaveState("saved");
       setTimeout(() => setSaveState("idle"), 1200);
     } catch (error) {
@@ -314,6 +336,10 @@ export default function UnifiedDashboard({ isReady, onToggleReady, mode = "self"
 
         if (!res.ok) {
           throw new Error("Failed to save organs");
+        }
+
+        if (onOrgansSaved) {
+          onOrgansSaved(registeredOrgans);
         }
 
         setSaveState("saved");

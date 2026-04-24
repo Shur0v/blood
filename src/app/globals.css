@@ -141,19 +141,6 @@
     @apply font-sans overflow-x-hidden transition-colors duration-300;
   }
 
-  html.lenis,
-  html.lenis body {
-    height: auto;
-  }
-
-  .lenis.lenis-smooth {
-    scroll-behavior: auto;
-  }
-
-  .lenis.lenis-smooth [data-lenis-prevent] {
-    overscroll-behavior: contain;
-  }
-
   select {
     -webkit-appearance: none;
     -moz-appearance: none;

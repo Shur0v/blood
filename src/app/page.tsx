@@ -370,6 +370,12 @@ export default function Home() {
               <UnifiedDashboard
                 isReady={isReadyToDonate}
                 onToggleReady={handleToggleReady}
+                onHealthDataSaved={(healthData) => {
+                  setProfileData((prev) => (prev ? { ...prev, healthData } : prev));
+                }}
+                onOrgansSaved={(activeOrgans) => {
+                  setProfileData((prev) => (prev ? { ...prev, activeOrgans } : prev));
+                }}
                 profile={profileData}
               />
             )}

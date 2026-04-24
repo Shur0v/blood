@@ -346,6 +346,7 @@ export default function AllUserList() {
               mode="admin"
               targetUserId={selectedUserId}
               profile={{
+                id: selectedProfile.id,
                 name: selectedProfile.name,
                 city: selectedProfile.city,
                 country: selectedProfile.country,

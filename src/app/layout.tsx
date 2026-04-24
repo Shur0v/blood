@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import ClickTracker from "@/src/components/ClickTracker";
-import SmoothScrollProvider from "@/src/components/SmoothScrollProvider";
 import ThemeRuntimeSync from "@/src/components/ThemeRuntimeSync";
 import { getPublicBaseUrl } from "@/src/backend/config/env";
 import { getPrisma } from "@/src/backend/config/db";
@@ -55,7 +54,7 @@ export default async function RootLayout({
       <body className="antialiased">
         <ThemeRuntimeSync />
         <ClickTracker />
-        <SmoothScrollProvider>{children}</SmoothScrollProvider>
+        {children}
       </body>
     </html>
   );

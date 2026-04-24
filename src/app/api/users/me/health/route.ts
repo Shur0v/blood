@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
+import { Prisma } from '@prisma/client';
 import { getPrisma } from '@/src/backend/config/db';
 import { ADMIN_ROLES, getSessionFromRequest, USER_ROLE } from '@/src/backend/utils/session';
 
@@ -53,7 +54,7 @@ export async function PATCH(req: Request) {
 
   await prisma.user.update({
     where: { id: session.user_id },
-    data: { health_data: mergedHealth },
+    data: { health_data: mergedHealth as Prisma.InputJsonValue },
   });
 
   return NextResponse.json({ success: true, data: mergedHealth });
