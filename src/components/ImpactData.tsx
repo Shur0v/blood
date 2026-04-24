@@ -25,7 +25,7 @@ export default function ImpactData() {
         if (!res.ok || !payload.success || !payload.data) return;
 
         setStats([
-          { label: "lives Impacted This Year", suffix: "+", target: Number(payload.data.impactLivesSaved ?? 12) },
+          { label: "lives Impacted", suffix: "+", target: Number(payload.data.impactLivesSaved ?? 12) },
           { label: "Countries", suffix: "", target: Number(payload.data.impactCountries ?? 45) },
           { label: "Active Heroes", suffix: "+", target: Number(payload.data.impactActiveDonors ?? 25) },
           { label: "Success Rate", suffix: "%", target: Number(payload.data.impactSuccessRate ?? 99) },
