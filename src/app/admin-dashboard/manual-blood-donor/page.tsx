@@ -4,7 +4,7 @@ import React from 'react';
 import { Card } from '@/src/admin-dashboard/components/common/Card';
 import { Table, TableRow, TableCell } from '@/src/admin-dashboard/components/common/Table';
 import { Badge } from '@/src/admin-dashboard/components/common/Badge';
-import { UploadCloud, CheckCircle2, AlertCircle, CalendarDays } from 'lucide-react';
+import { UploadCloud, CheckCircle2, AlertCircle, CalendarDays, Plus, Trash2, ListChecks } from 'lucide-react';
 import CityLocationAutocomplete, { type LocationSuggestion } from '@/src/components/CityLocationAutocomplete';
 import CountryPhoneInput, { emptyPhoneValue, type PhoneFieldValue } from '@/src/components/CountryPhoneInput';
 import WheelDatePickerModal from '@/src/components/WheelDatePickerModal';
@@ -19,15 +19,37 @@ interface ManualBloodDonorRow {
   is_active_donor: boolean;
 }
 
+interface BulkDonorRow {
+  id: string;
+  name: string;
+  city: string;
+  bloodGroup: string;
+  mobile: string;
+}
+
+const BULK_DEFAULT_ROWS = 10;
+const BLOOD_GROUP_OPTIONS = ['O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-'];
+
+const createBulkRow = (): BulkDonorRow => ({
+  id: `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
+  name: '',
+  city: '',
+  bloodGroup: '',
+  mobile: '',
+});
+
 export default function ManualBloodDonorPage() {
   const [selectedLocation, setSelectedLocation] = React.useState<LocationSuggestion | null>(null);
   const [phoneValue, setPhoneValue] = React.useState<PhoneFieldValue>(emptyPhoneValue());
   const [isPhoneValid, setIsPhoneValid] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [isBulkSubmitting, setIsBulkSubmitting] = React.useState(false);
   const [isDeleting, setIsDeleting] = React.useState<string | null>(null);
   const [isLastDonationPickerOpen, setIsLastDonationPickerOpen] = React.useState(false);
   const [submitMessage, setSubmitMessage] = React.useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [bulkMessage, setBulkMessage] = React.useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [recentEntries, setRecentEntries] = React.useState<ManualBloodDonorRow[]>([]);
+  const [bulkRows, setBulkRows] = React.useState<BulkDonorRow[]>(() => Array.from({ length: BULK_DEFAULT_ROWS }, () => createBulkRow()));
   const [formData, setFormData] = React.useState({
     name: '',
     email: '',
@@ -135,6 +157,111 @@ export default function ManualBloodDonorPage() {
     }
   };
 
+  const updateBulkRow = (id: string, key: keyof Omit<BulkDonorRow, 'id'>, value: string) => {
+    setBulkRows((prev) => prev.map((row) => (row.id === id ? { ...row, [key]: value } : row)));
+  };
+
+  const addBulkRows = (count: number) => {
+    setBulkRows((prev) => [...prev, ...Array.from({ length: count }, () => createBulkRow())]);
+  };
+
+  const removeBulkRow = (id: string) => {
+    setBulkRows((prev) => {
+      if (prev.length <= 1) return prev;
+      return prev.filter((row) => row.id !== id);
+    });
+  };
+
+  const isRowEmpty = (row: BulkDonorRow) => {
+    return !row.name.trim() && !row.city.trim() && !row.bloodGroup.trim() && !row.mobile.trim();
+  };
+
+  const isRowComplete = (row: BulkDonorRow) => {
+    return Boolean(row.name.trim() && row.city.trim() && row.bloodGroup.trim() && row.mobile.trim());
+  };
+
+  const clearBulkRows = () => {
+    setBulkRows(Array.from({ length: BULK_DEFAULT_ROWS }, () => createBulkRow()));
+    setBulkMessage(null);
+  };
+
+  const handleBulkSubmit = async () => {
+    setBulkMessage(null);
+
+    const partiallyFilledRows = bulkRows
+      .map((row, index) => ({ row, index }))
+      .filter(({ row }) => !isRowEmpty(row) && !isRowComplete(row));
+
+    if (partiallyFilledRows.length > 0) {
+      setBulkMessage({
+        type: 'error',
+        text: `Please complete all 4 fields in rows: ${partiallyFilledRows
+          .slice(0, 8)
+          .map(({ index }) => index + 1)
+          .join(', ')}${partiallyFilledRows.length > 8 ? '...' : ''}`,
+      });
+      return;
+    }
+
+    const completedRows = bulkRows.filter((row) => isRowComplete(row));
+    if (completedRows.length === 0) {
+      setBulkMessage({ type: 'error', text: 'Add at least one complete donor row before submitting.' });
+      return;
+    }
+
+    try {
+      setIsBulkSubmitting(true);
+      const res = await fetch('/api/admin/manual-blood-donors', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          bulkDonors: completedRows.map((row) => ({
+            name: row.name.trim(),
+            city: row.city.trim(),
+            bloodGroup: row.bloodGroup.trim().toUpperCase(),
+            mobile: row.mobile.trim(),
+          })),
+          source: 'Bulk Manual Entry',
+          country: 'Bangladesh',
+          availabilityStatus: 'ACTIVE_READY',
+          consentReceived: true,
+          idVerified: false,
+        }),
+      });
+
+      const payload = await res.json();
+      const createdCount = payload?.data?.createdCount ?? 0;
+      const failedCount = payload?.data?.failedCount ?? 0;
+      const failures: Array<{ rowIndex: number; reason: string }> = payload?.data?.failures || [];
+
+      if (!res.ok && createdCount === 0) {
+        throw new Error(payload?.message || 'Failed to add bulk donor records.');
+      }
+
+      if (createdCount > 0 && failedCount === 0) {
+        setBulkMessage({ type: 'success', text: `Successfully added ${createdCount} donor record(s).` });
+      } else if (createdCount > 0 && failedCount > 0) {
+        const shortFailureText = failures
+          .slice(0, 3)
+          .map((item) => `Row ${item.rowIndex + 1}: ${item.reason}`)
+          .join(' | ');
+        setBulkMessage({
+          type: 'error',
+          text: `Added ${createdCount} donor(s), ${failedCount} row(s) failed. ${shortFailureText}`,
+        });
+      } else {
+        setBulkMessage({ type: 'error', text: payload?.message || 'No donors were created.' });
+      }
+
+      await loadRecentEntries();
+    } catch (error: any) {
+      setBulkMessage({ type: 'error', text: error?.message || 'Failed to add bulk donor records.' });
+    } finally {
+      setIsBulkSubmitting(false);
+    }
+  };
+
   const loadRecentEntries = React.useCallback(async () => {
     try {
       const res = await fetch('/api/admin/manual-blood-donors', {
@@ -201,6 +328,147 @@ export default function ManualBloodDonorPage() {
         <AlertCircle className="shrink-0 mt-0.5 text-blue-500" size={18} />
         <p><strong>System Note:</strong> Donors added here automatically merge into the location-based algorithms. They will be visible to users in their respective regions based on the selected Country and City. Ensure consent is fully verified.</p>
       </div>
+
+      <Card title="Bulk Quick Add Donors (Name, City, Blood Group, Mobile)">
+        <div className="space-y-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <Badge type="info">
+              <span className="inline-flex items-center gap-1">
+                <ListChecks className="h-3.5 w-3.5" />
+                {bulkRows.filter((row) => isRowComplete(row)).length} ready / {bulkRows.length} rows
+              </span>
+            </Badge>
+            <button
+              type="button"
+              onClick={() => addBulkRows(1)}
+              className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:bg-[#0f1115] dark:text-gray-200 dark:hover:bg-gray-800"
+            >
+              <Plus className="h-4 w-4" />
+              Add Row
+            </button>
+            <button
+              type="button"
+              onClick={() => addBulkRows(10)}
+              className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:bg-[#0f1115] dark:text-gray-200 dark:hover:bg-gray-800"
+            >
+              <Plus className="h-4 w-4" />
+              Add 10 Rows
+            </button>
+            <button
+              type="button"
+              onClick={clearBulkRows}
+              className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:bg-[#0f1115] dark:text-gray-200 dark:hover:bg-gray-800"
+            >
+              Reset
+            </button>
+          </div>
+
+          <div className="overflow-x-auto rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-[#1a1b23]">
+            <table className="w-full min-w-[820px] border-collapse text-left">
+              <thead>
+                <tr className="border-b border-gray-200 bg-gray-50/50 dark:border-gray-800 dark:bg-gray-800/20">
+                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500">#</th>
+                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500">Name *</th>
+                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500">City *</th>
+                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500">Blood Group *</th>
+                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500">Mobile Number *</th>
+                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                {bulkRows.map((row, index) => {
+                  const isComplete = isRowComplete(row);
+                  const isPartial = !isRowEmpty(row) && !isComplete;
+                  return (
+                    <tr key={row.id} className={isPartial ? 'bg-amber-50/50 dark:bg-amber-500/5' : ''}>
+                      <td className="px-4 py-3 text-sm font-semibold text-gray-500">{index + 1}</td>
+                      <td className="px-4 py-3">
+                        <input
+                          type="text"
+                          value={row.name}
+                          onChange={(e) => updateBulkRow(row.id, 'name', e.target.value)}
+                          placeholder="Full name"
+                          className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm outline-none transition focus:border-red-400 focus:bg-white dark:border-gray-700 dark:bg-[#0f1115] dark:text-gray-100"
+                        />
+                      </td>
+                      <td className="px-4 py-3">
+                        <input
+                          type="text"
+                          value={row.city}
+                          onChange={(e) => updateBulkRow(row.id, 'city', e.target.value)}
+                          placeholder="City"
+                          className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm outline-none transition focus:border-red-400 focus:bg-white dark:border-gray-700 dark:bg-[#0f1115] dark:text-gray-100"
+                        />
+                      </td>
+                      <td className="px-4 py-3">
+                        <select
+                          value={row.bloodGroup}
+                          onChange={(e) => updateBulkRow(row.id, 'bloodGroup', e.target.value)}
+                          className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-semibold text-red-600 outline-none transition focus:border-red-400 focus:bg-white dark:border-gray-700 dark:bg-[#0f1115]"
+                        >
+                          <option value="">Select</option>
+                          {BLOOD_GROUP_OPTIONS.map((group) => (
+                            <option key={group} value={group}>
+                              {group}
+                            </option>
+                          ))}
+                        </select>
+                      </td>
+                      <td className="px-4 py-3">
+                        <input
+                          type="text"
+                          value={row.mobile}
+                          onChange={(e) => updateBulkRow(row.id, 'mobile', e.target.value)}
+                          placeholder="+8801XXXXXXXXX"
+                          className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm outline-none transition focus:border-red-400 focus:bg-white dark:border-gray-700 dark:bg-[#0f1115] dark:text-gray-100"
+                        />
+                      </td>
+                      <td className="px-4 py-3">
+                        <button
+                          type="button"
+                          onClick={() => removeBulkRow(row.id)}
+                          disabled={bulkRows.length <= 1}
+                          className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-sm font-medium text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40 dark:hover:bg-red-500/10"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          Remove
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-xs text-gray-500">
+              Tip: You can submit 10-20+ rows together. Only fully completed rows are accepted.
+            </p>
+            <button
+              type="button"
+              onClick={() => void handleBulkSubmit()}
+              disabled={isBulkSubmitting}
+              className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-5 py-2.5 text-sm font-bold text-white shadow-md transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <CheckCircle2 className="h-4 w-4" />
+              {isBulkSubmitting ? 'Saving Rows...' : 'Save All Valid Rows'}
+            </button>
+          </div>
+
+          {bulkMessage && (
+            <div
+              className={`rounded-lg border px-4 py-3 text-sm font-semibold ${
+                bulkMessage.type === 'success'
+                  ? 'border-emerald-400/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-300'
+                  : 'border-red-400/30 bg-red-500/10 text-red-600 dark:text-red-300'
+              }`}
+            >
+              {bulkMessage.text}
+            </div>
+          )}
+        </div>
+      </Card>
 
       <form className="space-y-6" onSubmit={handleSubmit}>
         {/* Core Identity */}
