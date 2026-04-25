@@ -70,10 +70,6 @@ export default function DonorModal({ donor, onClose }: DonorModalProps) {
                   <MapPin className="h-4 w-4 text-primary-dark" />
                   <span className="text-sm font-bold">{donor.location}</span>
                 </div>
-                <div className="flex items-center justify-center gap-2 text-gray-600">
-                  <Phone className="h-4 w-4 text-primary-dark" />
-                  <span className="text-sm font-bold">{donor.phone}</span>
-                </div>
               </div>
 
               {(hasHemoglobin || formattedLastDonationDate) && (

@@ -1,12 +1,28 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { Prisma } from '@prisma/client';
-import { parsePhoneNumberFromString } from 'libphonenumber-js/min';
 import { getPrisma } from '@/src/backend/config/db';
 import { ADMIN_ROLES, getSessionFromRequest, hasRequiredRole } from '@/src/backend/utils/session';
 import { verifyLocationProof } from '@/src/backend/utils/locationProof';
-import { toLocationSlug } from '@/src/backend/utils/locationSlug';
 import { validateStructuredPhone } from '@/src/backend/utils/phone';
+
+const LocationPayloadSchema = z.object({
+  city: z.string().min(1).max(120),
+  country: z.string().min(1).max(120),
+  formatted_location: z.string().min(1),
+  latitude: z.number(),
+  longitude: z.number(),
+  provider_place_id: z.string().min(1),
+  token: z.string().min(1),
+});
+
+const StructuredPhoneSchema = z.object({
+  country_name: z.string().min(1),
+  country_code: z.string().length(2),
+  dial_code: z.string().regex(/^\+\d+$/),
+  local_phone_number: z.string().regex(/^\d+$/),
+  full_phone_number: z.string().regex(/^\+\d+$/),
+});
 
 const CreateManualBloodDonorSchema = z.object({
   name: z.string().min(1).max(120),
@@ -29,36 +45,21 @@ const CreateManualBloodDonorSchema = z.object({
       detailedAddressNote: z.string().optional(),
     })
     .optional(),
-  location: z.object({
-    city: z.string().min(1).max(120),
-    country: z.string().min(1).max(120),
-    formatted_location: z.string().min(1),
-    latitude: z.number(),
-    longitude: z.number(),
-    provider_place_id: z.string().min(1),
-    token: z.string().min(1),
-  }),
-  phone: z.object({
-    country_name: z.string().min(1),
-    country_code: z.string().length(2),
-    dial_code: z.string().regex(/^\+\d+$/),
-    local_phone_number: z.string().regex(/^\d+$/),
-    full_phone_number: z.string().regex(/^\+\d+$/),
-  }),
+  location: LocationPayloadSchema,
+  phone: StructuredPhoneSchema,
 });
 
 const BulkManualBloodDonorRowSchema = z.object({
   name: z.string().min(1).max(120),
-  city: z.string().min(1).max(120),
+  location: LocationPayloadSchema,
   bloodGroup: z.string().min(1).max(10),
-  mobile: z.string().min(1).max(30),
+  phone: StructuredPhoneSchema,
 });
 
 const BulkCreateManualBloodDonorSchema = z.object({
   bulkDonors: z.array(BulkManualBloodDonorRowSchema).min(1).max(50),
   source: z.string().min(1).max(120).optional(),
   availabilityStatus: z.enum(['ACTIVE_READY', 'INACTIVE_UNAVAILABLE', 'EMERGENCY_ONLY']).optional(),
-  country: z.string().min(1).max(120).optional(),
   adminNotes: z.string().max(2000).optional(),
   idVerified: z.boolean().optional(),
   consentReceived: z.boolean().optional(),
@@ -80,48 +81,6 @@ const stripUndefined = <T extends Record<string, unknown>>(obj: T): Record<strin
 };
 
 const ALLOWED_BLOOD_GROUPS = new Set(['O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-']);
-
-const normalizeBulkPhone = (rawMobile: string) => {
-  const trimmed = rawMobile.trim();
-  if (!trimmed) {
-    return { ok: false as const, error: 'Mobile number is required.' };
-  }
-
-  const plusSanitized = trimmed.startsWith('+')
-    ? `+${trimmed.slice(1).replace(/\D/g, '')}`
-    : trimmed.replace(/\D/g, '');
-
-  let candidate = plusSanitized;
-  if (!candidate.startsWith('+')) {
-    if (candidate.startsWith('00')) {
-      candidate = `+${candidate.slice(2)}`;
-    } else if (candidate.startsWith('880')) {
-      candidate = `+${candidate}`;
-    } else if (candidate.startsWith('0')) {
-      candidate = `+880${candidate.slice(1)}`;
-    } else if (candidate.length === 10) {
-      candidate = `+880${candidate}`;
-    }
-  }
-
-  const parsed = parsePhoneNumberFromString(candidate, 'BD');
-  if (!parsed || !parsed.isValid()) {
-    return { ok: false as const, error: 'Invalid mobile number format.' };
-  }
-
-  const countryCode = parsed.country || 'BD';
-  const dialCode = `+${parsed.countryCallingCode}`;
-  return {
-    ok: true as const,
-    normalized: {
-      country_name: countryCode === 'BD' ? 'Bangladesh' : countryCode,
-      country_code: countryCode,
-      dial_code: dialCode,
-      local_phone_number: parsed.nationalNumber,
-      full_phone_number: parsed.number,
-    },
-  };
-};
 
 export async function GET(req: Request) {
   const auth = ensureAdminSession(req);
@@ -153,7 +112,6 @@ export async function POST(req: Request) {
       }
 
       const payload = parsedBulk.data;
-      const defaultCountry = payload.country?.trim() || 'Bangladesh';
       const source = payload.source || 'Bulk Manual Entry';
       const isActiveDonor = payload.availabilityStatus !== 'INACTIVE_UNAVAILABLE';
       const failures: Array<{ rowIndex: number; name: string; mobile: string; reason: string }> = [];
@@ -162,27 +120,52 @@ export async function POST(req: Request) {
       for (let index = 0; index < payload.bulkDonors.length; index += 1) {
         const row = payload.bulkDonors[index];
         const name = row.name.trim();
-        const city = row.city.trim();
         const bloodGroup = row.bloodGroup.trim().toUpperCase();
 
         if (!ALLOWED_BLOOD_GROUPS.has(bloodGroup)) {
           failures.push({
             rowIndex: index,
             name,
-            mobile: row.mobile,
+            mobile: row.phone.full_phone_number,
             reason: 'Invalid blood group. Use O+/O-/A+/A-/B+/B-/AB+/AB-.',
           });
           continue;
         }
 
-        const phoneValidation = normalizeBulkPhone(row.mobile);
-        if (!phoneValidation.ok) {
-          failures.push({ rowIndex: index, name, mobile: row.mobile, reason: phoneValidation.error });
+        const locationProof = verifyLocationProof(row.location.token);
+        if (!locationProof) {
+          failures.push({
+            rowIndex: index,
+            name,
+            mobile: row.phone.full_phone_number,
+            reason: 'Invalid city selection. Please choose city from suggestions.',
+          });
           continue;
         }
 
-        const citySlug = toLocationSlug(city) || 'unknown-city';
-        const countrySlug = toLocationSlug(defaultCountry) || 'unknown-country';
+        const locationMatches =
+          locationProof.city === row.location.city &&
+          locationProof.country === row.location.country &&
+          locationProof.formatted_location === row.location.formatted_location &&
+          locationProof.latitude === row.location.latitude &&
+          locationProof.longitude === row.location.longitude &&
+          locationProof.provider_place_id === row.location.provider_place_id;
+
+        if (!locationMatches) {
+          failures.push({
+            rowIndex: index,
+            name,
+            mobile: row.phone.full_phone_number,
+            reason: 'Location mismatch. Please reselect city from suggestions.',
+          });
+          continue;
+        }
+
+        const phoneValidation = validateStructuredPhone(row.phone);
+        if (!phoneValidation.ok) {
+          failures.push({ rowIndex: index, name, mobile: row.phone.full_phone_number, reason: phoneValidation.error });
+          continue;
+        }
 
         try {
           const created = await getPrisma().manualBloodDonor.create({
@@ -195,12 +178,12 @@ export async function POST(req: Request) {
               phone_dial_code: phoneValidation.normalized.dial_code,
               phone_local_number: phoneValidation.normalized.local_phone_number,
               blood_group: bloodGroup,
-              location_city: city,
-              location_country: defaultCountry,
-              location_formatted: `${city}, ${defaultCountry}`,
-              location_lat: 0,
-              location_lng: 0,
-              place_id: `manual:${countrySlug}:${citySlug}:${Date.now()}:${index}`,
+              location_city: locationProof.city,
+              location_country: locationProof.country,
+              location_formatted: locationProof.formatted_location,
+              location_lat: locationProof.latitude,
+              location_lng: locationProof.longitude,
+              place_id: locationProof.provider_place_id,
               is_active_donor: isActiveDonor,
               last_donation_date: null,
               source,
@@ -220,7 +203,7 @@ export async function POST(req: Request) {
             failures.push({
               rowIndex: index,
               name,
-              mobile: row.mobile,
+              mobile: row.phone.full_phone_number,
               reason: 'Mobile number already exists.',
             });
             continue;
@@ -229,7 +212,7 @@ export async function POST(req: Request) {
           failures.push({
             rowIndex: index,
             name,
-            mobile: row.mobile,
+            mobile: row.phone.full_phone_number,
             reason: 'Failed to save this row.',
           });
         }

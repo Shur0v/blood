@@ -22,20 +22,30 @@ interface ManualBloodDonorRow {
 interface BulkDonorRow {
   id: string;
   name: string;
-  city: string;
+  location: LocationSuggestion | null;
   bloodGroup: string;
-  mobile: string;
+  phone: PhoneFieldValue;
+  isPhoneValid: boolean;
 }
 
 const BULK_DEFAULT_ROWS = 10;
 const BLOOD_GROUP_OPTIONS = ['O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-'];
 
+const defaultBulkPhoneValue = (): PhoneFieldValue => ({
+  countryName: 'Bangladesh',
+  countryCode: 'BD',
+  dialCode: '+880',
+  localPhoneNumber: '',
+  fullPhoneNumber: '',
+});
+
 const createBulkRow = (): BulkDonorRow => ({
   id: `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
   name: '',
-  city: '',
+  location: null,
   bloodGroup: '',
-  mobile: '',
+  phone: defaultBulkPhoneValue(),
+  isPhoneValid: false,
 });
 
 export default function ManualBloodDonorPage() {
@@ -157,8 +167,20 @@ export default function ManualBloodDonorPage() {
     }
   };
 
-  const updateBulkRow = (id: string, key: keyof Omit<BulkDonorRow, 'id'>, value: string) => {
+  const updateBulkRowText = (id: string, key: 'name' | 'bloodGroup', value: string) => {
     setBulkRows((prev) => prev.map((row) => (row.id === id ? { ...row, [key]: value } : row)));
+  };
+
+  const updateBulkRowLocation = (id: string, location: LocationSuggestion | null) => {
+    setBulkRows((prev) => prev.map((row) => (row.id === id ? { ...row, location } : row)));
+  };
+
+  const updateBulkRowPhone = (id: string, phone: PhoneFieldValue) => {
+    setBulkRows((prev) => prev.map((row) => (row.id === id ? { ...row, phone } : row)));
+  };
+
+  const updateBulkRowPhoneValidity = (id: string, isPhoneValid: boolean) => {
+    setBulkRows((prev) => prev.map((row) => (row.id === id ? { ...row, isPhoneValid } : row)));
   };
 
   const addBulkRows = (count: number) => {
@@ -173,11 +195,11 @@ export default function ManualBloodDonorPage() {
   };
 
   const isRowEmpty = (row: BulkDonorRow) => {
-    return !row.name.trim() && !row.city.trim() && !row.bloodGroup.trim() && !row.mobile.trim();
+    return !row.name.trim() && !row.location && !row.bloodGroup.trim() && !row.phone.localPhoneNumber.trim();
   };
 
   const isRowComplete = (row: BulkDonorRow) => {
-    return Boolean(row.name.trim() && row.city.trim() && row.bloodGroup.trim() && row.mobile.trim());
+    return Boolean(row.name.trim() && row.location && row.bloodGroup.trim() && row.isPhoneValid && row.phone.fullPhoneNumber);
   };
 
   const clearBulkRows = () => {
@@ -195,7 +217,7 @@ export default function ManualBloodDonorPage() {
     if (partiallyFilledRows.length > 0) {
       setBulkMessage({
         type: 'error',
-        text: `Please complete all 4 fields in rows: ${partiallyFilledRows
+        text: `Please complete name, city, blood group and valid mobile in rows: ${partiallyFilledRows
           .slice(0, 8)
           .map(({ index }) => index + 1)
           .join(', ')}${partiallyFilledRows.length > 8 ? '...' : ''}`,
@@ -218,12 +240,17 @@ export default function ManualBloodDonorPage() {
         body: JSON.stringify({
           bulkDonors: completedRows.map((row) => ({
             name: row.name.trim(),
-            city: row.city.trim(),
+            location: row.location!,
             bloodGroup: row.bloodGroup.trim().toUpperCase(),
-            mobile: row.mobile.trim(),
+            phone: {
+              country_name: row.phone.countryName,
+              country_code: row.phone.countryCode,
+              dial_code: row.phone.dialCode,
+              local_phone_number: row.phone.localPhoneNumber,
+              full_phone_number: row.phone.fullPhoneNumber,
+            },
           })),
           source: 'Bulk Manual Entry',
-          country: 'Bangladesh',
           availabilityStatus: 'ACTIVE_READY',
           consentReceived: true,
           idVerified: false,
@@ -364,7 +391,7 @@ export default function ManualBloodDonorPage() {
           </div>
 
           <div className="overflow-x-auto rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-[#1a1b23]">
-            <table className="w-full min-w-[820px] border-collapse text-left">
+            <table className="w-full min-w-[1020px] border-collapse text-left">
               <thead>
                 <tr className="border-b border-gray-200 bg-gray-50/50 dark:border-gray-800 dark:bg-gray-800/20">
                   <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500">#</th>
@@ -386,24 +413,24 @@ export default function ManualBloodDonorPage() {
                         <input
                           type="text"
                           value={row.name}
-                          onChange={(e) => updateBulkRow(row.id, 'name', e.target.value)}
+                          onChange={(e) => updateBulkRowText(row.id, 'name', e.target.value)}
                           placeholder="Full name"
                           className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm outline-none transition focus:border-red-400 focus:bg-white dark:border-gray-700 dark:bg-[#0f1115] dark:text-gray-100"
                         />
                       </td>
                       <td className="px-4 py-3">
-                        <input
-                          type="text"
-                          value={row.city}
-                          onChange={(e) => updateBulkRow(row.id, 'city', e.target.value)}
-                          placeholder="City"
-                          className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm outline-none transition focus:border-red-400 focus:bg-white dark:border-gray-700 dark:bg-[#0f1115] dark:text-gray-100"
+                        <CityLocationAutocomplete
+                          label="City"
+                          placeholder="Search city"
+                          selectedLocation={row.location}
+                          onSelect={(location) => updateBulkRowLocation(row.id, location)}
+                          onClear={() => updateBulkRowLocation(row.id, null)}
                         />
                       </td>
                       <td className="px-4 py-3">
                         <select
                           value={row.bloodGroup}
-                          onChange={(e) => updateBulkRow(row.id, 'bloodGroup', e.target.value)}
+                          onChange={(e) => updateBulkRowText(row.id, 'bloodGroup', e.target.value)}
                           className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-semibold text-red-600 outline-none transition focus:border-red-400 focus:bg-white dark:border-gray-700 dark:bg-[#0f1115]"
                         >
                           <option value="">Select</option>
@@ -415,14 +442,15 @@ export default function ManualBloodDonorPage() {
                         </select>
                       </td>
                       <td className="px-4 py-3">
-                        <input
-                          type="text"
-                          value={row.mobile}
-                          onChange={(e) => updateBulkRow(row.id, 'mobile', e.target.value)}
-                          placeholder="+8801XXXXXXXXX"
-                          className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm outline-none transition focus:border-red-400 focus:bg-white dark:border-gray-700 dark:bg-[#0f1115] dark:text-gray-100"
+                        <CountryPhoneInput
+                          label="Mobile"
+                          compact
+                          forceWhiteText
+                          value={row.phone}
+                          onChange={(value) => updateBulkRowPhone(row.id, value)}
+                          onValidityChange={(valid) => updateBulkRowPhoneValidity(row.id, valid)}
                         />
-                      </td>
+                       </td>
                       <td className="px-4 py-3">
                         <button
                           type="button"
