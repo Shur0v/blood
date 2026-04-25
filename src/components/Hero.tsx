@@ -1,7 +1,6 @@
 import { motion, useMotionValue, useTransform, animate } from "motion/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Search, X } from "lucide-react";
-import { gsap } from "gsap";
 import DonorModal from "./DonorModal";
 import useViewerGeo from "./useViewerGeo";
 import { maskPhoneTail } from "../lib/phoneMask";
@@ -50,11 +49,10 @@ export default function Hero() {
   const [donors, setDonors] = useState<Donor[]>([]);
   const [totalActiveDonors, setTotalActiveDonors] = useState(0);
   const [isDonorApiDown, setIsDonorApiDown] = useState(false);
+  const [isInitialDonorLoad, setIsInitialDonorLoad] = useState(true);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
-  const controlsWrapperRef = useRef<HTMLDivElement>(null);
-  const searchContainerRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   const count = useMotionValue(0);
@@ -130,48 +128,11 @@ export default function Hero() {
   }, [count, totalActiveDonors]);
 
   useEffect(() => {
-    if (isSearchOpen) {
-      gsap.to(controlsWrapperRef.current, {
-        opacity: 0,
-        y: -10,
-        duration: 0.3,
-        display: "none",
-        ease: "power2.inOut"
-      });
-
-      gsap.fromTo(
-        searchContainerRef.current,
-        { opacity: 0, scaleX: 0.8, display: "none" },
-        {
-          opacity: 1,
-          scaleX: 1,
-          display: "flex",
-          duration: 0.5,
-          ease: "expo.out",
-          onComplete: () => searchInputRef.current?.focus()
-        }
-      );
-    } else {
-      gsap.to(searchContainerRef.current, {
-        opacity: 0,
-        scaleX: 0.8,
-        duration: 0.3,
-        display: "none",
-        ease: "power2.inOut"
-      });
-
-      gsap.fromTo(
-        controlsWrapperRef.current,
-        { opacity: 0, y: 10, display: "none" },
-        {
-          opacity: 1,
-          y: 0,
-          display: "flex",
-          duration: 0.5,
-          ease: "expo.out"
-        }
-      );
-    }
+    if (!isSearchOpen) return;
+    const focusTimer = window.setTimeout(() => {
+      searchInputRef.current?.focus();
+    }, 120);
+    return () => window.clearTimeout(focusTimer);
   }, [isSearchOpen]);
 
   useEffect(() => {
@@ -190,6 +151,7 @@ export default function Hero() {
           if (donors.length === 0) {
             hydrateFromCache();
           }
+          setIsInitialDonorLoad(false);
           return;
         }
 
@@ -201,11 +163,13 @@ export default function Hero() {
         setTotalActiveDonors(nextTotal);
         persistCache(mapped, nextTotal);
         setIsDonorApiDown(false);
+        setIsInitialDonorLoad(false);
       } catch (error) {
         setIsDonorApiDown(true);
         if (donors.length === 0) {
           hydrateFromCache();
         }
+        setIsInitialDonorLoad(false);
       }
     };
 
@@ -270,7 +234,11 @@ export default function Hero() {
             </p>
 
             <div className="relative mx-auto flex h-14 w-full max-w-5xl items-center gap-2 overflow-hidden">
-              <div ref={controlsWrapperRef} className="flex w-full items-center gap-2">
+              <div
+                className={`flex w-full items-center gap-2 transition-all duration-300 ${
+                  isSearchOpen ? "pointer-events-none -translate-y-2 opacity-0" : "translate-y-0 opacity-100"
+                }`}
+              >
                 <div className="flex min-w-0 flex-1 items-center gap-1.5 md:gap-2">
                   <motion.button
                     whileHover={{ scale: 1.05 }}
@@ -316,7 +284,11 @@ export default function Hero() {
                 </div>
               </div>
 
-              <div ref={searchContainerRef} className="absolute inset-0 z-20 hidden items-center gap-2 px-2">
+              <div
+                className={`absolute inset-0 z-20 flex items-center gap-2 px-2 transition-all duration-300 ${
+                  isSearchOpen ? "scale-100 opacity-100" : "pointer-events-none scale-95 opacity-0"
+                }`}
+              >
                 <div className="relative flex-1">
                   <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
                   <input
@@ -349,8 +321,12 @@ export default function Hero() {
           </div>
         </motion.div>
 
-        {hasNoResults ? (
-          <div className="mx-auto max-w-4xl rounded-[8px] border border-white/40 bg-white/20 p-8 text-center text-sm font-semibold text-gray-700">
+        {isInitialDonorLoad ? (
+          <div className="mx-auto min-h-[320px] max-w-4xl rounded-[8px] border border-white/40 bg-white/20 p-8 text-center text-sm font-semibold text-gray-700">
+            Loading nearby active donors...
+          </div>
+        ) : hasNoResults ? (
+          <div className="mx-auto min-h-[320px] max-w-4xl rounded-[8px] border border-white/40 bg-white/20 p-8 text-center text-sm font-semibold text-gray-700">
             No active donors found for this filter.
           </div>
         ) : (

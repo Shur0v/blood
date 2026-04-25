@@ -8,27 +8,71 @@
 import Navbar from "../components/Navbar";
 import Hero from "../components/Hero";
 import OrganHero from "../components/OrganHero";
-import ImageSlider from "../components/ImageSlider";
-import FloatingDonorTags from "../components/FloatingDonorTags";
-import CTA from "../components/CTA";
-import SocialMedia, { Footer } from "../components/SocialMedia";
-import FluidBackground from "../components/FluidBackground";
-import ProcessSteps from "../components/ProcessSteps";
-import ImpactData from "../components/ImpactData";
-import Testimonials from "../components/Testimonials";
-import UserReports from "../components/UserReports";
-import RequestOrgan from "../components/RequestOrgan";
-import ApprovedOrganRequests from "../components/ApprovedOrganRequests";
-import MobilePreview from "../components/MobilePreview";
 import { PolicyModal } from "../components/PolicyModal";
 import { FullPrivacyPage } from "../components/FullPrivacyPage";
 import { FullTermsPage } from "../components/FullTermsPage";
 import AuthModal from "../components/AuthModal";
 import UnifiedDashboard from "../components/UnifiedDashboard";
 import DonationToggleModal from "../components/DonationToggleModal";
-import MedicalAidFund from "../components/MedicalAidFund";
 import { motion, useScroll, useSpring } from "motion/react";
 import { useState, useEffect, useRef, useCallback } from "react";
+import dynamic from "next/dynamic";
+
+const ProcessSteps = dynamic(() => import("../components/ProcessSteps"), {
+  ssr: false,
+  loading: () => <section className="mx-auto max-w-7xl px-4 py-16" />,
+});
+const ImageSlider = dynamic(() => import("../components/ImageSlider"), {
+  ssr: false,
+  loading: () => <section className="mx-auto max-w-7xl px-4 py-16" />,
+});
+const MedicalAidFund = dynamic(() => import("../components/MedicalAidFund"), {
+  ssr: false,
+  loading: () => <section className="mx-auto max-w-7xl px-4 py-16" />,
+});
+const FloatingDonorTags = dynamic(() => import("../components/FloatingDonorTags"), {
+  ssr: false,
+  loading: () => <section className="mx-auto max-w-7xl px-4 py-16" />,
+});
+const ImpactData = dynamic(() => import("../components/ImpactData"), {
+  ssr: false,
+  loading: () => <section className="mx-auto max-w-7xl px-4 py-16" />,
+});
+const RequestOrgan = dynamic(() => import("../components/RequestOrgan"), {
+  ssr: false,
+  loading: () => <section className="mx-auto max-w-7xl px-4 py-16" />,
+});
+const Testimonials = dynamic(() => import("../components/Testimonials"), {
+  ssr: false,
+  loading: () => <section className="mx-auto max-w-7xl px-4 py-16" />,
+});
+const UserReports = dynamic(() => import("../components/UserReports"), {
+  ssr: false,
+  loading: () => <section className="mx-auto max-w-7xl px-4 py-16" />,
+});
+const MobilePreview = dynamic(() => import("../components/MobilePreview"), {
+  ssr: false,
+  loading: () => <section className="mx-auto max-w-7xl px-4 py-16" />,
+});
+const CTA = dynamic(() => import("../components/CTA"), {
+  ssr: false,
+  loading: () => <section className="mx-auto max-w-7xl px-4 py-12" />,
+});
+const SocialMedia = dynamic(() => import("../components/SocialMedia"), {
+  ssr: false,
+  loading: () => <section className="mx-auto max-w-7xl px-4 py-12" />,
+});
+const Footer = dynamic(() => import("../components/SocialMedia").then((mod) => mod.Footer), {
+  ssr: false,
+  loading: () => <footer className="py-8" />,
+});
+const ApprovedOrganRequests = dynamic(() => import("../components/ApprovedOrganRequests"), {
+  ssr: false,
+  loading: () => <section className="mx-auto max-w-7xl px-4 py-16" />,
+});
+const FluidBackground = dynamic(() => import("../components/FluidBackground"), {
+  ssr: false,
+});
 
 interface SessionUser {
   id: string;
@@ -91,6 +135,7 @@ export default function Home() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isDonationModalOpen, setIsDonationModalOpen] = useState(false);
   const [isReadyToDonate, setIsReadyToDonate] = useState(true);
+  const [enableFluidBackground, setEnableFluidBackground] = useState(false);
   const [profileData, setProfileData] = useState<ProfileData | null>(() => readCachedJson<ProfileData>(USER_PROFILE_CACHE_KEY));
   const [isProfileLoading, setIsProfileLoading] = useState(false);
   const [profileLoadError, setProfileLoadError] = useState("");
@@ -264,6 +309,14 @@ export default function Home() {
       // ignore storage failures
     }
   }, [sessionUser]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const allowFluid =
+      window.matchMedia("(min-width: 769px)").matches &&
+      !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    setEnableFluidBackground(allowFluid);
+  }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -476,8 +529,8 @@ export default function Home() {
         }}
       />
 
-      {/* GSAP Fluid Background */}
-      <FluidBackground />
+      {/* Decorative desktop background is deferred for performance */}
+      {enableFluidBackground && <FluidBackground />}
     </div>
   );
 }
