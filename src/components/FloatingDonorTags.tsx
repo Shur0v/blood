@@ -101,7 +101,10 @@ export default function FloatingDonorTags() {
   }, []);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    const win = window;
     let cancelled = false;
+    const isSmallDevice = win.matchMedia("(max-width: 768px)").matches;
 
     const toFloating = (row: PublicDonorRow): FloatingDonor => ({
       id: row.id,
@@ -121,9 +124,12 @@ export default function FloatingDonorTags() {
         const collected: PublicDonorRow[] = [];
         let cursor: string | null = null;
         let pageCount = 0;
+        const maxPages = isSmallDevice ? 1 : 4;
+        const targetRows = isSmallDevice ? 16 : 64;
+        const pageLimit = isSmallDevice ? "8" : "16";
 
-        while (pageCount < 4 && collected.length < 64) {
-          const params = new URLSearchParams({ limit: "16" });
+        while (pageCount < maxPages && collected.length < targetRows) {
+          const params = new URLSearchParams({ limit: pageLimit });
           if (cursor) params.set("cursor", cursor);
           if (viewerGeo.city) params.set("viewerCity", viewerGeo.city);
           if (viewerGeo.country && (viewerGeo.city || viewerGeo.source === "geo")) {
@@ -173,9 +179,13 @@ export default function FloatingDonorTags() {
       }
     };
 
-    void fetchRealtimeDonors();
+    const timeoutId = win.setTimeout(() => {
+      void fetchRealtimeDonors();
+    }, 250);
+
     return () => {
       cancelled = true;
+      win.clearTimeout(timeoutId);
     };
   }, [seed, viewerGeo.city, viewerGeo.country]);
 

@@ -14,8 +14,6 @@ export default function Navbar({ currentPage, onPageChange, onAuthClick, onHomeC
   return (
     <div className="fixed bottom-8 left-[15px] right-[15px] z-50 flex justify-center">
       <motion.nav
-        initial={{ y: 100, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
         className="flex max-w-full items-center gap-4 rounded-full border border-white/10 bg-black/40 px-4 py-2 shadow-[0_20px_50px_rgba(0,0,0,0.3)] backdrop-blur-xl"
       >
         {/* Logo Section */}

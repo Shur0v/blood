@@ -243,15 +243,10 @@ export default function Hero() {
 
       <div className="relative z-10 w-full max-w-7xl">
         <motion.div
-          initial={{ y: 50, opacity: 0 }}
-          whileInView={{ y: 0, opacity: 1 }}
-          viewport={{ once: true }}
           className="glass relative mx-auto mb-12 w-full max-w-4xl overflow-hidden rounded-[8px] p-10 text-center shadow-2xl"
         >
           <div className="relative z-10">
             <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
               className="mb-10 inline-flex flex-col items-center rounded-[8px] bg-gray-900 p-1.5 shadow-2xl"
             >
               <div className="flex min-w-[160px] items-center justify-center rounded-[6px] bg-white py-4">

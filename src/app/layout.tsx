@@ -5,8 +5,14 @@ import ThemeRuntimeSync from "@/src/components/ThemeRuntimeSync";
 import { getPublicBaseUrl } from "@/src/backend/config/env";
 import { getPrisma } from "@/src/backend/config/db";
 import { DEFAULT_UI_THEME, normalizeUiTheme } from "@/src/lib/uiTheme";
+import { Inter } from "next/font/google";
 
 const baseUrl = getPublicBaseUrl();
+const inter = Inter({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-inter",
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
@@ -51,7 +57,7 @@ export default async function RootLayout({
 
   return (
     <html lang="en" data-theme={uiTheme}>
-      <body className="antialiased">
+      <body className={`${inter.variable} antialiased`}>
         <ThemeRuntimeSync />
         <ClickTracker />
         {children}
