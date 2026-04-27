@@ -4,7 +4,7 @@ import React from 'react';
 import { Card } from '@/src/admin-dashboard/components/common/Card';
 import { Table, TableRow, TableCell } from '@/src/admin-dashboard/components/common/Table';
 import { Badge } from '@/src/admin-dashboard/components/common/Badge';
-import { UploadCloud, CheckCircle2, AlertCircle, CalendarDays, Plus, Trash2, ListChecks } from 'lucide-react';
+import { UploadCloud, CheckCircle2, AlertCircle, CalendarDays, Plus, Trash2, ListChecks, Loader2 } from 'lucide-react';
 import CityLocationAutocomplete, { type LocationSuggestion } from '@/src/components/CityLocationAutocomplete';
 import CountryPhoneInput, { emptyPhoneValue, type PhoneFieldValue } from '@/src/components/CountryPhoneInput';
 import WheelDatePickerModal from '@/src/components/WheelDatePickerModal';
@@ -60,6 +60,12 @@ export default function ManualBloodDonorPage() {
   const [bulkMessage, setBulkMessage] = React.useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [recentEntries, setRecentEntries] = React.useState<ManualBloodDonorRow[]>([]);
   const [bulkRows, setBulkRows] = React.useState<BulkDonorRow[]>(() => Array.from({ length: BULK_DEFAULT_ROWS }, () => createBulkRow()));
+  
+  // CSV Upload States
+  const [csvText, setCsvText] = React.useState('');
+  const [isCsvUploading, setIsCsvUploading] = React.useState(false);
+  const [csvResult, setCsvResult] = React.useState<{createdCount: number, failedCount: number, failures: any[]} | null>(null);
+
   const [formData, setFormData] = React.useState({
     name: '',
     email: '',
@@ -306,6 +312,36 @@ export default function ManualBloodDonorPage() {
     }
   }, []);
 
+  const handleCsvSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!csvText.trim()) return;
+    setIsCsvUploading(true);
+    setCsvResult(null);
+
+    try {
+      const res = await fetch('/api/admin/manual-blood-donors/csv-upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ csvText }),
+      });
+      const payload = await res.json();
+      if (res.ok && payload.success) {
+        setCsvResult(payload.data);
+        if (payload.data.createdCount > 0) {
+          setCsvText('');
+          await loadRecentEntries();
+        }
+      } else {
+         setCsvResult({ createdCount: 0, failedCount: 0, failures: [{ row: 'System Error', reason: payload.message || 'Unknown error' }] });
+      }
+    } catch (err: any) {
+      setCsvResult({ createdCount: 0, failedCount: 0, failures: [{ row: 'Network Error', reason: err.message || 'Failed to upload' }] });
+    } finally {
+      setIsCsvUploading(false);
+    }
+  };
+
   React.useEffect(() => {
     void loadRecentEntries();
   }, [loadRecentEntries]);
@@ -355,6 +391,60 @@ export default function ManualBloodDonorPage() {
         <AlertCircle className="shrink-0 mt-0.5 text-blue-500" size={18} />
         <p><strong>System Note:</strong> Donors added here automatically merge into the location-based algorithms. They will be visible to users in their respective regions based on the selected Country and City. Ensure consent is fully verified.</p>
       </div>
+
+      <Card title="Direct CSV/Text Bulk Upload">
+        <form onSubmit={handleCsvSubmit} className="space-y-4">
+          <textarea
+            value={csvText}
+            onChange={(e) => setCsvText(e.target.value)}
+            disabled={isCsvUploading}
+            placeholder={`John Doe, Dhaka, O+, 01711000000\nJane Smith, Delhi, B-, 9800000000`}
+            className="w-full h-40 bg-gray-50 dark:bg-[#0f1115] border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-red-500 outline-none font-mono placeholder:text-gray-400 disabled:opacity-60"
+          />
+          <p className="text-xs text-gray-500 font-medium">Ensure exact sequence: Name, Location, Blood Group, Number (local digits only). Each record on a new line.</p>
+          
+          <div className="flex justify-end">
+            <button
+              type="submit"
+              disabled={isCsvUploading || !csvText.trim()}
+              className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-6 py-3 text-sm font-bold text-white shadow-md transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isCsvUploading ? (
+                <>
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  Processing & Verifying (Please wait)...
+                </>
+              ) : (
+                <>
+                  <UploadCloud className="h-5 w-5" />
+                  Upload & Process Data
+                </>
+              )}
+            </button>
+          </div>
+
+          {csvResult && (
+            <div className="mt-4 space-y-3">
+              {(csvResult.createdCount > 0 || csvResult.failedCount > 0) && (
+                <div className={`rounded-lg border px-4 py-3 text-sm font-semibold ${csvResult.createdCount > 0 ? 'border-emerald-400/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-300' : 'border-red-400/30 bg-red-500/10 text-red-600 dark:text-red-300'}`}>
+                  Successfully added {csvResult.createdCount} donors. {csvResult.failedCount} failed.
+                </div>
+              )}
+              {csvResult.failures && csvResult.failures.length > 0 && (
+                <div className="max-h-40 overflow-y-auto rounded-lg border border-red-200 dark:border-red-500/20 bg-red-50 dark:bg-red-500/10 p-3 space-y-2">
+                  <p className="text-xs font-bold text-red-600 dark:text-red-400 uppercase tracking-wider mb-2">Failure Report</p>
+                  {csvResult.failures.map((f, i) => (
+                    <div key={i} className="text-sm text-red-800 dark:text-red-200 bg-white/50 dark:bg-black/20 px-3 py-2 rounded-md">
+                      <span className="font-semibold block break-all">{f.row}</span>
+                      <span className="text-red-500 dark:text-red-400 text-xs mt-0.5 block">{f.reason}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </form>
+      </Card>
 
       <Card title="Bulk Quick Add Donors (Name, City, Blood Group, Mobile)">
         <div className="space-y-4">
