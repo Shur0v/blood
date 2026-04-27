@@ -162,6 +162,7 @@ export async function GET(req: Request) {
       ORDER BY
         ${donorViewerCityRank} ASC,
         ${donorViewerCountryRank} ASC,
+        donors.location_country ASC,
         donors.sort_at DESC
       LIMIT ${limit + 1}
       OFFSET ${safeOffset}
@@ -229,10 +230,12 @@ export async function GET(req: Request) {
         return NextResponse.json({ success: false, message: 'Invalid query params.' }, { status: 400 });
       }
 
-      const { limit, cursor, bloodGroup, search } = parsed.data;
+      const { limit, cursor, bloodGroup, search, viewerCity, viewerCountry } = parsed.data;
       const offset = cursor ? Number.parseInt(cursor, 10) : 0;
       const safeOffset = Number.isNaN(offset) || offset < 0 ? 0 : offset;
       const q = search?.trim();
+      const normalizedViewerCity = viewerCity?.trim().toLowerCase();
+      const normalizedViewerCountry = viewerCountry?.trim().toLowerCase();
 
       const prisma = getPrisma();
       const userWhere = {
@@ -308,7 +311,28 @@ export async function GET(req: Request) {
           created_at: m.created_at,
           sort_at: m.created_at,
         })),
-      ].sort((a, b) => b.sort_at.getTime() - a.sort_at.getTime());
+      ].sort((a, b) => {
+        let aCityRank = 1, bCityRank = 1;
+        let aCountryRank = 1, bCountryRank = 1;
+
+        if (normalizedViewerCity) {
+          if (a.location_city?.toLowerCase() === normalizedViewerCity) aCityRank = 0;
+          if (b.location_city?.toLowerCase() === normalizedViewerCity) bCityRank = 0;
+        }
+
+        if (normalizedViewerCountry) {
+          if (a.location_country?.toLowerCase() === normalizedViewerCountry) aCountryRank = 0;
+          if (b.location_country?.toLowerCase() === normalizedViewerCountry) bCountryRank = 0;
+        }
+
+        if (aCityRank !== bCityRank) return aCityRank - bCityRank;
+        if (aCountryRank !== bCountryRank) return aCountryRank - bCountryRank;
+        
+        const countryCompare = (a.location_country || '').localeCompare(b.location_country || '');
+        if (countryCompare !== 0) return countryCompare;
+
+        return b.sort_at.getTime() - a.sort_at.getTime();
+      });
 
       const slice = merged.slice(safeOffset, safeOffset + limit + 1);
       const hasMore = slice.length > limit;
