@@ -8,11 +8,11 @@ import { absoluteUrl, bloodGroupFromSlug, bloodGroupToSlug, cityFromSlug, cityTo
 export const revalidate = 1800;
 export const dynamic = "force-dynamic";
 
-type Params = { group: string; city: string };
+type Params = { slug: string; city: string };
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
-  const { group, city } = await params;
-  const bloodGroup = bloodGroupFromSlug(group);
+  const { slug, city } = await params;
+  const bloodGroup = bloodGroupFromSlug(slug);
   if (!bloodGroup) return { title: "Blood donors", robots: { index: false, follow: true } };
   const cityName = cityFromSlug(city);
   const baseUrl = getPublicBaseUrl();
@@ -29,15 +29,15 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
       "find blood donor fast",
       "blood needed urgently",
     ],
-    alternates: { canonical: `/blood/${group}/${city}` },
-    openGraph: { title, description, url: absoluteUrl(baseUrl, `/blood/${group}/${city}`), type: "website", siteName: "BloodNet" },
+    alternates: { canonical: `/blood/${slug}/${city}` },
+    openGraph: { title, description, url: absoluteUrl(baseUrl, `/blood/${slug}/${city}`), type: "website", siteName: "BloodNet" },
     twitter: { card: "summary_large_image", title, description },
   };
 }
 
 export default async function BloodGroupCityPage({ params }: { params: Promise<Params> }) {
-  const { group, city } = await params;
-  const bloodGroup = bloodGroupFromSlug(group);
+  const { slug, city } = await params;
+  const bloodGroup = bloodGroupFromSlug(slug);
   if (!bloodGroup) notFound();
 
   const [donors, citySummary] = await Promise.all([
@@ -57,7 +57,7 @@ export default async function BloodGroupCityPage({ params }: { params: Promise<P
     .filter((row) => row.blood_group !== bloodGroup)
     .slice(0, 6);
   const baseUrl = getPublicBaseUrl();
-  const pageUrl = absoluteUrl(baseUrl, `/blood/${group}/${city}`);
+  const pageUrl = absoluteUrl(baseUrl, `/blood/${slug}/${city}`);
   const faq = [
     {
       question: `How can I find a ${bloodGroup} blood donor in ${cityName}?`,

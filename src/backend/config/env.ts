@@ -67,8 +67,7 @@ export const getAppEnv = (): AppEnv => {
 };
 
 export const getPublicBaseUrl = (): string => {
-  const env = getAppEnv();
-  return env.NEXT_PUBLIC_BASE_URL || env.NEXT_PUBLIC_SITE_URL || 'https://bloodnet.live';
+  return process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://bloodnet.live';
 };
 
 export const getRedactedRuntimeDiagnostics = () => {
