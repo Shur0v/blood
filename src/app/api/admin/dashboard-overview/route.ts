@@ -10,6 +10,10 @@ const startOfUtcWeek = (date: Date) => {
   const mondayOffset = day === 0 ? -6 : 1 - day;
   return startOfUtcDay(addDays(date, mondayOffset));
 };
+const toNumber = (value: bigint | number | null | undefined): number => {
+  if (typeof value === 'bigint') return Number(value);
+  return Number(value ?? 0);
+};
 
 export async function GET(req: Request) {
   const session = getSessionFromRequest(req);
@@ -60,20 +64,62 @@ export async function GET(req: Request) {
       prisma.blog.count({ where: { OR: [{ status: 'DRAFT' }, { status: 'PENDING' as any }] } }),
       prisma.analyticsClickLog.count({ where: { created_at: { gte: todayStart } } }),
       prisma.analyticsClickLog.count({ where: { created_at: { gte: weekStart } } }),
-      prisma.user.findMany({
-        distinct: ['location_country'],
-        select: { location_country: true },
-      }),
-      prisma.user.findMany({
-        distinct: ['location_country', 'location_city'],
-        select: { location_country: true, location_city: true },
-      }),
-      prisma.user.groupBy({
-        by: ['location_country'],
-        _count: { _all: true },
-        orderBy: { _count: { location_country: 'desc' } },
-        take: 3,
-      }),
+      prisma.$queryRaw<Array<{ country: string }>>`
+        WITH regions AS (
+          SELECT u.location_country AS country, u.location_city AS city FROM "User" u
+          UNION
+          SELECT usc.country, usc.city FROM "UserServiceCity" usc
+          UNION
+          SELECT mbd.location_country AS country, mbd.location_city AS city FROM "ManualBloodDonor" mbd
+          UNION
+          SELECT mod.location_country AS country, mod.location_city AS city FROM "ManualOrganDonor" mod
+        )
+        SELECT DISTINCT country
+        FROM regions
+        ORDER BY country ASC;
+      `,
+      prisma.$queryRaw<Array<{ country: string; city: string }>>`
+        WITH regions AS (
+          SELECT u.location_country AS country, u.location_city AS city FROM "User" u
+          UNION
+          SELECT usc.country, usc.city FROM "UserServiceCity" usc
+          UNION
+          SELECT mbd.location_country AS country, mbd.location_city AS city FROM "ManualBloodDonor" mbd
+          UNION
+          SELECT mod.location_country AS country, mod.location_city AS city FROM "ManualOrganDonor" mod
+        )
+        SELECT country, city
+        FROM regions
+        GROUP BY country, city
+        ORDER BY country ASC, city ASC;
+      `,
+      prisma.$queryRaw<Array<{ country: string; total_users: bigint | number }>>`
+        WITH registered_user_regions AS (
+          SELECT u.id AS user_id, u.location_country AS country, u.location_city AS city
+          FROM "User" u
+          UNION
+          SELECT usc.user_id, usc.country, usc.city
+          FROM "UserServiceCity" usc
+        ),
+        regional_counts AS (
+          SELECT country, COUNT(DISTINCT user_id)::bigint AS total_entries
+          FROM registered_user_regions
+          GROUP BY country
+          UNION ALL
+          SELECT mbd.location_country AS country, COUNT(*)::bigint AS total_entries
+          FROM "ManualBloodDonor" mbd
+          GROUP BY mbd.location_country
+          UNION ALL
+          SELECT mod.location_country AS country, COUNT(*)::bigint AS total_entries
+          FROM "ManualOrganDonor" mod
+          GROUP BY mod.location_country
+        )
+        SELECT country, SUM(total_entries)::bigint AS total_users
+        FROM regional_counts
+        GROUP BY country
+        ORDER BY total_users DESC, country ASC
+        LIMIT 3;
+      `,
       prisma.user.findMany({
         orderBy: { created_at: 'desc' },
         take: 4,
@@ -154,8 +200,8 @@ export async function GET(req: Request) {
           countries: countries.length,
           cities: cities.length,
           topRegions: topRegionsRaw.map((row) => ({
-            country: row.location_country,
-            users: row._count._all,
+            country: row.country,
+            users: toNumber(row.total_users),
           })),
         },
         queue: {
