@@ -12,7 +12,7 @@
     "db:push": "echo \"Use db:migrate:dev or db:migrate:deploy instead of db:push\"",
     "db:studio": "prisma studio",
     "seed:admin": "tsx src/backend/scripts/seedAdmin.ts",
-    "build": "next build",
+    "build": "prisma generate && prisma migrate deploy && next build",
     "start": "next start",
     "lint": "next lint"
   },
