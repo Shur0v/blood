@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+8import type { Metadata } from "next";
 import Link from "next/link";
 import { getOrganTypesWithData } from "@/src/backend/services/seoData";
 import { organFromSlug } from "@/src/lib/seoRouting";

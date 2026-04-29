@@ -458,9 +458,9 @@ export default function Home() {
 
             <ProcessSteps />
             <DonorReminder onSignUpClick={() => setIsAuthModalOpen(true)} showSignUpButton={!sessionUser} />
-            <AboutBloodNet onTermsClick={() => handlePageChange("terms-conditions")} />
             <ImageSlider />
             <MedicalAidFund />
+            <AboutBloodNet onTermsClick={() => handlePageChange("terms-conditions")} />
             <FloatingDonorTags />
             <ImpactData />
             <RequestOrgan />
@@ -479,9 +479,9 @@ export default function Home() {
 
             <ProcessSteps />
             <DonorReminder onSignUpClick={() => setIsAuthModalOpen(true)} showSignUpButton={!sessionUser} />
-            <AboutBloodNet onTermsClick={() => handlePageChange("terms-conditions")} />
             <ImageSlider />
             <MedicalAidFund />
+            <AboutBloodNet onTermsClick={() => handlePageChange("terms-conditions")} />
             <FloatingDonorTags />
             <ImpactData />
             <RequestOrgan />
