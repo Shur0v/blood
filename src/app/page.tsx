@@ -26,6 +26,10 @@ const DonorReminder = dynamic(() => import("../components/DonorReminder"), {
   ssr: false,
   loading: () => <section className="mx-auto max-w-7xl px-4 pb-20" />,
 });
+const AboutBloodNet = dynamic(() => import("../components/AboutBloodNet"), {
+  ssr: false,
+  loading: () => <section className="mx-auto max-w-7xl px-4 pb-24" />,
+});
 const ImageSlider = dynamic(() => import("../components/ImageSlider"), {
   ssr: false,
   loading: () => <section className="mx-auto max-w-7xl px-4 py-16" />,
@@ -454,6 +458,7 @@ export default function Home() {
 
             <ProcessSteps />
             <DonorReminder onSignUpClick={() => setIsAuthModalOpen(true)} showSignUpButton={!sessionUser} />
+            <AboutBloodNet onTermsClick={() => handlePageChange("terms-conditions")} />
             <ImageSlider />
             <MedicalAidFund />
             <FloatingDonorTags />
@@ -474,6 +479,7 @@ export default function Home() {
 
             <ProcessSteps />
             <DonorReminder onSignUpClick={() => setIsAuthModalOpen(true)} showSignUpButton={!sessionUser} />
+            <AboutBloodNet onTermsClick={() => handlePageChange("terms-conditions")} />
             <ImageSlider />
             <MedicalAidFund />
             <FloatingDonorTags />
