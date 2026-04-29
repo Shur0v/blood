@@ -22,6 +22,10 @@ const ProcessSteps = dynamic(() => import("../components/ProcessSteps"), {
   ssr: false,
   loading: () => <section className="mx-auto max-w-7xl px-4 py-16" />,
 });
+const DonorReminder = dynamic(() => import("../components/DonorReminder"), {
+  ssr: false,
+  loading: () => <section className="mx-auto max-w-7xl px-4 pb-20" />,
+});
 const ImageSlider = dynamic(() => import("../components/ImageSlider"), {
   ssr: false,
   loading: () => <section className="mx-auto max-w-7xl px-4 py-16" />,
@@ -449,6 +453,7 @@ export default function Home() {
             <Hero />
 
             <ProcessSteps />
+            <DonorReminder onSignUpClick={() => setIsAuthModalOpen(true)} showSignUpButton={!sessionUser} />
             <ImageSlider />
             <MedicalAidFund />
             <FloatingDonorTags />
@@ -468,6 +473,7 @@ export default function Home() {
             <ApprovedOrganRequests />
 
             <ProcessSteps />
+            <DonorReminder onSignUpClick={() => setIsAuthModalOpen(true)} showSignUpButton={!sessionUser} />
             <ImageSlider />
             <MedicalAidFund />
             <FloatingDonorTags />

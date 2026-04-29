@@ -80,20 +80,40 @@ export async function GET(req: Request) {
       : Prisma.empty;
 
     const rows = await prisma.$queryRaw<RegionAggRow[]>`
-      WITH user_regions AS (
+      WITH registered_user_regions AS (
         SELECT
+          u.id AS user_id,
           u.location_country AS country,
           u.location_city AS city,
-          COUNT(*)::bigint AS total_users,
-          COUNT(*) FILTER (WHERE u.is_active_donor = true)::bigint AS active_users,
-          COUNT(*) FILTER (WHERE u.is_active_donor = false)::bigint AS inactive_users,
-          COUNT(*) FILTER (WHERE u.verification_status = 'PENDING')::bigint AS pending_reviews,
-          COUNT(*) FILTER (WHERE u.created_at >= NOW() - INTERVAL '30 days')::bigint AS current_signups,
-          COUNT(*) FILTER (
-            WHERE u.created_at >= NOW() - INTERVAL '60 days' AND u.created_at < NOW() - INTERVAL '30 days'
-          )::bigint AS previous_signups
+          u.is_active_donor,
+          u.verification_status,
+          u.created_at
         FROM "User" u
-        GROUP BY u.location_country, u.location_city
+        UNION
+        SELECT
+          u.id AS user_id,
+          usc.country AS country,
+          usc.city AS city,
+          u.is_active_donor,
+          u.verification_status,
+          u.created_at
+        FROM "UserServiceCity" usc
+        INNER JOIN "User" u ON u.id = usc.user_id
+      ),
+      user_regions AS (
+        SELECT
+          rur.country,
+          rur.city,
+          COUNT(DISTINCT rur.user_id)::bigint AS total_users,
+          COUNT(DISTINCT rur.user_id) FILTER (WHERE rur.is_active_donor = true)::bigint AS active_users,
+          COUNT(DISTINCT rur.user_id) FILTER (WHERE rur.is_active_donor = false)::bigint AS inactive_users,
+          COUNT(DISTINCT rur.user_id) FILTER (WHERE rur.verification_status = 'PENDING')::bigint AS pending_reviews,
+          COUNT(DISTINCT rur.user_id) FILTER (WHERE rur.created_at >= NOW() - INTERVAL '30 days')::bigint AS current_signups,
+          COUNT(DISTINCT rur.user_id) FILTER (
+            WHERE rur.created_at >= NOW() - INTERVAL '60 days' AND rur.created_at < NOW() - INTERVAL '30 days'
+          )::bigint AS previous_signups
+        FROM registered_user_regions rur
+        GROUP BY rur.country, rur.city
       ),
       manual_blood AS (
         SELECT
@@ -105,13 +125,13 @@ export async function GET(req: Request) {
       ),
       user_organ AS (
         SELECT
-          u.location_country AS country,
-          u.location_city AS city,
-          COUNT(DISTINCT u.id)::bigint AS organ_count
-        FROM "User" u
-        INNER JOIN "OrganPledge" op ON op.user_id = u.id
+          rur.country,
+          rur.city,
+          COUNT(DISTINCT rur.user_id)::bigint AS organ_count
+        FROM registered_user_regions rur
+        INNER JOIN "OrganPledge" op ON op.user_id = rur.user_id
         WHERE op.is_active = true
-        GROUP BY u.location_country, u.location_city
+        GROUP BY rur.country, rur.city
       ),
       manual_organ AS (
         SELECT
@@ -157,12 +177,23 @@ export async function GET(req: Request) {
     `;
 
     const totalResult = await prisma.$queryRaw<Array<{ total: bigint | number }>>`
-      WITH regions AS (
+      WITH registered_user_regions AS (
         SELECT
+          u.id AS user_id,
           u.location_country AS country,
           u.location_city AS city
         FROM "User" u
-        GROUP BY u.location_country, u.location_city
+        UNION
+        SELECT
+          usc.user_id,
+          usc.country,
+          usc.city
+        FROM "UserServiceCity" usc
+      ),
+      regions AS (
+        SELECT country, city
+        FROM registered_user_regions
+        GROUP BY country, city
       )
       SELECT COUNT(*)::bigint AS total
       FROM regions r
@@ -176,33 +207,75 @@ export async function GET(req: Request) {
     const globalResult = await prisma.$queryRaw<
       Array<{ countries: bigint | number; cities: bigint | number }>
     >`
+      WITH registered_user_regions AS (
+        SELECT
+          u.id AS user_id,
+          u.location_country AS country,
+          u.location_city AS city
+        FROM "User" u
+        UNION
+        SELECT
+          usc.user_id,
+          usc.country,
+          usc.city
+        FROM "UserServiceCity" usc
+      )
       SELECT
-        COUNT(DISTINCT u.location_country)::bigint AS countries,
-        COUNT(DISTINCT CONCAT(u.location_country, '||', u.location_city))::bigint AS cities
-      FROM "User" u;
+        COUNT(DISTINCT rur.country)::bigint AS countries,
+        COUNT(DISTINCT CONCAT(rur.country, '||', rur.city))::bigint AS cities
+      FROM registered_user_regions rur;
     `;
 
     const densityResult = await prisma.$queryRaw<TopDensityRow[]>`
+      WITH registered_user_regions AS (
+        SELECT
+          u.id AS user_id,
+          u.location_country AS country,
+          u.location_city AS city
+        FROM "User" u
+        UNION
+        SELECT
+          usc.user_id,
+          usc.country,
+          usc.city
+        FROM "UserServiceCity" usc
+      )
       SELECT
-        u.location_country AS country,
-        COUNT(*)::bigint AS total_users
-      FROM "User" u
-      GROUP BY u.location_country
-      ORDER BY total_users DESC, u.location_country ASC
+        rur.country,
+        COUNT(DISTINCT rur.user_id)::bigint AS total_users
+      FROM registered_user_regions rur
+      GROUP BY rur.country
+      ORDER BY total_users DESC, rur.country ASC
       LIMIT 1;
     `;
 
     const growthResult = await prisma.$queryRaw<TopGrowthRow[]>`
+      WITH registered_user_regions AS (
+        SELECT
+          u.id AS user_id,
+          u.location_country AS country,
+          u.location_city AS city,
+          u.created_at
+        FROM "User" u
+        UNION
+        SELECT
+          u.id AS user_id,
+          usc.country AS country,
+          usc.city AS city,
+          u.created_at
+        FROM "UserServiceCity" usc
+        INNER JOIN "User" u ON u.id = usc.user_id
+      )
       SELECT
-        u.location_country AS country,
-        u.location_city AS city,
-        COUNT(*) FILTER (WHERE u.created_at >= NOW() - INTERVAL '30 days')::bigint AS current_signups,
-        COUNT(*) FILTER (
-          WHERE u.created_at >= NOW() - INTERVAL '60 days' AND u.created_at < NOW() - INTERVAL '30 days'
+        rur.country,
+        rur.city,
+        COUNT(DISTINCT rur.user_id) FILTER (WHERE rur.created_at >= NOW() - INTERVAL '30 days')::bigint AS current_signups,
+        COUNT(DISTINCT rur.user_id) FILTER (
+          WHERE rur.created_at >= NOW() - INTERVAL '60 days' AND rur.created_at < NOW() - INTERVAL '30 days'
         )::bigint AS previous_signups
-      FROM "User" u
-      GROUP BY u.location_country, u.location_city
-      ORDER BY current_signups DESC, u.location_country ASC, u.location_city ASC
+      FROM registered_user_regions rur
+      GROUP BY rur.country, rur.city
+      ORDER BY current_signups DESC, rur.country ASC, rur.city ASC
       LIMIT 1;
     `;
 

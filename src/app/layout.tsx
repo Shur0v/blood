@@ -22,6 +22,9 @@ export const metadata: Metadata = {
   },
   description:
     "Join BloodNet.live to connect with blood and organ donors in your region. Fast, secure, and volunteer-first donor-recipient matching.",
+  icons: {
+    icon: "/favicon.png",
+  },
   alternates: {
     canonical: "/",
   },
