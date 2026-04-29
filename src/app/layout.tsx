@@ -36,6 +36,12 @@ export const metadata: Metadata = {
     url: baseUrl,
     siteName: "BloodNet",
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "BloodNet | Global Blood & Organ Donation Network",
+    description:
+      "Search active blood donors by blood group and city, and browse verified organ donation request pages.",
+  },
 };
 
 async function resolveUiTheme() {
@@ -61,6 +67,33 @@ export default async function RootLayout({
   return (
     <html lang="en" data-theme={uiTheme}>
       <body className={`${inter.variable} antialiased`}>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify([
+              {
+                "@context": "https://schema.org",
+                "@type": "Organization",
+                name: "BloodNet",
+                url: baseUrl,
+                logo: `${baseUrl.replace(/\/$/, "")}/favicon.png`,
+                description:
+                  "BloodNet is a free global blood donor, organ donor, and patient connection platform for privacy-aware donor-recipient matching.",
+              },
+              {
+                "@context": "https://schema.org",
+                "@type": "WebSite",
+                name: "BloodNet",
+                url: baseUrl,
+                potentialAction: {
+                  "@type": "SearchAction",
+                  target: `${baseUrl.replace(/\/$/, "")}/blood/{search_term_string}`,
+                  "query-input": "required name=search_term_string",
+                },
+              },
+            ]).replace(/</g, "\\u003c"),
+          }}
+        />
         <ThemeRuntimeSync />
         <ClickTracker />
         {children}

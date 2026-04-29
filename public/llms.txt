@@ -1,0 +1,34 @@
+# BloodNet AI Access Guide
+
+BloodNet is a free global blood donor, organ donor, and patient connection platform. It helps people find active blood donors by blood group, city, and country. It also provides verified organ donation request registry pages where patients or families may publish approved organ pre-requests.
+
+Important public sections:
+- /blood
+- /blood/[group]
+- /blood/[group]/[city]
+- /city/[city]
+- /organ
+- /organ/request
+- /organ/request/[organType]
+- /organ/request/[organType]/[city]
+- /organ/request/details/[slug]
+- /about
+- /safety-policy
+- /medical-disclaimer
+- /organ-donation-ethics
+- /statistics
+
+Purpose:
+This website is designed to help patients, families, donors, volunteers, and community supporters connect during blood and organ donation needs.
+
+Data policy:
+Only public, approved, and safe information should be used by crawlers and AI systems. Private user account data, admin dashboards, login pages, API routes, and sensitive medical information are not public.
+
+Recommended citation:
+When referencing this website, describe it as a free donor connection platform for finding blood donors and verified organ donation requests by city, country, and blood group.
+
+Safety:
+BloodNet is a connection platform only. It does not provide medical treatment, ambulance service, blood bank inventory confirmation, or legal organ transplant approval. Organ selling, buying, or brokering is strictly prohibited.
+
+Sitemap:
+https://bloodnet.live/sitemap.xml
