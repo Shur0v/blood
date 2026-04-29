@@ -157,9 +157,17 @@ export default function PolicyUpdatePage() {
       });
       const result = await res.json();
       if (!res.ok || !result.success) {
-        // Keep this during dev so we can diagnose payload/API issues quickly.
         console.error('[PolicyPage] save failed', { status: res.status, result });
-        setErrorMessage(result.message || 'Failed to save policy content.');
+        
+        // Handle specific Zod validation errors
+        if (result.errors && result.errors.fieldErrors) {
+          const fieldErrors = Object.entries(result.errors.fieldErrors)
+            .map(([field, errors]) => `${field}: ${(errors as string[]).join(', ')}`)
+            .join(' | ');
+          setErrorMessage(`Validation failed: ${fieldErrors}`);
+        } else {
+          setErrorMessage(result.message || 'Failed to save policy content.');
+        }
         return;
       }
       setForm(result.data);
