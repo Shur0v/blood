@@ -10,6 +10,7 @@ import { motion, useScroll, useSpring } from "motion/react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import dynamic from "next/dynamic";
 import LazyMount from "../components/LazyMount";
+import LocalizedSeoFooter from "../components/LocalizedSeoFooter";
 
 const Hero = dynamic(() => import("../components/Hero"));
 const OrganHero = dynamic(() => import("../components/OrganHero"));
@@ -520,6 +521,8 @@ export function HomeExperience({ forcedCountry }: { forcedCountry?: string } = {
         {!isProfileView && currentPage === "privacy-policy" && <FullPrivacyPage />}
         {!isProfileView && currentPage === "terms-conditions" && <FullTermsPage />}
       </main>
+
+      {!isProfileView && <LocalizedSeoFooter forcedCountry={forcedCountry} />}
 
       {!isProfileView && (
         <Footer
