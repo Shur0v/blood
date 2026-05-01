@@ -10,6 +10,7 @@ import { motion, useScroll, useSpring } from "motion/react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import dynamic from "next/dynamic";
 import LazyMount from "../components/LazyMount";
+import { usePathname, useRouter } from "next/navigation";
 import LocalizedSeoFooter from "../components/LocalizedSeoFooter";
 
 const Hero = dynamic(() => import("../components/Hero"));
@@ -144,6 +145,8 @@ const readCachedJson = <T,>(key: string): T | null => {
 };
 
 export function HomeExperience({ forcedCountry }: { forcedCountry?: string } = {}) {
+  const pathname = usePathname();
+  const router = useRouter();
   const profileIntentHandledRef = useRef(false);
   const sessionUserRef = useRef<SessionUser | null>(null);
   const lastSilentSessionCheckRef = useRef(0);
@@ -390,6 +393,10 @@ export function HomeExperience({ forcedCountry }: { forcedCountry?: string } = {
   };
 
   const handleHomeClick = () => {
+    if (pathname !== "/") {
+      router.push("/");
+      return;
+    }
     setIsProfileView(false);
     setCurrentPage("home");
   };

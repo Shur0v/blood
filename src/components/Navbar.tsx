@@ -33,7 +33,7 @@ export default function Navbar({ currentPage, onPageChange, onAuthClick, onHomeC
           <NavItem 
             icon={<Home className="h-4 w-4" />} 
             active={currentPage === "home"} 
-            onClick={() => onPageChange("home")}
+            onClick={onHomeClick}
           />
           <NavItem 
             icon={<BookOpen className="h-4 w-4" />} 
