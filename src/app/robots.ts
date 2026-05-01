@@ -28,6 +28,18 @@ export default function robots(): MetadataRoute.Robots {
         ],
       },
     ],
-    sitemap: `${baseUrl}/sitemap.xml`,
+    sitemap: [
+      `${baseUrl}/sitemap.xml`,
+      `${baseUrl}/sitemap-index.xml`,
+      `${baseUrl}/sitemap-main.xml`,
+      `${baseUrl}/sitemap-categories.xml`,
+      `${baseUrl}/sitemap-regions.xml`,
+      `${baseUrl}/sitemap-blog.xml`,
+      `${baseUrl}/sitemap-location.xml`,
+      `${baseUrl}/sitemap-keywords-1.xml`,
+      `${baseUrl}/sitemap-keywords-2.xml`,
+      `${baseUrl}/sitemap-keywords-3.xml`,
+      `${baseUrl}/sitemap-keywords-4.xml`,
+    ],
   };
 }
