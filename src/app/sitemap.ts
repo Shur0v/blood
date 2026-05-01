@@ -5,6 +5,7 @@ import { getPublicBaseUrl } from '@/src/backend/config/env';
 import { buildOrganRequestSlug, getBloodGroupCityCounts, getOrganDonors, getOrganTypesWithData, getVerifiedOrganRequests } from '@/src/backend/services/seoData';
 import { BLOOD_GROUPS, COUNTRY_SHORTCUTS, bloodGroupToSlug, cityToSlug, countryToShortcut, organToSlug } from '@/src/lib/seoRouting';
 import { REGIONS } from '@/src/lib/regions';
+import { KEYWORD_LANDINGS } from '@/src/lib/keywordLandings';
 
 interface CityRow {
   city: string | null;
@@ -73,6 +74,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/common-blood-searches`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.8 },
     { url: `${baseUrl}/common-organ-searches`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.8 },
     { url: `${baseUrl}/global-search-entry`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.9 },
+    ...KEYWORD_LANDINGS.map((entry) => ({
+      url: `${baseUrl}/keywords/${entry.slug}`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.7,
+    })),
     ...REGIONS.map((region) => ({
       url: `${baseUrl}/${region.slug}`,
       lastModified: new Date(),
