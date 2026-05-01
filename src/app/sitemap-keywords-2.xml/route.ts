@@ -1,9 +1,9 @@
 import { getPublicBaseUrl } from "@/src/backend/config/env";
-import { chunkKeywordLandings } from "@/src/lib/sitemapChunks";
+import { getKeywordLandingChunk } from "@/src/lib/sitemapChunks";
 import { renderUrlSetXml } from "@/src/lib/sitemapXml";
 
 export async function GET() {
   const baseUrl = getPublicBaseUrl();
-  const chunk = chunkKeywordLandings()[1] || [];
+  const chunk = getKeywordLandingChunk(1);
   return renderUrlSetXml(chunk.map((entry) => ({ url: `${baseUrl}/keywords/${entry.slug}` })));
 }

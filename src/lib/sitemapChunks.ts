@@ -1,14 +1,14 @@
 import { KEYWORD_LANDINGS } from "@/src/lib/keywordLandings";
 import { REGIONS } from "@/src/lib/regions";
 
-export const KEYWORD_SITEMAP_CHUNK_SIZE = 120;
+export const KEYWORD_SITEMAP_PARTS = 4;
 
-export const chunkKeywordLandings = () => {
-  const chunks: Array<typeof KEYWORD_LANDINGS> = [];
-  for (let i = 0; i < KEYWORD_LANDINGS.length; i += KEYWORD_SITEMAP_CHUNK_SIZE) {
-    chunks.push(KEYWORD_LANDINGS.slice(i, i + KEYWORD_SITEMAP_CHUNK_SIZE));
-  }
-  return chunks;
+export const getKeywordLandingChunk = (partIndex: number, totalParts = KEYWORD_SITEMAP_PARTS) => {
+  const normalizedParts = Math.max(1, totalParts);
+  const size = Math.ceil(KEYWORD_LANDINGS.length / normalizedParts);
+  const start = partIndex * size;
+  const end = start + size;
+  return KEYWORD_LANDINGS.slice(start, end);
 };
 
 export const REGION_SLUGS = REGIONS.map((region) => region.slug);
