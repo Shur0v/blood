@@ -216,6 +216,27 @@
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --glass-blur: 0px;
+  }
+
+  .glass,
+  .glass-dark {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+}
+
+/* Dashboard-specific contrast lift for accessibility audits */
+.dashboard-a11y [class*="text-text/20"] { color: color-mix(in srgb, var(--text-main) 70%, white 30%) !important; }
+.dashboard-a11y [class*="text-text/30"] { color: color-mix(in srgb, var(--text-main) 74%, white 26%) !important; }
+.dashboard-a11y [class*="text-text/40"] { color: color-mix(in srgb, var(--text-main) 78%, white 22%) !important; }
+.dashboard-a11y [class*="text-text/50"] { color: color-mix(in srgb, var(--text-main) 82%, white 18%) !important; }
+.dashboard-a11y [class*="text-text/60"] { color: color-mix(in srgb, var(--text-main) 86%, white 14%) !important; }
+.dashboard-a11y [class*="text-gray-500"] { color: #374151 !important; }
+.dashboard-a11y [class*="text-gray-600"] { color: #1f2937 !important; }
+
 @media (max-width: 768px) {
   :root {
     --glass-blur: 10px;

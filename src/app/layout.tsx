@@ -9,6 +9,8 @@ import { Inter } from "next/font/google";
 const baseUrl = getPublicBaseUrl();
 const inter = Inter({
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800", "900"],
+  style: ["normal"],
   display: "swap",
   variable: "--font-inter",
 });

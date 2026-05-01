@@ -537,7 +537,7 @@ export default function UnifiedDashboard({
   };
 
   return (
-    <section className="mx-auto max-w-7xl px-4 py-12">
+    <section className="dashboard-a11y mx-auto max-w-7xl px-4 py-12">
       <motion.div 
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}

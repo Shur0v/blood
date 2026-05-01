@@ -1,6 +1,7 @@
 import { motion, useMotionValue, useTransform, animate } from "motion/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Search, X } from "lucide-react";
+import Image from "next/image";
 import DonorModal from "./DonorModal";
 import useViewerGeo from "./useViewerGeo";
 import { maskPhoneTail } from "../lib/phoneMask";
@@ -231,6 +232,19 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
             <h1 className="mb-6 text-4xl font-bold tracking-tight text-gray-900 md:text-6xl">
               Every Drop <span className="text-primary-dark">Counts</span>.
             </h1>
+
+            <div className="mb-6 flex justify-center">
+              <Image
+                src="/favicon.png"
+                alt="BloodNet donor network"
+                width={84}
+                height={84}
+                priority
+                loading="eager"
+                fetchPriority="high"
+                className="h-[84px] w-[84px] rounded-[8px]"
+              />
+            </div>
 
             <p className="mx-auto mb-8 max-w-2xl text-base text-gray-500">
               Join our premium community of life-savers. Connect with donors instantly and manage blood stocks with our futuristic medical dashboard.
