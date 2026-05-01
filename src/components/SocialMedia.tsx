@@ -259,6 +259,7 @@ export function Footer({ onOpenPolicy, onPageChange }: FooterProps) {
           <div>
             <h4 className="mb-6 text-xl font-bold text-white">Quick Links</h4>
             <ul className="flex flex-col gap-4 text-lg">
+              <li><Link href="/faq" className="transition-colors hover:text-white text-left">FAQ</Link></li>
               <li><Link href="/privacy" className="transition-colors hover:text-white text-left">Privacy Policy (Full)</Link></li>
               <li><button onClick={() => onOpenPolicy?.('privacy')} className="transition-colors hover:text-white text-left">Privacy Summary</button></li>
               <li><Link href="/terms" className="transition-colors hover:text-white text-left">Terms of Service</Link></li>

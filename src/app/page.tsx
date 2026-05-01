@@ -64,11 +64,19 @@ const MobilePreview = dynamic(() => import("../components/MobilePreview"), {
   ssr: false,
   loading: () => <section className="mx-auto max-w-7xl px-4 py-16" />,
 });
+const FaqSection = dynamic(() => import("../components/FaqSection"), {
+  ssr: false,
+  loading: () => <section className="mx-auto max-w-7xl px-4 py-12" />,
+});
 const CTA = dynamic(() => import("../components/CTA"), {
   ssr: false,
   loading: () => <section className="mx-auto max-w-7xl px-4 py-12" />,
 });
 const SocialMedia = dynamic(() => import("../components/SocialMedia"), {
+  ssr: false,
+  loading: () => <section className="mx-auto max-w-7xl px-4 py-12" />,
+});
+const ContactUsSection = dynamic(() => import("../components/ContactUsSection"), {
   ssr: false,
   loading: () => <section className="mx-auto max-w-7xl px-4 py-12" />,
 });
@@ -468,8 +476,10 @@ export default function Home() {
             <LazyMount><Testimonials /></LazyMount>
             <LazyMount><UserReports /></LazyMount>
             <LazyMount><MobilePreview /></LazyMount>
+            <LazyMount><FaqSection /></LazyMount>
             <LazyMount><CTA onSignUpClick={() => setIsAuthModalOpen(true)} showSignUpButton={!sessionUser} /></LazyMount>
             <LazyMount><SocialMedia /></LazyMount>
+            <LazyMount><ContactUsSection /></LazyMount>
           </>
         )}
 
@@ -488,7 +498,9 @@ export default function Home() {
             <LazyMount><Testimonials /></LazyMount>
             <LazyMount><UserReports /></LazyMount>
             <LazyMount><MobilePreview /></LazyMount>
+            <LazyMount><FaqSection /></LazyMount>
             <LazyMount><SocialMedia /></LazyMount>
+            <LazyMount><ContactUsSection /></LazyMount>
           </>
         )}
 

@@ -470,3 +470,15 @@ model TranslatedContent {
   @@unique([source_hash, locale, content_type, content_version])
   @@index([locale, content_type, updated_at(sort: Desc)])
 }
+
+model FaqItem {
+  id         String   @id @default(uuid())
+  question   String
+  answer     String
+  sort_order Int      @default(0)
+  is_active  Boolean  @default(true)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([is_active, sort_order, updated_at(sort: Desc)])
+}
