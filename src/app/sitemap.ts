@@ -4,6 +4,7 @@ import { toLocationSlug } from '@/src/backend/utils/locationSlug';
 import { getPublicBaseUrl } from '@/src/backend/config/env';
 import { buildOrganRequestSlug, getBloodGroupCityCounts, getOrganDonors, getOrganTypesWithData, getVerifiedOrganRequests } from '@/src/backend/services/seoData';
 import { BLOOD_GROUPS, COUNTRY_SHORTCUTS, bloodGroupToSlug, cityToSlug, countryToShortcut, organToSlug } from '@/src/lib/seoRouting';
+import { REGIONS } from '@/src/lib/regions';
 
 interface CityRow {
   city: string | null;
@@ -69,6 +70,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/statistics`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.7 },
     { url: `${baseUrl}/countries`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.7 },
     { url: `${baseUrl}/cities`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.7 },
+    ...REGIONS.map((region) => ({
+      url: `${baseUrl}/${region.slug}`,
+      lastModified: new Date(),
+      changeFrequency: 'daily' as const,
+      priority: 0.85,
+    })),
   ];
 
   try {

@@ -41,7 +41,7 @@ interface DonorApiResponse {
   };
 }
 
-export default function Hero() {
+export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
   const [activeGroup, setActiveGroup] = useState<string | null>(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -63,6 +63,9 @@ export default function Hero() {
   const viewerGeo = useViewerGeo();
   const buildBaseParams = () => {
     const params = new URLSearchParams({ limit: "16" });
+    if (forcedCountry) {
+      params.set("country", forcedCountry);
+    }
     if (activeGroup) {
       params.set("bloodGroup", activeGroup);
     }
@@ -159,7 +162,7 @@ export default function Hero() {
 
         setDonors(mapped);
         setNextCursor(payload.pagination?.nextCursor ?? null);
-        const nextTotal = Number(payload.meta?.globalTotal ?? payload.pagination?.total ?? 0);
+        const nextTotal = Number(forcedCountry ? payload.pagination?.total : payload.meta?.globalTotal ?? payload.pagination?.total ?? 0);
         setTotalActiveDonors(nextTotal);
         persistCache(mapped, nextTotal);
         setIsDonorApiDown(false);
@@ -231,6 +234,7 @@ export default function Hero() {
 
             <p className="mx-auto mb-8 max-w-2xl text-base text-gray-500">
               Join our premium community of life-savers. Connect with donors instantly and manage blood stocks with our futuristic medical dashboard.
+              {forcedCountry ? ` Showing active donor results for ${forcedCountry}.` : ""}
             </p>
 
             <div className="relative mx-auto flex h-14 w-full max-w-5xl items-center gap-2 overflow-hidden">

@@ -49,7 +49,7 @@ interface OrganDonorApiResponse {
   };
 }
 
-export default function OrganHero() {
+export default function OrganHero({ forcedCountry }: { forcedCountry?: string }) {
   const [activeOrgan, setActiveOrgan] = useState<string | null>(null);
   const [activeBloodGroup, setActiveBloodGroup] = useState<string | null>(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -70,6 +70,9 @@ export default function OrganHero() {
   const viewerGeo = useViewerGeo();
   const buildBaseParams = () => {
     const params = new URLSearchParams({ limit: "16" });
+    if (forcedCountry) {
+      params.set("country", forcedCountry);
+    }
     if (activeOrgan) {
       params.set("organ", activeOrgan);
     }
@@ -240,6 +243,7 @@ export default function OrganHero() {
 
             <p className="mx-auto mb-8 max-w-2xl text-base text-gray-500">
               Connect with organ donors instantly. Our platform facilitates the matching process for life-saving transplants with utmost care and security.
+              {forcedCountry ? ` Showing active organ donor results for ${forcedCountry}.` : ""}
             </p>
 
             <div className="relative mx-auto flex flex-col gap-4 w-full max-w-5xl">

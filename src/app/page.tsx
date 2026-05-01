@@ -142,7 +142,7 @@ const readCachedJson = <T,>(key: string): T | null => {
   }
 };
 
-export default function Home() {
+export function HomeExperience({ forcedCountry }: { forcedCountry?: string } = {}) {
   const profileIntentHandledRef = useRef(false);
   const sessionUserRef = useRef<SessionUser | null>(null);
   const lastSilentSessionCheckRef = useRef(0);
@@ -464,7 +464,7 @@ export default function Home() {
 
         {!isProfileView && currentPage === "home" && (
           <>
-            <Hero />
+            <Hero forcedCountry={forcedCountry} />
             <LazyMount><ProcessSteps /></LazyMount>
             <LazyMount><DonorReminder onSignUpClick={() => setIsAuthModalOpen(true)} showSignUpButton={!sessionUser} /></LazyMount>
             <LazyMount><ImageSlider /></LazyMount>
@@ -485,7 +485,7 @@ export default function Home() {
 
         {!isProfileView && currentPage === "organ" && (
           <>
-            <OrganHero />
+            <OrganHero forcedCountry={forcedCountry} />
             <LazyMount><ApprovedOrganRequests /></LazyMount>
             <LazyMount><ProcessSteps /></LazyMount>
             <LazyMount><DonorReminder onSignUpClick={() => setIsAuthModalOpen(true)} showSignUpButton={!sessionUser} /></LazyMount>
@@ -557,4 +557,8 @@ export default function Home() {
       {enableFluidBackground && <FluidBackground />}
     </div>
   );
+}
+
+export default function Home() {
+  return <HomeExperience />;
 }

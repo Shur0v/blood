@@ -12,6 +12,7 @@ const QuerySchema = z.object({
   search: z.string().min(1).max(120).optional(),
   viewerCity: z.string().min(1).max(120).optional(),
   viewerCountry: z.string().min(1).max(120).optional(),
+  country: z.string().min(1).max(120).optional(),
 });
 
 interface PublicOrganDonorRow {
@@ -45,13 +46,14 @@ export async function GET(req: Request) {
       search: url.searchParams.get('search') || undefined,
       viewerCity: url.searchParams.get('viewerCity') || undefined,
       viewerCountry: url.searchParams.get('viewerCountry') || undefined,
+      country: url.searchParams.get('country') || undefined,
     });
 
     if (!parsed.success) {
       return NextResponse.json({ success: false, message: 'Invalid query params.' }, { status: 400 });
     }
 
-    const { limit, cursor, organ, bloodGroup, search, viewerCity, viewerCountry } = parsed.data;
+    const { limit, cursor, organ, bloodGroup, search, viewerCity, viewerCountry, country } = parsed.data;
     const normalizedOrganFilter = organ ? normalizeOrganName(organ) : null;
     if (organ && !normalizedOrganFilter) {
       return NextResponse.json({
@@ -67,6 +69,20 @@ export async function GET(req: Request) {
     const searchLike = normalizedSearch ? `%${normalizedSearch}%` : null;
     const normalizedViewerCity = viewerCity?.trim();
     const normalizedViewerCountry = viewerCountry?.trim();
+    const normalizedCountry = country?.trim();
+    const userFilterByCountry = normalizedCountry
+      ? Prisma.sql`AND (
+          LOWER(u.location_country) = LOWER(${normalizedCountry})
+          OR EXISTS (
+            SELECT 1 FROM "UserServiceCity" usc
+            WHERE usc.user_id = u.id
+              AND LOWER(usc.country) = LOWER(${normalizedCountry})
+          )
+        )`
+      : Prisma.empty;
+    const manualFilterByCountry = normalizedCountry
+      ? Prisma.sql`AND LOWER(mod.location_country) = LOWER(${normalizedCountry})`
+      : Prisma.empty;
 
     const prisma = getPrisma();
 
@@ -171,6 +187,7 @@ export async function GET(req: Request) {
         ) sc ON TRUE
         WHERE op.is_active = true AND u.is_active_donor = true
           AND ${normalizedUserOrgan} IS NOT NULL
+        ${userFilterByCountry}
         ${userFilterByOrgan}
         ${userFilterByBlood}
         ${userFilterBySearch}
@@ -198,6 +215,7 @@ export async function GET(req: Request) {
         ) mo
         WHERE TRIM(mo.organ_raw) <> ''
           AND ${normalizedManualOrgan} IS NOT NULL
+        ${manualFilterByCountry}
         ${manualFilterByOrgan}
         ${manualFilterByBlood}
         ${manualFilterBySearch}
@@ -219,6 +237,7 @@ export async function GET(req: Request) {
          FROM "OrganPledge" op
          JOIN "User" u ON u.id = op.user_id
          WHERE op.is_active = true AND u.is_active_donor = true
+         ${userFilterByCountry}
          ${userFilterByOrgan}
          ${userFilterByBlood}
          ${userFilterBySearch}
@@ -232,6 +251,7 @@ export async function GET(req: Request) {
          ) mo
          WHERE TRIM(mo.organ_raw) <> ''
            AND ${normalizedManualOrgan} IS NOT NULL
+         ${manualFilterByCountry}
          ${manualFilterByOrgan}
          ${manualFilterByBlood}
          ${manualFilterBySearch}

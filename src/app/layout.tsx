@@ -26,6 +26,13 @@ export const metadata: Metadata = {
   },
   alternates: {
     canonical: "/",
+    languages: {
+      "en-IN": "/india",
+      "en-PK": "/pakistan",
+      "en-NP": "/nepal",
+      "bn-BD": "/bangladesh",
+      "x-default": "/",
+    },
   },
   openGraph: {
     type: "website",

@@ -10,6 +10,7 @@ const QuerySchema = z.object({
   search: z.string().min(1).max(120).optional(),
   viewerCity: z.string().min(1).max(120).optional(),
   viewerCountry: z.string().min(1).max(120).optional(),
+  country: z.string().min(1).max(120).optional(),
 });
 
 interface PublicDonorRow {
@@ -41,19 +42,34 @@ export async function GET(req: Request) {
       search: url.searchParams.get('search') || undefined,
       viewerCity: url.searchParams.get('viewerCity') || undefined,
       viewerCountry: url.searchParams.get('viewerCountry') || undefined,
+      country: url.searchParams.get('country') || undefined,
     });
 
     if (!parsed.success) {
       return NextResponse.json({ success: false, message: 'Invalid query params.' }, { status: 400 });
     }
 
-    const { limit, cursor, bloodGroup, search, viewerCity, viewerCountry } = parsed.data;
+    const { limit, cursor, bloodGroup, search, viewerCity, viewerCountry, country } = parsed.data;
     const offset = cursor ? Number.parseInt(cursor, 10) : 0;
     const safeOffset = Number.isNaN(offset) || offset < 0 ? 0 : offset;
     const normalizedSearch = search?.trim();
     const searchLike = normalizedSearch ? `%${normalizedSearch}%` : null;
     const normalizedViewerCity = viewerCity?.trim();
     const normalizedViewerCountry = viewerCountry?.trim();
+    const normalizedCountry = country?.trim();
+    const userFilterByCountry = normalizedCountry
+      ? Prisma.sql`AND (
+          LOWER(u.location_country) = LOWER(${normalizedCountry})
+          OR EXISTS (
+            SELECT 1 FROM "UserServiceCity" usc
+            WHERE usc.user_id = u.id
+              AND LOWER(usc.country) = LOWER(${normalizedCountry})
+          )
+        )`
+      : Prisma.empty;
+    const manualFilterByCountry = normalizedCountry
+      ? Prisma.sql`AND LOWER(mbd.location_country) = LOWER(${normalizedCountry})`
+      : Prisma.empty;
 
     const prisma = getPrisma();
 
@@ -133,6 +149,7 @@ export async function GET(req: Request) {
           LIMIT 1
         ) sc ON TRUE
         WHERE u.is_active_donor = true
+        ${userFilterByCountry}
         ${userFilterByBlood}
         ${userFilterBySearch}
 
@@ -156,6 +173,7 @@ export async function GET(req: Request) {
           mbd.created_at AS sort_at
         FROM "ManualBloodDonor" mbd
         WHERE mbd.is_active_donor = true
+        ${manualFilterByCountry}
         ${manualFilterByBlood}
         ${manualFilterBySearch}
       ) AS donors
@@ -176,6 +194,7 @@ export async function GET(req: Request) {
         (SELECT COUNT(*)
          FROM "User" u
          WHERE u.is_active_donor = true
+         ${userFilterByCountry}
          ${userFilterByBlood}
          ${userFilterBySearch}
         )
@@ -183,6 +202,7 @@ export async function GET(req: Request) {
         (SELECT COUNT(*)
          FROM "ManualBloodDonor" mbd
          WHERE mbd.is_active_donor = true
+         ${manualFilterByCountry}
          ${manualFilterByBlood}
          ${manualFilterBySearch}
         )
@@ -224,22 +244,32 @@ export async function GET(req: Request) {
         search: url.searchParams.get('search') || undefined,
         viewerCity: url.searchParams.get('viewerCity') || undefined,
         viewerCountry: url.searchParams.get('viewerCountry') || undefined,
+        country: url.searchParams.get('country') || undefined,
       });
 
       if (!parsed.success) {
         return NextResponse.json({ success: false, message: 'Invalid query params.' }, { status: 400 });
       }
 
-      const { limit, cursor, bloodGroup, search, viewerCity, viewerCountry } = parsed.data;
+      const { limit, cursor, bloodGroup, search, viewerCity, viewerCountry, country } = parsed.data;
       const offset = cursor ? Number.parseInt(cursor, 10) : 0;
       const safeOffset = Number.isNaN(offset) || offset < 0 ? 0 : offset;
       const q = search?.trim();
       const normalizedViewerCity = viewerCity?.trim().toLowerCase();
       const normalizedViewerCountry = viewerCountry?.trim().toLowerCase();
+      const normalizedCountry = country?.trim();
 
       const prisma = getPrisma();
       const userWhere = {
         is_active_donor: true,
+        ...(normalizedCountry
+          ? {
+              OR: [
+                { location_country: { equals: normalizedCountry, mode: 'insensitive' as const } },
+                { ServiceCities: { some: { country: { equals: normalizedCountry, mode: 'insensitive' as const } } } },
+              ],
+            }
+          : {}),
         ...(bloodGroup ? { blood_group: bloodGroup } : {}),
         ...(q
           ? {
@@ -254,6 +284,7 @@ export async function GET(req: Request) {
       };
       const manualWhere = {
         is_active_donor: true,
+        ...(normalizedCountry ? { location_country: { equals: normalizedCountry, mode: 'insensitive' as const } } : {}),
         ...(bloodGroup ? { blood_group: bloodGroup } : {}),
         ...(q
           ? {
