@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import ClickTracker from "@/src/components/ClickTracker";
-import ThemeRuntimeSync from "@/src/components/ThemeRuntimeSync";
+import DeferredClientEffects from "@/src/components/DeferredClientEffects";
 import { getPublicBaseUrl } from "@/src/backend/config/env";
 import { getPrisma } from "@/src/backend/config/db";
 import { DEFAULT_UI_THEME, normalizeUiTheme } from "@/src/lib/uiTheme";
@@ -94,8 +93,7 @@ export default async function RootLayout({
             ]).replace(/</g, "\\u003c"),
           }}
         />
-        <ThemeRuntimeSync />
-        <ClickTracker />
+        <DeferredClientEffects />
         {children}
       </body>
     </html>

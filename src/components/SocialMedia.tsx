@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { motion } from "motion/react";
 import { Send, Droplet, Users, Bell, ShieldCheck } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 type PublicPolicyData = {
   footerContactEmail?: string;
@@ -126,12 +127,14 @@ export default function SocialMedia() {
                 <div className="flex items-center gap-3">
                   <div className="flex -space-x-2">
                     {[1, 2, 3, 4].map((i) => (
-                      <img
+                      <Image
                         key={i}
-                        className="h-6 w-6 rounded-full border-2 border-white object-cover"
                         src={`https://i.pravatar.cc/100?u=${i + 10}`}
                         alt="User"
-                        referrerPolicy="no-referrer"
+                        width={24}
+                        height={24}
+                        className="h-6 w-6 rounded-full border-2 border-white object-cover"
+                        loading="lazy"
                       />
                     ))}
                   </div>
@@ -158,11 +161,14 @@ export default function SocialMedia() {
           viewport={{ once: true }}
           className="flex-[1] overflow-hidden rounded-[8px] shadow-2xl"
         >
-          <img
+          <Image
             src="https://blog.hocking.edu/hubfs/Images/Stock%20images/blood-donation_custom-4a7ebcf0e0864084e9035d1ddc48b84d884b12e8-s900-c85.jpg"
             alt="Community"
+            width={900}
+            height={600}
+            sizes="(max-width: 768px) 100vw, 40vw"
             className="h-full w-full object-cover object-center transition-transform duration-700 hover:scale-110"
-            referrerPolicy="no-referrer"
+            loading="lazy"
           />
         </motion.div>
       </div>

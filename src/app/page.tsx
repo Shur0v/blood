@@ -6,17 +6,19 @@
  */
 
 import Navbar from "../components/Navbar";
-import Hero from "../components/Hero";
-import OrganHero from "../components/OrganHero";
-import { PolicyModal } from "../components/PolicyModal";
-import { FullPrivacyPage } from "../components/FullPrivacyPage";
-import { FullTermsPage } from "../components/FullTermsPage";
-import AuthModal from "../components/AuthModal";
-import UnifiedDashboard from "../components/UnifiedDashboard";
-import DonationToggleModal from "../components/DonationToggleModal";
 import { motion, useScroll, useSpring } from "motion/react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import dynamic from "next/dynamic";
+import LazyMount from "../components/LazyMount";
+
+const Hero = dynamic(() => import("../components/Hero"));
+const OrganHero = dynamic(() => import("../components/OrganHero"));
+const PolicyModal = dynamic(() => import("../components/PolicyModal").then((mod) => mod.PolicyModal), { ssr: false });
+const FullPrivacyPage = dynamic(() => import("../components/FullPrivacyPage").then((mod) => mod.FullPrivacyPage));
+const FullTermsPage = dynamic(() => import("../components/FullTermsPage").then((mod) => mod.FullTermsPage));
+const AuthModal = dynamic(() => import("../components/AuthModal"), { ssr: false });
+const UnifiedDashboard = dynamic(() => import("../components/UnifiedDashboard"), { ssr: false });
+const DonationToggleModal = dynamic(() => import("../components/DonationToggleModal"), { ssr: false });
 
 const ProcessSteps = dynamic(() => import("../components/ProcessSteps"), {
   ssr: false,
@@ -455,40 +457,38 @@ export default function Home() {
         {!isProfileView && currentPage === "home" && (
           <>
             <Hero />
-
-            <ProcessSteps />
-            <DonorReminder onSignUpClick={() => setIsAuthModalOpen(true)} showSignUpButton={!sessionUser} />
-            <ImageSlider />
-            <MedicalAidFund />
-            <AboutBloodNet onTermsClick={() => handlePageChange("terms-conditions")} />
-            <FloatingDonorTags />
-            <ImpactData />
-            <RequestOrgan />
-            <Testimonials />
-            <UserReports />
-            <MobilePreview />
-            <CTA onSignUpClick={() => setIsAuthModalOpen(true)} showSignUpButton={!sessionUser} />
-            <SocialMedia />
+            <LazyMount><ProcessSteps /></LazyMount>
+            <LazyMount><DonorReminder onSignUpClick={() => setIsAuthModalOpen(true)} showSignUpButton={!sessionUser} /></LazyMount>
+            <LazyMount><ImageSlider /></LazyMount>
+            <LazyMount><MedicalAidFund /></LazyMount>
+            <LazyMount><AboutBloodNet onTermsClick={() => handlePageChange("terms-conditions")} /></LazyMount>
+            <LazyMount><FloatingDonorTags /></LazyMount>
+            <LazyMount><ImpactData /></LazyMount>
+            <LazyMount><RequestOrgan /></LazyMount>
+            <LazyMount><Testimonials /></LazyMount>
+            <LazyMount><UserReports /></LazyMount>
+            <LazyMount><MobilePreview /></LazyMount>
+            <LazyMount><CTA onSignUpClick={() => setIsAuthModalOpen(true)} showSignUpButton={!sessionUser} /></LazyMount>
+            <LazyMount><SocialMedia /></LazyMount>
           </>
         )}
 
         {!isProfileView && currentPage === "organ" && (
           <>
             <OrganHero />
-            <ApprovedOrganRequests />
-
-            <ProcessSteps />
-            <DonorReminder onSignUpClick={() => setIsAuthModalOpen(true)} showSignUpButton={!sessionUser} />
-            <ImageSlider />
-            <MedicalAidFund />
-            <AboutBloodNet onTermsClick={() => handlePageChange("terms-conditions")} />
-            <FloatingDonorTags />
-            <ImpactData />
-            <RequestOrgan />
-            <Testimonials />
-            <UserReports />
-            <MobilePreview />
-            <SocialMedia />
+            <LazyMount><ApprovedOrganRequests /></LazyMount>
+            <LazyMount><ProcessSteps /></LazyMount>
+            <LazyMount><DonorReminder onSignUpClick={() => setIsAuthModalOpen(true)} showSignUpButton={!sessionUser} /></LazyMount>
+            <LazyMount><ImageSlider /></LazyMount>
+            <LazyMount><MedicalAidFund /></LazyMount>
+            <LazyMount><AboutBloodNet onTermsClick={() => handlePageChange("terms-conditions")} /></LazyMount>
+            <LazyMount><FloatingDonorTags /></LazyMount>
+            <LazyMount><ImpactData /></LazyMount>
+            <LazyMount><RequestOrgan /></LazyMount>
+            <LazyMount><Testimonials /></LazyMount>
+            <LazyMount><UserReports /></LazyMount>
+            <LazyMount><MobilePreview /></LazyMount>
+            <LazyMount><SocialMedia /></LazyMount>
           </>
         )}
 

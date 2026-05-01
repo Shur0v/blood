@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { motion } from "motion/react";
 import { ArrowLeft, ArrowRight, MapPin } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 type UserStory = {
   id: string;
@@ -160,11 +161,13 @@ export default function Testimonials() {
                     </div>
                   ) : (
                     <div className="relative z-10 flex items-center gap-3">
-                      <img
+                      <Image
                         src={story.author_profile_image || "https://i.pravatar.cc/120?u=bloodnet-story"}
                         alt={story.author_name || "Writer"}
+                        width={40}
+                        height={40}
                         className="h-10 w-10 rounded-full border-2 border-white object-cover shadow-sm bg-white"
-                        referrerPolicy="no-referrer"
+                        loading="lazy"
                       />
                       <div>
                         <h4 className="text-sm font-bold text-gray-900">{story.author_name}</h4>
