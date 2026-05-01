@@ -1,7 +1,6 @@
 import { motion, AnimatePresence } from "motion/react";
 import { useState, useEffect, useCallback } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import Image from "next/image";
 import type { HomepageSlide } from "@/src/types/homepageSlide";
 
 export default function ImageSlider() {
@@ -78,13 +77,13 @@ export default function ImageSlider() {
             transition={{ duration: 0.8, ease: "easeInOut" }}
             className="absolute inset-0"
           >
-            <Image
+            <img
               src={slides[currentIndex].image_url}
               alt={slides[currentIndex].title}
-              fill
-              sizes="(max-width: 768px) 100vw, (max-width: 1280px) 90vw, 1200px"
-              className="object-cover object-center"
+              className="h-full w-full object-cover object-center"
               loading="lazy"
+              decoding="async"
+              referrerPolicy="no-referrer"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
             
