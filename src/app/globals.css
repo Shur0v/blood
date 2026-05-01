@@ -239,7 +239,7 @@
 
 @media (max-width: 768px) {
   :root {
-    --glass-blur: 10px;
+    --glass-blur: 0px;
     --shadow-card: 0 6px 20px rgba(0, 0, 0, 0.08);
   }
 
@@ -251,6 +251,7 @@
 
   .glass,
   .glass-dark {
-    backdrop-filter: blur(10px);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
   }
 }

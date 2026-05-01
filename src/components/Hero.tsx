@@ -1,7 +1,6 @@
 import { motion, useMotionValue, useTransform, animate } from "motion/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Search, X } from "lucide-react";
-import Image from "next/image";
 import DonorModal from "./DonorModal";
 import useViewerGeo from "./useViewerGeo";
 import { maskPhoneTail } from "../lib/phoneMask";
@@ -206,8 +205,8 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
 
   return (
     <section className="relative flex min-h-screen flex-col items-center justify-center px-4 pt-20 pb-32">
-      <div className="absolute top-1/4 left-1/4 h-64 w-64 rounded-full bg-primary-dark/10 blur-[100px]" />
-      <div className="absolute bottom-1/4 right-1/4 h-96 w-96 rounded-full bg-primary/5 blur-[120px]" />
+      <div className="absolute top-1/4 left-1/4 hidden h-64 w-64 rounded-full bg-primary-dark/10 blur-[100px] md:block" />
+      <div className="absolute bottom-1/4 right-1/4 hidden h-96 w-96 rounded-full bg-primary/5 blur-[120px] md:block" />
 
       <div className="relative z-10 w-full max-w-7xl">
         <motion.div
@@ -232,19 +231,6 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
             <h1 className="mb-6 text-4xl font-bold tracking-tight text-gray-900 md:text-6xl">
               Every Drop <span className="text-primary-dark">Counts</span>.
             </h1>
-
-            <div className="mb-6 flex justify-center">
-              <Image
-                src="/favicon.png"
-                alt="BloodNet donor network"
-                width={84}
-                height={84}
-                priority
-                loading="eager"
-                fetchPriority="high"
-                className="h-[84px] w-[84px] rounded-[8px]"
-              />
-            </div>
 
             <p className="mx-auto mb-8 max-w-2xl text-base text-gray-500">
               Join our premium community of life-savers. Connect with donors instantly and manage blood stocks with our futuristic medical dashboard.
