@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getNetworkStats, getVerifiedOrganRequests } from "@/src/backend/services/seoData";
 import { bloodGroupToSlug, cityToSlug } from "@/src/lib/seoRouting";
+import SiteNavShell from "@/src/components/SiteNavShell";
 
 interface SeoLocationLandingProps {
   country?: string;
@@ -56,6 +57,8 @@ export default async function SeoLocationLanding({ country, citySlug, title, int
           BloodNet is a free connection service. It does not confirm blood bank inventory or replace hospitals, emergency services, licensed medical professionals, or legal transplant authorities.
         </p>
       </section>
+
+      <SiteNavShell />
     </main>
   );
 }
