@@ -5,6 +5,7 @@ import { getPublicBaseUrl } from "@/src/backend/config/env";
 import { getPrisma } from "@/src/backend/config/db";
 import { DEFAULT_UI_THEME, normalizeUiTheme } from "@/src/lib/uiTheme";
 import { Inter } from "next/font/google";
+import { buildDatasetSchema, buildMedicalOrganizationSchema, buildServiceSchema, stringifyJsonLd } from "@/src/lib/aiSeo";
 
 const baseUrl = getPublicBaseUrl();
 const inter = Inter({
@@ -23,6 +24,14 @@ export const metadata: Metadata = {
   },
   description:
     "Join BloodNet.live to connect with blood and organ donors in your region. Fast, secure, and volunteer-first donor-recipient matching.",
+  keywords: [
+    "blood donation",
+    "urgent blood donation",
+    "emergency blood donation",
+    "blood donor near me",
+    "organ donor registry",
+    "emergency donor finder",
+  ],
   icons: {
     icon: "/favicon.png",
   },
@@ -78,16 +87,10 @@ export default async function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify([
-              {
-                "@context": "https://schema.org",
-                "@type": "Organization",
-                name: "BloodNet",
-                url: baseUrl,
-                logo: `${baseUrl.replace(/\/$/, "")}/favicon.png`,
-                description:
-                  "BloodNet is a free global blood donor, organ donor, and patient connection platform for privacy-aware donor-recipient matching.",
-              },
+            __html: stringifyJsonLd([
+              buildMedicalOrganizationSchema(),
+              buildServiceSchema(),
+              buildDatasetSchema(),
               {
                 "@context": "https://schema.org",
                 "@type": "WebSite",
@@ -99,7 +102,7 @@ export default async function RootLayout({
                   "query-input": "required name=search_term_string",
                 },
               },
-            ]).replace(/</g, "\\u003c"),
+            ]),
           }}
         />
         <DeferredClientEffects />

@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { HomeExperience } from "@/src/app/page";
 import { KEYWORD_LANDINGS, getKeywordLandingBySlug } from "@/src/lib/keywordLandings";
 import { getKeywordPageContent } from "@/src/lib/keywordPageContent";
+import { buildKeywordFaqSchema, stringifyJsonLd } from "@/src/lib/aiSeo";
+import { getPublicBaseUrl } from "@/src/backend/config/env";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 1800;
@@ -39,9 +41,23 @@ export default async function KeywordLandingPage({ params }: { params: Promise<P
 
   const content = getKeywordPageContent(entry.keyword);
   const related = KEYWORD_LANDINGS.filter((item) => item.slug !== entry.slug).slice(0, 18);
+  const baseUrl = getPublicBaseUrl().replace(/\/$/, "");
+  const pageSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    name: entry.keyword,
+    url: `${baseUrl}/keywords/${entry.slug}`,
+    about: content.tags.map((tag) => ({ "@type": "Thing", name: tag })),
+  };
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: stringifyJsonLd([pageSchema, buildKeywordFaqSchema(entry.keyword)]),
+        }}
+      />
       <main className="mx-auto max-w-7xl px-4 pt-16 pb-10">
         <section className="rounded-[8px] border border-border/20 bg-white/90 p-6 shadow-card">
           <h1 className="text-3xl font-black tracking-tight text-gray-900 md:text-4xl">{entry.keyword}</h1>

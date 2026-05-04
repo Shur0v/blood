@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { HomeExperience } from "@/src/app/page";
 import { getRegionBySlug } from "@/src/lib/regions";
+import { buildRegionalFaqSchema, stringifyJsonLd } from "@/src/lib/aiSeo";
+import { getPublicBaseUrl } from "@/src/backend/config/env";
 
 type Params = { region: string };
 
@@ -39,5 +41,32 @@ export default async function RegionalLandingPage({ params }: { params: Promise<
     notFound();
   }
 
-  return <HomeExperience forcedCountry={config.country} />;
+  const baseUrl = getPublicBaseUrl().replace(/\/$/, "");
+  const collectionSchema = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: `${config.country} Emergency Blood Donor Pages`,
+    url: `${baseUrl}/${config.slug}`,
+    about: [
+      { "@type": "Thing", name: "Blood donation" },
+      { "@type": "Thing", name: "Emergency blood donation" },
+      { "@type": "Thing", name: "Organ donor registry" },
+    ],
+    inLanguage: "en",
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: stringifyJsonLd([
+            collectionSchema,
+            buildRegionalFaqSchema(config.country, config.slug),
+          ]),
+        }}
+      />
+      <HomeExperience forcedCountry={config.country} />
+    </>
+  );
 }
