@@ -17,6 +17,9 @@ Important public sections:
 - /medical-disclaimer
 - /organ-donation-ethics
 - /statistics
+- /site-state.json
+- /site-state.txt
+- /sitemap-index.xml
 
 Purpose:
 This website is designed to help patients, families, donors, volunteers, and community supporters connect during blood and organ donation needs.
@@ -32,3 +35,8 @@ BloodNet is a connection platform only. It does not provide medical treatment, a
 
 Sitemap:
 https://bloodnet.live/sitemap.xml
+https://bloodnet.live/sitemap-index.xml
+
+Machine-readable current state:
+https://bloodnet.live/site-state.json
+https://bloodnet.live/site-state.txt

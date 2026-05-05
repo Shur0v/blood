@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "motion/react";
-import { Send, Droplet, Users, Bell, ShieldCheck } from "lucide-react";
+import { ArrowRight, Bell, Droplet, Heart, Send, ShieldCheck, Users } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -75,115 +75,119 @@ export default function SocialMedia() {
 
   return (
     <section className="mx-auto max-w-7xl px-4 py-8 lg:pb-16 xl:pb-20">
-      <div className="flex flex-col md:flex-row items-stretch justify-center gap-6">
-        <motion.div
-          initial={{ x: -50, opacity: 0 }}
-          whileInView={{ x: 0, opacity: 1 }}
-          viewport={{ once: true }}
-          className="glass relative flex-[1.8] flex flex-col items-center justify-center rounded-[8px] p-8 text-center shadow-2xl border border-white/40 overflow-hidden"
-        >
-          <div className="relative z-10 w-full">
-            <h2 className="mb-2 text-3xl font-black tracking-tight text-gray-900 uppercase">{communityData.joinCommunityTitle}</h2>
-            <p className="mx-auto mb-6 max-w-xl text-sm text-gray-600 font-medium leading-relaxed">
+      <motion.div
+        initial={{ y: 40, opacity: 0 }}
+        whileInView={{ y: 0, opacity: 1 }}
+        viewport={{ once: true }}
+        className="overflow-hidden rounded-[8px] border border-gray-100 bg-white p-6 shadow-[0_24px_80px_rgba(15,23,42,0.12)] sm:p-8 lg:p-10"
+      >
+        <div className="grid gap-8 lg:grid-cols-[1fr_0.95fr] lg:items-center">
+          <div className="flex flex-col items-start">
+            <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-red-50 px-4 py-2 text-[11px] font-black uppercase tracking-widest text-primary">
+              <Users className="h-4 w-4" />
+              {communityData.joinCommunityTitle}
+            </div>
+
+            <div className="mb-5 flex items-start gap-4">
+              <h2 className="max-w-xl text-5xl font-black leading-[0.95] tracking-normal text-gray-950 sm:text-6xl lg:text-7xl">
+                Be a Hero.
+                <span className="block text-primary">Save a Life.</span>
+              </h2>
+              <Heart className="mt-3 hidden h-8 w-8 text-primary sm:block" />
+            </div>
+
+            <p className="mb-7 max-w-xl text-base font-medium leading-relaxed text-gray-600">
               {communityData.joinCommunityDescription}
             </p>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
-              <FeatureCard
+            <div className="mb-8 grid w-full gap-4 sm:grid-cols-3">
+              <CommunityFeature
                 icon={<Users className="h-5 w-5" />}
                 title={communityData.joinCommunityMembersTitle}
                 desc={communityData.joinCommunityMembersDesc}
               />
-              <FeatureCard
+              <CommunityFeature
                 icon={<Bell className="h-5 w-5" />}
                 title={communityData.joinCommunityAlertsTitle}
                 desc={communityData.joinCommunityAlertsDesc}
               />
-              <FeatureCard
+              <CommunityFeature
                 icon={<ShieldCheck className="h-5 w-5" />}
                 title={communityData.joinCommunityVerifiedTitle}
                 desc={communityData.joinCommunityVerifiedDesc}
               />
             </div>
 
-            <div className="flex flex-col items-center gap-4">
-              <motion.a
-                href={communityData.joinCommunityTelegramUrl || "#"}
-                target="_blank"
-                rel="noopener noreferrer"
-                whileHover={{ scale: 1.02, y: -1 }}
-                whileTap={{ scale: 0.98 }}
-                className="group relative flex items-center gap-3 rounded-xl bg-gradient-to-r from-[#F23030] to-primary-dark px-8 py-4 text-base font-bold text-white shadow-card transition-all hover:shadow-card"
-              >
-                <Send className="h-5 w-5 rotate-[-20deg] transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
-                Join Now on Telegram
-              </motion.a>
+            <motion.a
+              href={communityData.joinCommunityTelegramUrl || "#"}
+              target="_blank"
+              rel="noopener noreferrer"
+              whileHover={{ scale: 1.02, y: -1 }}
+              whileTap={{ scale: 0.98 }}
+              className="group mb-5 inline-flex items-center justify-center gap-3 rounded-[8px] bg-gradient-to-r from-[#ff3131] to-primary-dark px-7 py-4 text-sm font-black uppercase tracking-wide text-white shadow-[0_16px_35px_rgba(239,0,0,0.28)] transition-all hover:shadow-[0_18px_40px_rgba(239,0,0,0.34)] sm:text-base"
+            >
+              <Send className="h-5 w-5 rotate-[-20deg] transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
+              Join Now on Telegram
+              <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+            </motion.a>
 
-              <div className="flex flex-col items-center gap-3">
-                <p className="text-[10px] font-semibold text-gray-500">
-                  <span className="opacity-60">{communityData.joinCommunityTrustText}</span>
-                </p>
-
-                <div className="flex items-center gap-3">
-                  <div className="flex -space-x-2">
-                    {[1, 2, 3, 4].map((i) => (
-                      <Image
-                        key={i}
-                        src={`https://i.pravatar.cc/100?u=${i + 10}`}
-                        alt="User"
-                        width={24}
-                        height={24}
-                        className="h-6 w-6 rounded-full border-2 border-white object-cover"
-                        loading="lazy"
-                      />
-                    ))}
-                  </div>
-                  <div className="flex items-center gap-2 rounded-full bg-white/50 px-2 py-0.5 backdrop-blur-md">
-                    <div className="h-1.5 w-1.5 animate-pulse rounded-full bg-red-500" />
-                    <span className="text-[10px] font-bold text-gray-700">
-                      {communityData.joinCommunityActiveRequestsText}
-                    </span>
-                  </div>
-                </div>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <div className="flex -space-x-2">
+                {[1, 2, 3, 4].map((i) => (
+                  <Image
+                    key={i}
+                    src={`https://i.pravatar.cc/100?u=${i + 10}`}
+                    alt="Community member"
+                    width={32}
+                    height={32}
+                    className="h-8 w-8 rounded-full border-2 border-white object-cover shadow-sm"
+                    loading="lazy"
+                  />
+                ))}
+              </div>
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="text-xs font-semibold text-gray-500">
+                  {communityData.joinCommunityTrustText}
+                </span>
+                <span className="inline-flex items-center gap-2 rounded-full bg-red-50 px-3 py-1.5 text-xs font-bold text-gray-800">
+                  <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
+                  {communityData.joinCommunityActiveRequestsText}
+                </span>
               </div>
             </div>
           </div>
 
-          <div className="absolute inset-0 -z-10 overflow-hidden rounded-[8px] opacity-[0.15]">
-            <div className="liquid-bg absolute inset-0 scale-150 blur-3xl" />
-          </div>
-          <div className="absolute inset-0 -z-20 bg-gradient-to-br from-white/40 to-white/10" />
-        </motion.div>
-
-        <motion.div
-          initial={{ x: 50, opacity: 0 }}
-          whileInView={{ x: 0, opacity: 1 }}
-          viewport={{ once: true }}
-          className="flex-[1] overflow-hidden rounded-[8px] shadow-2xl"
-        >
-          <Image
-            src="https://blog.hocking.edu/hubfs/Images/Stock%20images/blood-donation_custom-4a7ebcf0e0864084e9035d1ddc48b84d884b12e8-s900-c85.jpg"
-            alt="Community"
-            width={900}
-            height={600}
-            sizes="(max-width: 768px) 100vw, 40vw"
-            className="h-full w-full object-cover object-center transition-transform duration-700 hover:scale-110"
-            loading="lazy"
-          />
-        </motion.div>
-      </div>
+          <motion.div
+            initial={{ x: 40, opacity: 0 }}
+            whileInView={{ x: 0, opacity: 1 }}
+            viewport={{ once: true }}
+            className="relative min-h-[320px] overflow-hidden rounded-[8px] shadow-[0_22px_55px_rgba(15,23,42,0.16)] sm:min-h-[420px] lg:min-h-[460px]"
+          >
+            <Image
+              src="https://blog.hocking.edu/hubfs/Images/Stock%20images/blood-donation_custom-4a7ebcf0e0864084e9035d1ddc48b84d884b12e8-s900-c85.jpg"
+              alt="Blood donor giving blood"
+              fill
+              sizes="(max-width: 1024px) 100vw, 44vw"
+              className="object-cover object-center transition-transform duration-700 hover:scale-105"
+              loading="lazy"
+            />
+          </motion.div>
+        </div>
+      </motion.div>
     </section>
   );
 }
 
-function FeatureCard({ icon, title, desc }: { icon: React.ReactNode; title: string; desc: string }) {
+function CommunityFeature({ icon, title, desc }: { icon: React.ReactNode; title: string; desc: string }) {
   return (
-    <div className="flex flex-col items-center rounded-xl border border-white/60 bg-glass p-3 shadow-sm backdrop-blur-md transition-all hover:bg-white/60 hover:shadow-md">
-      <div className="mb-1.5 flex h-8 w-8 items-center justify-center rounded-full bg-red-50 text-red-500 shadow-inner">
+    <div className="flex min-w-0 items-start gap-3 border-gray-200 sm:border-r sm:pr-4 sm:last:border-r-0">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-50 text-primary">
         {icon}
       </div>
-      <h4 className="mb-0.5 text-xs font-bold text-gray-900">{title}</h4>
-      <p className="text-[9px] font-medium text-gray-500">{desc}</p>
+      <div className="min-w-0">
+        <h4 className="text-sm font-black text-gray-950">{title}</h4>
+        <p className="mt-1 text-xs font-medium leading-snug text-gray-600">{desc}</p>
+      </div>
     </div>
   );
 }

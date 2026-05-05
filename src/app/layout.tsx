@@ -3,6 +3,7 @@ import "./globals.css";
 import DeferredClientEffects from "@/src/components/DeferredClientEffects";
 import { getPublicBaseUrl } from "@/src/backend/config/env";
 import { getPrisma } from "@/src/backend/config/db";
+import { getPublicBotStats } from "@/src/backend/services/seoData";
 import { DEFAULT_UI_THEME, normalizeUiTheme } from "@/src/lib/uiTheme";
 import { Inter } from "next/font/google";
 import { buildDatasetSchema, buildMedicalOrganizationSchema, buildServiceSchema, stringifyJsonLd } from "@/src/lib/aiSeo";
@@ -74,12 +75,40 @@ async function resolveUiTheme() {
   }
 }
 
+async function resolvePublicBotStats() {
+  try {
+    return await getPublicBotStats();
+  } catch {
+    return null;
+  }
+}
+
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const uiTheme = await resolveUiTheme();
+  const [uiTheme, publicBotStats] = await Promise.all([resolveUiTheme(), resolvePublicBotStats()]);
+  const publicStatsSchema = publicBotStats
+    ? {
+        "@context": "https://schema.org",
+        "@type": "Dataset",
+        "@id": `${baseUrl.replace(/\/$/, "")}#public-network-stats`,
+        name: "BloodNet current public network statistics",
+        description:
+          "Server-rendered public totals for active blood donors, active cities, active countries, organ donor entries, and verified organ requests.",
+        url: `${baseUrl.replace(/\/$/, "")}/statistics`,
+        dateModified: publicBotStats.lastUpdated,
+        variableMeasured: [
+          { "@type": "PropertyValue", name: "Registered users", value: publicBotStats.registeredUsers },
+          { "@type": "PropertyValue", name: "Active blood donors", value: publicBotStats.activeBloodDonors },
+          { "@type": "PropertyValue", name: "Active countries", value: publicBotStats.activeCountries },
+          { "@type": "PropertyValue", name: "Active cities", value: publicBotStats.activeCities },
+          { "@type": "PropertyValue", name: "Organ donor entries", value: publicBotStats.organDonorEntries },
+          { "@type": "PropertyValue", name: "Verified organ requests", value: publicBotStats.verifiedOrganRequests },
+        ],
+      }
+    : null;
 
   return (
     <html lang="en" data-theme={uiTheme}>
@@ -102,9 +131,40 @@ export default async function RootLayout({
                   "query-input": "required name=search_term_string",
                 },
               },
+              ...(publicStatsSchema ? [publicStatsSchema] : []),
             ]),
           }}
         />
+        {publicBotStats && (
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `window.__BLOODNET_PUBLIC_STATS__=${JSON.stringify(publicBotStats).replace(/</g, "\\u003c")};`,
+            }}
+          />
+        )}
+        {publicBotStats && (
+          <section
+            id="bloodnet-public-stats"
+            aria-label="Current public BloodNet network statistics"
+            className="sr-only"
+            data-active-blood-donors={publicBotStats.activeBloodDonors}
+            data-registered-users={publicBotStats.registeredUsers}
+            data-active-countries={publicBotStats.activeCountries}
+            data-active-cities={publicBotStats.activeCities}
+            data-organ-donor-entries={publicBotStats.organDonorEntries}
+            data-verified-organ-requests={publicBotStats.verifiedOrganRequests}
+            data-last-updated={publicBotStats.lastUpdated}
+          >
+            <h2>Current public BloodNet network statistics</h2>
+            <p>Registered users: {publicBotStats.registeredUsers}</p>
+            <p>Active blood donors: {publicBotStats.activeBloodDonors}</p>
+            <p>Active countries: {publicBotStats.activeCountries}</p>
+            <p>Active cities: {publicBotStats.activeCities}</p>
+            <p>Organ donor entries: {publicBotStats.organDonorEntries}</p>
+            <p>Verified organ requests: {publicBotStats.verifiedOrganRequests}</p>
+            <p>Last updated: {publicBotStats.lastUpdated}</p>
+          </section>
+        )}
         <DeferredClientEffects />
         {children}
       </body>

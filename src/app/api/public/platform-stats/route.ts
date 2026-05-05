@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getPrisma } from "@/src/backend/config/db";
+import { getPublicBotStats } from "@/src/backend/services/seoData";
 import { DEFAULT_UI_THEME } from "@/src/lib/uiTheme";
 
 export async function GET() {
@@ -23,8 +24,30 @@ export async function GET() {
       });
     }
 
-    return NextResponse.json({ success: true, data: stats }, { status: 200 });
+    const publicNetwork = await getPublicBotStats();
+    return NextResponse.json(
+      {
+        success: true,
+        data: {
+          ...stats,
+          publicNetwork,
+        },
+        meta: {
+          lastUpdated: publicNetwork.lastUpdated,
+          cache: "public, s-maxage=300, stale-while-revalidate=1800",
+        },
+      },
+      {
+        status: 200,
+        headers: {
+          "Cache-Control": "public, s-maxage=300, stale-while-revalidate=1800",
+        },
+      },
+    );
   } catch (error) {
-    return NextResponse.json({ success: false, message: "Failed to fetch platform statistics." }, { status: 500 });
+    return NextResponse.json(
+      { success: false, message: "Failed to fetch platform statistics." },
+      { status: 500, headers: { "Cache-Control": "no-store" } },
+    );
   }
 }

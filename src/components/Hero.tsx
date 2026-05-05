@@ -42,12 +42,26 @@ interface DonorApiResponse {
 }
 
 export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
+  const readServerRenderedDonorTotal = () => {
+    if (forcedCountry) return 0;
+    if (typeof window !== "undefined") {
+      const value = Number((window as any).__BLOODNET_PUBLIC_STATS__?.activeBloodDonors ?? 0);
+      if (Number.isFinite(value) && value > 0) return value;
+    }
+    if (typeof document === "undefined") return 0;
+    const raw = document
+      .getElementById("bloodnet-public-stats")
+      ?.getAttribute("data-active-blood-donors");
+    const value = raw ? Number(raw) : 0;
+    return Number.isFinite(value) && value > 0 ? value : 0;
+  };
+
   const [activeGroup, setActiveGroup] = useState<string | null>(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDonor, setSelectedDonor] = useState<Donor | null>(null);
   const [donors, setDonors] = useState<Donor[]>([]);
-  const [totalActiveDonors, setTotalActiveDonors] = useState(0);
+  const [totalActiveDonors, setTotalActiveDonors] = useState(readServerRenderedDonorTotal);
   const [isDonorApiDown, setIsDonorApiDown] = useState(false);
   const [isInitialDonorLoad, setIsInitialDonorLoad] = useState(true);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
@@ -114,6 +128,28 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
     }
   };
 
+  const hydrateFromSiteState = async () => {
+    if (forcedCountry) return false;
+    try {
+      const res = await fetch("/site-state.json", {
+        method: "GET",
+        cache: "force-cache",
+      });
+      const payload = await res.json();
+      const nextTotal = Number(
+        payload?.publicNetwork?.activeBloodDonors ??
+          payload?.data?.publicNetwork?.activeBloodDonors ??
+          payload?.activeBloodDonors ??
+          0,
+      );
+      if (!res.ok || !Number.isFinite(nextTotal) || nextTotal <= 0) return false;
+      setTotalActiveDonors(nextTotal);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
   const persistCache = (nextDonors: Donor[], nextTotal: number) => {
     try {
       localStorage.setItem(
@@ -152,7 +188,8 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
         if (!res.ok || !payload.success) {
           setIsDonorApiDown(true);
           if (donors.length === 0) {
-            hydrateFromCache();
+            const hydrated = await hydrateFromSiteState();
+            if (!hydrated) hydrateFromCache();
           }
           setIsInitialDonorLoad(false);
           return;
@@ -170,7 +207,8 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
       } catch (error) {
         setIsDonorApiDown(true);
         if (donors.length === 0) {
-          hydrateFromCache();
+          const hydrated = await hydrateFromSiteState();
+          if (!hydrated) hydrateFromCache();
         }
         setIsInitialDonorLoad(false);
       }

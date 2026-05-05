@@ -251,3 +251,44 @@ export const getOrganTypesWithData = async () => {
 };
 
 export const getRelatedBloodGroups = (current: BloodGroup) => BLOOD_GROUPS.filter((group) => group !== current);
+
+export const getPublicBotStats = async () => {
+  const prisma = getPrisma();
+  const [
+    registeredUsers,
+    activeRegisteredDonors,
+    activeManualBloodDonors,
+    manualOrganDonors,
+    verifiedOrganRequests,
+    cityRows,
+  ] = await Promise.all([
+    prisma.user.count(),
+    prisma.user.count({ where: { is_active_donor: true } }),
+    prisma.manualBloodDonor.count({ where: { is_active_donor: true } }),
+    prisma.manualOrganDonor.count(),
+    prisma.organRequest.count({ where: { status: "VERIFIED" } }),
+    prisma.$queryRaw<Array<{ city: string; country: string }>>`
+      SELECT city, country FROM (
+        SELECT u.location_city AS city, u.location_country AS country FROM "User" u WHERE u.is_active_donor = true
+        UNION
+        SELECT usc.city, usc.country FROM "UserServiceCity" usc
+        JOIN "User" u ON u.id = usc.user_id
+        WHERE u.is_active_donor = true
+        UNION
+        SELECT mbd.location_city AS city, mbd.location_country AS country FROM "ManualBloodDonor" mbd WHERE mbd.is_active_donor = true
+        UNION
+        SELECT mod.location_city AS city, mod.location_country AS country FROM "ManualOrganDonor" mod
+      ) regions
+    `,
+  ]);
+
+  return {
+    registeredUsers,
+    activeBloodDonors: activeRegisteredDonors + activeManualBloodDonors,
+    organDonorEntries: manualOrganDonors,
+    verifiedOrganRequests,
+    activeCountries: new Set(cityRows.map((row) => row.country)).size,
+    activeCities: new Set(cityRows.map((row) => `${row.country}::${row.city}`)).size,
+    lastUpdated: new Date().toISOString(),
+  };
+};
