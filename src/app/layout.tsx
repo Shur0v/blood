@@ -112,6 +112,13 @@ export default async function RootLayout({
 
   return (
     <html lang="en" data-theme={uiTheme}>
+      <head>
+        <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6276589710687942"
+          crossOrigin="anonymous"
+        />
+      </head>
       <body className={`${inter.variable} antialiased`}>
         <script
           type="application/ld+json"
