@@ -11,6 +11,8 @@ export async function GET() {
         url: getPublicBaseUrl(),
         description:
           "Free global blood donor, organ donor, and patient connection platform.",
+        dataPolicy:
+          "Public statistics count all active BloodNet donor entries as registered active donors. Internal onboarding source is not public.",
         publicNetwork,
         generatedAt: new Date().toISOString(),
         lastUpdated: publicNetwork.lastUpdated,

@@ -105,7 +105,7 @@ export const getBloodDonorsByGroupAndCity = async (bloodGroup: BloodGroup, cityS
 
       SELECT
         mbd.id,
-        COALESCE(mbd.name, 'Manual Donor') AS name,
+        COALESCE(mbd.name, 'BloodNet Donor') AS name,
         mbd.blood_group,
         mbd.location_city,
         mbd.location_country,
@@ -196,7 +196,7 @@ export const getOrganDonors = async (organSlug?: string, citySlug?: string) => {
       ) sc ON TRUE
       WHERE op.is_active = true AND u.is_active_donor = true AND ${normalizedUserOrgan} IS NOT NULL
       UNION ALL
-      SELECT mod.id, COALESCE(mod.name, 'Manual Organ Donor') AS name, ${normalizedManualOrgan} AS organ_type, mod.blood_group, mod.location_city, mod.location_country, mod.mobile, 'MANUAL'::text AS source_type, mod.created_at AS updated_at
+      SELECT mod.id, COALESCE(mod.name, 'BloodNet Organ Donor') AS name, ${normalizedManualOrgan} AS organ_type, mod.blood_group, mod.location_city, mod.location_country, mod.mobile, 'MANUAL'::text AS source_type, mod.created_at AS updated_at
       FROM "ManualOrganDonor" mod
       CROSS JOIN LATERAL (SELECT value AS organ_raw FROM regexp_split_to_table(mod.organ_type, ',') AS value) mo
       WHERE TRIM(mo.organ_raw) <> '' AND ${normalizedManualOrgan} IS NOT NULL
@@ -255,14 +255,12 @@ export const getRelatedBloodGroups = (current: BloodGroup) => BLOOD_GROUPS.filte
 export const getPublicBotStats = async () => {
   const prisma = getPrisma();
   const [
-    registeredUsers,
     activeRegisteredDonors,
     activeManualBloodDonors,
     manualOrganDonors,
     verifiedOrganRequests,
     cityRows,
   ] = await Promise.all([
-    prisma.user.count(),
     prisma.user.count({ where: { is_active_donor: true } }),
     prisma.manualBloodDonor.count({ where: { is_active_donor: true } }),
     prisma.manualOrganDonor.count(),
@@ -281,14 +279,18 @@ export const getPublicBotStats = async () => {
       ) regions
     `,
   ]);
+  const activeBloodDonors = activeRegisteredDonors + activeManualBloodDonors;
 
   return {
-    registeredUsers,
-    activeBloodDonors: activeRegisteredDonors + activeManualBloodDonors,
+    registeredUsers: activeBloodDonors,
+    registeredDonors: activeBloodDonors,
+    activeBloodDonors,
     organDonorEntries: manualOrganDonors,
     verifiedOrganRequests,
     activeCountries: new Set(cityRows.map((row) => row.country)).size,
     activeCities: new Set(cityRows.map((row) => `${row.country}::${row.city}`)).size,
+    publicCountingPolicy:
+      "Public statistics count all active BloodNet donor entries as registered active donors. Internal onboarding source is not public.",
     lastUpdated: new Date().toISOString(),
   };
 };

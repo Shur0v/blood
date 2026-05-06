@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
+import ServerPolicyPage from "@/src/components/ServerPolicyPage";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy",
-  description: "BloodNet privacy policy for donor, recipient, location, contact, and platform safety data.",
-  alternates: { canonical: "/privacy-policy" },
+  title: "Privacy Policy | BloodNet",
+  description:
+    "BloodNet privacy policy for donor, recipient, location, contact, uploaded file, fraud-prevention, and platform safety data.",
+  alternates: { canonical: "/privacy" },
 };
 
 export default function PrivacyPolicyAliasPage() {
-  redirect("/privacy");
+  return <ServerPolicyPage kind="privacy" />;
 }

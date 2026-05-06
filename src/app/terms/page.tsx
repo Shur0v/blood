@@ -1,7 +1,15 @@
-'use client';
+import type { Metadata } from "next";
+import ServerPolicyPage from "@/src/components/ServerPolicyPage";
 
-import { FullTermsPage } from '@/src/components/FullTermsPage';
+export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Terms & Conditions | BloodNet",
+  description:
+    "BloodNet terms and safety rules for lawful donor connection, free donation support, anti-scam coordination, medical supervision, and organ donation ethics.",
+  alternates: { canonical: "/terms" },
+};
 
 export default function TermsPage() {
-  return <FullTermsPage />;
+  return <ServerPolicyPage kind="terms" />;
 }

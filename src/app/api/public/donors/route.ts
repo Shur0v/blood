@@ -94,7 +94,7 @@ export async function GET(req: Request) {
     const manualFilterBySearch = searchLike
       ? Prisma.sql`
           AND (
-            COALESCE(mbd.name, 'Manual Donor') ILIKE ${searchLike}
+            COALESCE(mbd.name, 'BloodNet Donor') ILIKE ${searchLike}
             OR mbd.location_city ILIKE ${searchLike}
             OR mbd.location_country ILIKE ${searchLike}
             OR mbd.mobile ILIKE ${searchLike}
@@ -157,7 +157,7 @@ export async function GET(req: Request) {
 
         SELECT
           mbd.id,
-          COALESCE(mbd.name, 'Manual Donor') AS name,
+          COALESCE(mbd.name, 'BloodNet Donor') AS name,
           mbd.blood_group,
           mbd.location_city,
           mbd.location_country,
@@ -188,6 +188,10 @@ export async function GET(req: Request) {
 
     const hasMore = rows.length > limit;
     const data = rows.slice(0, limit);
+    const publicData = data.map((row) => ({
+      ...row,
+      source_type: 'REGISTERED' as const,
+    }));
 
     const totalRows = await prisma.$queryRaw<CountRow[]>(Prisma.sql`
       SELECT (
@@ -224,7 +228,7 @@ export async function GET(req: Request) {
 
     return NextResponse.json({
       success: true,
-      data,
+      data: publicData,
       pagination: {
         limit,
         nextCursor: hasMore ? String(safeOffset + limit) : null,
@@ -327,7 +331,7 @@ export async function GET(req: Request) {
         })),
         ...manualRows.map((m) => ({
           id: m.id,
-          name: m.name || 'Manual Donor',
+          name: m.name || 'BloodNet Donor',
           blood_group: m.blood_group,
           location_city: m.location_city,
           location_country: m.location_country,
@@ -368,12 +372,16 @@ export async function GET(req: Request) {
       const slice = merged.slice(safeOffset, safeOffset + limit + 1);
       const hasMore = slice.length > limit;
       const data = slice.slice(0, limit);
+      const publicData = data.map((row) => ({
+        ...row,
+        source_type: 'REGISTERED' as const,
+      }));
       const total = userCount + manualCount;
       const globalTotal = globalUserCount + globalManualCount;
 
       return NextResponse.json({
         success: true,
-        data,
+        data: publicData,
         pagination: {
           limit,
           nextCursor: hasMore ? String(safeOffset + limit) : null,

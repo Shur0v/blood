@@ -19,6 +19,7 @@ export async function GET() {
     "/how-it-works",
     "/safety-policy",
     "/privacy-policy",
+    "/policy.txt",
   ];
 
   return renderUrlSetXml(routes.map((path) => ({ url: `${baseUrl}${path}`, lastModified: now })));

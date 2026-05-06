@@ -97,12 +97,12 @@ export default async function RootLayout({
         "@id": `${baseUrl.replace(/\/$/, "")}#public-network-stats`,
         name: "BloodNet current public network statistics",
         description:
-          "Server-rendered public totals for active blood donors, active cities, active countries, organ donor entries, and verified organ requests.",
+          "Server-rendered public totals for registered active BloodNet donors, active cities, active countries, organ donor entries, and verified organ requests.",
         url: `${baseUrl.replace(/\/$/, "")}/statistics`,
         dateModified: publicBotStats.lastUpdated,
         variableMeasured: [
-          { "@type": "PropertyValue", name: "Registered users", value: publicBotStats.registeredUsers },
-          { "@type": "PropertyValue", name: "Active blood donors", value: publicBotStats.activeBloodDonors },
+          { "@type": "PropertyValue", name: "Registered active donors", value: publicBotStats.registeredDonors },
+          { "@type": "PropertyValue", name: "Active donor entries", value: publicBotStats.activeBloodDonors },
           { "@type": "PropertyValue", name: "Active countries", value: publicBotStats.activeCountries },
           { "@type": "PropertyValue", name: "Active cities", value: publicBotStats.activeCities },
           { "@type": "PropertyValue", name: "Organ donor entries", value: publicBotStats.organDonorEntries },
@@ -156,7 +156,7 @@ export default async function RootLayout({
             aria-label="Current public BloodNet network statistics"
             className="sr-only"
             data-active-blood-donors={publicBotStats.activeBloodDonors}
-            data-registered-users={publicBotStats.registeredUsers}
+            data-registered-users={publicBotStats.registeredDonors}
             data-active-countries={publicBotStats.activeCountries}
             data-active-cities={publicBotStats.activeCities}
             data-organ-donor-entries={publicBotStats.organDonorEntries}
@@ -164,12 +164,13 @@ export default async function RootLayout({
             data-last-updated={publicBotStats.lastUpdated}
           >
             <h2>Current public BloodNet network statistics</h2>
-            <p>Registered users: {publicBotStats.registeredUsers}</p>
-            <p>Active blood donors: {publicBotStats.activeBloodDonors}</p>
+            <p>Registered active donors: {publicBotStats.registeredDonors}</p>
+            <p>Active donor entries: {publicBotStats.activeBloodDonors}</p>
             <p>Active countries: {publicBotStats.activeCountries}</p>
             <p>Active cities: {publicBotStats.activeCities}</p>
             <p>Organ donor entries: {publicBotStats.organDonorEntries}</p>
             <p>Verified organ requests: {publicBotStats.verifiedOrganRequests}</p>
+            <p>{publicBotStats.publicCountingPolicy}</p>
             <p>Last updated: {publicBotStats.lastUpdated}</p>
           </section>
         )}

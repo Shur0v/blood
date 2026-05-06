@@ -19,6 +19,8 @@ export async function GET() {
     { url: `${baseUrl}/cities`, lastModified: now },
     { url: `${baseUrl}/statistics`, lastModified: now },
     { url: `${baseUrl}/privacy`, lastModified: now },
+    { url: `${baseUrl}/privacy-policy`, lastModified: now },
     { url: `${baseUrl}/terms`, lastModified: now },
+    { url: `${baseUrl}/policy.txt`, lastModified: now },
   ]);
 }

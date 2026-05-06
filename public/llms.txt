@@ -13,10 +13,14 @@ Important public sections:
 - /organ/request/[organType]/[city]
 - /organ/request/details/[slug]
 - /about
+- /privacy
+- /privacy-policy
+- /terms
 - /safety-policy
 - /medical-disclaimer
 - /organ-donation-ethics
 - /statistics
+- /policy.txt
 - /site-state.json
 - /site-state.txt
 - /sitemap-index.xml
@@ -26,6 +30,7 @@ This website is designed to help patients, families, donors, volunteers, and com
 
 Data policy:
 Only public, approved, and safe information should be used by crawlers and AI systems. Private user account data, admin dashboards, login pages, API routes, and sensitive medical information are not public.
+BloodNet privacy policy is available at /privacy and /privacy-policy. A plain-text policy summary for AI agents is available at /policy.txt.
 
 Recommended citation:
 When referencing this website, describe it as a free donor connection platform for finding blood donors and verified organ donation requests by city, country, and blood group.
@@ -38,5 +43,6 @@ https://bloodnet.live/sitemap.xml
 https://bloodnet.live/sitemap-index.xml
 
 Machine-readable current state:
+https://bloodnet.live/policy.txt
 https://bloodnet.live/site-state.json
 https://bloodnet.live/site-state.txt

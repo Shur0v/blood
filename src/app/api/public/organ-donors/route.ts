@@ -129,7 +129,7 @@ export async function GET(req: Request) {
     const manualFilterBySearch = searchLike
       ? Prisma.sql`
           AND (
-            COALESCE(mod.name, 'Manual Organ Donor') ILIKE ${searchLike}
+            COALESCE(mod.name, 'BloodNet Organ Donor') ILIKE ${searchLike}
             OR mod.location_city ILIKE ${searchLike}
             OR mod.location_country ILIKE ${searchLike}
             OR mod.mobile ILIKE ${searchLike}
@@ -196,7 +196,7 @@ export async function GET(req: Request) {
 
         SELECT
           mod.id,
-          COALESCE(mod.name, 'Manual Organ Donor') AS name,
+          COALESCE(mod.name, 'BloodNet Organ Donor') AS name,
           mod.blood_group,
           ${normalizedManualOrgan} AS organ_type,
           mod.location_city,
@@ -230,6 +230,10 @@ export async function GET(req: Request) {
 
     const hasMore = rows.length > limit;
     const data = rows.slice(0, limit);
+    const publicData = data.map((row) => ({
+      ...row,
+      source_type: 'REGISTERED' as const,
+    }));
 
     const totalRows = await prisma.$queryRaw<CountRow[]>(Prisma.sql`
       SELECT (
@@ -282,7 +286,7 @@ export async function GET(req: Request) {
 
     return NextResponse.json({
       success: true,
-      data,
+      data: publicData,
       pagination: {
         limit,
         nextCursor: hasMore ? String(safeOffset + limit) : null,

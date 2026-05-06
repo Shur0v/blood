@@ -196,7 +196,7 @@ export async function BloodGroupCitySeoPage({ bloodGroup, citySlug }: { bloodGro
                   <span className="rounded-full bg-red-50 px-3 py-1 text-sm font-black text-primary">{donor.blood_group}</span>
                 </div>
                 <p className="mt-3 text-sm font-semibold text-gray-600">
-                  Contact: {maskPublicPhone(donor.mobile)} · Source: {donor.source_type === "MANUAL" ? "Admin added" : "Registered user"}
+                  Contact: {maskPublicPhone(donor.mobile)} - BloodNet registered donor entry
                 </p>
               </article>
             ))}
