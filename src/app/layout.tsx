@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import DeferredClientEffects from "@/src/components/DeferredClientEffects";
+import GlobalAdSenseSlot from "@/src/components/GlobalAdSenseSlot";
 import { getPublicBaseUrl } from "@/src/backend/config/env";
 import { getPrisma } from "@/src/backend/config/db";
 import { getPublicBotStats } from "@/src/backend/services/seoData";
@@ -174,6 +175,7 @@ export default async function RootLayout({
         )}
         <DeferredClientEffects />
         {children}
+        <GlobalAdSenseSlot />
       </body>
     </html>
   );
