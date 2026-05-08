@@ -1,6 +1,6 @@
 import React from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { X, Phone, MapPin, Droplet, CalendarDays } from "lucide-react";
+import { X, Phone, MapPin, Droplet, CalendarDays, Star } from "lucide-react";
 
 interface Donor {
   name: string;
@@ -10,6 +10,7 @@ interface Donor {
   verificationStatus?: string | null;
   hemoglobin?: string | null;
   lastDonationDate?: string | null;
+  sourceType?: "REGISTERED" | "MANUAL" | "COMMUNITY";
 }
 
 interface DonorModalProps {
@@ -58,7 +59,7 @@ export default function DonorModal({ donor, onClose }: DonorModalProps) {
             <div className="flex flex-col items-center text-center">
               {/* Blood Group Badge */}
               <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-primary-dark text-3xl font-black text-white shadow-card">
-                {donor.group}
+                {donor.sourceType === "COMMUNITY" ? <Star className="h-8 w-8 fill-white text-white" /> : donor.group}
               </div>
 
               <h2 className="mb-2 text-2xl font-black tracking-tight text-gray-900 uppercase">

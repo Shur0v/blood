@@ -172,6 +172,32 @@ model ManualBloodDonor {
   @@index([is_active_donor, blood_group, location_country, location_city, created_at])
 }
 
+model CommunityDonor {
+  id                  String    @id @default(uuid())
+  organization_name   String
+  contact_person      String?
+  mobile              String    @unique
+  phone_country_name  String?
+  phone_country_code  String?
+  phone_dial_code     String?
+  phone_local_number  String?
+
+  location_city       String
+  location_country    String
+  location_formatted  String?
+  location_lat        Float
+  location_lng        Float
+  place_id            String?
+
+  source              String
+  added_by_admin      String
+  verification_status String    @default("VERIFIED")
+  is_active           Boolean   @default(true)
+  created_at          DateTime  @default(now())
+
+  @@index([is_active, location_country, location_city, created_at])
+}
+
 model ManualOrganDonor {
   id               String   @id @default(uuid())
   name             String

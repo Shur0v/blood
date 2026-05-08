@@ -19,6 +19,15 @@ interface ManualBloodDonorRow {
   is_active_donor: boolean;
 }
 
+interface CommunityDonorRow {
+  id: string;
+  organization_name: string;
+  contact_person?: string | null;
+  location_city: string;
+  location_country: string;
+  mobile: string;
+}
+
 interface BulkDonorRow {
   id: string;
   name: string;
@@ -65,6 +74,10 @@ export default function ManualBloodDonorPage() {
   const [csvText, setCsvText] = React.useState('');
   const [isCsvUploading, setIsCsvUploading] = React.useState(false);
   const [csvResult, setCsvResult] = React.useState<{createdCount: number, failedCount: number, failures: any[]} | null>(null);
+  const [communityCsvText, setCommunityCsvText] = React.useState('');
+  const [isCommunityCsvUploading, setIsCommunityCsvUploading] = React.useState(false);
+  const [communityCsvResult, setCommunityCsvResult] = React.useState<{createdCount: number, failedCount: number, failures: any[]} | null>(null);
+  const [communityEntries, setCommunityEntries] = React.useState<CommunityDonorRow[]>([]);
 
   const [formData, setFormData] = React.useState({
     name: '',
@@ -312,6 +325,21 @@ export default function ManualBloodDonorPage() {
     }
   }, []);
 
+  const loadCommunityEntries = React.useCallback(async () => {
+    try {
+      const res = await fetch('/api/admin/community-donors', {
+        method: 'GET',
+        credentials: 'include',
+        cache: 'no-store',
+      });
+      const payload = await res.json();
+      if (!res.ok || !payload.success) return;
+      setCommunityEntries(payload.data || []);
+    } catch {
+      // silent load failure
+    }
+  }, []);
+
   const handleCsvSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!csvText.trim()) return;
@@ -342,9 +370,40 @@ export default function ManualBloodDonorPage() {
     }
   };
 
+  const handleCommunityCsvSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!communityCsvText.trim()) return;
+    setIsCommunityCsvUploading(true);
+    setCommunityCsvResult(null);
+
+    try {
+      const res = await fetch('/api/admin/community-donors/csv-upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ csvText: communityCsvText }),
+      });
+      const payload = await res.json();
+      if (res.ok && payload.success) {
+        setCommunityCsvResult(payload.data);
+        if (payload.data.createdCount > 0) {
+          setCommunityCsvText('');
+          await loadCommunityEntries();
+        }
+      } else {
+        setCommunityCsvResult({ createdCount: 0, failedCount: 0, failures: [{ row: 'System Error', reason: payload.message || 'Unknown error' }] });
+      }
+    } catch (err: any) {
+      setCommunityCsvResult({ createdCount: 0, failedCount: 0, failures: [{ row: 'Network Error', reason: err.message || 'Failed to upload' }] });
+    } finally {
+      setIsCommunityCsvUploading(false);
+    }
+  };
+
   React.useEffect(() => {
     void loadRecentEntries();
-  }, [loadRecentEntries]);
+    void loadCommunityEntries();
+  }, [loadRecentEntries, loadCommunityEntries]);
 
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this manual donor record?')) {
@@ -441,6 +500,33 @@ export default function ManualBloodDonorPage() {
                   ))}
                 </div>
               )}
+            </div>
+          )}
+        </form>
+      </Card>
+
+      <Card title="Community Organization CSV Upload">
+        <form onSubmit={handleCommunityCsvSubmit} className="space-y-4">
+          <textarea
+            value={communityCsvText}
+            onChange={(e) => setCommunityCsvText(e.target.value)}
+            disabled={isCommunityCsvUploading}
+            placeholder={`Red Crescent Center, New York, 2125551000, Sarah\nBlood Connect Hub, Sydney, 0412345678, James`}
+            className="w-full h-32 bg-gray-50 dark:bg-[#0f1115] border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-amber-500 outline-none font-mono placeholder:text-gray-400 disabled:opacity-60"
+          />
+          <p className="text-xs text-gray-500 font-medium">Sequence: Organization Name, City, Number, Contact Person(optional). Country and phone verification are automatic.</p>
+          <div className="flex justify-end">
+            <button
+              type="submit"
+              disabled={isCommunityCsvUploading || !communityCsvText.trim()}
+              className="inline-flex items-center gap-2 rounded-xl bg-amber-600 px-6 py-3 text-sm font-bold text-white shadow-md transition hover:bg-amber-700 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isCommunityCsvUploading ? <><Loader2 className="h-5 w-5 animate-spin" />Processing...</> : <><UploadCloud className="h-5 w-5" />Upload Community Data</>}
+            </button>
+          </div>
+          {communityCsvResult && (
+            <div className="rounded-lg border px-4 py-3 text-sm font-semibold border-amber-300/40 bg-amber-500/10 text-amber-700 dark:text-amber-300">
+              Added {communityCsvResult.createdCount} community records. {communityCsvResult.failedCount} failed.
             </div>
           )}
         </form>
@@ -795,6 +881,33 @@ export default function ManualBloodDonorPage() {
                       {isDeleting === row.id ? 'Deleting...' : 'Delete'}
                     </button>
                   </TableCell>
+                </TableRow>
+              ))
+            )}
+          </Table>
+        </div>
+      </div>
+
+      <div className="pt-4">
+        <h3 className="text-xl font-bold mb-4">Recent Community Entries</h3>
+        <div className="border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden bg-white dark:bg-[#1a1b23]">
+          <Table headers={['ID', 'Organization', 'Contact', 'Location', 'Mobile']}>
+            {communityEntries.length === 0 ? (
+              <TableRow>
+                <TableCell className="font-medium text-gray-500">-</TableCell>
+                <TableCell className="text-gray-500">No community entries yet</TableCell>
+                <TableCell className="text-gray-500">-</TableCell>
+                <TableCell className="text-gray-500">-</TableCell>
+                <TableCell className="text-gray-500">-</TableCell>
+              </TableRow>
+            ) : (
+              communityEntries.map((row) => (
+                <TableRow key={row.id}>
+                  <TableCell className="font-semibold">{row.id.slice(0, 8).toUpperCase()}</TableCell>
+                  <TableCell>{row.organization_name}</TableCell>
+                  <TableCell>{row.contact_person || '-'}</TableCell>
+                  <TableCell>{row.location_city}, {row.location_country}</TableCell>
+                  <TableCell>{row.mobile}</TableCell>
                 </TableRow>
               ))
             )}

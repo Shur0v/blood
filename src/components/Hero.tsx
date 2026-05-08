@@ -1,6 +1,6 @@
 import { motion, useMotionValue, useTransform, animate } from "motion/react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Search, X } from "lucide-react";
+import { Search, Star, X } from "lucide-react";
 import DonorModal from "./DonorModal";
 import useViewerGeo from "./useViewerGeo";
 import { maskPhoneTail } from "../lib/phoneMask";
@@ -17,6 +17,7 @@ interface Donor {
   verificationStatus?: string | null;
   hemoglobin?: string | null;
   lastDonationDate?: string | null;
+  sourceType?: "REGISTERED" | "MANUAL" | "COMMUNITY";
 }
 
 interface DonorApiResponse {
@@ -25,12 +26,13 @@ interface DonorApiResponse {
     id: string;
     name: string;
     mobile: string;
-    blood_group: string;
+    blood_group: string | null;
     location_city: string;
     location_country: string;
     verification_status?: string | null;
     hemoglobin?: string | null;
     last_donation_date?: string | null;
+    source_type?: "REGISTERED" | "MANUAL" | "COMMUNITY";
   }>;
   pagination?: {
     nextCursor: string | null;
@@ -103,11 +105,12 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
       name: row.name,
       phone: row.mobile,
       maskedPhone: maskPhoneTail(row.mobile),
-      group: row.blood_group,
+      group: row.blood_group || "★",
       location: `${row.location_city}, ${row.location_country}`,
       verificationStatus: row.verification_status ?? null,
       hemoglobin: row.hemoglobin ?? null,
       lastDonationDate: row.last_donation_date ?? null,
+      sourceType: row.source_type ?? "REGISTERED",
     }));
 
   const hydrateFromCache = () => {
@@ -336,7 +339,7 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
                   <input
                     ref={searchInputRef}
                     type="text"
-                    placeholder="Search cities or donor name..."
+                    placeholder="Search city, donor, or type 'community'..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="h-12 w-full rounded-[8px] border-none bg-white/80 pl-12 pr-4 font-medium text-gray-900 shadow-xl outline-none ring-2 ring-primary-dark/20 backdrop-blur-md focus:ring-primary-dark"
@@ -391,7 +394,11 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
 
                 <div className="relative z-10 flex w-full items-center">
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[8px] bg-primary-dark text-lg font-black text-white shadow-card">
-                    {donor.group}
+                    {donor.sourceType === "COMMUNITY" ? (
+                      <Star className="h-5 w-5 fill-white text-white" />
+                    ) : (
+                      donor.group
+                    )}
                   </div>
 
                   <div className="ml-3 flex flex-1 flex-col overflow-hidden">
