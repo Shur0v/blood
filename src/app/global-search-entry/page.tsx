@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { HomeExperience } from "@/src/components/HomeExperience";
 import { getPrisma } from "@/src/backend/config/db";
 import { REGIONS } from "@/src/lib/regions";
 
@@ -113,9 +112,24 @@ export default async function GlobalSearchEntryPage() {
             </h3>
           </div>
         </section>
+
+        <section className="mt-5 rounded-[8px] border border-border/20 bg-white/80 p-5 shadow-card">
+          <h3 className="text-sm font-black uppercase tracking-widest text-gray-500">Country Keyword Hubs</h3>
+          <p className="mt-3 text-sm font-medium text-gray-700">
+            High-authority internal links to regional long-tail collections for USA, UK, Spain, Netherlands, Italy, Poland, and Australia.
+          </p>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <a href="/country-keyword-hubs/usa" className="rounded-[8px] border border-border/20 bg-white px-3 py-2 text-sm font-bold text-gray-800">USA Keyword Hub</a>
+            <a href="/country-keyword-hubs/uk" className="rounded-[8px] border border-border/20 bg-white px-3 py-2 text-sm font-bold text-gray-800">UK Keyword Hub</a>
+            <a href="/country-keyword-hubs/spain" className="rounded-[8px] border border-border/20 bg-white px-3 py-2 text-sm font-bold text-gray-800">Spain Keyword Hub</a>
+            <a href="/country-keyword-hubs/netherlands" className="rounded-[8px] border border-border/20 bg-white px-3 py-2 text-sm font-bold text-gray-800">Netherlands Keyword Hub</a>
+            <a href="/country-keyword-hubs/italy" className="rounded-[8px] border border-border/20 bg-white px-3 py-2 text-sm font-bold text-gray-800">Italy Keyword Hub</a>
+            <a href="/country-keyword-hubs/poland" className="rounded-[8px] border border-border/20 bg-white px-3 py-2 text-sm font-bold text-gray-800">Poland Keyword Hub</a>
+            <a href="/country-keyword-hubs/australia" className="rounded-[8px] border border-border/20 bg-white px-3 py-2 text-sm font-bold text-gray-800">Australia Keyword Hub</a>
+          </div>
+        </section>
       </main>
 
-      <HomeExperience />
     </>
   );
 }

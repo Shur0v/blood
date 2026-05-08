@@ -6,9 +6,9 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Australia Blood Donor Network | Find Urgent Donor Support",
   description: "Find active blood donors and verified organ donation support in Australia through BloodNet.",
-  alternates: { canonical: "/au" },
+  alternates: { canonical: "/australia" },
 };
 
-export default function AustraliaPage() {
+export default function RegionLandingPage() {
   return <HomeExperience forcedCountry="Australia" />;
 }

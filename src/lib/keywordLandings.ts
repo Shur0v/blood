@@ -45,6 +45,23 @@ Blood Donor in India | Find by City & Group
 Blood Donor in Nepal | Emergency Help Online
 Blood Donor in Pakistan | Instant Donor List
 Blood Donor in USA | Find Nearby Donors
+Blood Donor in United States | Find Nearby Donors
+Blood Donor in United Kingdom | Find Nearby Donors
+Blood Donor in Australia | Find Nearby Donors
+Blood Donor in Spain | Find Nearby Donors
+Blood Donor in Netherlands | Find Nearby Donors
+Blood Donor in Italy | Find Nearby Donors
+Blood Donor in Poland | Find Nearby Donors
+Blood Donor in Paris | Find Nearby Donors
+Community Blood Bank in United States
+Community Blood Bank in United Kingdom
+Community Blood Bank in Spain
+Community Blood Bank in Netherlands
+Community Blood Bank in Italy
+Community Blood Bank in Poland
+Community Blood Bank in Australia
+Find Community Blood Center Near Me
+Verified Community Donor Hotline by Country
 Blood Donor in Europe | Search by Location
 Find Organ Donor Near Me | Emergency Help
 Kidney Donor Needed Urgently Near Me
@@ -148,6 +165,21 @@ blood donor in india
 blood donor in nepal
 blood donor in pakistan
 blood donor in usa
+blood donor in united states
+blood donor in united kingdom
+blood donor in australia
+blood donor in spain
+blood donor in netherlands
+blood donor in italy
+blood donor in poland
+blood donor in paris
+community blood bank in usa
+community blood bank in uk
+community blood bank in spain
+community blood bank in netherlands
+community blood bank in italy
+community blood bank in poland
+community blood bank in australia
 blood donor in europe
 organ donor near me
 find organ donor online
@@ -207,8 +239,25 @@ const slugify = (text: string) =>
     .replace(/^-+|-+$/g, "")
     .slice(0, 100);
 
+const canonicalizeKeyword = (text: string) =>
+  text
+    .toLowerCase()
+    .replace(/&/g, " and ")
+    .replace(/\b(u\.?s\.?a?|united states of america)\b/g, "united states")
+    .replace(/\b(uk|u\.?k\.?)\b/g, "united kingdom")
+    .replace(/\bnear me\b/g, "")
+    .replace(/\bonline\b/g, "")
+    .replace(/\binstantly\b/g, "")
+    .replace(/\bquick(ly)?\b/g, "")
+    .replace(/\btoday\b/g, "")
+    .replace(/\bfree\b/g, "")
+    .replace(/\bnow\b/g, "")
+    .replace(/[^a-z0-9+\-\s]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"] as const;
-const CITIES = ["Dhaka", "Delhi", "Mumbai", "Lahore", "Chennai", "Kolkata", "Kathmandu", "Karachi", "New York", "London"] as const;
+const CITIES = ["Dhaka", "Delhi", "Mumbai", "Lahore", "Chennai", "Kolkata", "Kathmandu", "Karachi", "New York", "London", "Sydney", "Madrid", "Amsterdam", "Rome", "Warsaw", "Paris"] as const;
 
 const buildDynamicKeywords = (): string[] => {
   const out: string[] = [];
@@ -226,7 +275,15 @@ const buildKeywordLandings = (): KeywordLanding[] => {
     .map((line) => line.trim())
     .filter(Boolean);
   const allKeywords = [...lines, ...buildDynamicKeywords()];
-  const deduped = Array.from(new Set(allKeywords.map((line) => line.toLowerCase())));
+  const dedupedCanonical = new Map<string, string>();
+  for (const keyword of allKeywords) {
+    const canonical = canonicalizeKeyword(keyword);
+    if (!canonical) continue;
+    if (!dedupedCanonical.has(canonical)) {
+      dedupedCanonical.set(canonical, keyword.trim());
+    }
+  }
+  const deduped = Array.from(dedupedCanonical.values());
 
   const seen = new Map<string, number>();
   return deduped.map((keyword) => {
@@ -242,3 +299,11 @@ export const KEYWORD_LANDINGS: KeywordLanding[] = buildKeywordLandings();
 
 export const getKeywordLandingBySlug = (slug: string): KeywordLanding | null =>
   KEYWORD_LANDINGS.find((entry) => entry.slug === slug) || null;
+
+export const getKeywordLandingsByCountryIntent = (country: string): KeywordLanding[] => {
+  const needle = country.toLowerCase();
+  return KEYWORD_LANDINGS.filter((entry) => {
+    const k = entry.keyword.toLowerCase();
+    return k.includes(needle);
+  });
+};

@@ -5,7 +5,26 @@ import { usePathname } from "next/navigation";
 import { HomeExperience } from "@/src/components/HomeExperience";
 
 const EXCLUDED_PREFIXES = ["/api", "/admin-dashboard", "/dashboard"];
-const EXCLUDED_EXACT = new Set(["/", "/bd", "/in", "/sg", "/ph", "/us", "/uk", "/ca", "/au"]);
+const EXCLUDED_EXACT = new Set([
+  "/",
+  "/bd",
+  "/in",
+  "/sg",
+  "/ph",
+  "/us",
+  "/uk",
+  "/ca",
+  "/au",
+  "/usa",
+  "/united-states",
+  "/america",
+  "/australia",
+  "/spain",
+  "/netherlands",
+  "/italy",
+  "/poland",
+  "/paris",
+]);
 
 export default function GlobalHomepageContinuation() {
   const pathname = usePathname();

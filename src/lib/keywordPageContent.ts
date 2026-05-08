@@ -19,11 +19,7 @@ type KeywordPageContent = {
   blocks: ContentBlock[];
 };
 
-const cleanKeyword = (keyword: string) =>
-  keyword
-    .replace(/-/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+const cleanKeyword = (keyword: string) => keyword.replace(/-/g, " ").replace(/\s+/g, " ").trim();
 
 const extractCity = (keyword: string): string | null => {
   const m = keyword.toLowerCase().match(/\b(?:in|near)\s+([a-z\s]+)$/);
@@ -37,197 +33,82 @@ const extractCity = (keyword: string): string | null => {
 
 const extractGroup = (keyword: string): string | null => {
   const m = keyword.toUpperCase().match(/\b(AB\+|AB\-|A\+|A\-|B\+|B\-|O\+|O\-)\b/);
-  if (!m?.[1]) return null;
-  return m[1];
+  return m?.[1] || null;
 };
 
 const detectCategory = (keyword: string): KeywordCategory => {
   const k = keyword.toLowerCase();
-  if (k.includes("blood bank")) return "blood_bank";
+  if (k.includes("blood bank") || k.includes("community blood")) return "blood_bank";
   if (k.includes("urgent blood") || k.includes("blood needed") || k.includes("emergency blood")) return "urgent_blood";
   if (k.includes("organ donor") || k.includes("kidney donor") || k.includes("liver donor") || k.includes("organ donation")) return "organ_finder";
   if (k.includes("who can donate blood") || k.includes("requirements") || k.includes("how to donate") || k.includes("donation process")) return "blood_education";
   if (k.includes("save lives") || k.includes("become a blood donor") || k.includes("join blood donor") || k.includes("life saver")) return "donation_motivation";
-  if (k.includes(" in dhaka") || k.includes(" in delhi") || k.includes(" in mumbai") || k.includes(" in lahore") || k.includes(" in chennai")) return "city_blood";
+  if (k.includes(" in ")) return "city_blood";
   if (k.includes("how to find blood donor") || k.includes("where can i get blood") || k.includes("how to contact blood donors")) return "search_help";
   return "blood_finder";
 };
 
-const hashText = (input: string) => {
-  let h = 2166136261;
-  for (let i = 0; i < input.length; i += 1) {
-    h ^= input.charCodeAt(i);
-    h += (h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24);
-  }
-  return Math.abs(h >>> 0);
-};
-
-const buildParagraphBank = () => {
-  const intents = [
-    "find verified donors quickly",
-    "match emergency requests with active donors",
-    "reduce response delay for patient families",
-    "improve donor discovery confidence",
-    "connect hospitals and communities faster",
-    "support urgent medical coordination",
-    "improve search quality for life saving cases",
-    "increase trust during emergency outreach",
-    "provide clear donor visibility by location",
-    "make urgent contact flow simple",
-    "support cross border donor discovery in regional networks",
-    "improve discoverability for city and blood group search pages",
-    "help families identify legitimate support channels",
-    "create fast pathways from query to donor response",
-    "support better request handling during peak emergency hours",
-  ];
-
-  const methods = [
-    "by showing recent donor activity and response signals",
-    "through clear blood group and city focused filtering",
-    "with practical contact steps and transparent availability details",
-    "through structured pages that are easy to scan under pressure",
-    "with safety first guidance aligned with medical workflows",
-    "through direct routing to relevant donor profiles",
-    "with search patterns designed for emergency behavior",
-    "through visible demand context and local support indicators",
-    "with reliable category sections for fast decision making",
-    "through simple content architecture for urgent users",
-    "through regional page consistency with local search relevance",
-    "with clear narrative blocks that reduce decision fatigue",
-    "through practical location aware signals for donor matching",
-    "with verified profile visibility and structured query pathways",
-  ];
-
-  const outcomes = [
-    "This helps families take the next step with less confusion.",
-    "This supports faster triage and better communication.",
-    "This improves coordination between donors and caregivers.",
-    "This reduces friction in high stress moments.",
-    "This encourages timely outreach and safer planning.",
-    "This improves the probability of a successful match.",
-    "This strengthens emergency readiness at community level.",
-    "This gives users clearer options when every minute matters.",
-    "This helps align donor action with hospital requirements.",
-    "This improves confidence in urgent donor search.",
-    "This helps reduce uncertainty in time critical coordination.",
-    "This increases practical readiness for donor outreach.",
-    "This improves continuity between digital search and hospital action.",
-    "This supports better public trust in donor discovery pages.",
-  ];
-
-  const safeguards = [
-    "Users should always confirm compatibility and hospital approval before finalizing any donation step.",
-    "Every contact decision should remain under licensed medical supervision for patient safety.",
-    "Platform discovery should be followed by direct clinical verification to avoid unsafe assumptions.",
-    "Blood and organ support decisions must follow legal and ethical requirements in each country.",
-  ];
-
-  const paragraphs: string[] = [];
-  for (const intent of intents) {
-    for (const method of methods) {
-      for (const outcome of outcomes) {
-        paragraphs.push(`This page helps users ${intent} ${method}. ${outcome}`);
-        if (paragraphs.length >= 540) break;
-      }
-      if (paragraphs.length >= 540) break;
-    }
-    if (paragraphs.length >= 540) break;
-  }
-
-  for (const safeguard of safeguards) {
-    paragraphs.push(safeguard);
-  }
-  return paragraphs.map((p) => p.replace(/-/g, " "));
-};
-
-const PARAGRAPH_BANK = buildParagraphBank();
-
-const pickParagraphs = (keyword: string, count: number, offsetSalt: number): string[] => {
-  const seed = hashText(`${keyword}:${offsetSalt}`);
-  const out: string[] = [];
-  for (let i = 0; i < count; i += 1) {
-    const idx = (seed + i * 17) % PARAGRAPH_BANK.length;
-    out.push(PARAGRAPH_BANK[idx]);
-  }
-  return out;
+const addIf = (arr: string[], text: string, cond = true) => {
+  if (cond) arr.push(text);
 };
 
 const buildTags = (keyword: string, category: KeywordCategory, city: string | null, group: string | null): string[] => {
   const tags = new Set<string>();
   tags.add(cleanKeyword(keyword).toLowerCase());
-  tags.add("emergency donation support");
+  tags.add("blood donor support");
+  tags.add("community donor network");
 
-  const organCategories: KeywordCategory[] = ["organ_finder"];
-  const bloodCategories: KeywordCategory[] = [
-    "blood_finder",
-    "urgent_blood",
-    "city_blood",
-    "blood_education",
-    "donation_motivation",
-    "blood_bank",
-    "search_help",
-  ];
-
-  if (organCategories.includes(category)) {
+  if (category === "organ_finder") {
     tags.add("organ donor registry");
-    tags.add("organ donation support");
-    tags.add("transplant donor search");
-    tags.add("ethical organ coordination");
-    tags.add("hospital transplant workflow");
-  }
-
-  if (bloodCategories.includes(category)) {
-    tags.add("blood donor platform");
-    tags.add("blood donor search");
+    tags.add("ethical transplant support");
+  } else {
     tags.add("urgent blood request");
-    tags.add("blood donation network");
-    tags.add("hospital transfusion support");
+    tags.add("city-wise donor list");
   }
 
-  if (category === "blood_bank") {
-    tags.add("hospital blood bank");
-    tags.add("blood inventory access");
-  }
+  if (city) tags.add(`donors in ${city.toLowerCase()}`);
+  if (group) tags.add(`${group.toLowerCase()} donor coverage`);
 
-  if (category === "blood_education") {
-    tags.add("blood donation guide");
-    tags.add("donor eligibility rules");
-  }
-
-  if (city) tags.add(`blood donor in ${city.toLowerCase()}`);
-  if (group) tags.add(`${group.toLowerCase()} donor search`);
   return Array.from(tags).slice(0, 10);
 };
 
 const buildBlocks = (keyword: string, category: KeywordCategory, city: string | null, group: string | null): ContentBlock[] => {
-  const safeKeyword = cleanKeyword(keyword);
+  const intent = cleanKeyword(keyword);
+  const local = city ? `${city}` : "your target region";
 
-  const contextLead = city
-    ? `This section explains how ${safeKeyword} can be used for faster donor discovery in ${city}.`
-    : `This section explains how ${safeKeyword} can be used for faster donor discovery.`;
+  const overview: string[] = [];
+  addIf(overview, `${intent} is usually searched when families need to move quickly but still want reliable information. This page is built to reduce confusion and show a practical path from search to verified outreach.`);
+  addIf(overview, `In ${local}, requests often come with time pressure. A useful response is to shortlist nearby donors, confirm availability immediately, and keep hospital requirements in the loop before finalizing any donor contact.`);
+  addIf(overview, `Our regional listings now include stronger community coverage across the United States, United Kingdom, Australia, Spain, Netherlands, Italy, Poland, and other connected locations. That wider network helps improve first-response options.`);
+  if (group) {
+    addIf(
+      overview,
+      `For ${group} cases, speed matters, but compatibility matters more. Start with exact blood-group filtering, then verify current readiness, location, and travel time before escalating the call.`,
+    );
+  }
 
-  const groupLead = group
-    ? `This section focuses on ${group} matching context to improve relevant donor outreach.`
-    : `This section focuses on compatibility and practical response planning for urgent needs.`;
+  const process: string[] = [];
+  addIf(process, `A practical workflow is: identify local matches, call primary contacts, confirm hospital instructions, and keep one backup donor line active in case availability changes.`);
+  addIf(process, `Community organizations are especially useful when individual donor response is delayed. They can help route calls, validate urgency, and direct families to active support hubs.`);
+  addIf(process, `If you are handling cross-city or cross-country requests, prioritize entries with clear location metadata and recent platform activity. That usually improves success rate compared with blind outreach.`);
+  addIf(process, `Keep one written checklist during calls: patient location, required blood/organ context, hospital reference, callback number, and immediate decision deadline.`);
 
-  const ethicsLead =
-    category === "organ_finder"
-      ? "This section emphasizes legal and ethical pathways for lawful organ donor support."
-      : "This section emphasizes safety first donor coordination with hospital aligned decision making.";
+  const safety: string[] = [];
+  addIf(safety, `Safety is non-negotiable. Platform listings should support discovery, but clinical decisions must remain with licensed medical teams and authorized facilities.`);
+  addIf(safety, `Never finalize blood or organ coordination based only on online text. Always confirm identity, compatibility, and hospital acceptance before proceeding.`);
+  addIf(safety, category === "organ_finder" ? `Organ donor coordination requires strict legal and ethical compliance in each country. Use only lawful channels with documented medical oversight.` : `For blood emergencies, verify transfusion instructions with the receiving clinical team to avoid preventable mismatch risk.`);
+  addIf(safety, `If a number is unreachable, move quickly to secondary options instead of waiting too long on a single lead. Balanced urgency and verification usually produces better outcomes.`);
+
+  const coverage: string[] = [];
+  addIf(coverage, `Regional coverage pages are designed to look and read like practical field guidance instead of generic filler text. This improves usability for real users and better communicates page intent to search engines.`);
+  addIf(coverage, `As community data grows, pages become more location-aware and more actionable. You should see stronger result quality in routes that map directly to country intent.`);
+  addIf(coverage, `For recurring requests, maintain a small trusted list of community contacts per city. Reusing verified channels can reduce response time on future emergencies.`);
 
   return [
-    {
-      title: "Instant Search Overview",
-      paragraphs: [contextLead, ...pickParagraphs(keyword, 4, 1)],
-    },
-    {
-      title: "Local Match Guidance",
-      paragraphs: [groupLead, ...pickParagraphs(keyword, 4, 2)],
-    },
-    {
-      title: "Safety And Trust Signals",
-      paragraphs: [ethicsLead, ...pickParagraphs(keyword, 4, 3)],
-    },
+    { title: "Regional Search Overview", paragraphs: overview },
+    { title: "How To Use This Page Effectively", paragraphs: process },
+    { title: "Safety, Verification, And Clinical Coordination", paragraphs: safety },
+    { title: "Coverage Notes For Community Data", paragraphs: coverage },
   ];
 };
 
@@ -235,7 +116,6 @@ export const getKeywordPageContent = (keyword: string): KeywordPageContent => {
   const category = detectCategory(keyword);
   const city = extractCity(keyword);
   const group = extractGroup(keyword);
-
   return {
     category,
     tags: buildTags(keyword, category, city, group),
@@ -243,4 +123,4 @@ export const getKeywordPageContent = (keyword: string): KeywordPageContent => {
   };
 };
 
-export const getKeywordParagraphBankSize = () => PARAGRAPH_BANK.length;
+export const getKeywordParagraphBankSize = () => 0;

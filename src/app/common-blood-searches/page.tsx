@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { HomeExperience } from "@/src/components/HomeExperience";
 import { getBloodGroupCityCounts } from "@/src/backend/services/seoData";
 import { BLOOD_GROUPS, bloodGroupToSlug, cityToSlug } from "@/src/lib/seoRouting";
 
@@ -56,10 +55,20 @@ export default async function CommonBloodSearchesPage() {
               </Link>
             ))}
           </div>
+
+          <h2 className="mt-8 text-xl font-black text-gray-900">Country Keyword Hubs</h2>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <Link href="/country-keyword-hubs/usa" className="rounded-[8px] border border-border/20 bg-white px-4 py-3 text-sm font-bold text-gray-900 shadow-sm">USA Keyword Hub</Link>
+            <Link href="/country-keyword-hubs/uk" className="rounded-[8px] border border-border/20 bg-white px-4 py-3 text-sm font-bold text-gray-900 shadow-sm">UK Keyword Hub</Link>
+            <Link href="/country-keyword-hubs/spain" className="rounded-[8px] border border-border/20 bg-white px-4 py-3 text-sm font-bold text-gray-900 shadow-sm">Spain Keyword Hub</Link>
+            <Link href="/country-keyword-hubs/netherlands" className="rounded-[8px] border border-border/20 bg-white px-4 py-3 text-sm font-bold text-gray-900 shadow-sm">Netherlands Keyword Hub</Link>
+            <Link href="/country-keyword-hubs/italy" className="rounded-[8px] border border-border/20 bg-white px-4 py-3 text-sm font-bold text-gray-900 shadow-sm">Italy Keyword Hub</Link>
+            <Link href="/country-keyword-hubs/poland" className="rounded-[8px] border border-border/20 bg-white px-4 py-3 text-sm font-bold text-gray-900 shadow-sm">Poland Keyword Hub</Link>
+            <Link href="/country-keyword-hubs/australia" className="rounded-[8px] border border-border/20 bg-white px-4 py-3 text-sm font-bold text-gray-900 shadow-sm">Australia Keyword Hub</Link>
+          </div>
         </section>
       </main>
 
-      <HomeExperience />
     </>
   );
 }

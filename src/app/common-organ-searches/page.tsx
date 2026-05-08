@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { HomeExperience } from "@/src/components/HomeExperience";
 import { getOrganTypesWithData } from "@/src/backend/services/seoData";
 import { organFromSlug } from "@/src/lib/seoRouting";
 
@@ -51,7 +50,6 @@ export default async function CommonOrganSearchesPage() {
         </section>
       </main>
 
-      <HomeExperience />
     </>
   );
 }
