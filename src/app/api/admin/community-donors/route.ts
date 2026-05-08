@@ -31,7 +31,21 @@ export async function DELETE(req: Request) {
   if ('error' in auth) return auth.error;
 
   const url = new URL(req.url);
+  const deleteAll = url.searchParams.get('all') === 'true';
   const id = url.searchParams.get('id');
+
+  if (deleteAll) {
+    const result = await getPrisma().communityDonor.updateMany({
+      where: { is_active: true },
+      data: { is_active: false },
+    });
+    return NextResponse.json({
+      success: true,
+      message: `Removed ${result.count} community donor record(s).`,
+      data: { removedCount: result.count },
+    });
+  }
+
   if (!id) {
     return NextResponse.json({ success: false, message: 'Missing community donor id.' }, { status: 400 });
   }

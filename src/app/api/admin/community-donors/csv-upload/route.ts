@@ -24,6 +24,50 @@ interface ResolvedCity {
   place_id: string;
 }
 
+interface ParsedCommunityRow {
+  originalRow: string;
+  organizationName: string;
+  city: string;
+  country: string;
+  number: string;
+  contactPerson: string | null;
+}
+
+const normalizeCountry = (value: string) => {
+  const v = value.trim().toLowerCase();
+  if (v === 'us' || v === 'usa' || v === 'u.s.a.' || v === 'u.s.' || v === 'united states of america') return 'united states';
+  if (v === 'uk' || v === 'u.k.' || v === 'great britain') return 'united kingdom';
+  return v;
+};
+
+const parseRow = (row: string): ParsedCommunityRow => {
+  const parts = row.split(',').map((p) => p.trim()).filter(Boolean);
+
+  // Preferred format:
+  // "Organization, City - Country, Number, Contact(optional)"
+  if (parts.length >= 3 && parts[1].includes(' - ')) {
+    const [city, country] = parts[1].split(/\s-\s(.+)/, 2);
+    return {
+      originalRow: row,
+      organizationName: (parts[0] || '').trim(),
+      city: (city || '').trim(),
+      country: (country || '').trim(),
+      number: (parts[2] || '').replace(/[^0-9]/g, ''),
+      contactPerson: parts[3] || null,
+    };
+  }
+
+  // Legacy fallback: "Organization, City, Number, Contact(optional)"
+  return {
+    originalRow: row,
+    organizationName: parts[0] || '',
+    city: parts[1] || '',
+    country: '',
+    number: parts[2] ? parts[2].replace(/[^0-9]/g, '') : '',
+    contactPerson: parts[3] || null,
+  };
+};
+
 const ensureAdminSession = (req: Request) => {
   const session = getSessionFromRequest(req);
   if (!session) {
@@ -48,30 +92,29 @@ export async function POST(req: Request) {
     }
 
     const rows = csvText.split('\n').map((line) => line.trim()).filter((line) => line.length > 0);
-    const parsedRows = rows.map((row) => {
-      const parts = row.split(',').map((p) => p.trim());
-      return {
-        originalRow: row,
-        organizationName: parts[0] || '',
-        city: parts[1] || '',
-        number: parts[2] ? parts[2].replace(/[^0-9]/g, '') : '',
-        contactPerson: parts[3] || null,
-      };
-    });
+    const parsedRows = rows.map(parseRow);
 
-    const uniqueCities = Array.from(new Set(parsedRows.map((r) => r.city).filter(Boolean)));
+    const uniqueLocations = Array.from(
+      new Set(
+        parsedRows
+          .map((r) => `${r.city.toLowerCase()}|${normalizeCountry(r.country)}`)
+          .filter((x) => x.split('|')[0]),
+      ),
+    );
     const cityCache: Record<string, ResolvedCity | null> = {};
     const apiKey = process.env.GEOAPIFY_API_KEY;
 
-    for (const city of uniqueCities) {
-      const cacheKey = city.toLowerCase();
+    for (const location of uniqueLocations) {
+      const [city, countryNormalized] = location.split('|');
+      const cacheKey = `${city}|${countryNormalized}`;
       if (cityCache[cacheKey] !== undefined) continue;
+      const countryText = countryNormalized || '';
 
       let resolved: ResolvedCity | null = null;
       if (apiKey) {
         try {
           const geoUrl = new URL('https://api.geoapify.com/v1/geocode/search');
-          geoUrl.searchParams.set('text', city);
+          geoUrl.searchParams.set('text', countryText ? `${city}, ${countryText}` : city);
           geoUrl.searchParams.set('type', 'city');
           geoUrl.searchParams.set('format', 'json');
           geoUrl.searchParams.set('apiKey', apiKey);
@@ -82,6 +125,9 @@ export async function POST(req: Request) {
             const results = data.results || [];
             const match = results.find((r: any) => r.result_type === 'city' || r.city);
             if (match && match.city && match.country && match.country_code) {
+              if (countryText && normalizeCountry(String(match.country || '')) !== countryText) {
+                continue;
+              }
               resolved = {
                 lat: match.lat,
                 lon: match.lon,
@@ -99,7 +145,9 @@ export async function POST(req: Request) {
 
       if (!resolved) {
         const fallbackMatch = FALLBACK_CITY_DATA.find(
-          (f) => f.city.toLowerCase() === city.toLowerCase() || f.city.toLowerCase().includes(city.toLowerCase()),
+          (f) =>
+            (f.city.toLowerCase() === city.toLowerCase() || f.city.toLowerCase().includes(city.toLowerCase())) &&
+            (!countryText || normalizeCountry(f.country) === countryText),
         );
         if (fallbackMatch) {
           resolved = {
@@ -126,11 +174,21 @@ export async function POST(req: Request) {
         failures.push({ row: row.originalRow, reason: 'Missing required fields (Organization, City, Number).' });
         continue;
       }
+      if (row.country && row.country.trim().length < 2) {
+        failedCount += 1;
+        failures.push({ row: row.originalRow, reason: 'Country is too short.' });
+        continue;
+      }
 
-      const resolvedCity = cityCache[row.city.toLowerCase()];
+      const resolvedCity = cityCache[`${row.city.toLowerCase()}|${normalizeCountry(row.country)}`];
       if (!resolvedCity) {
         failedCount += 1;
-        failures.push({ row: row.originalRow, reason: `Could not resolve city: ${row.city}` });
+        failures.push({
+          row: row.originalRow,
+          reason: row.country
+            ? `Could not resolve city/country: ${row.city}, ${row.country}`
+            : `Could not resolve city: ${row.city}`,
+        });
         continue;
       }
 

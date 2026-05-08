@@ -64,6 +64,8 @@ export default function ManualBloodDonorPage() {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [isBulkSubmitting, setIsBulkSubmitting] = React.useState(false);
   const [isDeleting, setIsDeleting] = React.useState<string | null>(null);
+  const [isCommunityDeleting, setIsCommunityDeleting] = React.useState<string | null>(null);
+  const [isCommunityDeletingAll, setIsCommunityDeletingAll] = React.useState(false);
   const [isLastDonationPickerOpen, setIsLastDonationPickerOpen] = React.useState(false);
   const [submitMessage, setSubmitMessage] = React.useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [bulkMessage, setBulkMessage] = React.useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -428,6 +430,55 @@ export default function ManualBloodDonorPage() {
     }
   };
 
+  const handleCommunityDelete = async (id: string) => {
+    if (!confirm('Delete this community entry?')) {
+      return;
+    }
+    try {
+      setIsCommunityDeleting(id);
+      const res = await fetch(`/api/admin/community-donors?id=${encodeURIComponent(id)}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      const payload = await res.json();
+      if (!res.ok || !payload.success) {
+        throw new Error(payload.message || 'Failed to delete community entry.');
+      }
+      setCommunityEntries((prev) => prev.filter((row) => row.id !== id));
+      setSubmitMessage({ type: 'success', text: 'Community entry deleted successfully.' });
+    } catch (error: any) {
+      setSubmitMessage({ type: 'error', text: error?.message || 'Failed to delete community entry.' });
+    } finally {
+      setIsCommunityDeleting(null);
+    }
+  };
+
+  const handleDeleteAllCommunity = async () => {
+    if (!confirm('Delete ALL community entries? This will remove all active community cards.')) {
+      return;
+    }
+    try {
+      setIsCommunityDeletingAll(true);
+      const res = await fetch('/api/admin/community-donors?all=true', {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      const payload = await res.json();
+      if (!res.ok || !payload.success) {
+        throw new Error(payload.message || 'Failed to delete all community entries.');
+      }
+      setCommunityEntries([]);
+      setSubmitMessage({
+        type: 'success',
+        text: payload?.message || 'All community entries deleted successfully.',
+      });
+    } catch (error: any) {
+      setSubmitMessage({ type: 'error', text: error?.message || 'Failed to delete all community entries.' });
+    } finally {
+      setIsCommunityDeletingAll(false);
+    }
+  };
+
   const formatDateLabel = (value: string) => {
     if (!value) return 'Select date';
     const parsed = new Date(value);
@@ -511,10 +562,10 @@ export default function ManualBloodDonorPage() {
             value={communityCsvText}
             onChange={(e) => setCommunityCsvText(e.target.value)}
             disabled={isCommunityCsvUploading}
-            placeholder={`Red Crescent Center, New York, 2125551000, Sarah\nBlood Connect Hub, Sydney, 0412345678, James`}
+            placeholder={`Central Pennsylvania Blood Bank, Harrisburg - United States, 8007710059, Team Desk\nConnectLife, Buffalo - United States, 7165292730`}
             className="w-full h-32 bg-gray-50 dark:bg-[#0f1115] border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-amber-500 outline-none font-mono placeholder:text-gray-400 disabled:opacity-60"
           />
-          <p className="text-xs text-gray-500 font-medium">Sequence: Organization Name, City, Number, Contact Person(optional). Country and phone verification are automatic.</p>
+          <p className="text-xs text-gray-500 font-medium">Sequence: Organization, City - Country, Number, Contact(optional). The "-" divider inside 2nd field is required for location split.</p>
           <div className="flex justify-end">
             <button
               type="submit"
@@ -889,13 +940,25 @@ export default function ManualBloodDonorPage() {
       </div>
 
       <div className="pt-4">
-        <h3 className="text-xl font-bold mb-4">Recent Community Entries</h3>
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <h3 className="text-xl font-bold">Recent Community Entries</h3>
+          <button
+            type="button"
+            onClick={() => void handleDeleteAllCommunity()}
+            disabled={isCommunityDeletingAll || communityEntries.length === 0}
+            className="inline-flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <Trash2 className="h-4 w-4" />
+            {isCommunityDeletingAll ? 'Deleting All...' : 'Delete All'}
+          </button>
+        </div>
         <div className="border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden bg-white dark:bg-[#1a1b23]">
-          <Table headers={['ID', 'Organization', 'Contact', 'Location', 'Mobile']}>
+          <Table headers={['ID', 'Organization', 'Contact', 'Location', 'Mobile', 'Actions']}>
             {communityEntries.length === 0 ? (
               <TableRow>
                 <TableCell className="font-medium text-gray-500">-</TableCell>
                 <TableCell className="text-gray-500">No community entries yet</TableCell>
+                <TableCell className="text-gray-500">-</TableCell>
                 <TableCell className="text-gray-500">-</TableCell>
                 <TableCell className="text-gray-500">-</TableCell>
                 <TableCell className="text-gray-500">-</TableCell>
@@ -908,6 +971,16 @@ export default function ManualBloodDonorPage() {
                   <TableCell>{row.contact_person || '-'}</TableCell>
                   <TableCell>{row.location_city}, {row.location_country}</TableCell>
                   <TableCell>{row.mobile}</TableCell>
+                  <TableCell>
+                    <button
+                      type="button"
+                      onClick={() => void handleCommunityDelete(row.id)}
+                      disabled={isCommunityDeleting === row.id}
+                      className="text-sm font-medium text-red-600 hover:text-red-500 disabled:opacity-50"
+                    >
+                      {isCommunityDeleting === row.id ? 'Deleting...' : 'Delete'}
+                    </button>
+                  </TableCell>
                 </TableRow>
               ))
             )}
