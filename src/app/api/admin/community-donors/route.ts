@@ -16,14 +16,49 @@ const ensureAdminSession = (req: Request) => {
 export async function GET(req: Request) {
   const auth = ensureAdminSession(req);
   if ('error' in auth) return auth.error;
+  const url = new URL(req.url);
+  const page = Math.max(1, Number.parseInt(url.searchParams.get('page') || '1', 10) || 1);
+  const limit = Math.min(100, Math.max(1, Number.parseInt(url.searchParams.get('limit') || '20', 10) || 20));
+  const skip = (page - 1) * limit;
+  const search = (url.searchParams.get('search') || '').trim();
+  const where = {
+    is_active: true,
+    ...(search
+      ? {
+          OR: [
+            { organization_name: { contains: search, mode: 'insensitive' as const } },
+            { contact_person: { contains: search, mode: 'insensitive' as const } },
+            { location_city: { contains: search, mode: 'insensitive' as const } },
+            { location_country: { contains: search, mode: 'insensitive' as const } },
+            { mobile: { contains: search, mode: 'insensitive' as const } },
+          ],
+        }
+      : {}),
+  };
 
-  const recent = await getPrisma().communityDonor.findMany({
-    where: { is_active: true },
-    orderBy: { created_at: 'desc' },
-    take: 20,
+  const [recent, total] = await Promise.all([
+    getPrisma().communityDonor.findMany({
+      where,
+      orderBy: { created_at: 'desc' },
+      skip,
+      take: limit,
+    }),
+    getPrisma().communityDonor.count({
+      where,
+    }),
+  ]);
+
+  return NextResponse.json({
+    success: true,
+    data: recent,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.max(1, Math.ceil(total / limit)),
+      search,
+    },
   });
-
-  return NextResponse.json({ success: true, data: recent });
 }
 
 export async function DELETE(req: Request) {

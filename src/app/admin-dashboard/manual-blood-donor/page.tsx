@@ -4,7 +4,8 @@ import React from 'react';
 import { Card } from '@/src/admin-dashboard/components/common/Card';
 import { Table, TableRow, TableCell } from '@/src/admin-dashboard/components/common/Table';
 import { Badge } from '@/src/admin-dashboard/components/common/Badge';
-import { UploadCloud, CheckCircle2, AlertCircle, CalendarDays, Plus, Trash2, ListChecks, Loader2 } from 'lucide-react';
+import { Pagination } from '@/src/admin-dashboard/components/common/Pagination';
+import { UploadCloud, CheckCircle2, AlertCircle, CalendarDays, Plus, Trash2, ListChecks, Loader2, Search } from 'lucide-react';
 import CityLocationAutocomplete, { type LocationSuggestion } from '@/src/components/CityLocationAutocomplete';
 import CountryPhoneInput, { emptyPhoneValue, type PhoneFieldValue } from '@/src/components/CountryPhoneInput';
 import WheelDatePickerModal from '@/src/components/WheelDatePickerModal';
@@ -80,6 +81,11 @@ export default function ManualBloodDonorPage() {
   const [isCommunityCsvUploading, setIsCommunityCsvUploading] = React.useState(false);
   const [communityCsvResult, setCommunityCsvResult] = React.useState<{createdCount: number, failedCount: number, failures: any[]} | null>(null);
   const [communityEntries, setCommunityEntries] = React.useState<CommunityDonorRow[]>([]);
+  const [communityCurrentPage, setCommunityCurrentPage] = React.useState(1);
+  const [communityTotalPages, setCommunityTotalPages] = React.useState(1);
+  const [communityTotalItems, setCommunityTotalItems] = React.useState(0);
+  const [communitySearch, setCommunitySearch] = React.useState('');
+  const COMMUNITY_PAGE_SIZE = 20;
 
   const [formData, setFormData] = React.useState({
     name: '',
@@ -327,9 +333,16 @@ export default function ManualBloodDonorPage() {
     }
   }, []);
 
-  const loadCommunityEntries = React.useCallback(async () => {
+  const loadCommunityEntries = React.useCallback(async (page = 1) => {
     try {
-      const res = await fetch('/api/admin/community-donors', {
+      const params = new URLSearchParams({
+        page: String(page),
+        limit: String(COMMUNITY_PAGE_SIZE),
+      });
+      if (communitySearch.trim()) {
+        params.set('search', communitySearch.trim());
+      }
+      const res = await fetch(`/api/admin/community-donors?${params.toString()}`, {
         method: 'GET',
         credentials: 'include',
         cache: 'no-store',
@@ -337,10 +350,13 @@ export default function ManualBloodDonorPage() {
       const payload = await res.json();
       if (!res.ok || !payload.success) return;
       setCommunityEntries(payload.data || []);
+      setCommunityCurrentPage(payload?.pagination?.page || page);
+      setCommunityTotalPages(payload?.pagination?.totalPages || 1);
+      setCommunityTotalItems(payload?.pagination?.total || 0);
     } catch {
       // silent load failure
     }
-  }, []);
+  }, [communitySearch]);
 
   const handleCsvSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -390,7 +406,7 @@ export default function ManualBloodDonorPage() {
         setCommunityCsvResult(payload.data);
         if (payload.data.createdCount > 0) {
           setCommunityCsvText('');
-          await loadCommunityEntries();
+          await loadCommunityEntries(1);
         }
       } else {
         setCommunityCsvResult({ createdCount: 0, failedCount: 0, failures: [{ row: 'System Error', reason: payload.message || 'Unknown error' }] });
@@ -404,8 +420,15 @@ export default function ManualBloodDonorPage() {
 
   React.useEffect(() => {
     void loadRecentEntries();
-    void loadCommunityEntries();
+    void loadCommunityEntries(1);
   }, [loadRecentEntries, loadCommunityEntries]);
+
+  React.useEffect(() => {
+    const timer = window.setTimeout(() => {
+      void loadCommunityEntries(1);
+    }, 250);
+    return () => window.clearTimeout(timer);
+  }, [communitySearch, loadCommunityEntries]);
 
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this manual donor record?')) {
@@ -444,7 +467,7 @@ export default function ManualBloodDonorPage() {
       if (!res.ok || !payload.success) {
         throw new Error(payload.message || 'Failed to delete community entry.');
       }
-      setCommunityEntries((prev) => prev.filter((row) => row.id !== id));
+      await loadCommunityEntries(communityCurrentPage);
       setSubmitMessage({ type: 'success', text: 'Community entry deleted successfully.' });
     } catch (error: any) {
       setSubmitMessage({ type: 'error', text: error?.message || 'Failed to delete community entry.' });
@@ -468,6 +491,9 @@ export default function ManualBloodDonorPage() {
         throw new Error(payload.message || 'Failed to delete all community entries.');
       }
       setCommunityEntries([]);
+      setCommunityCurrentPage(1);
+      setCommunityTotalPages(1);
+      setCommunityTotalItems(0);
       setSubmitMessage({
         type: 'success',
         text: payload?.message || 'All community entries deleted successfully.',
@@ -951,12 +977,33 @@ export default function ManualBloodDonorPage() {
               ))
             )}
           </Table>
+          {communityEntries.length > 0 && (
+            <Pagination
+              currentPage={communityCurrentPage}
+              totalPages={communityTotalPages}
+              totalItems={communityTotalItems}
+              pageSize={COMMUNITY_PAGE_SIZE}
+              onPageChange={(page) => void loadCommunityEntries(page)}
+            />
+          )}
         </div>
       </div>
 
       <div className="pt-4">
         <div className="mb-4 flex items-center justify-between gap-3">
-          <h3 className="text-xl font-bold">Recent Community Entries</h3>
+          <div className="flex items-center gap-3">
+            <h3 className="text-xl font-bold">Recent Community Entries</h3>
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                value={communitySearch}
+                onChange={(e) => setCommunitySearch(e.target.value)}
+                placeholder="Search org, city, country, contact, mobile"
+                className="h-9 w-[320px] rounded-lg border border-gray-200 bg-gray-50 pl-9 pr-3 text-sm text-gray-900 outline-none transition focus:border-red-400 dark:border-gray-700 dark:bg-[#0f1115] dark:text-gray-100"
+              />
+            </div>
+          </div>
           <button
             type="button"
             onClick={() => void handleDeleteAllCommunity()}
