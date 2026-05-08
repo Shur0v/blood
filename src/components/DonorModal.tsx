@@ -18,11 +18,29 @@ interface DonorModalProps {
   onClose: () => void;
 }
 
+const buildDialTarget = (rawPhone: string) => {
+  const trimmed = (rawPhone || "").trim();
+  const digitsOnly = trimmed.replace(/\D/g, "");
+
+  // Emergency/VIP short numbers should be dialed exactly as numeric digits.
+  if (/^\d{3,8}$/.test(trimmed) || (digitsOnly.length >= 3 && digitsOnly.length <= 8)) {
+    return digitsOnly || trimmed;
+  }
+
+  // Keep existing international behavior for normal numbers.
+  if (trimmed.startsWith("+")) {
+    return `+${trimmed.slice(1).replace(/\D/g, "")}`;
+  }
+
+  return trimmed;
+};
+
 export default function DonorModal({ donor, onClose }: DonorModalProps) {
   if (!donor) return null;
   const isVerified = donor.verificationStatus === "VERIFIED";
   const hasHemoglobin = donor.hemoglobin && donor.hemoglobin.trim().length > 0;
   const hasLastDonationDate = donor.lastDonationDate && donor.lastDonationDate.trim().length > 0;
+  const dialTarget = buildDialTarget(donor.phone);
   const formattedLastDonationDate = hasLastDonationDate
     ? new Date(donor.lastDonationDate as string).toLocaleDateString()
     : null;
@@ -93,7 +111,7 @@ export default function DonorModal({ donor, onClose }: DonorModalProps) {
               {/* Action Buttons */}
               <div className="flex w-full flex-col gap-3">
                 <motion.a
-                  href={`tel:${donor.phone}`}
+                  href={`tel:${dialTarget}`}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   className="flex w-full items-center justify-center gap-3 rounded-2xl bg-primary-dark py-4 text-lg font-bold text-white shadow-lg shadow-primary-dark/20 transition-all hover:bg-primary-dark/90"
