@@ -192,13 +192,19 @@ export async function POST(req: Request) {
       }
 
       const normalizedMobile = row.number.trim();
+      const normalizedOrgName = row.organizationName.trim();
 
-      const existing = await getPrisma().communityDonor.findUnique({
-        where: { mobile: normalizedMobile },
+      const existing = await getPrisma().communityDonor.findFirst({
+        where: {
+          organization_name: {
+            equals: normalizedOrgName,
+            mode: 'insensitive',
+          },
+        },
       });
       if (existing && existing.is_active) {
         failedCount += 1;
-        failures.push({ row: row.originalRow, reason: 'Duplicate Number (already exists).' });
+        failures.push({ row: row.originalRow, reason: 'Duplicate Community Name (already exists).' });
         continue;
       }
       if (existing && !existing.is_active) {
@@ -208,7 +214,7 @@ export async function POST(req: Request) {
       try {
         await getPrisma().communityDonor.create({
           data: {
-            organization_name: row.organizationName,
+            organization_name: normalizedOrgName,
             contact_person: row.contactPerson,
             mobile: normalizedMobile,
             phone_country_name: resolvedCity.country,

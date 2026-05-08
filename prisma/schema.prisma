@@ -176,7 +176,7 @@ model CommunityDonor {
   id                  String    @id @default(uuid())
   organization_name   String
   contact_person      String?
-  mobile              String    @unique
+  mobile              String
   phone_country_name  String?
   phone_country_code  String?
   phone_dial_code     String?
@@ -195,6 +195,7 @@ model CommunityDonor {
   is_active           Boolean   @default(true)
   created_at          DateTime  @default(now())
 
+  @@unique([organization_name])
   @@index([is_active, location_country, location_city, created_at])
 }
 
