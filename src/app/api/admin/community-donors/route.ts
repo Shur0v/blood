@@ -35,9 +35,8 @@ export async function DELETE(req: Request) {
   const id = url.searchParams.get('id');
 
   if (deleteAll) {
-    const result = await getPrisma().communityDonor.updateMany({
+    const result = await getPrisma().communityDonor.deleteMany({
       where: { is_active: true },
-      data: { is_active: false },
     });
     return NextResponse.json({
       success: true,
@@ -50,9 +49,8 @@ export async function DELETE(req: Request) {
     return NextResponse.json({ success: false, message: 'Missing community donor id.' }, { status: 400 });
   }
 
-  await getPrisma().communityDonor.update({
+  await getPrisma().communityDonor.delete({
     where: { id },
-    data: { is_active: false },
   });
 
   return NextResponse.json({ success: true, message: 'Community donor removed.' });

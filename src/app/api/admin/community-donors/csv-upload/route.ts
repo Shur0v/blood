@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import { Prisma } from '@prisma/client';
 import { getPrisma } from '@/src/backend/config/db';
 import { ADMIN_ROLES, getSessionFromRequest, hasRequiredRole } from '@/src/backend/utils/session';
-import { parsePhoneNumberFromString, CountryCode } from 'libphonenumber-js';
 
 const FALLBACK_CITY_DATA = [
   { city: 'Dhaka', country: 'Bangladesh', country_code: 'BD', lat: 23.8103, lon: 90.4125 },
@@ -52,7 +51,7 @@ const parseRow = (row: string): ParsedCommunityRow => {
       organizationName: (parts[0] || '').trim(),
       city: (city || '').trim(),
       country: (country || '').trim(),
-      number: (parts[2] || '').replace(/[^0-9]/g, ''),
+      number: (parts[2] || '').trim(),
       contactPerson: parts[3] || null,
     };
   }
@@ -63,7 +62,7 @@ const parseRow = (row: string): ParsedCommunityRow => {
     organizationName: parts[0] || '',
     city: parts[1] || '',
     country: '',
-    number: parts[2] ? parts[2].replace(/[^0-9]/g, '') : '',
+    number: parts[2] ? parts[2].trim() : '',
     contactPerson: parts[3] || null,
   };
 };
@@ -192,11 +191,18 @@ export async function POST(req: Request) {
         continue;
       }
 
-      const parsedPhone = parsePhoneNumberFromString(row.number, resolvedCity.country_code as CountryCode);
-      if (!parsedPhone || !parsedPhone.isValid()) {
+      const normalizedMobile = row.number.trim();
+
+      const existing = await getPrisma().communityDonor.findUnique({
+        where: { mobile: normalizedMobile },
+      });
+      if (existing && existing.is_active) {
         failedCount += 1;
-        failures.push({ row: row.originalRow, reason: `Invalid phone number for ${resolvedCity.country}` });
+        failures.push({ row: row.originalRow, reason: 'Duplicate Number (already exists).' });
         continue;
+      }
+      if (existing && !existing.is_active) {
+        await getPrisma().communityDonor.delete({ where: { id: existing.id } });
       }
 
       try {
@@ -204,11 +210,11 @@ export async function POST(req: Request) {
           data: {
             organization_name: row.organizationName,
             contact_person: row.contactPerson,
-            mobile: parsedPhone.number,
+            mobile: normalizedMobile,
             phone_country_name: resolvedCity.country,
-            phone_country_code: resolvedCity.country_code,
-            phone_dial_code: `+${parsedPhone.countryCallingCode}`,
-            phone_local_number: String(parsedPhone.nationalNumber),
+            phone_country_code: null,
+            phone_dial_code: null,
+            phone_local_number: null,
             location_city: row.city,
             location_country: resolvedCity.country,
             location_formatted: resolvedCity.formatted,
