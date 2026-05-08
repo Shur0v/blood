@@ -3,10 +3,49 @@ import { useEffect, useState } from "react";
 interface ViewerGeo {
   city?: string;
   country?: string;
-  source?: "geo" | "locale";
+  source?: "timezone" | "locale";
 }
 
 const CACHE_KEY = "bloodnet_viewer_geo_v1";
+
+const TIMEZONE_COUNTRY_MAP: Array<{ zone: string; country: string }> = [
+  { zone: "Asia/Dhaka", country: "Bangladesh" },
+  { zone: "Asia/Kolkata", country: "India" },
+  { zone: "Asia/Calcutta", country: "India" },
+  { zone: "Asia/Singapore", country: "Singapore" },
+  { zone: "Asia/Manila", country: "Philippines" },
+  { zone: "Europe/London", country: "United Kingdom" },
+  { zone: "America/New_York", country: "United States" },
+  { zone: "America/Chicago", country: "United States" },
+  { zone: "America/Denver", country: "United States" },
+  { zone: "America/Los_Angeles", country: "United States" },
+  { zone: "America/Toronto", country: "Canada" },
+  { zone: "Australia/Sydney", country: "Australia" },
+  { zone: "Australia/Melbourne", country: "Australia" },
+];
+
+const deriveCountryFromTimezone = (): string | undefined => {
+  try {
+    const zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    if (!zone) return undefined;
+
+    const exact = TIMEZONE_COUNTRY_MAP.find((item) => item.zone === zone);
+    if (exact) return exact.country;
+
+    if (zone.startsWith("Asia/")) {
+      if (zone.includes("Karachi")) return "Pakistan";
+      if (zone.includes("Kathmandu")) return "Nepal";
+    }
+    if (zone.startsWith("Europe/")) {
+      if (zone.includes("Berlin")) return "Germany";
+      if (zone.includes("Paris")) return "France";
+      if (zone.includes("Madrid")) return "Spain";
+    }
+    return undefined;
+  } catch {
+    return undefined;
+  }
+};
 
 const deriveCountryFromLocale = (): string | undefined => {
   try {
@@ -36,7 +75,7 @@ export default function useViewerGeo() {
         const cached = JSON.parse(cachedRaw) as ViewerGeo;
         const normalizedCached: ViewerGeo = {
           ...cached,
-          source: cached.source || (cached.city ? "geo" : "locale"),
+          source: cached.source || "locale",
         };
         setIfActive(normalizedCached);
         return () => {
@@ -47,56 +86,33 @@ export default function useViewerGeo() {
       }
     }
 
-    const localeCountry = deriveCountryFromLocale();
-    if (localeCountry) {
-      setIfActive({ country: localeCountry, source: "locale" });
-    }
-
-    if (!navigator.geolocation) {
+    const timezoneCountry = deriveCountryFromTimezone();
+    if (timezoneCountry) {
+      const next = { country: timezoneCountry, source: "timezone" as const };
+      setIfActive(next);
+      try {
+        sessionStorage.setItem(CACHE_KEY, JSON.stringify(next));
+      } catch {
+        // ignore storage issues
+      }
       return () => {
         cancelled = true;
       };
     }
 
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        try {
-          const lat = pos.coords.latitude;
-          const lng = pos.coords.longitude;
-          const res = await fetch(`/api/location/reverse?lat=${lat}&lng=${lng}`, { method: "GET", cache: "no-store" });
-          const payload = await res.json();
-          if (!res.ok || !payload.success) return;
-
-          const detected: ViewerGeo = {
-            city: payload.data?.city || undefined,
-            country: payload.data?.country || localeCountry,
-            source: "geo",
-          };
-          setIfActive(detected);
-          try {
-            sessionStorage.setItem(CACHE_KEY, JSON.stringify(detected));
-          } catch {
-            // ignore storage issues
-          }
-        } catch {
-          // ignore geo errors
-        }
-      },
-      () => {
-        if (localeCountry) {
-          try {
-            sessionStorage.setItem(CACHE_KEY, JSON.stringify({ country: localeCountry, source: "locale" }));
-          } catch {
-            // ignore storage issues
-          }
-        }
-      },
-      {
-        enableHighAccuracy: false,
-        timeout: 6000,
-        maximumAge: 300000,
-      },
-    );
+    const localeCountry = deriveCountryFromLocale();
+    if (localeCountry) {
+      const next = { country: localeCountry, source: "locale" as const };
+      setIfActive(next);
+      try {
+        sessionStorage.setItem(CACHE_KEY, JSON.stringify(next));
+      } catch {
+        // ignore storage issues
+      }
+      return () => {
+        cancelled = true;
+      };
+    }
 
     return () => {
       cancelled = true;

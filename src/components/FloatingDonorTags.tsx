@@ -132,7 +132,7 @@ export default function FloatingDonorTags() {
           const params = new URLSearchParams({ limit: pageLimit });
           if (cursor) params.set("cursor", cursor);
           if (viewerGeo.city) params.set("viewerCity", viewerGeo.city);
-          if (viewerGeo.country && (viewerGeo.city || viewerGeo.source === "geo")) {
+          if (viewerGeo.country) {
             params.set("viewerCountry", viewerGeo.country);
           }
 

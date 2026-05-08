@@ -89,7 +89,7 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
     if (viewerGeo.city) {
       params.set("viewerCity", viewerGeo.city);
     }
-    if (viewerGeo.country && (viewerGeo.city || viewerGeo.source === "geo")) {
+    if (viewerGeo.country) {
       params.set("viewerCountry", viewerGeo.country);
     }
     return params;

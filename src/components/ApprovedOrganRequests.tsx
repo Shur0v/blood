@@ -59,7 +59,7 @@ export default function ApprovedOrganRequests() {
     try {
       const params = new URLSearchParams({ limit: "16" });
       if (cursor) params.set("cursor", cursor);
-      const canApplyCountryFilter = Boolean(viewerGeo.country && (viewerGeo.city || viewerGeo.source === "geo"));
+      const canApplyCountryFilter = Boolean(viewerGeo.country);
       if (canApplyCountryFilter) {
         params.set("viewerCountry", viewerGeo.country!);
       }
