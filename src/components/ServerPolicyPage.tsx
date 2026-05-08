@@ -1,6 +1,5 @@
 import { getPrisma } from "@/src/backend/config/db";
 import { getSiteContent } from "@/src/backend/services/policyContent";
-import SiteNavShell from "@/src/components/SiteNavShell";
 
 type PolicyKind = "privacy" | "terms";
 
@@ -99,7 +98,6 @@ BloodNet is a donor-recipient matching platform only. Organ selling is a crime a
           </div>
         </div>
       </section>
-      <SiteNavShell />
     </main>
   );
 }

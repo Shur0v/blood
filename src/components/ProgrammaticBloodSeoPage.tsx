@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import SiteNavShell from "@/src/components/SiteNavShell";
 import {
   getBloodDonorsByGroupAndCity,
   getBloodGroupSummary,
@@ -44,7 +43,6 @@ function PageShell({ children, jsonLd }: { children: React.ReactNode; jsonLd: un
     <main className="min-h-screen bg-bg text-gray-950">
       <script type="application/ld+json" dangerouslySetInnerHTML={pageJsonLd(jsonLd)} />
       {children}
-      <SiteNavShell />
     </main>
   );
 }
