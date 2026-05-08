@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { HomeExperience } from "@/src/app/page";
+import { HomeExperience } from "@/src/components/HomeExperience";
 import { getPrisma } from "@/src/backend/config/db";
 import { REGIONS } from "@/src/lib/regions";
 
@@ -119,3 +119,4 @@ export default async function GlobalSearchEntryPage() {
     </>
   );
 }
+

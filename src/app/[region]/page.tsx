@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { HomeExperience } from "@/src/app/page";
+import { HomeExperience } from "@/src/components/HomeExperience";
 import { getRegionBySlug } from "@/src/lib/regions";
 import { buildRegionalFaqSchema, stringifyJsonLd } from "@/src/lib/aiSeo";
 import { getPublicBaseUrl } from "@/src/backend/config/env";

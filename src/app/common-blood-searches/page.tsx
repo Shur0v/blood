@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { HomeExperience } from "@/src/app/page";
+import { HomeExperience } from "@/src/components/HomeExperience";
 import { getBloodGroupCityCounts } from "@/src/backend/services/seoData";
 import { BLOOD_GROUPS, bloodGroupToSlug, cityToSlug } from "@/src/lib/seoRouting";
 
@@ -63,3 +63,4 @@ export default async function CommonBloodSearchesPage() {
     </>
   );
 }
+

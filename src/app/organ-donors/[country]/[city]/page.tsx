@@ -1,4 +1,4 @@
-import { HomeExperience } from "@/src/app/page";
+import { HomeExperience } from "@/src/components/HomeExperience";
 import { fromLocationSlug } from "@/src/backend/utils/locationSlug";
 
 export const dynamic = "force-dynamic";

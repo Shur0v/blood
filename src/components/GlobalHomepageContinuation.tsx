@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { usePathname } from "next/navigation";
-import { HomeExperience } from "@/src/app/page";
+import { HomeExperience } from "@/src/components/HomeExperience";
 
 const EXCLUDED_PREFIXES = ["/api", "/admin-dashboard", "/dashboard"];
 const EXCLUDED_EXACT = new Set(["/", "/bd", "/in", "/sg", "/ph", "/us", "/uk", "/ca", "/au"]);
@@ -24,3 +24,4 @@ export default function GlobalHomepageContinuation() {
     </section>
   );
 }
+

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { HomeExperience } from "@/src/app/page";
+import { HomeExperience } from "@/src/components/HomeExperience";
 import { KEYWORD_LANDINGS, getKeywordLandingBySlug } from "@/src/lib/keywordLandings";
 import { getKeywordPageContent } from "@/src/lib/keywordPageContent";
 import { buildKeywordFaqSchema, stringifyJsonLd } from "@/src/lib/aiSeo";
