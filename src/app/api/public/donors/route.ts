@@ -87,7 +87,6 @@ export async function GET(req: Request) {
 
     const userFilterByBlood = bloodGroup ? Prisma.sql`AND u.blood_group = ${bloodGroup}` : Prisma.empty;
     const manualFilterByBlood = bloodGroup ? Prisma.sql`AND mbd.blood_group = ${bloodGroup}` : Prisma.empty;
-    const shouldShowCommunity = !bloodGroup || hasCommunityKeyword;
     const userFilterBySearch = searchLike
       ? Prisma.sql`
           AND (
@@ -244,7 +243,7 @@ export async function GET(req: Request) {
           GROUP BY location_country
         ) dc ON LOWER(dc.location_country) = LOWER(cd.location_country)
         WHERE cd.is_active = true
-        ${shouldShowCommunity ? Prisma.empty : Prisma.sql`AND FALSE`}
+        
         ${communityFilterByCountry}
         ${communityFilterBySearch}
       ) AS donors
@@ -289,7 +288,7 @@ export async function GET(req: Request) {
         (SELECT COUNT(*)
          FROM "CommunityDonor" cd
          WHERE cd.is_active = true
-         ${shouldShowCommunity ? Prisma.empty : Prisma.sql`AND FALSE`}
+         
          ${communityFilterByCountry}
          ${communityFilterBySearch}
         )
@@ -390,7 +389,6 @@ export async function GET(req: Request) {
             }
           : {}),
       };
-      const shouldShowCommunity = !bloodGroup || hasCommunityKeyword;
       const communityWhere = {
         is_active: true,
         ...(normalizedCountry ? { location_country: { equals: normalizedCountry, mode: 'insensitive' as const } } : {}),
@@ -422,12 +420,10 @@ export async function GET(req: Request) {
       const [users, manualRows, communityRows, userCount, manualCount, communityCount, globalUserCount, globalManualCount, globalCommunityCount] = await Promise.all([
         prisma.user.findMany({ where: userWhere, orderBy: { updated_at: 'desc' }, take: limit + safeOffset + 1 }),
         prisma.manualBloodDonor.findMany({ where: manualWhere, orderBy: { created_at: 'desc' }, take: limit + safeOffset + 1 }),
-        shouldShowCommunity
-          ? prisma.communityDonor.findMany({ where: communityWhere, orderBy: { created_at: 'desc' }, take: limit + safeOffset + 8 })
-          : Promise.resolve([]),
+        prisma.communityDonor.findMany({ where: communityWhere, orderBy: { created_at: 'desc' }, take: limit + safeOffset + 8 }),
         prisma.user.count({ where: userWhere }),
         prisma.manualBloodDonor.count({ where: manualWhere }),
-        shouldShowCommunity ? prisma.communityDonor.count({ where: communityWhere }) : Promise.resolve(0),
+        prisma.communityDonor.count({ where: communityWhere }),
         prisma.user.count({ where: { is_active_donor: true } }),
         prisma.manualBloodDonor.count({ where: { is_active_donor: true } }),
         prisma.communityDonor.count({ where: { is_active: true } }),
