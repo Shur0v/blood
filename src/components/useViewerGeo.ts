@@ -4,12 +4,14 @@ interface ViewerGeo {
   city?: string;
   country?: string;
   source?: "gps" | "ip" | "timezone" | "locale";
+  updatedAt?: number;
 }
 
 const CACHE_KEY = "bloodnet_viewer_geo_v1";
 
 const TIMEZONE_COUNTRY_MAP: Array<{ zone: string; country: string }> = [
   { zone: "Asia/Dhaka", country: "Bangladesh" },
+  { zone: "Asia/Dacca", country: "Bangladesh" },
   { zone: "Asia/Kolkata", country: "India" },
   { zone: "Asia/Calcutta", country: "India" },
   { zone: "Asia/Singapore", country: "Singapore" },
@@ -65,8 +67,25 @@ export default function useViewerGeo() {
   useEffect(() => {
     let cancelled = false;
 
+    const sourceRank: Record<NonNullable<ViewerGeo["source"]>, number> = {
+      locale: 1,
+      timezone: 2,
+      ip: 3,
+      gps: 4,
+    };
+
     const setIfActive = (next: ViewerGeo) => {
-      if (!cancelled) setGeo((prev) => ({ ...prev, ...next }));
+      if (cancelled) return;
+      setGeo((prev) => {
+        const prevRank = prev.source ? sourceRank[prev.source] : 0;
+        const nextRank = next.source ? sourceRank[next.source] : 0;
+        const shouldReplace =
+          !prev.country ||
+          nextRank >= prevRank ||
+          (next.country && prev.country && next.country.toLowerCase() !== prev.country.toLowerCase());
+        if (!shouldReplace) return prev;
+        return { ...prev, ...next };
+      });
     };
 
     const cachedRaw = sessionStorage.getItem(CACHE_KEY);
@@ -78,9 +97,6 @@ export default function useViewerGeo() {
           source: cached.source || "locale",
         };
         setIfActive(normalizedCached);
-        return () => {
-          cancelled = true;
-        };
       } catch {
         // ignore invalid cache
       }
@@ -106,7 +122,7 @@ export default function useViewerGeo() {
         };
         const ipCountry = payload?.data?.country?.trim();
         if (res.ok && payload?.success && ipCountry) {
-          const next = { country: ipCountry, source: "ip" as const };
+          const next = { country: ipCountry, source: "ip" as const, updatedAt: Date.now() };
           setIfActive(next);
           persist(next);
           return;
@@ -117,7 +133,7 @@ export default function useViewerGeo() {
 
       const timezoneCountry = deriveCountryFromTimezone();
       if (timezoneCountry) {
-        const next = { country: timezoneCountry, source: "timezone" as const };
+        const next = { country: timezoneCountry, source: "timezone" as const, updatedAt: Date.now() };
         setIfActive(next);
         persist(next);
         return;
@@ -125,7 +141,7 @@ export default function useViewerGeo() {
 
       const localeCountry = deriveCountryFromLocale();
       if (localeCountry) {
-        const next = { country: localeCountry, source: "locale" as const };
+        const next = { country: localeCountry, source: "locale" as const, updatedAt: Date.now() };
         setIfActive(next);
         persist(next);
       }
@@ -138,7 +154,8 @@ export default function useViewerGeo() {
       };
     }
 
-    navigator.geolocation.getCurrentPosition(
+    const askGeolocation = () =>
+      navigator.geolocation.getCurrentPosition(
       async (position) => {
         try {
           const params = new URLSearchParams({
@@ -157,6 +174,7 @@ export default function useViewerGeo() {
             city: payload?.data?.city?.trim() || undefined,
             country: payload?.data?.country?.trim() || undefined,
             source: "gps",
+            updatedAt: Date.now(),
           };
           if (!res.ok || !payload?.success || !next.country) {
             void applyGeoFallback();
@@ -177,6 +195,27 @@ export default function useViewerGeo() {
         maximumAge: 10 * 60 * 1000,
       }
     );
+
+    const permissionsApi = (navigator as Navigator & {
+      permissions?: { query: (descriptor: { name: "geolocation" }) => Promise<{ state: PermissionState }> };
+    }).permissions;
+
+    if (permissionsApi?.query) {
+      void permissionsApi
+        .query({ name: "geolocation" })
+        .then((status) => {
+          if (status.state === "denied") {
+            void applyGeoFallback();
+            return;
+          }
+          askGeolocation();
+        })
+        .catch(() => {
+          askGeolocation();
+        });
+    } else {
+      askGeolocation();
+    }
 
     return () => {
       cancelled = true;

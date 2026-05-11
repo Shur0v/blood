@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { Prisma } from '@prisma/client';
 import { getPrisma } from '@/src/backend/config/db';
+import { NEARBY_COUNTRY_MAP, normalizeCountryToken } from '@/src/lib/geoCountry';
 
 const QuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(16).default(16),
@@ -33,39 +34,6 @@ interface PublicDonorRow {
 interface CountRow {
   total: bigint | number | string;
 }
-
-const COUNTRY_ALIASES: Record<string, string> = {
-  usa: 'united states',
-  'u.s.a': 'united states',
-  us: 'united states',
-  america: 'united states',
-  'united states of america': 'united states',
-  uk: 'united kingdom',
-  uae: 'united arab emirates',
-};
-
-const NEARBY_COUNTRY_MAP: Record<string, string[]> = {
-  nepal: ['india', 'bangladesh', 'pakistan', 'bhutan'],
-  'united states': ['canada', 'mexico', 'united kingdom'],
-  'united kingdom': ['ireland', 'france', 'netherlands'],
-  australia: ['new zealand', 'singapore', 'india'],
-  spain: ['portugal', 'france', 'italy'],
-  netherlands: ['belgium', 'germany', 'france'],
-  italy: ['france', 'spain', 'switzerland'],
-  poland: ['germany', 'czech republic', 'slovakia'],
-  france: ['spain', 'italy', 'belgium'],
-  india: ['nepal', 'bangladesh', 'pakistan', 'sri lanka'],
-  bangladesh: ['india', 'nepal', 'pakistan'],
-};
-
-const normalizeCountryToken = (value?: string | null): string => {
-  const base = (value || '')
-    .toLowerCase()
-    .replace(/[().,]/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-  return COUNTRY_ALIASES[base] || base;
-};
 
 export async function GET(req: Request) {
   try {
