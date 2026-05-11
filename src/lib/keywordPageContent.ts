@@ -75,6 +75,7 @@ const buildTags = (keyword: string, category: KeywordCategory, city: string | nu
 const buildBlocks = (keyword: string, category: KeywordCategory, city: string | null, group: string | null): ContentBlock[] => {
   const intent = cleanKeyword(keyword);
   const local = city ? `${city}` : "your target region";
+  const groupLabel = group || "required blood group";
 
   const overview: string[] = [];
   addIf(overview, `${intent} is usually searched when families need to move quickly but still want reliable information. This page is built to reduce confusion and show a practical path from search to verified outreach.`);
@@ -104,11 +105,31 @@ const buildBlocks = (keyword: string, category: KeywordCategory, city: string | 
   addIf(coverage, `As community data grows, pages become more location-aware and more actionable. You should see stronger result quality in routes that map directly to country intent.`);
   addIf(coverage, `For recurring requests, maintain a small trusted list of community contacts per city. Reusing verified channels can reduce response time on future emergencies.`);
 
+  const localSignals: string[] = [];
+  addIf(localSignals, `Location intent for "${intent}" is usually strongest in the first hour of search activity. In ${local}, users tend to prefer pages that show city relevance, clear blood-group context, and immediate action paths.`);
+  addIf(localSignals, `When no exact donor is available in ${local}, nearest-region support is often the practical fallback. That includes nearby city donors, manual donor records, and verified community organizations.`);
+  addIf(localSignals, `For ${groupLabel} demand, response quality improves when listings include direct contact attempts, quick callback windows, and clear cross-city travel constraints.`);
+
+  const emergencyReadiness: string[] = [];
+  addIf(emergencyReadiness, `Emergency readiness starts before a crisis: keep donor preferences updated, confirm current phone reachability, and maintain a short internal contact queue by city and blood group.`);
+  addIf(emergencyReadiness, `Hospitals and families usually need rapid clarity on timing. A good page should reduce friction: show usable donor options first, keep community fallback visible, and avoid noisy or duplicate entries.`);
+  addIf(emergencyReadiness, `If a request escalates, document every outreach attempt with timestamp and result. This simple practice helps teams avoid repeat calls and switch faster to the next valid option.`);
+
+  const trustAndQuality: string[] = [];
+  addIf(trustAndQuality, `Search visibility improves when content is specific, useful, and region-aware. This page format is intentionally long-form so users can act quickly while search engines understand real intent depth.`);
+  addIf(trustAndQuality, `BloodNet pages prioritize lawful medical coordination and privacy-safe contact flow. Public listings support discovery, while treatment and compatibility remain under licensed clinical supervision.`);
+  addIf(trustAndQuality, category === "organ_finder"
+    ? `Organ-intent pages require extra care in wording and compliance. Never use non-medical promises; use verified pathways and transparent process notes.`
+    : `Blood-intent pages should balance urgency and verification. Fast response is useful only when paired with correct group matching and hospital confirmation.`);
+
   return [
     { title: "Regional Search Overview", paragraphs: overview },
     { title: "How To Use This Page Effectively", paragraphs: process },
     { title: "Safety, Verification, And Clinical Coordination", paragraphs: safety },
     { title: "Coverage Notes For Community Data", paragraphs: coverage },
+    { title: "Location Signals And Matching Priority", paragraphs: localSignals },
+    { title: "Emergency Response Readiness", paragraphs: emergencyReadiness },
+    { title: "Trust, Quality, And Responsible Use", paragraphs: trustAndQuality },
   ];
 };
 

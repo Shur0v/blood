@@ -258,6 +258,29 @@ const canonicalizeKeyword = (text: string) =>
 
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"] as const;
 const CITIES = ["Dhaka", "Delhi", "Mumbai", "Lahore", "Chennai", "Kolkata", "Kathmandu", "Karachi", "New York", "London", "Sydney", "Madrid", "Amsterdam", "Rome", "Warsaw", "Paris"] as const;
+const COUNTRY_CITY_MAP = {
+  "United States": ["California", "San Francisco", "Los Angeles", "New York", "Houston", "Chicago"],
+  "United Kingdom": ["London", "Manchester", "Birmingham", "Liverpool"],
+  "Spain": ["Madrid", "Barcelona", "Valencia", "Seville"],
+  "Netherlands": ["Amsterdam", "Rotterdam", "Utrecht", "The Hague"],
+  "Australia": ["Sydney", "Melbourne", "Perth", "Brisbane"],
+  "Japan": ["Tokyo", "Osaka", "Yokohama", "Nagoya"],
+  "Italy": ["Rome", "Milan", "Naples", "Turin"],
+  "Poland": ["Warsaw", "Krakow", "Wroclaw", "Gdansk"],
+  "France": ["Paris", "Lyon", "Marseille", "Toulouse"],
+  "Germany": ["Berlin", "Hamburg", "Munich", "Frankfurt"],
+  "Canada": ["Toronto", "Vancouver", "Calgary", "Montreal"],
+  "Nepal": ["Kathmandu", "Pokhara", "Biratnagar"],
+  "Bangladesh": ["Dhaka", "Chattogram", "Sylhet", "Khulna"],
+  "India": ["Delhi", "Mumbai", "Bengaluru", "Chennai", "Kolkata"],
+  "Pakistan": ["Karachi", "Lahore", "Islamabad", "Peshawar"],
+} as const;
+
+const COUNTRY_ALIASES = {
+  "United States": ["USA", "US", "America"],
+  "United Kingdom": ["UK", "Britain", "England"],
+  "Netherlands": ["Holland"],
+} as const;
 
 const buildDynamicKeywords = (): string[] => {
   const out: string[] = [];
@@ -267,6 +290,31 @@ const buildDynamicKeywords = (): string[] => {
       out.push(`find ${group.toLowerCase()} donor near ${city.toLowerCase()}`);
     }
   }
+
+  for (const [country, cities] of Object.entries(COUNTRY_CITY_MAP)) {
+    const aliases = COUNTRY_ALIASES[country as keyof typeof COUNTRY_ALIASES] ?? [];
+    const countryTerms = [country, ...aliases];
+
+    for (const countryTerm of countryTerms) {
+      out.push(`urgent blood donor needed in ${countryTerm.toLowerCase()}`);
+      out.push(`community blood bank in ${countryTerm.toLowerCase()}`);
+      out.push(`find blood donor in ${countryTerm.toLowerCase()} by blood group`);
+    }
+
+    for (const city of cities) {
+      out.push(`urgent blood in ${city.toLowerCase()}`);
+      out.push(`blood donor in ${city.toLowerCase()}, ${country.toLowerCase()}`);
+      out.push(`community blood center in ${city.toLowerCase()}, ${country.toLowerCase()}`);
+
+      for (const group of BLOOD_GROUPS) {
+        const g = group.toLowerCase();
+        out.push(`urgent ${g} blood in ${city.toLowerCase()}, ${country.toLowerCase()}`);
+        out.push(`${g} blood donor in ${city.toLowerCase()}, ${country.toLowerCase()}`);
+        out.push(`find ${g} blood donor urgently in ${city.toLowerCase()}`);
+      }
+    }
+  }
+
   return out;
 };
 
