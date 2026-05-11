@@ -34,6 +34,39 @@ interface CountRow {
   total: bigint | number | string;
 }
 
+const COUNTRY_ALIASES: Record<string, string> = {
+  usa: 'united states',
+  'u.s.a': 'united states',
+  us: 'united states',
+  america: 'united states',
+  'united states of america': 'united states',
+  uk: 'united kingdom',
+  uae: 'united arab emirates',
+};
+
+const NEARBY_COUNTRY_MAP: Record<string, string[]> = {
+  nepal: ['india', 'bangladesh', 'pakistan', 'bhutan'],
+  'united states': ['canada', 'mexico', 'united kingdom'],
+  'united kingdom': ['ireland', 'france', 'netherlands'],
+  australia: ['new zealand', 'singapore', 'india'],
+  spain: ['portugal', 'france', 'italy'],
+  netherlands: ['belgium', 'germany', 'france'],
+  italy: ['france', 'spain', 'switzerland'],
+  poland: ['germany', 'czech republic', 'slovakia'],
+  france: ['spain', 'italy', 'belgium'],
+  india: ['nepal', 'bangladesh', 'pakistan', 'sri lanka'],
+  bangladesh: ['india', 'nepal', 'pakistan'],
+};
+
+const normalizeCountryToken = (value?: string | null): string => {
+  const base = (value || '')
+    .toLowerCase()
+    .replace(/[().,]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return COUNTRY_ALIASES[base] || base;
+};
+
 export async function GET(req: Request) {
   try {
     const url = new URL(req.url);
@@ -65,6 +98,8 @@ export async function GET(req: Request) {
     const searchLike = normalizedSearch ? `%${normalizedSearch}%` : null;
     const normalizedViewerCity = viewerCity?.trim();
     const normalizedViewerCountry = viewerCountry?.trim();
+    const canonicalViewerCountry = normalizeCountryToken(normalizedViewerCountry);
+    const nearbyCountries = canonicalViewerCountry ? (NEARBY_COUNTRY_MAP[canonicalViewerCountry] || []) : [];
     const normalizedCountry = country?.trim();
     const userFilterByCountry = normalizedCountry
       ? Prisma.sql`AND (
@@ -140,8 +175,15 @@ export async function GET(req: Request) {
       ? Prisma.sql`CASE WHEN LOWER(donors.location_city) = LOWER(${normalizedViewerCity}) THEN 0 ELSE 1 END`
       : Prisma.sql`1`;
     const donorViewerCountryRank = normalizedViewerCountry
-      ? Prisma.sql`CASE WHEN LOWER(donors.location_country) = LOWER(${normalizedViewerCountry}) THEN 0 ELSE 1 END`
-      : Prisma.sql`1`;
+      ? Prisma.sql`CASE
+          WHEN LOWER(donors.location_country) = LOWER(${normalizedViewerCountry}) THEN 0
+          WHEN LOWER(donors.location_country) = LOWER(${canonicalViewerCountry}) THEN 0
+          ${nearbyCountries.length > 0
+            ? Prisma.sql`WHEN LOWER(donors.location_country) IN (${Prisma.join(nearbyCountries)}) THEN 1`
+            : Prisma.empty}
+          ELSE 2
+        END`
+      : Prisma.sql`2`;
 
     const rows = await prisma.$queryRaw<PublicDonorRow[]>(Prisma.sql`
       SELECT *
@@ -349,6 +391,8 @@ export async function GET(req: Request) {
       const communityCountryHint = hasCommunityKeyword ? qLower.replace('community', '').trim() : '';
       const normalizedViewerCity = viewerCity?.trim().toLowerCase();
       const normalizedViewerCountry = viewerCountry?.trim().toLowerCase();
+      const canonicalViewerCountry = normalizeCountryToken(normalizedViewerCountry);
+      const nearbyCountries = canonicalViewerCountry ? (NEARBY_COUNTRY_MAP[canonicalViewerCountry] || []) : [];
       const normalizedCountry = country?.trim();
 
       const prisma = getPrisma();
@@ -498,8 +542,13 @@ export async function GET(req: Request) {
         }
 
         if (normalizedViewerCountry) {
-          if (a.location_country?.toLowerCase() === normalizedViewerCountry) aCountryRank = 0;
-          if (b.location_country?.toLowerCase() === normalizedViewerCountry) bCountryRank = 0;
+          const aCountry = normalizeCountryToken(a.location_country);
+          const bCountry = normalizeCountryToken(b.location_country);
+          if (aCountry === normalizeCountryToken(normalizedViewerCountry)) aCountryRank = 0;
+          else if (nearbyCountries.includes(aCountry)) aCountryRank = 1;
+
+          if (bCountry === normalizeCountryToken(normalizedViewerCountry)) bCountryRank = 0;
+          else if (nearbyCountries.includes(bCountry)) bCountryRank = 1;
         }
 
         if (aCityRank !== bCityRank) return aCityRank - bCityRank;

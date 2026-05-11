@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 interface ViewerGeo {
   city?: string;
   country?: string;
-  source?: "timezone" | "locale";
+  source?: "gps" | "ip" | "timezone" | "locale";
 }
 
 const CACHE_KEY = "bloodnet_viewer_geo_v1";
@@ -86,33 +86,97 @@ export default function useViewerGeo() {
       }
     }
 
-    const timezoneCountry = deriveCountryFromTimezone();
-    if (timezoneCountry) {
-      const next = { country: timezoneCountry, source: "timezone" as const };
-      setIfActive(next);
+    const persist = (next: ViewerGeo) => {
       try {
         sessionStorage.setItem(CACHE_KEY, JSON.stringify(next));
       } catch {
         // ignore storage issues
       }
+    };
+
+    const applyGeoFallback = async () => {
+      try {
+        const res = await fetch("/api/location/ip", {
+          method: "GET",
+          cache: "no-store",
+        });
+        const payload = (await res.json()) as {
+          success?: boolean;
+          data?: { country?: string };
+        };
+        const ipCountry = payload?.data?.country?.trim();
+        if (res.ok && payload?.success && ipCountry) {
+          const next = { country: ipCountry, source: "ip" as const };
+          setIfActive(next);
+          persist(next);
+          return;
+        }
+      } catch {
+        // continue to timezone/locale fallback
+      }
+
+      const timezoneCountry = deriveCountryFromTimezone();
+      if (timezoneCountry) {
+        const next = { country: timezoneCountry, source: "timezone" as const };
+        setIfActive(next);
+        persist(next);
+        return;
+      }
+
+      const localeCountry = deriveCountryFromLocale();
+      if (localeCountry) {
+        const next = { country: localeCountry, source: "locale" as const };
+        setIfActive(next);
+        persist(next);
+      }
+    };
+
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
+      void applyGeoFallback();
       return () => {
         cancelled = true;
       };
     }
 
-    const localeCountry = deriveCountryFromLocale();
-    if (localeCountry) {
-      const next = { country: localeCountry, source: "locale" as const };
-      setIfActive(next);
-      try {
-        sessionStorage.setItem(CACHE_KEY, JSON.stringify(next));
-      } catch {
-        // ignore storage issues
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const params = new URLSearchParams({
+            lat: String(position.coords.latitude),
+            lng: String(position.coords.longitude),
+          });
+          const res = await fetch(`/api/location/reverse?${params.toString()}`, {
+            method: "GET",
+            cache: "no-store",
+          });
+          const payload = (await res.json()) as {
+            success?: boolean;
+            data?: { city?: string; country?: string };
+          };
+          const next: ViewerGeo = {
+            city: payload?.data?.city?.trim() || undefined,
+            country: payload?.data?.country?.trim() || undefined,
+            source: "gps",
+          };
+          if (!res.ok || !payload?.success || !next.country) {
+            void applyGeoFallback();
+            return;
+          }
+          setIfActive(next);
+          persist(next);
+        } catch {
+          void applyGeoFallback();
+        }
+      },
+      () => {
+        void applyGeoFallback();
+      },
+      {
+        enableHighAccuracy: false,
+        timeout: 8000,
+        maximumAge: 10 * 60 * 1000,
       }
-      return () => {
-        cancelled = true;
-      };
-    }
+    );
 
     return () => {
       cancelled = true;
