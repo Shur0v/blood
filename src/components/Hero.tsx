@@ -4,6 +4,7 @@ import { Search, Star, X } from "lucide-react";
 import DonorModal from "./DonorModal";
 import useViewerGeo from "./useViewerGeo";
 import { maskPhoneTail } from "../lib/phoneMask";
+import ManagedNativeAdSlot from "./ManagedNativeAdSlot";
 
 const bloodGroups = ["AB+", "AB-", "A+", "A-", "B+", "B-", "O+", "O-"];
 
@@ -43,6 +44,58 @@ interface DonorApiResponse {
   };
 }
 
+type InlineBannerAdUnit = {
+  id: string;
+  adType: "iframe_banner";
+  scriptSrc: string;
+  bannerKey: string;
+  bannerWidth: number;
+  bannerHeight: number;
+  placement: "donor_cards_mix";
+};
+
+function MixedDonorBannerCard({ ad }: { ad: InlineBannerAdUnit }) {
+  const mountRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const mount = mountRef.current;
+    if (!mount) return;
+    mount.innerHTML = "";
+
+    (window as Window & { atOptions?: unknown }).atOptions = {
+      key: ad.bannerKey,
+      format: "iframe",
+      height: ad.bannerHeight,
+      width: ad.bannerWidth,
+      params: {},
+    };
+
+    const script = document.createElement("script");
+    script.src = ad.scriptSrc;
+    script.async = true;
+    script.setAttribute("data-cfasync", "false");
+    script.setAttribute("data-bloodnet-inline-banner", ad.id);
+    mount.appendChild(script);
+
+    return () => {
+      mount.innerHTML = "";
+    };
+  }, [ad.bannerHeight, ad.bannerKey, ad.bannerWidth, ad.id, ad.scriptSrc]);
+
+  return (
+    <div className="group relative flex items-center gap-3 overflow-hidden rounded-[8px] border border-white/40 bg-white/20 p-2 pr-4 shadow-card backdrop-blur-2xl transition-all duration-300">
+      <div className="absolute inset-0 rounded-[8px] ring-1 ring-inset ring-white/50" />
+      <div className="relative z-10 flex w-full items-center justify-center py-1">
+        <div
+          ref={mountRef}
+          style={{ width: `${ad.bannerWidth}px`, minHeight: `${ad.bannerHeight}px` }}
+          className="mx-auto max-w-full overflow-hidden"
+        />
+      </div>
+    </div>
+  );
+}
+
 export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
   const readServerRenderedDonorTotal = () => {
     if (forcedCountry) return 0;
@@ -68,6 +121,7 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
   const [isInitialDonorLoad, setIsInitialDonorLoad] = useState(true);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [inlineBannerAd, setInlineBannerAd] = useState<InlineBannerAdUnit | null>(null);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -220,6 +274,50 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
     void loadDonors();
   }, [activeGroup, normalizedSearch, viewerGeo.city, viewerGeo.country]);
 
+  useEffect(() => {
+    let active = true;
+    const loadInlineBannerConfig = async () => {
+      try {
+        const res = await fetch("/api/public/ads-settings", { method: "GET", cache: "no-store" });
+        const payload = await res.json();
+        if (!active || !res.ok || !payload?.success) return;
+        if (!payload?.data?.adsRuntimeEnabled) {
+          setInlineBannerAd(null);
+          return;
+        }
+        const found = (payload.data.adUnits || []).find((item: any) =>
+          item?.adType === "iframe_banner" &&
+          item?.placement === "donor_cards_mix" &&
+          item?.scriptSrc &&
+          item?.bannerKey &&
+          Number(item?.bannerWidth) > 0 &&
+          Number(item?.bannerHeight) > 0
+        );
+        if (!found) {
+          setInlineBannerAd(null);
+          return;
+        }
+        setInlineBannerAd({
+          id: String(found.id),
+          adType: "iframe_banner",
+          scriptSrc: String(found.scriptSrc),
+          bannerKey: String(found.bannerKey),
+          bannerWidth: Number(found.bannerWidth),
+          bannerHeight: Number(found.bannerHeight),
+          placement: "donor_cards_mix",
+        });
+      } catch {
+        // ignore transient failures
+      }
+    };
+    void loadInlineBannerConfig();
+    const t = window.setInterval(() => void loadInlineBannerConfig(), 20000);
+    return () => {
+      active = false;
+      window.clearInterval(t);
+    };
+  }, []);
+
   const handleLoadMore = async () => {
     if (!nextCursor || isLoadingMore) return;
     setIsLoadingMore(true);
@@ -243,6 +341,15 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
   };
 
   const hasNoResults = useMemo(() => donors.length === 0, [donors]);
+  const adInsertIndex = useMemo(() => {
+    if (!inlineBannerAd || donors.length === 0) return -1;
+    const seed = `${donors[0]?.id || "seed"}-${donors.length}-${activeGroup || "all"}-${normalizedSearch || "none"}`;
+    let hash = 0;
+    for (let i = 0; i < seed.length; i += 1) {
+      hash = (hash * 31 + seed.charCodeAt(i)) | 0;
+    }
+    return Math.abs(hash) % (donors.length + 1);
+  }, [inlineBannerAd, donors, activeGroup, normalizedSearch]);
 
   return (
     <section className="relative flex min-h-screen flex-col items-center justify-center px-4 pt-20 pb-32">
@@ -366,6 +473,8 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
           </div>
         </motion.div>
 
+        <ManagedNativeAdSlot slotKey="native-ad-1" />
+
         {isInitialDonorLoad ? (
           <div className="mx-auto min-h-[320px] max-w-4xl rounded-[8px] border border-white/40 bg-white/20 p-8 text-center text-sm font-semibold text-gray-700">
             Loading nearby active donors...
@@ -377,42 +486,63 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {donors.map((donor, index) => (
-              <motion.div
-                key={donor.id}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: index * 0.05 }}
-                onClick={() => setSelectedDonor(donor)}
-                data-analytics-component="Blood Donor Card Open"
-                whileHover={{
-                  y: -5,
-                  transition: { type: "spring", stiffness: 400, damping: 15 }
-                }}
-                className="group relative flex cursor-pointer items-center gap-3 overflow-hidden rounded-[8px] border border-white/40 bg-white/20 p-2 pr-4 shadow-card backdrop-blur-2xl transition-all duration-300 hover:border-primary-dark/40 hover:shadow-card"
-              >
-                <div className="absolute inset-0 rounded-[8px] ring-1 ring-inset ring-white/50" />
+              <div key={`slot-${donor.id}`}>
+                {inlineBannerAd && adInsertIndex === index && (
+                  <motion.div
+                    key={`ad-inline-${inlineBannerAd.id}-${index}`}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: index * 0.05 }}
+                  >
+                    <MixedDonorBannerCard ad={inlineBannerAd} />
+                  </motion.div>
+                )}
+                <motion.div
+                  key={donor.id}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: index * 0.05 }}
+                  onClick={() => setSelectedDonor(donor)}
+                  data-analytics-component="Blood Donor Card Open"
+                  whileHover={{
+                    y: -5,
+                    transition: { type: "spring", stiffness: 400, damping: 15 }
+                  }}
+                  className="group relative flex cursor-pointer items-center gap-3 overflow-hidden rounded-[8px] border border-white/40 bg-white/20 p-2 pr-4 shadow-card backdrop-blur-2xl transition-all duration-300 hover:border-primary-dark/40 hover:shadow-card"
+                >
+                  <div className="absolute inset-0 rounded-[8px] ring-1 ring-inset ring-white/50" />
 
-                <div className="relative z-10 flex w-full items-center">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[8px] bg-primary-dark text-lg font-black text-white shadow-card">
-                    {donor.sourceType === "COMMUNITY" ? (
-                      <Star className="h-5 w-5 fill-white text-white" />
-                    ) : (
-                      donor.group
-                    )}
-                  </div>
+                  <div className="relative z-10 flex w-full items-center">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[8px] bg-primary-dark text-lg font-black text-white shadow-card">
+                      {donor.sourceType === "COMMUNITY" ? (
+                        <Star className="h-5 w-5 fill-white text-white" />
+                      ) : (
+                        donor.group
+                      )}
+                    </div>
 
-                  <div className="ml-3 flex flex-1 flex-col overflow-hidden">
-                    <h3 className="truncate text-sm font-bold tracking-tight text-gray-900">{donor.name}</h3>
-                    <div className="mt-0.5 flex flex-col text-[10px] font-medium text-gray-600">
-                      <span className="truncate">{donor.maskedPhone}</span>
-                      <span className="truncate opacity-70">{donor.location}</span>
+                    <div className="ml-3 flex flex-1 flex-col overflow-hidden">
+                      <h3 className="truncate text-sm font-bold tracking-tight text-gray-900">{donor.name}</h3>
+                      <div className="mt-0.5 flex flex-col text-[10px] font-medium text-gray-600">
+                        <span className="truncate">{donor.maskedPhone}</span>
+                        <span className="truncate opacity-70">{donor.location}</span>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="absolute -top-full -left-full h-[200%] w-[200%] rotate-45 bg-gradient-to-b from-white/10 via-transparent to-transparent opacity-0 transition-all duration-700 group-hover:top-[-50%] group-hover:left-[-50%] group-hover:opacity-100" />
-              </motion.div>
+                  <div className="absolute -top-full -left-full h-[200%] w-[200%] rotate-45 bg-gradient-to-b from-white/10 via-transparent to-transparent opacity-0 transition-all duration-700 group-hover:top-[-50%] group-hover:left-[-50%] group-hover:opacity-100" />
+                </motion.div>
+              </div>
             ))}
+            {inlineBannerAd && adInsertIndex === donors.length && (
+              <motion.div
+                key={`ad-inline-tail-${inlineBannerAd.id}`}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+              >
+                <MixedDonorBannerCard ad={inlineBannerAd} />
+              </motion.div>
+            )}
           </div>
         )}
         {isDonorApiDown && (

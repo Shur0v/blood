@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getPrisma } from "@/src/backend/config/db";
 import { REGIONS } from "@/src/lib/regions";
+import ManagedNativeAdSlot from "@/src/components/ManagedNativeAdSlot";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 300;
@@ -62,6 +63,7 @@ export default async function GlobalSearchEntryPage() {
 
   return (
     <>
+      <ManagedNativeAdSlot slotKey="native-ad-2" />
       <main className="mx-auto max-w-7xl px-4 pt-16 pb-10">
         <section className="min-h-[15vh] rounded-[8px] border border-border/20 bg-white/90 p-6 shadow-card">
           <h1 className="text-3xl font-black tracking-tight text-gray-900 md:text-4xl">
@@ -129,6 +131,7 @@ export default async function GlobalSearchEntryPage() {
           </div>
         </section>
       </main>
+      <ManagedNativeAdSlot slotKey="native-ad-2" />
 
     </>
   );

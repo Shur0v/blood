@@ -5,6 +5,7 @@ import { KEYWORD_LANDINGS, getKeywordLandingBySlug } from "@/src/lib/keywordLand
 import { getKeywordPageContent } from "@/src/lib/keywordPageContent";
 import { buildKeywordFaqSchema, stringifyJsonLd } from "@/src/lib/aiSeo";
 import { getPublicBaseUrl } from "@/src/backend/config/env";
+import ManagedNativeAdSlot from "@/src/components/ManagedNativeAdSlot";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 1800;
@@ -57,6 +58,7 @@ export default async function KeywordLandingPage({ params }: { params: Promise<P
           __html: stringifyJsonLd([pageSchema, buildKeywordFaqSchema(entry.keyword)]),
         }}
       />
+      <ManagedNativeAdSlot slotKey="native-ad-2" />
       <main className="mx-auto max-w-7xl px-4 pt-16 pb-10">
         <section className="rounded-[8px] border border-border/20 bg-white/90 p-6 shadow-card">
           <h1 className="text-3xl font-black tracking-tight text-gray-900 md:text-4xl">{entry.keyword}</h1>
@@ -98,6 +100,7 @@ export default async function KeywordLandingPage({ params }: { params: Promise<P
           </div>
         </section>
       </main>
+      <ManagedNativeAdSlot slotKey="native-ad-2" />
     </>
   );
 }

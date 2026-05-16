@@ -16,6 +16,7 @@ import {
   maskPublicPhone,
   type BloodGroup,
 } from "@/src/lib/seoRouting";
+import ManagedNativeAdSlot from "@/src/components/ManagedNativeAdSlot";
 
 const formatDate = (date: Date | null | undefined) =>
   date
@@ -42,7 +43,9 @@ function PageShell({ children, jsonLd }: { children: React.ReactNode; jsonLd: un
   return (
     <main className="min-h-screen bg-bg text-gray-950">
       <script type="application/ld+json" dangerouslySetInnerHTML={pageJsonLd(jsonLd)} />
+      <ManagedNativeAdSlot slotKey="native-ad-2" />
       {children}
+      <ManagedNativeAdSlot slotKey="native-ad-2" />
     </main>
   );
 }

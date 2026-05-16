@@ -23,6 +23,21 @@ type PublicPolicyData = {
   joinCommunityActiveRequestsText?: string;
 };
 
+type RuntimeAdUnit = {
+  id: string;
+  adType: "script" | "smartlink" | "native_banner" | "iframe_banner";
+  scriptSrc?: string | null;
+  bannerKey?: string | null;
+  bannerWidth?: number | null;
+  bannerHeight?: number | null;
+  placement: "head" | "body_end" | "footer_inline" | "hero_center" | "donor_cards_mix" | "community_image_slot";
+};
+
+type PublicAdsPayload = {
+  adsRuntimeEnabled: boolean;
+  adUnits: RuntimeAdUnit[];
+};
+
 export default function SocialMedia() {
   const [communityData, setCommunityData] = useState({
     joinCommunityTelegramUrl: "https://t.me/bloodnet",
@@ -38,6 +53,13 @@ export default function SocialMedia() {
     joinCommunityTrustText: "Trusted by 10,000+ donors • Updated every minute",
     joinCommunityActiveRequestsText: "12 active requests in your area",
   });
+  const [communityImageBannerAd, setCommunityImageBannerAd] = useState<{
+    id: string;
+    scriptSrc: string;
+    bannerKey: string;
+    bannerWidth: number;
+    bannerHeight: number;
+  } | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -71,6 +93,50 @@ export default function SocialMedia() {
     };
     void load();
     return () => controller.abort();
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    const loadAds = async () => {
+      try {
+        const res = await fetch("/api/public/ads-settings", { method: "GET", cache: "no-store" });
+        const payload = await res.json();
+        if (!active || !res.ok || !payload?.success) return;
+        const data = payload.data as PublicAdsPayload;
+        if (!data.adsRuntimeEnabled) {
+          setCommunityImageBannerAd(null);
+          return;
+        }
+        const match = data.adUnits.find(
+          (item) =>
+            item.adType === "iframe_banner" &&
+            item.placement === "community_image_slot" &&
+            item.scriptSrc &&
+            item.bannerKey &&
+            Number(item.bannerWidth) > 0 &&
+            Number(item.bannerHeight) > 0
+        );
+        if (!match) {
+          setCommunityImageBannerAd(null);
+          return;
+        }
+        setCommunityImageBannerAd({
+          id: String(match.id),
+          scriptSrc: String(match.scriptSrc),
+          bannerKey: String(match.bannerKey),
+          bannerWidth: Number(match.bannerWidth),
+          bannerHeight: Number(match.bannerHeight),
+        });
+      } catch {
+        // fallback to image
+      }
+    };
+    void loadAds();
+    const t = window.setInterval(() => void loadAds(), 20000);
+    return () => {
+      active = false;
+      window.clearInterval(t);
+    };
   }, []);
 
   return (
@@ -163,18 +229,58 @@ export default function SocialMedia() {
             viewport={{ once: true }}
             className="relative min-h-[320px] overflow-hidden rounded-[8px] shadow-[0_22px_55px_rgba(15,23,42,0.16)] sm:min-h-[420px] lg:min-h-[460px]"
           >
-            <Image
-              src="https://blog.hocking.edu/hubfs/Images/Stock%20images/blood-donation_custom-4a7ebcf0e0864084e9035d1ddc48b84d884b12e8-s900-c85.jpg"
-              alt="Blood donor giving blood"
-              fill
-              sizes="(max-width: 1024px) 100vw, 44vw"
-              className="object-cover object-center transition-transform duration-700 hover:scale-105"
-              loading="lazy"
-            />
+            {communityImageBannerAd ? (
+              <CommunityImageBannerAdSlot ad={communityImageBannerAd} />
+            ) : (
+              <Image
+                src="https://blog.hocking.edu/hubfs/Images/Stock%20images/blood-donation_custom-4a7ebcf0e0864084e9035d1ddc48b84d884b12e8-s900-c85.jpg"
+                alt="Blood donor giving blood"
+                fill
+                sizes="(max-width: 1024px) 100vw, 44vw"
+                className="object-cover object-center transition-transform duration-700 hover:scale-105"
+                loading="lazy"
+              />
+            )}
           </motion.div>
         </div>
       </motion.div>
     </section>
+  );
+}
+
+function CommunityImageBannerAdSlot({
+  ad,
+}: {
+  ad: { id: string; scriptSrc: string; bannerKey: string; bannerWidth: number; bannerHeight: number };
+}) {
+  const [containerId] = useState(`community-image-slot-${ad.id}`);
+
+  useEffect(() => {
+    const host = document.getElementById(containerId);
+    if (!host) return;
+    host.innerHTML = "";
+    (window as Window & { atOptions?: unknown }).atOptions = {
+      key: ad.bannerKey,
+      format: "iframe",
+      height: ad.bannerHeight,
+      width: ad.bannerWidth,
+      params: {},
+    };
+    const script = document.createElement("script");
+    script.src = ad.scriptSrc;
+    script.async = true;
+    script.setAttribute("data-cfasync", "false");
+    script.setAttribute("data-bloodnet-community-image-ad", ad.id);
+    host.appendChild(script);
+    return () => {
+      host.innerHTML = "";
+    };
+  }, [ad.bannerHeight, ad.bannerKey, ad.bannerWidth, ad.id, ad.scriptSrc, containerId]);
+
+  return (
+    <div className="flex h-full w-full items-center justify-center bg-white/60 p-4">
+      <div id={containerId} style={{ width: `${ad.bannerWidth}px`, minHeight: `${ad.bannerHeight}px` }} className="max-w-full overflow-hidden" />
+    </div>
   );
 }
 

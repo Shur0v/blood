@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getOrganTypesWithData } from "@/src/backend/services/seoData";
 import { organFromSlug } from "@/src/lib/seoRouting";
+import ManagedNativeAdSlot from "@/src/components/ManagedNativeAdSlot";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 1800;
@@ -18,6 +19,7 @@ export default async function CommonOrganSearchesPage() {
 
   return (
     <>
+      <ManagedNativeAdSlot slotKey="native-ad-2" />
       <main className="mx-auto max-w-7xl px-4 pt-20 pb-14">
         <section className="rounded-[8px] border border-border/20 bg-white/80 p-6 shadow-card">
           <h1 className="text-3xl font-black tracking-tight text-gray-900 md:text-4xl">Most Common Organ Searches</h1>
@@ -49,6 +51,7 @@ export default async function CommonOrganSearchesPage() {
           </div>
         </section>
       </main>
+      <ManagedNativeAdSlot slotKey="native-ad-2" />
 
     </>
   );

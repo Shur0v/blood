@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { KEYWORD_LANDINGS, getKeywordLandingsByCountryIntent } from "@/src/lib/keywordLandings";
+import ManagedNativeAdSlot from "@/src/components/ManagedNativeAdSlot";
 
 const HUBS: Record<string, { country: string; aliases: string[]; title: string; intro: string }> = {
   usa: {
@@ -83,8 +84,10 @@ export default async function CountryKeywordHubPage({ params }: { params: Promis
   const list = Array.from(dedup.values()).slice(0, 180);
 
   return (
-    <main className="mx-auto max-w-7xl px-4 pt-16 pb-12">
-      <section className="rounded-[8px] border border-border/20 bg-white/90 p-6 shadow-card">
+    <>
+      <ManagedNativeAdSlot slotKey="native-ad-2" />
+      <main className="mx-auto max-w-7xl px-4 pt-16 pb-12">
+        <section className="rounded-[8px] border border-border/20 bg-white/90 p-6 shadow-card">
         <h1 className="text-3xl font-black tracking-tight text-gray-900 md:text-4xl">{hub.title}</h1>
         <p className="mt-4 max-w-4xl text-sm font-medium leading-7 text-gray-700 md:text-base">{hub.intro}</p>
         <p className="mt-3 text-sm font-semibold text-gray-600">
@@ -103,7 +106,9 @@ export default async function CountryKeywordHubPage({ params }: { params: Promis
             </Link>
           ))}
         </div>
-      </section>
-    </main>
+        </section>
+      </main>
+      <ManagedNativeAdSlot slotKey="native-ad-2" />
+    </>
   );
 }

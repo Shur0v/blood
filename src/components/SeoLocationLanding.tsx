@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getNetworkStats, getVerifiedOrganRequests } from "@/src/backend/services/seoData";
 import { bloodGroupToSlug, cityToSlug } from "@/src/lib/seoRouting";
+import ManagedNativeAdSlot from "@/src/components/ManagedNativeAdSlot";
 
 interface SeoLocationLandingProps {
   country?: string;
@@ -21,6 +22,7 @@ export default async function SeoLocationLanding({ country, citySlug, title, int
 
   return (
     <main className="min-h-screen bg-bg text-gray-900">
+      <ManagedNativeAdSlot slotKey="native-ad-2" />
       <section className="mx-auto max-w-6xl px-4 py-20">
         <p className="text-xs font-black uppercase tracking-[0.24em] text-primary">Global donor support network</p>
         <h1 className="mt-4 text-4xl font-black tracking-tight md:text-6xl">{title}</h1>
@@ -56,6 +58,7 @@ export default async function SeoLocationLanding({ country, citySlug, title, int
           BloodNet is a free connection service. It does not confirm blood bank inventory or replace hospitals, emergency services, licensed medical professionals, or legal transplant authorities.
         </p>
       </section>
+      <ManagedNativeAdSlot slotKey="native-ad-2" />
     </main>
   );
 }

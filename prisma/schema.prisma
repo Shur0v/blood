@@ -335,6 +335,8 @@ model PlatformSettings {
   weekly_donors     Int      @default(0)
   donor_requests    Int      @default(0)
   ui_theme          String   @default("classic")
+  ads_runtime_enabled Boolean @default(true)
+  ad_units_json      Json?
   updated_at        DateTime @updatedAt
 }
 
