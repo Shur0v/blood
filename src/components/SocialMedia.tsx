@@ -230,7 +230,7 @@ export default function SocialMedia() {
             className="relative min-h-[320px] overflow-hidden rounded-[8px] shadow-[0_22px_55px_rgba(15,23,42,0.16)] sm:min-h-[420px] lg:min-h-[460px]"
           >
             {communityImageBannerAd ? (
-              <CommunityImageBannerAdSlot ad={communityImageBannerAd} />
+              <CommunityImageBannerAdSlot ad={communityImageBannerAd} onFail={() => setCommunityImageBannerAd(null)} />
             ) : (
               <Image
                 src="https://blog.hocking.edu/hubfs/Images/Stock%20images/blood-donation_custom-4a7ebcf0e0864084e9035d1ddc48b84d884b12e8-s900-c85.jpg"
@@ -250,8 +250,10 @@ export default function SocialMedia() {
 
 function CommunityImageBannerAdSlot({
   ad,
+  onFail,
 }: {
   ad: { id: string; scriptSrc: string; bannerKey: string; bannerWidth: number; bannerHeight: number };
+  onFail: () => void;
 }) {
   const [containerId] = useState(`community-image-slot-${ad.id}`);
 
@@ -268,14 +270,20 @@ function CommunityImageBannerAdSlot({
     };
     const script = document.createElement("script");
     script.src = ad.scriptSrc;
-    script.async = true;
+    script.async = false;
     script.setAttribute("data-cfasync", "false");
     script.setAttribute("data-bloodnet-community-image-ad", ad.id);
     host.appendChild(script);
+
+    const checkTimer = window.setTimeout(() => {
+      const hasFrame = Boolean(host.querySelector("iframe"));
+      if (!hasFrame) onFail();
+    }, 2000);
     return () => {
+      window.clearTimeout(checkTimer);
       host.innerHTML = "";
     };
-  }, [ad.bannerHeight, ad.bannerKey, ad.bannerWidth, ad.id, ad.scriptSrc, containerId]);
+  }, [ad.bannerHeight, ad.bannerKey, ad.bannerWidth, ad.id, ad.scriptSrc, containerId, onFail]);
 
   return (
     <div className="flex h-full w-full items-center justify-center bg-white/60 p-4">

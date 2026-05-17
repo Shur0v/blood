@@ -1,48 +1,114 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
 
-const CONTAINER_ID = "container-69f76ca337dbb9f04681328e3e20bb15";
-const SCRIPT_SRC = "https://www.highperformanceformat.com/69f76ca337dbb9f04681328e3e20bb15/invoke.js";
+type RuntimeAd = {
+  id: string;
+  adType: "script" | "smartlink" | "native_banner" | "iframe_banner";
+  scriptSrc?: string | null;
+  bannerKey?: string | null;
+  bannerWidth?: number | null;
+  bannerHeight?: number | null;
+  placement: "head" | "body_end" | "footer_inline" | "hero_center" | "donor_cards_mix" | "community_image_slot";
+};
+
+type RuntimePayload = {
+  adsRuntimeEnabled: boolean;
+  adUnits: RuntimeAd[];
+};
 
 export default function FooterBottomBannerAd() {
   const pathname = usePathname();
+  const [ad, setAd] = useState<{
+    id: string;
+    scriptSrc: string;
+    bannerKey: string;
+    bannerWidth: number;
+    bannerHeight: number;
+  } | null>(null);
+  const shouldHide = useMemo(
+    () => pathname.startsWith("/admin-dashboard") || pathname.startsWith("/dashboard") || pathname.startsWith("/api"),
+    [pathname]
+  );
 
   useEffect(() => {
-    if (pathname.startsWith("/admin-dashboard") || pathname.startsWith("/dashboard") || pathname.startsWith("/api")) {
-      return;
-    }
+    if (shouldHide) return;
+    let active = true;
+    const load = async () => {
+      try {
+        const res = await fetch("/api/public/ads-settings", { method: "GET", cache: "no-store" });
+        const payload = await res.json();
+        if (!active || !res.ok || !payload?.success) return;
+        const data = payload.data as RuntimePayload;
+        if (!data.adsRuntimeEnabled) {
+          setAd(null);
+          return;
+        }
+        const found = data.adUnits.find(
+          (item) =>
+            item.adType === "iframe_banner" &&
+            item.placement === "footer_inline" &&
+            item.scriptSrc &&
+            item.bannerKey &&
+            Number(item.bannerWidth) > 0 &&
+            Number(item.bannerHeight) > 0
+        );
+        if (!found) {
+          setAd(null);
+          return;
+        }
+        setAd({
+          id: String(found.id),
+          scriptSrc: String(found.scriptSrc),
+          bannerKey: String(found.bannerKey),
+          bannerWidth: Number(found.bannerWidth),
+          bannerHeight: Number(found.bannerHeight),
+        });
+      } catch {
+        // ignore transient issues
+      }
+    };
+    void load();
+    const t = window.setInterval(() => void load(), 8000);
+    return () => {
+      active = false;
+      window.clearInterval(t);
+    };
+  }, [shouldHide]);
 
-    const existing = document.querySelector<HTMLScriptElement>(`script[src="${SCRIPT_SRC}"]`);
-    if (existing) return;
-
+  useEffect(() => {
+    if (shouldHide || !ad) return;
+    const container = document.getElementById("footer-bottom-inline-ad");
+    if (!container) return;
+    container.innerHTML = "";
     (window as Window & { atOptions?: unknown }).atOptions = {
-      key: "69f76ca337dbb9f04681328e3e20bb15",
+      key: ad.bannerKey,
       format: "iframe",
-      height: 90,
-      width: 728,
+      height: ad.bannerHeight,
+      width: ad.bannerWidth,
       params: {},
     };
-
     const script = document.createElement("script");
-    script.src = SCRIPT_SRC;
-    script.async = true;
+    script.src = ad.scriptSrc;
+    script.async = false;
     script.setAttribute("data-cfasync", "false");
-    script.setAttribute("data-bloodnet-footer-banner", "1");
-    document.body.appendChild(script);
-  }, [pathname]);
+    script.setAttribute("data-bloodnet-footer-banner", ad.id);
+    container.appendChild(script);
+    return () => {
+      container.innerHTML = "";
+    };
+  }, [ad, shouldHide]);
 
-  if (pathname.startsWith("/admin-dashboard") || pathname.startsWith("/dashboard") || pathname.startsWith("/api")) {
+  if (shouldHide || !ad) {
     return null;
   }
 
   return (
     <section className="mx-auto w-full max-w-7xl px-4 pb-8" aria-label="Sponsored banner">
       <div className="flex justify-center">
-        <div id={CONTAINER_ID} />
+        <div id="footer-bottom-inline-ad" style={{ width: `${ad.bannerWidth}px`, minHeight: `${ad.bannerHeight}px` }} />
       </div>
     </section>
   );
 }
-
