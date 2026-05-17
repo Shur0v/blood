@@ -4,7 +4,6 @@ import { Search, Star, X } from "lucide-react";
 import DonorModal from "./DonorModal";
 import useViewerGeo from "./useViewerGeo";
 import { maskPhoneTail } from "../lib/phoneMask";
-import ManagedNativeAdSlot from "./ManagedNativeAdSlot";
 import FooterBottomBannerAd from "./FooterBottomBannerAd";
 
 const bloodGroups = ["AB+", "AB-", "A+", "A-", "B+", "B-", "O+", "O-"];
@@ -499,8 +498,6 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
           </div>
         </motion.div>
 
-        <ManagedNativeAdSlot slotKey="native-ad-1" />
-
         {isInitialDonorLoad ? (
           <div className="mx-auto min-h-[320px] max-w-4xl rounded-[8px] border border-white/40 bg-white/20 p-8 text-center text-sm font-semibold text-gray-700">
             Loading nearby active donors...
@@ -580,7 +577,7 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
             </button>
           </div>
         )}
-        <div className="mt-10">
+        <div className="mt-10 space-y-6">
           <FooterBottomBannerAd />
         </div>
       </div>

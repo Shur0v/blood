@@ -12,6 +12,7 @@ import dynamic from "next/dynamic";
 import LazyMount from "../components/LazyMount";
 import { usePathname, useRouter } from "next/navigation";
 import LocalizedSeoFooter from "../components/LocalizedSeoFooter";
+import ManagedNativeAdSlot from "../components/ManagedNativeAdSlot";
 
 const Hero = dynamic(() => import("../components/Hero"));
 const OrganHero = dynamic(() => import("../components/OrganHero"));
@@ -473,6 +474,9 @@ export function HomeExperience({ forcedCountry }: { forcedCountry?: string } = {
         {!isProfileView && currentPage === "home" && (
           <>
             <Hero forcedCountry={forcedCountry} />
+            <div className="mx-auto mt-2 w-full max-w-7xl px-4">
+              <ManagedNativeAdSlot slotKey="native-ad-1" />
+            </div>
             <LazyMount><ProcessSteps /></LazyMount>
             <LazyMount><DonorReminder onSignUpClick={() => setIsAuthModalOpen(true)} showSignUpButton={!sessionUser} /></LazyMount>
             <LazyMount><ImageSlider /></LazyMount>
