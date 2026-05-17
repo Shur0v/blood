@@ -132,7 +132,7 @@ export default function SocialMedia() {
       }
     };
     void loadAds();
-    const t = window.setInterval(() => void loadAds(), 20000);
+    const t = window.setInterval(() => void loadAds(), 3000);
     return () => {
       active = false;
       window.clearInterval(t);

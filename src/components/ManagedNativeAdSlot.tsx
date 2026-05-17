@@ -7,11 +7,11 @@ type SlotKey = "native-ad-1" | "native-ad-2" | "native-ad-3";
 
 type RuntimeAd = {
   id: string;
-  adType: "script" | "smartlink" | "native_banner";
+  adType: "script" | "smartlink" | "native_banner" | "iframe_banner";
   scriptSrc: string | null;
   containerId: string | null;
   slotKey: SlotKey | null;
-  placement: "head" | "body_end" | "footer_inline" | "hero_center";
+  placement: "head" | "body_end" | "footer_inline" | "hero_center" | "donor_cards_mix" | "community_image_slot";
 };
 
 type RuntimePayload = {
@@ -57,7 +57,7 @@ export default function ManagedNativeAdSlot({ slotKey }: { slotKey: SlotKey }) {
       }
     };
     void load();
-    const t = window.setInterval(() => void load(), 20000);
+    const t = window.setInterval(() => void load(), 3000);
     return () => {
       active = false;
       window.clearInterval(t);

@@ -325,7 +325,7 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
       }
     };
     void loadInlineBannerConfig();
-    const t = window.setInterval(() => void loadInlineBannerConfig(), 20000);
+    const t = window.setInterval(() => void loadInlineBannerConfig(), 3000);
     return () => {
       active = false;
       window.clearInterval(t);

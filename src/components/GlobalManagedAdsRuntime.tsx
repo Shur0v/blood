@@ -5,14 +5,14 @@ import { usePathname } from "next/navigation";
 
 type RuntimeAd = {
   id: string;
-  adType: "script" | "smartlink" | "native_banner";
+  adType: "script" | "smartlink" | "native_banner" | "iframe_banner";
   scriptSrc: string | null;
   targetUrl: string | null;
   linkLabel: string | null;
   containerId?: string | null;
   slotKey?: "native-ad-1" | "native-ad-2" | "native-ad-3" | null;
   scope: "all_public_pages";
-  placement: "head" | "body_end" | "footer_inline" | "hero_center";
+  placement: "head" | "body_end" | "footer_inline" | "hero_center" | "donor_cards_mix" | "community_image_slot";
 };
 
 type RuntimePayload = {
@@ -22,7 +22,7 @@ type RuntimePayload = {
 };
 
 const BLOCKED_PREFIXES = ["/admin-dashboard", "/dashboard", "/api"];
-const REFRESH_MS = 20000;
+const REFRESH_MS = 3000;
 
 const removeManagedScripts = () => {
   if (typeof document === "undefined") return;
