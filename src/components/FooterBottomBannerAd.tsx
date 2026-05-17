@@ -27,6 +27,7 @@ export default function FooterBottomBannerAd() {
     bannerWidth: number;
     bannerHeight: number;
   } | null>(null);
+  const [hasFrame, setHasFrame] = useState(false);
   const shouldHide = useMemo(
     () => pathname.startsWith("/admin-dashboard") || pathname.startsWith("/dashboard") || pathname.startsWith("/api"),
     [pathname]
@@ -56,6 +57,7 @@ export default function FooterBottomBannerAd() {
         );
         if (!found) {
           setAd(null);
+          setHasFrame(false);
           return;
         }
         setAd({
@@ -82,6 +84,7 @@ export default function FooterBottomBannerAd() {
     const container = document.getElementById("footer-bottom-inline-ad");
     if (!container) return;
     container.innerHTML = "";
+    setHasFrame(false);
     (window as Window & { atOptions?: unknown }).atOptions = {
       key: ad.bannerKey,
       format: "iframe",
@@ -95,8 +98,14 @@ export default function FooterBottomBannerAd() {
     script.setAttribute("data-cfasync", "false");
     script.setAttribute("data-bloodnet-footer-banner", ad.id);
     container.appendChild(script);
+    const checkTimer = window.setTimeout(() => {
+      const ok = Boolean(container.querySelector("iframe"));
+      setHasFrame(ok);
+    }, 1800);
     return () => {
+      window.clearTimeout(checkTimer);
       container.innerHTML = "";
+      setHasFrame(false);
     };
   }, [ad, shouldHide]);
 
@@ -105,9 +114,9 @@ export default function FooterBottomBannerAd() {
   }
 
   return (
-    <section className="mx-auto w-full max-w-7xl px-4 pb-8" aria-label="Sponsored banner">
+    <section className={`mx-auto w-full max-w-7xl px-4 ${hasFrame ? "pb-2 pt-1" : "pb-0 pt-0"}`} aria-label="Sponsored banner">
       <div className="flex justify-center">
-        <div id="footer-bottom-inline-ad" style={{ width: `${ad.bannerWidth}px`, minHeight: `${ad.bannerHeight}px` }} />
+        <div id="footer-bottom-inline-ad" style={{ width: `${ad.bannerWidth}px`, minHeight: hasFrame ? `${ad.bannerHeight}px` : "0px" }} />
       </div>
     </section>
   );

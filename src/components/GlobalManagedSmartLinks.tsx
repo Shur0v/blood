@@ -58,7 +58,7 @@ export default function GlobalManagedSmartLinks() {
   if (smartLinks.length === 0) return null;
 
   return (
-    <section className="mx-auto max-w-7xl px-4 pb-6" aria-label="Sponsored links">
+    <section className="mx-auto max-w-7xl px-4 pb-1 pt-1" aria-label="Sponsored links">
       <div className="rounded-[8px] border border-gray-200/70 bg-white/70 px-3 py-2 text-center text-xs text-gray-500">
         <span className="mr-2 font-semibold uppercase tracking-wide">Sponsored</span>
         {smartLinks.map((ad) => (
