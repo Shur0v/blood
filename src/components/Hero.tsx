@@ -5,6 +5,7 @@ import DonorModal from "./DonorModal";
 import useViewerGeo from "./useViewerGeo";
 import { maskPhoneTail } from "../lib/phoneMask";
 import ManagedNativeAdSlot from "./ManagedNativeAdSlot";
+import FooterBottomBannerAd from "./FooterBottomBannerAd";
 
 const bloodGroups = ["AB+", "AB-", "A+", "A-", "B+", "B-", "O+", "O-"];
 
@@ -578,6 +579,9 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
             </button>
           </div>
         )}
+        <div className="mt-10">
+          <FooterBottomBannerAd />
+        </div>
       </div>
 
       <DonorModal donor={selectedDonor} onClose={() => setSelectedDonor(null)} />

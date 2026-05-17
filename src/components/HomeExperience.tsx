@@ -12,7 +12,6 @@ import dynamic from "next/dynamic";
 import LazyMount from "../components/LazyMount";
 import { usePathname, useRouter } from "next/navigation";
 import LocalizedSeoFooter from "../components/LocalizedSeoFooter";
-import FooterBottomBannerAd from "../components/FooterBottomBannerAd";
 
 const Hero = dynamic(() => import("../components/Hero"));
 const OrganHero = dynamic(() => import("../components/OrganHero"));
@@ -538,7 +537,6 @@ export function HomeExperience({ forcedCountry }: { forcedCountry?: string } = {
           onPageChange={handlePageChange}
         />
       )}
-      {!isProfileView && <FooterBottomBannerAd />}
 
       <PolicyModal
         isOpen={policyModal.isOpen}
