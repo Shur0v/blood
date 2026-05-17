@@ -136,12 +136,23 @@ export default function AdsControlPage() {
   };
 
   const applyEdit = () => {
-    if (editingIndex === null || !draft) return;
+    if (editingIndex === null || !draft || saving) return;
     const next = [...adUnits];
     next[editingIndex] = { ...draft };
-    setAdUnits(next);
+    setSaving(true);
+    setError(null);
     setMessage(null);
-    closeEdit();
+    void (async () => {
+      try {
+        await persistSettings(adsRuntimeEnabled, next);
+        setMessage("Ad unit updated and saved.");
+        closeEdit();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to update ad unit.");
+      } finally {
+        setSaving(false);
+      }
+    })();
   };
 
   const toggleGlobalRuntimeNow = async () => {
@@ -159,6 +170,23 @@ export default function AdsControlPage() {
       );
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to update global runtime.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const toggleSingleUnitNow = async (index: number) => {
+    if (saving) return;
+    const next = [...adUnits];
+    next[index] = { ...next[index], enabled: !next[index].enabled };
+    setSaving(true);
+    setError(null);
+    setMessage(null);
+    try {
+      await persistSettings(adsRuntimeEnabled, next);
+      setMessage(`${next[index].name} ${next[index].enabled ? "enabled" : "disabled"} and saved.`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to update ad unit status.");
     } finally {
       setSaving(false);
     }
@@ -200,7 +228,13 @@ export default function AdsControlPage() {
                 <p className="text-sm font-black text-gray-900 dark:text-white">{unit.name}</p>
                 <p className="text-xs font-semibold text-gray-500">{AD_TYPE_LABEL[unit.adType]} • {PLACEMENT_LABEL[unit.placement]}</p>
               </div>
-              <span className={`rounded-lg px-2 py-1 text-xs font-black ${unit.enabled ? "bg-green-100 text-green-700" : "bg-gray-200 text-gray-700"}`}>{unit.enabled ? "Enabled" : "Disabled"}</span>
+              <button
+                onClick={() => void toggleSingleUnitNow(index)}
+                disabled={saving || loading}
+                className={`rounded-lg px-2 py-1 text-xs font-black disabled:opacity-60 ${unit.enabled ? "bg-green-100 text-green-700" : "bg-gray-200 text-gray-700"}`}
+              >
+                {unit.enabled ? "Enabled" : "Disabled"}
+              </button>
             </div>
             <div className="space-y-1 text-xs text-gray-600 dark:text-gray-300">
               <p><span className="font-bold">Provider:</span> {unit.provider}</p>
@@ -288,7 +322,7 @@ export default function AdsControlPage() {
               </button>
               <div className="flex gap-2">
                 <button onClick={closeEdit} className="rounded-xl border border-gray-300 px-4 py-2 text-sm font-bold">Cancel</button>
-                <button onClick={applyEdit} className="rounded-xl bg-red-600 px-4 py-2 text-sm font-black text-white">Apply</button>
+                <button onClick={applyEdit} disabled={saving} className="rounded-xl bg-red-600 px-4 py-2 text-sm font-black text-white disabled:opacity-60">Apply</button>
               </div>
             </div>
           </div>

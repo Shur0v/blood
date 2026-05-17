@@ -58,16 +58,16 @@ export default function GlobalManagedSmartLinks() {
   if (smartLinks.length === 0) return null;
 
   return (
-    <section className="mx-auto max-w-7xl px-4 pb-1 pt-1" aria-label="Sponsored links">
-      <div className="rounded-[8px] border border-gray-200/70 bg-white/70 px-3 py-2 text-center text-xs text-gray-500">
-        <span className="mr-2 font-semibold uppercase tracking-wide">Sponsored</span>
+    <section className="mx-auto max-w-7xl px-4 pb-0 pt-0" aria-label="Sponsored links">
+      <div className="rounded-[8px] border border-white/10 bg-black px-3 py-1 text-center text-xs text-gray-400">
+        <span className="mr-2 font-semibold uppercase tracking-wide text-gray-500">Sponsored</span>
         {smartLinks.map((ad) => (
           <a
             key={ad.id}
             href={ad.targetUrl!}
             target="_blank"
             rel="nofollow sponsored noopener noreferrer"
-            className="mr-3 inline-block font-bold text-red-600 underline-offset-2 hover:underline"
+            className="mr-3 inline-block font-bold text-red-400 underline-offset-2 hover:underline"
           >
             {ad.linkLabel || "Visit Partner"}
           </a>
