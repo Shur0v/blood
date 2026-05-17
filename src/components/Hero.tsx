@@ -103,6 +103,8 @@ function MixedDonorBannerCard({ ad, onFail }: { ad: InlineBannerAdUnit; onFail: 
   );
 }
 
+const DONOR_GRID_AD_SLOTS = 4;
+
 export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
   const readServerRenderedDonorTotal = () => {
     if (forcedCountry) return 0;
@@ -130,6 +132,7 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [inlineBannerAd, setInlineBannerAd] = useState<InlineBannerAdUnit | null>(null);
   const [hideInlineBanner, setHideInlineBanner] = useState(false);
+  const [failedAdSlots, setFailedAdSlots] = useState<Record<number, boolean>>({});
   const [hasLoadedMoreOnce, setHasLoadedMoreOnce] = useState(false);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -286,6 +289,7 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
   useEffect(() => {
     setHasLoadedMoreOnce(false);
     setHideInlineBanner(false);
+    setFailedAdSlots({});
   }, [activeGroup, normalizedSearch, viewerGeo.city, viewerGeo.country]);
 
   useEffect(() => {
@@ -357,14 +361,20 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
   };
 
   const hasNoResults = useMemo(() => donors.length === 0, [donors]);
-  const adInsertIndex = useMemo(() => {
-    if (!hasLoadedMoreOnce || !inlineBannerAd || hideInlineBanner || donors.length === 0) return -1;
+  const adInsertIndexes = useMemo(() => {
+    if (!hasLoadedMoreOnce || !inlineBannerAd || hideInlineBanner || donors.length === 0) return [] as number[];
     const seed = `${donors[0]?.id || "seed"}-${donors.length}-${activeGroup || "all"}-${normalizedSearch || "none"}`;
     let hash = 0;
     for (let i = 0; i < seed.length; i += 1) {
       hash = (hash * 31 + seed.charCodeAt(i)) | 0;
     }
-    return Math.abs(hash) % (donors.length + 1);
+    const out: number[] = [];
+    const max = donors.length + 1;
+    for (let i = 0; i < Math.min(DONOR_GRID_AD_SLOTS, max); i += 1) {
+      const idx = Math.abs(hash + i * 17) % max;
+      if (!out.includes(idx)) out.push(idx);
+    }
+    return out;
   }, [hasLoadedMoreOnce, inlineBannerAd, hideInlineBanner, donors, activeGroup, normalizedSearch]);
 
   return (
@@ -503,14 +513,9 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {donors.map((donor, index) => (
               <div key={`slot-${donor.id}`}>
-                {inlineBannerAd && !hideInlineBanner && adInsertIndex === index && (
-                  <motion.div
-                    key={`ad-inline-${inlineBannerAd.id}-${index}`}
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: index * 0.05 }}
-                  >
-                    <MixedDonorBannerCard ad={inlineBannerAd} onFail={() => setHideInlineBanner(true)} />
+                {inlineBannerAd && !hideInlineBanner && adInsertIndexes.includes(index) && !failedAdSlots[index] && (
+                  <motion.div key={`ad-inline-${inlineBannerAd.id}-${index}`} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: index * 0.05 }}>
+                    <MixedDonorBannerCard ad={inlineBannerAd} onFail={() => setFailedAdSlots((prev) => ({ ...prev, [index]: true }))} />
                   </motion.div>
                 )}
                 <motion.div
@@ -550,13 +555,9 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
                 </motion.div>
               </div>
             ))}
-            {inlineBannerAd && !hideInlineBanner && adInsertIndex === donors.length && (
-              <motion.div
-                key={`ad-inline-tail-${inlineBannerAd.id}`}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-              >
-                <MixedDonorBannerCard ad={inlineBannerAd} onFail={() => setHideInlineBanner(true)} />
+            {inlineBannerAd && !hideInlineBanner && adInsertIndexes.includes(donors.length) && !failedAdSlots[donors.length] && (
+              <motion.div key={`ad-inline-tail-${inlineBannerAd.id}`} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
+                <MixedDonorBannerCard ad={inlineBannerAd} onFail={() => setFailedAdSlots((prev) => ({ ...prev, [donors.length]: true }))} />
               </motion.div>
             )}
           </div>
