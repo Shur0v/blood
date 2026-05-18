@@ -99,9 +99,21 @@ export default function FooterBottomBannerAd() {
     script.setAttribute("data-bloodnet-footer-banner", ad.id);
     container.appendChild(script);
     const checkTimer = window.setTimeout(() => {
-      const ok = Boolean(container.querySelector("iframe"));
+      const iframe = container.querySelector("iframe") as HTMLIFrameElement | null;
+      const rawSrc = iframe?.getAttribute("src")?.trim() || "";
+      const srcLooksValid =
+        rawSrc.length > 0 &&
+        rawSrc !== "about:blank" &&
+        rawSrc !== "about:srcdoc";
+      const hasRenderableSize = Boolean(
+        iframe && iframe.clientWidth > 0 && iframe.clientHeight > 0
+      );
+      const ok = Boolean(iframe && srcLooksValid && hasRenderableSize);
       setHasFrame(ok);
-    }, 1800);
+      if (!ok) {
+        container.innerHTML = "";
+      }
+    }, 2200);
     return () => {
       window.clearTimeout(checkTimer);
       container.innerHTML = "";

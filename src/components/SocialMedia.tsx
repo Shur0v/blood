@@ -285,11 +285,19 @@ function CommunityImageBannerAdSlot({
     host.appendChild(script);
 
     const checkTimer = window.setTimeout(() => {
-      const hasFrame = Boolean(host.querySelector("iframe"));
-      if (!hasFrame) {
+      const iframe = host.querySelector("iframe") as HTMLIFrameElement | null;
+      const rawSrc = iframe?.getAttribute("src")?.trim() || "";
+      const srcLooksValid =
+        rawSrc.length > 0 &&
+        rawSrc !== "about:blank" &&
+        rawSrc !== "about:srcdoc";
+      const hasRenderableSize = Boolean(
+        iframe && iframe.clientWidth > 0 && iframe.clientHeight > 0
+      );
+      if (!iframe || !srcLooksValid || !hasRenderableSize) {
         onFail();
       }
-    }, 2000);
+    }, 2200);
     return () => {
       window.clearTimeout(checkTimer);
       host.innerHTML = "";
