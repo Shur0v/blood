@@ -4,6 +4,16 @@ import { getPrisma } from '@/src/backend/config/db';
 import { ADMIN_ROLES, getSessionFromRequest, hasRequiredRole } from '@/src/backend/utils/session';
 import { countWords, slugify } from '@/src/backend/utils/slug';
 
+const optionalTrimmedString = (max: number) =>
+  z.preprocess(
+    (val) => {
+      if (typeof val !== 'string') return undefined;
+      const trimmed = val.trim();
+      return trimmed.length > 0 ? trimmed : undefined;
+    },
+    z.string().max(max).optional(),
+  );
+
 const QuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(20).default(20),
@@ -11,16 +21,33 @@ const QuerySchema = z.object({
 });
 
 const CreateBlogSchema = z.object({
-  title: z.string().min(5).max(180),
-  content: z.string().min(100),
+  title: z.string().trim().min(5).max(180),
+  content: z.string().trim().min(100),
   status: z.enum(['DRAFT', 'PUBLISHED', 'ARCHIVED']).default('DRAFT'),
-  slug: z.string().min(3).max(180).optional(),
-  canonicalUrl: z.string().url().optional(),
-  metaTitle: z.string().max(180).optional(),
-  metaDescription: z.string().max(320).optional(),
-  primaryKeyword: z.string().max(120).optional(),
-  secondaryKeywords: z.array(z.string().max(120)).optional(),
-  minWordCount: z.number().int().min(300).max(3000).default(1200),
+  slug: z.preprocess(
+    (val) => {
+      if (typeof val !== 'string') return undefined;
+      const trimmed = val.trim();
+      return trimmed.length > 0 ? trimmed : undefined;
+    },
+    z.string().min(3).max(180).optional(),
+  ),
+  canonicalUrl: z.preprocess(
+    (val) => {
+      if (typeof val !== 'string') return undefined;
+      const trimmed = val.trim();
+      return trimmed.length > 0 ? trimmed : undefined;
+    },
+    z.string().url().optional(),
+  ),
+  metaTitle: optionalTrimmedString(180),
+  metaDescription: optionalTrimmedString(320),
+  primaryKeyword: optionalTrimmedString(120),
+  secondaryKeywords: z
+    .array(z.string().trim().max(120))
+    .optional()
+    .transform((items) => (items ?? []).map((item) => item.trim()).filter(Boolean)),
+  minWordCount: z.coerce.number().int().min(300).max(3000).default(1200),
 });
 
 const ensureAdminSession = (req: Request): NextResponse | null => {
@@ -98,7 +125,8 @@ export async function POST(req: Request) {
 
   const parsed = CreateBlogSchema.safeParse(await req.json());
   if (!parsed.success) {
-    return NextResponse.json({ success: false, message: 'Invalid blog payload.' }, { status: 400 });
+    const reason = parsed.error.issues[0]?.message || 'Invalid blog payload.';
+    return NextResponse.json({ success: false, message: reason }, { status: 400 });
   }
 
   const payload = parsed.data;

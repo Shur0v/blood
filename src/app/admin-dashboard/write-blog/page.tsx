@@ -24,6 +24,49 @@ interface BlogItem {
 
 const MIN_WORD_COUNT_DEFAULT = 1200;
 
+const BLOG_PROMPT_TEMPLATE = `You are a professional medical SEO writer for BloodNet.
+
+TASK:
+Write a long-form blog article in clean semantic HTML (NOT markdown, NOT ASCII diagrams).
+
+OUTPUT RULES (VERY IMPORTANT):
+1) Return only article-body HTML. No <html>, <head>, <body>, scripts, iframes, or inline JS.
+2) Use only safe semantic tags: h2, h3, p, ul, ol, li, strong, em, blockquote, a, table, thead, tbody, tr, th, td, hr.
+3) Keep all sections human-written, practical, and medically careful.
+4) Do not use fake statistics, do not claim diagnosis, and include a safety note to consult licensed doctors.
+5) Minimum length: 1400+ words unless instructed otherwise.
+
+RESPONSIVE TABLE/DIAGRAM RULE:
+If you include any table/comparison/chart-like structure, wrap each table exactly like this:
+<div style="overflow-x:auto;max-width:100%;">
+  <table>
+    ...
+  </table>
+</div>
+
+CONTENT STRUCTURE:
+- Intro hook (problem + who this is for)
+- Clear explanation sections with H2/H3
+- Practical checklists / bullet points
+- Real-life scenario examples
+- Common mistakes section
+- FAQ section (3-5 short Q&A)
+- Safety disclaimer
+- Conclusion with actionable next step
+
+SEO RULES:
+- Natural use of primary keyword in title intro and one subheading
+- Use secondary keywords naturally (no stuffing)
+- Short paragraphs for mobile readability
+- Use plain, clear language
+
+Now write the article for this topic:
+[PASTE TOPIC HERE]
+Primary keyword:
+[PASTE PRIMARY KEYWORD]
+Secondary keywords:
+[PASTE SECONDARY KEYWORDS]`;
+
 const countWords = (value: string) =>
   value
     .replace(/\s+/g, ' ')
@@ -46,6 +89,7 @@ export default function WriteBlogPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
+  const [copyState, setCopyState] = useState<'idle' | 'copied'>('idle');
 
   const wordCount = useMemo(() => countWords(content), [content]);
 
@@ -130,11 +174,21 @@ export default function WriteBlogPage() {
     setSecondaryKeywords(Array.isArray(item.secondary_keywords) ? item.secondary_keywords.join(', ') : '');
   };
 
+  const copyPromptTemplate = async () => {
+    try {
+      await navigator.clipboard.writeText(BLOG_PROMPT_TEMPLATE);
+      setCopyState('copied');
+      window.setTimeout(() => setCopyState('idle'), 1800);
+    } catch {
+      setMessage('Could not copy prompt automatically. Please copy manually.');
+    }
+  };
+
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
       <div>
         <h2 className="text-2xl font-bold">Content Editor (CMS)</h2>
-        <p className="text-sm text-gray-500 mt-1">Text-only SEO blog publishing with automatic slug page generation.</p>
+        <p className="text-sm text-gray-500 mt-1">HTML-ready SEO blog publishing with responsive rendering support.</p>
       </div>
 
       {message && (
@@ -145,6 +199,27 @@ export default function WriteBlogPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="lg:col-span-3 space-y-6">
+          <Card title="Gemini Prompt Template (Copy & Use)">
+            <div className="space-y-3">
+              <p className="text-xs font-semibold text-gray-500">
+                Use this prompt in Gemini to generate mobile-safe, structured article HTML for this editor.
+              </p>
+              <textarea
+                value={BLOG_PROMPT_TEMPLATE}
+                readOnly
+                rows={14}
+                className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#0f1115] px-4 py-3 text-xs outline-none"
+              />
+              <button
+                type="button"
+                onClick={() => void copyPromptTemplate()}
+                className="rounded-lg bg-blue-600 px-4 py-2 text-xs font-bold text-white"
+              >
+                {copyState === 'copied' ? 'Copied' : 'Copy Prompt Template'}
+              </button>
+            </div>
+          </Card>
+
           <Card title="Article Content">
             <div className="space-y-4">
               <input
@@ -157,7 +232,7 @@ export default function WriteBlogPage() {
               <textarea
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                placeholder="Write text-only long-form content..."
+                placeholder="Paste full article HTML (recommended) or plain text..."
                 rows={16}
                 className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#0f1115] px-4 py-3 text-sm outline-none resize-y"
               />

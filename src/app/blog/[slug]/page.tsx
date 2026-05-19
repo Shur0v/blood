@@ -6,6 +6,7 @@ import { getPrisma } from "@/src/backend/config/db";
 import BlogTopNav from "@/src/components/BlogTopNav";
 import { DEFAULT_LOCALE, getRequestLocale } from "@/src/lib/locale";
 import { translateTextCached } from "@/src/backend/services/translationService";
+import { hasHtmlMarkup, sanitizeBlogHtml, stripHtmlTags } from "@/src/lib/blogContent";
 
 interface BlogPageProps {
   params: Promise<{ slug: string }>;
@@ -28,7 +29,7 @@ export async function generateMetadata({ params }: BlogPageProps): Promise<Metad
   }
 
   const title = post.meta_title || post.seo_title || post.title;
-  const description = post.meta_description || post.seo_desc || post.content.slice(0, 160);
+  const description = post.meta_description || post.seo_desc || stripHtmlTags(post.content).slice(0, 160);
   const canonical = post.canonical_url || `/blog/${post.slug}`;
 
   return {
@@ -90,7 +91,7 @@ export default async function BlogDetailPage({ params }: BlogPageProps) {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
     headline: post.meta_title || post.seo_title || post.title,
-    description: post.meta_description || post.seo_desc || post.content.slice(0, 160),
+    description: post.meta_description || post.seo_desc || stripHtmlTags(post.content).slice(0, 160),
     datePublished: post.published_at || post.created_at,
     dateModified: post.updated_at,
     mainEntityOfPage: canonical,
@@ -107,6 +108,9 @@ export default async function BlogDetailPage({ params }: BlogPageProps) {
       name: "BloodNet",
     },
   };
+
+  const isHtmlContent = hasHtmlMarkup(localizedContent);
+  const safeHtml = isHtmlContent ? sanitizeBlogHtml(localizedContent) : "";
 
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
@@ -165,11 +169,18 @@ export default async function BlogDetailPage({ params }: BlogPageProps) {
             </div>
           )}
 
-          <div className="mt-8 space-y-6 text-[17px] leading-8 text-slate-700 md:text-[19px] md:leading-9">
-            {paragraphs.map((paragraph, idx) => (
-              <p key={idx}>{paragraph}</p>
-            ))}
-          </div>
+          {isHtmlContent ? (
+            <div
+              className="blog-html-content mt-8 text-[17px] leading-8 text-slate-700 md:text-[19px] md:leading-9 [&_h2]:mt-8 [&_h2]:text-2xl [&_h2]:font-black [&_h2]:text-[#0F172A] [&_h3]:mt-6 [&_h3]:text-xl [&_h3]:font-bold [&_h3]:text-[#0F172A] [&_p]:mt-4 [&_ul]:mt-4 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:mt-4 [&_ol]:list-decimal [&_ol]:pl-6 [&_a]:font-semibold [&_a]:text-red-600 [&_blockquote]:mt-6 [&_blockquote]:border-l-4 [&_blockquote]:border-red-200 [&_blockquote]:bg-red-50/40 [&_blockquote]:px-4 [&_blockquote]:py-3 [&_table]:min-w-full [&_table]:border-collapse [&_th]:border [&_th]:border-slate-300 [&_th]:bg-slate-100 [&_th]:px-3 [&_th]:py-2 [&_th]:text-left [&_td]:border [&_td]:border-slate-300 [&_td]:px-3 [&_td]:py-2 [&_.bn-table-wrap]:my-6 [&_.bn-table-wrap]:w-full [&_.bn-table-wrap]:overflow-x-auto"
+              dangerouslySetInnerHTML={{ __html: safeHtml }}
+            />
+          ) : (
+            <div className="mt-8 space-y-6 text-[17px] leading-8 text-slate-700 md:text-[19px] md:leading-9">
+              {paragraphs.map((paragraph, idx) => (
+                <p key={idx}>{paragraph}</p>
+              ))}
+            </div>
+          )}
         </article>
       </main>
     </div>

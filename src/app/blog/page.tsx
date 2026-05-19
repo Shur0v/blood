@@ -4,6 +4,7 @@ import { getPrisma } from "@/src/backend/config/db";
 import BlogTopNav from "@/src/components/BlogTopNav";
 import { DEFAULT_LOCALE, getRequestLocale } from "@/src/lib/locale";
 import { translateTextCached } from "@/src/backend/services/translationService";
+import { stripHtmlTags } from "@/src/lib/blogContent";
 
 export const dynamic = "force-dynamic";
 
@@ -62,7 +63,8 @@ export default async function BlogListingPage() {
   const localizedRows = await Promise.all(
     rows.map(async (row) => {
       if (locale === DEFAULT_LOCALE) {
-        return { ...row, localizedTitle: row.title, localizedExcerpt: row.meta_description || `${row.content.slice(0, 220)}...` };
+        const plainContent = stripHtmlTags(row.content);
+        return { ...row, localizedTitle: row.title, localizedExcerpt: row.meta_description || `${plainContent.slice(0, 220)}...` };
       }
       const [localizedTitle, localizedExcerpt] = await Promise.all([
         translateTextCached({
@@ -74,7 +76,7 @@ export default async function BlogListingPage() {
         }),
         translateTextCached({
           prisma,
-          sourceText: row.meta_description || `${row.content.slice(0, 220)}...`,
+          sourceText: row.meta_description || `${stripHtmlTags(row.content).slice(0, 220)}...`,
           locale,
           contentType: "blog-list:excerpt",
           contentVersion: row.id,
