@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { CheckCircle2, Paintbrush, RefreshCcw, Save } from "lucide-react";
+import { CheckCircle2, Download, Paintbrush, RefreshCcw, Save } from "lucide-react";
 import { DEFAULT_UI_THEME, type UiThemeKey, UI_THEME_KEYS, UI_THEME_LABELS } from "@/src/lib/uiTheme";
 
 const THEME_DESCRIPTIONS: Record<UiThemeKey, string> = {
@@ -21,6 +21,7 @@ export default function ThemeControlPage() {
   const [persistedTheme, setPersistedTheme] = useState<UiThemeKey>(DEFAULT_UI_THEME);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [downloadingBackup, setDownloadingBackup] = useState(false);
 
   const hasChanges = useMemo(() => selectedTheme !== persistedTheme, [selectedTheme, persistedTheme]);
 
@@ -89,6 +90,43 @@ export default function ThemeControlPage() {
     }
   };
 
+  const downloadFullBackup = async () => {
+    setDownloadingBackup(true);
+    setError(null);
+    setMessage(null);
+    try {
+      const res = await fetch("/api/admin/database-backup", {
+        method: "GET",
+        credentials: "include",
+        cache: "no-store",
+      });
+      if (!res.ok) {
+        const payload = await res.json().catch(() => null);
+        throw new Error(payload?.message || "Failed to download backup.");
+      }
+
+      const blob = await res.blob();
+      const contentDisposition = res.headers.get("Content-Disposition") || "";
+      const nameMatch = contentDisposition.match(/filename="(.+?)"/i);
+      const fileName = nameMatch?.[1] || `bloodnet-db-backup-${Date.now()}.json.gz`;
+
+      const url = window.URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = fileName;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      window.URL.revokeObjectURL(url);
+
+      setMessage("Full database backup downloaded successfully.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to download backup.");
+    } finally {
+      setDownloadingBackup(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-[#1a1b23]">
@@ -110,7 +148,18 @@ export default function ThemeControlPage() {
             <RefreshCcw className="h-4 w-4" />
             Refresh
           </button>
+          <button
+            onClick={() => void downloadFullBackup()}
+            disabled={downloadingBackup || loading}
+            className="inline-flex items-center justify-center gap-2 rounded-xl border border-green-300 bg-green-50 px-4 py-2 text-sm font-bold text-green-700 transition hover:bg-green-100 disabled:opacity-60 dark:border-green-900/70 dark:bg-green-950/20 dark:text-green-300 dark:hover:bg-green-950/35"
+          >
+            {downloadingBackup ? <RefreshCcw className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+            {downloadingBackup ? "Preparing Backup..." : "Download Full Backup"}
+          </button>
         </div>
+        <p className="mt-3 text-xs font-semibold text-amber-600 dark:text-amber-400">
+          Recommended: store this file in secure offsite storage (R2/S3/Drive) after each major content/user update.
+        </p>
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
