@@ -21,6 +21,12 @@ interface BlogItem {
   primary_keyword?: string | null;
   secondary_keywords?: string[] | null;
 }
+interface PaginationState {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
 
 const MIN_WORD_COUNT_DEFAULT = 1200;
 
@@ -86,15 +92,24 @@ export default function WriteBlogPage() {
   const [status, setStatus] = useState<BlogStatus>('DRAFT');
   const [minWordCount, setMinWordCount] = useState(MIN_WORD_COUNT_DEFAULT);
   const [rows, setRows] = useState<BlogItem[]>([]);
+  const [page, setPage] = useState(1);
+  const [pagination, setPagination] = useState<PaginationState>({
+    page: 1,
+    limit: 20,
+    total: 0,
+    totalPages: 1,
+  });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [loadingTable, setLoadingTable] = useState(false);
   const [message, setMessage] = useState('');
   const [copyState, setCopyState] = useState<'idle' | 'copied'>('idle');
 
   const wordCount = useMemo(() => countWords(content), [content]);
 
-  const loadBlogs = async () => {
-    const res = await fetch('/api/admin/blogs?page=1&limit=20', {
+  const loadBlogs = async (targetPage: number = 1) => {
+    setLoadingTable(true);
+    const res = await fetch(`/api/admin/blogs?page=${targetPage}&limit=20`, {
       method: 'GET',
       credentials: 'include',
       cache: 'no-store',
@@ -102,9 +117,18 @@ export default function WriteBlogPage() {
     const payload = await res.json();
     if (!res.ok || !payload.success) {
       setRows([]);
+      setLoadingTable(false);
       return;
     }
     setRows(payload.data || []);
+    setPage(Number(payload?.pagination?.page || targetPage));
+    setPagination({
+      page: Number(payload?.pagination?.page || targetPage),
+      limit: Number(payload?.pagination?.limit || 20),
+      total: Number(payload?.pagination?.total || 0),
+      totalPages: Number(payload?.pagination?.totalPages || 1),
+    });
+    setLoadingTable(false);
   };
 
   useEffect(() => {
@@ -158,7 +182,7 @@ export default function WriteBlogPage() {
     if (!res.ok || !json.success) return;
 
     resetForm();
-    await loadBlogs();
+    await loadBlogs(page);
   };
 
   const startEdit = async (item: BlogItem) => {
@@ -305,6 +329,14 @@ export default function WriteBlogPage() {
       </div>
 
       <Card title="Published & Draft Content">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 px-1">
+          <p className="text-sm font-semibold text-gray-500">
+            Total blogs: <span className="font-bold text-gray-900 dark:text-gray-100">{pagination.total}</span>
+          </p>
+          <p className="text-xs font-semibold text-gray-500">
+            Page {pagination.page} of {pagination.totalPages}
+          </p>
+        </div>
         <Table headers={['Title', 'Slug', 'Status', 'Words', 'Updated', 'Actions']}>
           {rows.map((row) => (
             <TableRow key={row.id}>
@@ -325,6 +357,50 @@ export default function WriteBlogPage() {
             </TableRow>
           ))}
         </Table>
+        {loadingTable && (
+          <p className="mt-3 text-center text-xs font-semibold text-gray-500">Loading blogs...</p>
+        )}
+        <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+          <button
+            type="button"
+            disabled={page <= 1 || loadingTable}
+            onClick={() => void loadBlogs(page - 1)}
+            className="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-bold disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700"
+          >
+            Previous
+          </button>
+          {Array.from({ length: pagination.totalPages }, (_, idx) => idx + 1)
+            .filter((p) => Math.abs(p - page) <= 2 || p === 1 || p === pagination.totalPages)
+            .map((p, idx, arr) => {
+              const prev = arr[idx - 1];
+              const showGap = idx > 0 && prev !== undefined && p - prev > 1;
+              return (
+                <React.Fragment key={`p-${p}`}>
+                  {showGap && <span className="px-1 text-xs text-gray-500">...</span>}
+                  <button
+                    type="button"
+                    onClick={() => void loadBlogs(p)}
+                    disabled={loadingTable}
+                    className={`rounded-lg px-3 py-1.5 text-xs font-bold ${
+                      p === page
+                        ? 'bg-red-600 text-white'
+                        : 'border border-gray-300 text-gray-700 dark:border-gray-700 dark:text-gray-200'
+                    } disabled:cursor-not-allowed disabled:opacity-50`}
+                  >
+                    {p}
+                  </button>
+                </React.Fragment>
+              );
+            })}
+          <button
+            type="button"
+            disabled={page >= pagination.totalPages || loadingTable}
+            onClick={() => void loadBlogs(page + 1)}
+            className="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-bold disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700"
+          >
+            Next
+          </button>
+        </div>
       </Card>
     </div>
   );
