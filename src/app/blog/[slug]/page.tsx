@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, Clock3 } from "lucide-react";
 import { getPrisma } from "@/src/backend/config/db";
 import BlogTopNav from "@/src/components/BlogTopNav";
+import BlogInterlinkCluster from "@/src/components/BlogInterlinkCluster";
 import { DEFAULT_LOCALE, getRequestLocale } from "@/src/lib/locale";
 import { translateTextCached } from "@/src/backend/services/translationService";
 import { hasHtmlMarkup, sanitizeBlogHtml, stripHtmlTags } from "@/src/lib/blogContent";
@@ -182,6 +183,8 @@ export default async function BlogDetailPage({ params }: BlogPageProps) {
             </div>
           )}
         </article>
+
+        <BlogInterlinkCluster currentBlogId={post.id} />
       </main>
     </div>
   );
