@@ -30,48 +30,9 @@ interface PaginationState {
 
 const MIN_WORD_COUNT_DEFAULT = 1200;
 
-const BLOG_PROMPT_TEMPLATE = `You are a professional medical SEO writer for BloodNet.
-
-TASK:
-Write a long-form blog article in clean semantic HTML (NOT markdown, NOT ASCII diagrams).
-
-OUTPUT RULES (VERY IMPORTANT):
-1) Return only article-body HTML. No <html>, <head>, <body>, scripts, iframes, or inline JS.
-2) Use only safe semantic tags: h2, h3, p, ul, ol, li, strong, em, blockquote, a, table, thead, tbody, tr, th, td, hr.
-3) Keep all sections human-written, practical, and medically careful.
-4) Do not use fake statistics, do not claim diagnosis, and include a safety note to consult licensed doctors.
-5) Minimum length: 1400+ words unless instructed otherwise.
-
-RESPONSIVE TABLE/DIAGRAM RULE:
-If you include any table/comparison/chart-like structure, wrap each table exactly like this:
-<div style="overflow-x:auto;max-width:100%;">
-  <table>
-    ...
-  </table>
-</div>
-
-CONTENT STRUCTURE:
-- Intro hook (problem + who this is for)
-- Clear explanation sections with H2/H3
-- Practical checklists / bullet points
-- Real-life scenario examples
-- Common mistakes section
-- FAQ section (3-5 short Q&A)
-- Safety disclaimer
-- Conclusion with actionable next step
-
-SEO RULES:
-- Natural use of primary keyword in title intro and one subheading
-- Use secondary keywords naturally (no stuffing)
-- Short paragraphs for mobile readability
-- Use plain, clear language
-
-Now write the article for this topic:
-[PASTE TOPIC HERE]
-Primary keyword:
-[PASTE PRIMARY KEYWORD]
-Secondary keywords:
-[PASTE SECONDARY KEYWORDS]`;
+const BLOG_PROMPT_TEMPLATE = `
+System Role & Objective:You are a world-class medical editor, neuro-immunologist, and clinical educator. Your objective is to write a comprehensive, "Masterclass-level" medical article on the provided topic. The article must act as a complete, one-stop solution for the patient, replacing their anxiety with a deep, logical, and scientifically grounded understanding of their body.Strict Formatting Constraints (Non-Negotiable):Length & Depth: The article must be exhaustively detailed, aiming for 2,000 to 3,000 words. Do not summarize or skip over complex cellular mechanics.NO Em-Dashes: You are strictly forbidden from using em-dashes (—) or en-dashes (–) anywhere in the text. To separate thoughts, use commas, colons, or parentheses instead.LaTeX for All Metrics: Every single number, measurement, temperature, clinical threshold, percentage, and unit must be formatted using precise LaTeX math notation. (Examples: $10\text{ mg/dL}$, $\ge 60\text{ mL/min/1.73m}^2$, $< 1.5\text{ cm}$, $101^\circ\text{F}$).HTML Output: The entire output must be wrapped in valid HTML using semantic tags (<h2>, <h3>, <p>, <ul>, <ol>). Use a professional, clean styling (assuming Tailwind CSS is present).The Mandatory Article Structure (Include ALL of the following sections in order):1. Clinical Hook & Emotional Context (The Introduction):Open by placing the reader directly into the clinical environment (e.g., sitting in the ER, waiting in the clinic, waking up from surgery). Describe the sensory details (sounds, smells, equipment). Validate their fear and anxiety, then explain how understanding the cellular mechanics of their condition will replace that fear with empowerment.2. Quantitative Physiological Baselines (The Clearance Standards):Provide the exact, mathematical blood or imaging metrics a doctor uses to evaluate this condition (e.g., eGFR, INR, Hemoglobin, MAP). Explain what the "normal" baseline is, and what the "danger" threshold is.3. The Mechanistic Breakdown (Cellular Sabotage):Explain exactly how the disease or drug works at a microscopic, molecular level. Use vivid, mechanical analogies (e.g., "plumbing blockages," "chemical firewalls," "cellular saboteurs").4. Pathological Grading & Classification Systems:Detail the official, international scoring systems doctors use to grade the severity of this issue (e.g., the Killip Class, KDIGO, TNM, TI-RADS). Explain what each stage means in plain English.5. Comparative Modality Matrix (HTML Table):Create a highly detailed HTML <table> comparing at least 3-4 different treatments, diagnostic tools, or drugs related to the topic. Include columns for: Modality, Biological Mechanism, Clinical Benefit, and Primary Systemic Limitations/Risks.6. The Chronological Complication Timeline:Map out the progression of the disease, the recovery from surgery, or a drug reaction over specific, chronological windows (e.g., Hours 0-4, Days 2-5, Weeks 2-6). Explain exactly what is happening in the body during each window.7. Emergency Action Protocol & "Red Flag" Triggers:Provide a strict, bulleted list of severe symptoms that require immediate ER visits. Crucially, include an "Absolute Don'ts" section detailing what the patient must NOT do (e.g., Do not apply heat, do not take NSAIDs, do not eat/drink). Make this a one-stop emergency survival guide.8. The Small Node Surveillance Rule (Immune Reassurance):Include a specific, reassuring section explaining that small, swollen lymph nodes (measuring $< 1.5\text{ cm}$) are often a healthy, benign immune response to healing, medications, or minor inflammation. Explain why immediate biopsies are dangerous and why "active monthly surveillance" is the gold standard, preventing unnecessary patient panic.9. Actionable Patient Agency Tools (Questions for the Doctor):Provide a printable, bulleted list of 5 highly advanced, specific questions the patient should ask their specialist at their next appointment to ensure they are getting top-tier care.10. Second Opinion Protocol:List 3 specific clinical triggers or scenarios where the patient must absolutely seek a second opinion or transfer to a specialized/academic medical center.11. Safety & Ethics Disclaimer & Verified Sources:Include a standard medical disclaimer in italics. Follow this with a list of 3-4 verified institutional sources (e.g., Mayo Clinic, NIH, CDC, American Heart Association).12. Hidden CMS Metadata Block:At the very bottom of the HTML, include a <div class="hidden"> containing the following fields wrapped in <h4> tags:[FIELD 1: POST TITLE] (A highly engaging, SEO-optimized title)[FIELD 3: SLUG][FIELD 4: CANONICAL URL][FIELD 5: META TITLE][FIELD 6: PRIMARY KEYWORD][FIELD 7: META DESCRIPTION] (High CTR, 150 characters max)[FIELD 8: SECONDARY KEYWORDS] (Comma separated list)
+`;
 
 const countWords = (value: string) =>
   value
@@ -381,11 +342,10 @@ export default function WriteBlogPage() {
                     type="button"
                     onClick={() => void loadBlogs(p)}
                     disabled={loadingTable}
-                    className={`rounded-lg px-3 py-1.5 text-xs font-bold ${
-                      p === page
-                        ? 'bg-red-600 text-white'
-                        : 'border border-gray-300 text-gray-700 dark:border-gray-700 dark:text-gray-200'
-                    } disabled:cursor-not-allowed disabled:opacity-50`}
+                    className={`rounded-lg px-3 py-1.5 text-xs font-bold ${p === page
+                      ? 'bg-red-600 text-white'
+                      : 'border border-gray-300 text-gray-700 dark:border-gray-700 dark:text-gray-200'
+                      } disabled:cursor-not-allowed disabled:opacity-50`}
                   >
                     {p}
                   </button>
