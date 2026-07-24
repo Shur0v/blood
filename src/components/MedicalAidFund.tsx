@@ -7,13 +7,13 @@ import CountryPhoneInput, { emptyPhoneValue, type PhoneFieldValue } from "./Coun
 export default function MedicalAidFund() {
   const [isModalOpen, setIsModalOpen] = useState(false); // Verification Form Modal
   const [isDonateModalOpen, setIsDonateModalOpen] = useState(false); // Donate Now UI Modal
-  
+
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [prescriptionFiles, setPrescriptionFiles] = useState<File[]>([]);
   const [reportFiles, setReportFiles] = useState<File[]>([]);
-  
+
   const [formData, setFormData] = useState({
     patientName: "",
     hospitalName: "",
@@ -133,8 +133,8 @@ export default function MedicalAidFund() {
       setTimeout(() => {
         setSuccess(false);
         setIsModalOpen(false);
-        setFormData({ 
-          patientName: "", hospitalName: "", amountRequired: "", 
+        setFormData({
+          patientName: "", hospitalName: "", amountRequired: "",
           email: "", medicalNote: ""
         });
         setPhoneValue(emptyPhoneValue());
@@ -151,11 +151,11 @@ export default function MedicalAidFund() {
 
   return (
     <section className="relative mx-auto max-w-6xl px-4 py-16">
-      
+
       {/* High-Converting Global Donate Modal */}
-      <DonateNowModal 
-        isOpen={isDonateModalOpen} 
-        onClose={() => setIsDonateModalOpen(false)} 
+      <DonateNowModal
+        isOpen={isDonateModalOpen}
+        onClose={() => setIsDonateModalOpen(false)}
       />
 
       <motion.div
@@ -169,20 +169,27 @@ export default function MedicalAidFund() {
         <div className="absolute bottom-0 left-0 -ml-20 -mb-20 h-80 w-80 rounded-full bg-black opacity-10 blur-3xl"></div>
 
         <div className="relative z-10 flex flex-col lg:flex-row justify-between items-center gap-12">
-          
+
           {/* Left Side: Call to Action */}
           <div className="flex-1 w-full text-center lg:text-left">
             <div className="inline-flex items-center gap-2 rounded-full bg-white/20 px-4 py-2 border border-white/30 mb-6 backdrop-blur-md">
               <Heart className="h-4 w-4 text-white animate-pulse fill-white" />
-              <span className="text-[10px] font-black uppercase tracking-widest text-white drop-shadow-md">BloodNet Global Initiative</span>
+              {/* <span className="text-[10px] font-black uppercase tracking-widest text-white drop-shadow-md"> BloodNet Global Initiative </span> */}
+              <span className="text-[10px] font-black uppercase tracking-widest text-white drop-shadow-md"> BloodNet Global </span>
             </div>
-            
+
+            {/* <h2 className="text-4xl font-black tracking-tight text-white md:text-5xl mb-6 leading-tight drop-shadow-lg">
+              Medical Aid & <br className="hidden lg:block" /> Financial Support
+            </h2> */}
             <h2 className="text-4xl font-black tracking-tight text-white md:text-5xl mb-6 leading-tight drop-shadow-lg">
-              Medical Aid & <br className="hidden lg:block"/> Financial Support
+              Current Essentials <br className="hidden lg:block" /> of Medicine
             </h2>
-            
-            <p className="text-base font-medium text-white/90 mb-10 max-w-md mx-auto lg:mx-0 drop-shadow-md leading-relaxed">
+
+            {/* <p className="text-base font-medium text-white/90 mb-10 max-w-md mx-auto lg:mx-0 drop-shadow-md leading-relaxed">
               We bridge the financial gap for underprivileged patients. 100% of your generous donations cover direct medical surgery costs.
+            </p> */}
+            <p className="text-base font-medium text-white/90 mb-10 max-w-md mx-auto lg:mx-0 drop-shadow-md leading-relaxed">
+              Access the complete digital edition by paying any amount you choose. Your purchase also helps us maintain and improve free healthcare resources for the community.
             </p>
 
             <div className="flex flex-col items-center lg:items-start gap-6">
@@ -195,7 +202,8 @@ export default function MedicalAidFund() {
                 >
                   <div className="relative flex items-center gap-3">
                     <Heart className="h-6 w-6 text-[#FF3131] fill-[#FF3131] animate-[pulse_1.5s_ease-in-out_infinite]" />
-                    Donate Now
+                    {/* Donate Now */}
+                    GET THE BOOK
                     <ArrowRight className="h-6 w-6 transition-transform group-hover:translate-x-2" />
                   </div>
                 </motion.button>
@@ -205,11 +213,12 @@ export default function MedicalAidFund() {
                 </div>
               </div>
 
-              <button 
+              <button
                 onClick={() => setIsModalOpen(true)}
                 className="text-sm font-bold text-white/70 underline transition-colors hover:text-white tracking-wide mt-2 drop-shadow-md"
               >
-                Request for donation money (Patients Only)
+                {/* Request for donation money (Patients Only) */}
+                Need free access? Request a sponsored copy.
               </button>
             </div>
           </div>
@@ -217,28 +226,32 @@ export default function MedicalAidFund() {
           {/* Right Side: Simple Stats Grid */}
           <div className="flex-1 w-full mt-8 lg:mt-0">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              
+
               <motion.div whileHover={{ y: -5 }} className="rounded-3xl border border-white/20 bg-white/10 p-8 shadow-2xl backdrop-blur-xl transition-all">
-                <p className="text-[10px] font-black uppercase tracking-widest text-white/70 mb-2">Total Raised</p>
+                {/* <p className="text-[10px] font-black uppercase tracking-widest text-white/70 mb-2">Total Raised</p> */}
+                <p className="text-[10px] font-black uppercase tracking-widest text-white/70 mb-2">TOTAL DOWNLOADS</p>
                 <div className="text-4xl font-black text-white tracking-tight drop-shadow-md">${stats.total_raised.toLocaleString()}+</div>
               </motion.div>
-              
+
               <motion.div whileHover={{ y: -5 }} className="rounded-3xl border border-white/20 bg-white/10 p-8 shadow-2xl backdrop-blur-xl transition-all">
-                <p className="text-[10px] font-black uppercase tracking-widest text-white/70 mb-2">Total Spent</p>
+                {/* <p className="text-[10px] font-black uppercase tracking-widest text-white/70 mb-2">Total Spent</p> */}
+                <p className="text-[10px] font-black uppercase tracking-widest text-white/70 mb-2">COMMUNITY SUPPORT</p>
                 <div className="text-4xl font-black text-white tracking-tight drop-shadow-md">${stats.total_spent.toLocaleString()}+</div>
               </motion.div>
-              
+
               <motion.div whileHover={{ y: -5 }} className="rounded-3xl border border-white/40 bg-white/20 p-8 shadow-2xl backdrop-blur-xl transition-all relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-4 opacity-10"><Activity className="w-16 h-16"/></div>
-                <p className="text-[10px] font-black uppercase tracking-widest text-white mb-2">Projects Completed</p>
+                <div className="absolute top-0 right-0 p-4 opacity-10"><Activity className="w-16 h-16" /></div>
+                {/* <p className="text-[10px] font-black uppercase tracking-widest text-white mb-2">Projects Completed</p> */}
+                <p className="text-[10px] font-black uppercase tracking-widest text-white mb-2">ACTIVE READERS</p>
                 <div className="text-4xl font-black text-white tracking-tight drop-shadow-lg">{stats.completed_ops.toLocaleString()}</div>
               </motion.div>
-              
+
               <motion.div whileHover={{ y: -5 }} className="rounded-3xl border border-white/20 bg-white/10 p-8 shadow-2xl backdrop-blur-xl transition-all">
-                <p className="text-[10px] font-black uppercase tracking-widest text-white/70 mb-2">Donation Requests</p>
+                {/* <p className="text-[10px] font-black uppercase tracking-widest text-white/70 mb-2">Donation Requests</p> */}
+                <p className="text-[10px] font-black uppercase tracking-widest text-white/70 mb-2">SPONSORED COPIES</p>
                 <div className="text-4xl font-black text-white tracking-tight drop-shadow-md">{stats.donor_requests.toLocaleString()}</div>
               </motion.div>
-              
+
             </div>
           </div>
         </div>
@@ -256,7 +269,7 @@ export default function MedicalAidFund() {
               onClick={() => setIsModalOpen(false)}
               className="absolute inset-0 bg-black/60 backdrop-blur-md"
             />
-            
+
             <motion.div
               initial={{ scale: 0.95, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -285,7 +298,7 @@ export default function MedicalAidFund() {
               </div>
 
               {success ? (
-                <motion.div 
+                <motion.div
                   initial={{ scale: 0.8, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   className="rounded-3xl border border-green-200 bg-green-50 p-8 text-center mt-8"
@@ -309,7 +322,7 @@ export default function MedicalAidFund() {
                         />
                       </div>
                     </div>
-                    
+
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-black uppercase tracking-widest text-white/90">Amount Needed (USD)</label>
                       <div className="relative">
@@ -385,61 +398,61 @@ export default function MedicalAidFund() {
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-black uppercase tracking-widest text-white/90">Prescription Image</label>
-                        <div className="relative group cursor-pointer">
-                          <input
-                            required
-                            type="file"
-                            accept="image/*"
-                            multiple
-                            onChange={(e) => setPrescriptionFiles(Array.from(e.target.files || []))}
-                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                          />
-                          <div className="w-full rounded-xl border-2 border-dashed border-white/20 bg-white/10 py-4 px-4 text-center group-hover:border-primary/60 group-hover:bg-primary/10 transition-all flex flex-col items-center justify-center gap-1">
-                            <ImagePlus className="h-5 w-5 text-white/70 group-hover:text-primary" />
-                            <span className="text-xs font-bold text-white/80 group-hover:text-primary">
-                              {prescriptionFiles.length > 0 ? `${prescriptionFiles.length} file(s) selected` : "Upload Prescription(s)"}
-                            </span>
-                            {prescriptionFiles.length > 0 && (
-                              <div className="max-h-12 w-full overflow-y-auto text-[10px] font-medium text-white/75">
-                                {prescriptionFiles.map((file, idx) => (
-                                  <p key={`${file.name}-${idx}`} className="truncate">
-                                    {file.name}
-                                  </p>
-                                ))}
-                              </div>
-                            )}
-                          </div>
+                      <div className="relative group cursor-pointer">
+                        <input
+                          required
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          onChange={(e) => setPrescriptionFiles(Array.from(e.target.files || []))}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                        />
+                        <div className="w-full rounded-xl border-2 border-dashed border-white/20 bg-white/10 py-4 px-4 text-center group-hover:border-primary/60 group-hover:bg-primary/10 transition-all flex flex-col items-center justify-center gap-1">
+                          <ImagePlus className="h-5 w-5 text-white/70 group-hover:text-primary" />
+                          <span className="text-xs font-bold text-white/80 group-hover:text-primary">
+                            {prescriptionFiles.length > 0 ? `${prescriptionFiles.length} file(s) selected` : "Upload Prescription(s)"}
+                          </span>
+                          {prescriptionFiles.length > 0 && (
+                            <div className="max-h-12 w-full overflow-y-auto text-[10px] font-medium text-white/75">
+                              {prescriptionFiles.map((file, idx) => (
+                                <p key={`${file.name}-${idx}`} className="truncate">
+                                  {file.name}
+                                </p>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       </div>
-                    
+                    </div>
+
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-black uppercase tracking-widest text-white/90">Medical Report Image</label>
-                        <div className="relative group cursor-pointer">
-                          <input
-                            required
-                            type="file"
-                            accept="image/*"
-                            multiple
-                            onChange={(e) => setReportFiles(Array.from(e.target.files || []))}
-                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                          />
-                          <div className="w-full rounded-xl border-2 border-dashed border-white/20 bg-white/10 py-4 px-4 text-center group-hover:border-primary/60 group-hover:bg-primary/10 transition-all flex flex-col items-center justify-center gap-1">
-                            <ImagePlus className="h-5 w-5 text-white/70 group-hover:text-primary" />
-                            <span className="text-xs font-bold text-white/80 group-hover:text-primary">
-                              {reportFiles.length > 0 ? `${reportFiles.length} file(s) selected` : "Upload Main Report(s)"}
-                            </span>
-                            {reportFiles.length > 0 && (
-                              <div className="max-h-12 w-full overflow-y-auto text-[10px] font-medium text-white/75">
-                                {reportFiles.map((file, idx) => (
-                                  <p key={`${file.name}-${idx}`} className="truncate">
-                                    {file.name}
-                                  </p>
-                                ))}
-                              </div>
-                            )}
-                          </div>
+                      <div className="relative group cursor-pointer">
+                        <input
+                          required
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          onChange={(e) => setReportFiles(Array.from(e.target.files || []))}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                        />
+                        <div className="w-full rounded-xl border-2 border-dashed border-white/20 bg-white/10 py-4 px-4 text-center group-hover:border-primary/60 group-hover:bg-primary/10 transition-all flex flex-col items-center justify-center gap-1">
+                          <ImagePlus className="h-5 w-5 text-white/70 group-hover:text-primary" />
+                          <span className="text-xs font-bold text-white/80 group-hover:text-primary">
+                            {reportFiles.length > 0 ? `${reportFiles.length} file(s) selected` : "Upload Main Report(s)"}
+                          </span>
+                          {reportFiles.length > 0 && (
+                            <div className="max-h-12 w-full overflow-y-auto text-[10px] font-medium text-white/75">
+                              {reportFiles.map((file, idx) => (
+                                <p key={`${file.name}-${idx}`} className="truncate">
+                                  {file.name}
+                                </p>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       </div>
+                    </div>
                   </div>
 
                   {submitError && (
