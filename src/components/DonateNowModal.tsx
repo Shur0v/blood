@@ -128,7 +128,8 @@ export default function DonateNowModal({ isOpen, onClose }: DonateNowModalProps)
   // Find current tier context (or default to custom context)
   const activeContext =
     isCustomEnabled ?
-      { impact: `Your massive $${activeAmount || 0} contribution directly funds live-saving operations, ICU beds, and vital medicines.`, title: "Custom Heavy Donation" }
+      // { impact: `Your massive $${activeAmount || 0} contribution directly funds live-saving operations, ICU beds, and vital medicines.`, title: "Custom Heavy Donation" }
+      { impact: `Your $${activeAmount || 0} purchase gives you instant access to the complete digital edition while supporting future updates and free community access.`, title: "Custom Heavy Support" }
       : DONATION_TIERS.find(t => t.amount === selectedTier) || DONATION_TIERS[0];
 
   const handleDonate = () => {
