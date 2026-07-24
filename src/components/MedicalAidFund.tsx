@@ -427,7 +427,7 @@ export default function MedicalAidFund() {
                   {/* Document Upload Section (Optional Fields) */}
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-white/90">Student ID / Supporting Document (Optional)</label>
+                      <label className="text-[10px] font-black uppercase tracking-widest text-white/90">Supporting Docs (Optional)</label>
                       <div className="relative group cursor-pointer">
                         <input
                           type="file"
