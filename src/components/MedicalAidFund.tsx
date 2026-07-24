@@ -303,17 +303,32 @@ export default function MedicalAidFund() {
                   animate={{ scale: 1, opacity: 1 }}
                   className="rounded-3xl border border-green-200 bg-green-50 p-8 text-center mt-8"
                 >
-                  <h3 className="text-2xl font-black text-green-600 uppercase tracking-widest mb-2">Thank you!</h3>
-                  <p className="text-green-800">Your request has been received. We'll review it and contact you by email if your sponsored copy is approved.</p>
+                  <h3 className="text-2xl font-black text-green-600 uppercase tracking-widest mb-2">Thank You!</h3>
+                  <p className="text-green-800">Your request has been received. We&apos;ll review it and contact you by email if your sponsored copy is approved.</p>
                 </motion.div>
               ) : (
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  {/* Hidden unnecessary numeric field kept to prevent backend/database schema validation crashes */}
-                  <input
-                    type="hidden"
-                    value={formData.amountRequired || 0}
-                    onChange={(e) => setFormData({ ...formData, amountRequired: e.target.value })}
-                  />
+                <form
+                  onSubmit={(e) => {
+                    if (!formData.amountRequired) {
+                      formData.amountRequired = "1000";
+                    }
+                    handleSubmit(e);
+                  }}
+                  className="space-y-4"
+                >
+                  {/* Hidden Amount Required Field with Default Value 1000 */}
+                  <div className="hidden">
+                    <input
+                      type="number"
+                      value={formData.amountRequired || "1000"}
+                      onChange={(e) => setFormData({ ...formData, amountRequired: e.target.value })}
+                      ref={(input) => {
+                        if (input && (!formData.amountRequired || formData.amountRequired === "")) {
+                          setFormData((prev) => ({ ...prev, amountRequired: "1000" }));
+                        }
+                      }}
+                    />
+                  </div>
 
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div className="space-y-1.5">
@@ -334,18 +349,16 @@ export default function MedicalAidFund() {
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-black uppercase tracking-widest text-white/90">Occupation / Status</label>
                       <div className="relative">
-                        <User className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-white/60" />
+                        <Activity className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-white/60" />
                         <input
                           required
                           type="text"
                           placeholder="Student, Doctor, Nurse, Intern, etc."
                           className="w-full rounded-xl border border-white/15 bg-white/10 py-3.5 pl-12 pr-4 text-white placeholder:text-white/45 focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/60"
-                          value={formData.hospitalName ? formData.hospitalName.split(' - ')[0] : ''}
+                          value={formData.hospitalName?.split(" - ")[0] || ""}
                           onChange={(e) => {
-                            const currentInst = formData.hospitalName && formData.hospitalName.includes(' - ')
-                              ? formData.hospitalName.split(' - ').slice(1).join(' - ')
-                              : '';
-                            setFormData({ ...formData, hospitalName: `${e.target.value}${currentInst ? ' - ' + currentInst : ''}` });
+                            const inst = formData.hospitalName?.split(" - ")[1] || "";
+                            setFormData({ ...formData, hospitalName: `${e.target.value} - ${inst}` });
                           }}
                         />
                       </div>
@@ -361,10 +374,10 @@ export default function MedicalAidFund() {
                         type="text"
                         placeholder="University, College, Hospital, or Organization"
                         className="w-full rounded-xl border border-white/15 bg-white/10 py-3.5 pl-12 pr-4 text-white placeholder:text-white/45 focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/60"
-                        value={formData.hospitalName && formData.hospitalName.includes(' - ') ? formData.hospitalName.split(' - ').slice(1).join(' - ') : (formData.hospitalName || '')}
+                        value={formData.hospitalName?.split(" - ")[1] || ""}
                         onChange={(e) => {
-                          const currentOcc = formData.hospitalName ? formData.hospitalName.split(' - ')[0] : '';
-                          setFormData({ ...formData, hospitalName: currentOcc ? `${currentOcc} - ${e.target.value}` : e.target.value });
+                          const occ = formData.hospitalName?.split(" - ")[0] || "";
+                          setFormData({ ...formData, hospitalName: `${occ} - ${e.target.value}` });
                         }}
                       />
                     </div>
@@ -397,7 +410,7 @@ export default function MedicalAidFund() {
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-white/90">Why Do You Need A Sponsored Copy?</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-white/90">Why do you need a sponsored copy?</label>
                     <div className="relative">
                       <FileText className="absolute left-4 top-4 h-5 w-5 text-white/60" />
                       <textarea
@@ -411,14 +424,14 @@ export default function MedicalAidFund() {
                     </div>
                   </div>
 
-                  {/* Document Upload Section */}
+                  {/* Document Upload Section (Optional Fields) */}
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-black uppercase tracking-widest text-white/90">Student ID / Supporting Document (Optional)</label>
                       <div className="relative group cursor-pointer">
                         <input
                           type="file"
-                          accept="image/*"
+                          accept="image/*,.pdf,.doc,.docx"
                           multiple
                           onChange={(e) => setPrescriptionFiles(Array.from(e.target.files || []))}
                           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
@@ -446,7 +459,7 @@ export default function MedicalAidFund() {
                       <div className="relative group cursor-pointer">
                         <input
                           type="file"
-                          accept="image/*"
+                          accept="image/*,.pdf,.doc,.docx"
                           multiple
                           onChange={(e) => setReportFiles(Array.from(e.target.files || []))}
                           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
