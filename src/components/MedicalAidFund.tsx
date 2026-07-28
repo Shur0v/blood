@@ -230,7 +230,7 @@ export default function MedicalAidFund() {
               <motion.div whileHover={{ y: -5 }} className="rounded-3xl border border-white/20 bg-white/10 p-8 shadow-2xl backdrop-blur-xl transition-all">
                 {/* <p className="text-[10px] font-black uppercase tracking-widest text-white/70 mb-2">Total Raised</p> */}
                 <p className="text-[10px] font-black uppercase tracking-widest text-white/70 mb-2">TOTAL DOWNLOADS</p>
-                <div className="text-4xl font-black text-white tracking-tight drop-shadow-md">${stats.total_raised.toLocaleString()}+</div>
+                <div className="text-4xl font-black text-white tracking-tight drop-shadow-md">{stats.total_raised.toLocaleString()}+</div>
               </motion.div>
 
               <motion.div whileHover={{ y: -5 }} className="rounded-3xl border border-white/20 bg-white/10 p-8 shadow-2xl backdrop-blur-xl transition-all">
