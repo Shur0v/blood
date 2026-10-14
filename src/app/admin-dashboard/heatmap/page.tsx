@@ -1,245 +1,31 @@
 'use client';
+import React,{useCallback,useEffect,useRef,useState} from 'react';
+import { RefreshCw,Eye,EyeOff,Monitor,Smartphone,Tablet } from 'lucide-react';
+import { analyticsPagePath } from '@/src/lib/analytics';
 
-import React from 'react';
-import { Card } from '@/src/admin-dashboard/components/common/Card';
-import { MousePointerClick, ChevronDown, SplitSquareVertical, Activity, MonitorSmartphone, Monitor, Smartphone } from 'lucide-react';
-
-type DeviceFilter = 'all' | 'desktop' | 'tablet' | 'mobile';
-
-interface HeatmapPoint {
-  x: number;
-  y: number;
-  device: string;
-  at: string;
-}
-
-interface HeatmapPayload {
-  selected: { page: string; device: DeviceFilter; days: number };
-  metrics: {
-    totalPoints: number;
-    recentPoints: number;
-    sessionsProxy: number;
-    avgScrollDepth: number;
-    topZone: string;
-  };
-  points: HeatmapPoint[];
-  zones: {
-    topLeft: number;
-    topRight: number;
-    bottomLeft: number;
-    bottomRight: number;
-  };
-  deviceSplit: Array<{ device: string; clicks: number; percent: number }>;
-  pageOptions: Array<{ page: string; count: number }>;
-}
-
-const emptyPayload: HeatmapPayload = {
-  selected: { page: 'home', device: 'all', days: 7 },
-  metrics: { totalPoints: 0, recentPoints: 0, sessionsProxy: 0, avgScrollDepth: 0, topZone: 'No Data' },
-  points: [],
-  zones: { topLeft: 0, topRight: 0, bottomLeft: 0, bottomRight: 0 },
-  deviceSplit: [],
-  pageOptions: [],
-};
-
-export default function HeatmapPage() {
-  const [selectedPage, setSelectedPage] = React.useState('home');
-  const [selectedDevice, setSelectedDevice] = React.useState<DeviceFilter>('all');
-  const [days, setDays] = React.useState(7);
-  const [data, setData] = React.useState<HeatmapPayload>(emptyPayload);
-  const [isLoading, setIsLoading] = React.useState(true);
-
-  const loadHeatmap = React.useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const params = new URLSearchParams({
-        page: selectedPage,
-        device: selectedDevice,
-        days: String(days),
-        limit: '800',
-      });
-      const res = await fetch(`/api/admin/analytics/heatmap?${params.toString()}`, {
-        method: 'GET',
-        credentials: 'include',
-        cache: 'no-store',
-      });
-      const payload = await res.json();
-      if (!res.ok || !payload.success) {
-        setData(emptyPayload);
-        return;
-      }
-      setData(payload.data as HeatmapPayload);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [days, selectedDevice, selectedPage]);
-
-  React.useEffect(() => {
-    void loadHeatmap();
-    const timer = setInterval(() => {
-      void loadHeatmap();
-    }, 10000);
-    return () => clearInterval(timer);
-  }, [loadHeatmap]);
-
-  const pageOptions = data.pageOptions.length > 0 ? data.pageOptions : [{ page: selectedPage, count: 0 }];
-
-  return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h2 className="text-2xl font-bold">Heatmap Analytics</h2>
-          <p className="text-sm text-gray-500 mt-1">Real click-density visualization using tracked interaction coordinates.</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="bg-white dark:bg-[#1a1b23] border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm flex items-center gap-2 shadow-sm">
-            <span className="font-semibold">Live Mode</span>
-            <SplitSquareVertical size={16} className="text-gray-400" />
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        <div className="lg:col-span-1 space-y-6">
-          <Card className="p-0">
-            <div className="p-4 border-b border-gray-100 dark:border-gray-800">
-              <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Tracked Page Selector</label>
-              <div className="relative">
-                <select
-                  value={selectedPage}
-                  onChange={(e) => setSelectedPage(e.target.value)}
-                  className="w-full bg-gray-50 dark:bg-[#0f1115] border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm appearance-none"
-                >
-                  {pageOptions.map((row) => (
-                    <option key={row.page} value={row.page}>
-                      {row.page} ({row.count})
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown size={16} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
-              </div>
-            </div>
-
-            <div className="p-4 border-b border-gray-100 dark:border-gray-800">
-              <label className="block text-xs font-bold text-gray-500 uppercase mb-3">Heatmap Type</label>
-              <button className="w-full flex items-center gap-3 bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400 border border-red-200 dark:border-red-500/20 px-3 py-2 rounded-lg text-sm font-medium transition">
-                <MousePointerClick size={16} /> Click Heatmap
-              </button>
-            </div>
-
-            <div className="p-4 border-b border-gray-100 dark:border-gray-800">
-              <label className="block text-xs font-bold text-gray-500 uppercase mb-3">Device Target</label>
-              <div className="flex rounded-lg overflow-hidden border border-gray-200 dark:border-gray-800">
-                {[
-                  { key: 'all', icon: <MonitorSmartphone size={18} />, title: 'All' },
-                  { key: 'desktop', icon: <Monitor size={18} />, title: 'Desktop' },
-                  { key: 'tablet', icon: <MonitorSmartphone size={18} />, title: 'Tablet' },
-                  { key: 'mobile', icon: <Smartphone size={18} />, title: 'Mobile' },
-                ].map((item) => (
-                  <button
-                    key={item.key}
-                    title={item.title}
-                    onClick={() => setSelectedDevice(item.key as DeviceFilter)}
-                    className={`flex-1 flex justify-center py-2 transition ${
-                      selectedDevice === item.key
-                        ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100'
-                        : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'
-                    }`}
-                  >
-                    {item.icon}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="p-4">
-              <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Timeframe</label>
-              <select
-                value={days}
-                onChange={(e) => setDays(Number(e.target.value))}
-                className="w-full bg-gray-50 dark:bg-[#0f1115] border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm"
-              >
-                <option value={1}>Last 24 Hours</option>
-                <option value={7}>Last 7 Days</option>
-                <option value={14}>Last 14 Days</option>
-                <option value={30}>Last 30 Days</option>
-              </select>
-            </div>
-          </Card>
-
-          <Card title="Analytics for Selection">
-            <div className="space-y-4">
-              <div>
-                <p className="text-sm text-gray-500">Total Heat Points</p>
-                <p className="text-xl font-bold">{data.metrics.totalPoints.toLocaleString()}</p>
-              </div>
-              <hr className="border-gray-100 dark:border-gray-800" />
-              <div>
-                <p className="text-sm text-gray-500">Average Scroll Depth</p>
-                <div className="flex items-center gap-3 mt-1">
-                  <div className="w-full h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
-                    <div className="h-full bg-blue-500" style={{ width: `${Math.max(0, Math.min(100, data.metrics.avgScrollDepth))}%` }} />
-                  </div>
-                  <span className="text-sm font-bold">{data.metrics.avgScrollDepth}%</span>
-                </div>
-              </div>
-              <hr className="border-gray-100 dark:border-gray-800" />
-              <div>
-                <p className="text-sm text-gray-500">Top Interaction Zone</p>
-                <p className="text-sm font-medium text-red-600 dark:text-red-400 mt-1">{data.metrics.topZone}</p>
-              </div>
-            </div>
-          </Card>
-        </div>
-
-        <div className="lg:col-span-3">
-          <Card className="p-0 border-gray-800 bg-[#0a0a0c] overflow-hidden flex flex-col h-[800px]">
-            <div className="p-3 border-b border-gray-800 bg-[#111115] flex justify-between items-center shrink-0">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                <div className="w-3 h-3 rounded-full bg-amber-500"></div>
-                <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
-                <span className="text-xs text-gray-500 ml-2 font-mono">
-                  /{selectedPage} / {selectedDevice.toUpperCase()} / Click Mode
-                </span>
-              </div>
-              <div className="flex items-center gap-2 text-xs">
-                <span className="text-blue-500">Cold</span>
-                <div className="w-24 h-2 bg-gradient-to-r from-blue-500 via-yellow-500 to-red-500 rounded-full"></div>
-                <span className="text-red-500">Hot</span>
-              </div>
-            </div>
-
-            <div className="flex-1 relative overflow-hidden bg-[#0f1115]">
-              {isLoading ? (
-                <div className="h-full flex items-center justify-center text-gray-400 text-sm font-medium">
-                  Loading heatmap points...
-                </div>
-              ) : data.points.length === 0 ? (
-                <div className="h-full flex items-center justify-center text-center px-8">
-                  <div>
-                    <p className="text-gray-300 font-semibold">No heatmap data found for this selection.</p>
-                    <p className="text-gray-500 text-sm mt-2">Clicks will appear here once users interact with this page.</p>
-                  </div>
-                </div>
-              ) : (
-                <div className="absolute inset-0">
-                  {data.points.map((point, index) => (
-                    <div
-                      key={`${point.at}-${index}`}
-                      className="absolute h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-red-500/30 shadow-[0_0_18px_rgba(239,68,68,0.9)]"
-                      style={{
-                        left: `${point.x * 100}%`,
-                        top: `${point.y * 100}%`,
-                      }}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-          </Card>
-        </div>
-      </div>
-    </div>
-  );
+type Device='all'|'desktop'|'tablet'|'mobile';
+type Payload={selected?:{page:string;device:Device;days:number};metrics:{totalClicks:number;mappedClicks:number;legacyPoints:number;siteTotal:number;avgScrollDepth:number};points:Array<{x:number;y:number;weight:number;targetPath?:string;targetX?:number;targetY?:number}>;pageOptions:Array<{page:string;count:number}>};
+const empty:Payload={metrics:{totalClicks:0,mappedClicks:0,legacyPoints:0,siteTotal:0,avgScrollDepth:0},points:[],pageOptions:[]};
+export default function HeatmapPage(){
+ const [page,setPage]=useState('home'),[device,setDevice]=useState<Device>('desktop'),[days,setDays]=useState('0'),[data,setData]=useState(empty),[error,setError]=useState(''),[loading,setLoading]=useState(false),[live,setLive]=useState(true),[show,setShow]=useState(true);
+ const [frameMetrics,setFrameMetrics]=useState({height:900,scroll:0,ready:false}),[available,setAvailable]=useState(900);
+ const holder=useRef<HTMLDivElement>(null),frame=useRef<HTMLIFrameElement>(null),serial=useRef(0);
+ const selectionReady=data.selected?.page===page&&data.selected.device===device&&data.selected.days===Number(days);
+ const current=selectionReady?data:empty;
+ const width=device==='mobile'?390:device==='tablet'?820:1440;
+ const scale=Math.min(1,available/width),path=analyticsPagePath(page);
+ const load=useCallback(async(signal?:AbortSignal)=>{const id=++serial.current;setLoading(true);try{const res=await fetch('/api/admin/analytics/heatmap?'+new URLSearchParams({page,device,days}),{credentials:'include',cache:'no-store',signal});const payload=await res.json();if(!res.ok||!payload.success)throw new Error(payload.message||'Unable to load analytics.');if(id===serial.current){setData(payload.data);setError('');}}catch(e){if(id===serial.current&&!(e instanceof Error&&e.name==='AbortError'))setError(e instanceof Error?e.message:'Unable to load analytics.');}finally{if(id===serial.current)setLoading(false);}},[page,device,days]);
+ useEffect(()=>{const controller=new AbortController();void load(controller.signal);const timer=setInterval(()=>{if(live&&document.visibilityState==='visible')void load(controller.signal);},15000);return()=>{controller.abort();clearInterval(timer);serial.current++;};},[load,live]);
+ useEffect(()=>{if(!holder.current)return;const observer=new ResizeObserver(entries=>setAvailable(entries[0].contentRect.width));observer.observe(holder.current);return()=>observer.disconnect();},[]);
+ useEffect(()=>{setFrameMetrics({height:900,scroll:0,ready:false});let cleanup=()=>{};const connect=()=>{cleanup();const win=frame.current?.contentWindow;try{if(!win||win.location.origin!==location.origin)return;const doc=win.document;const measure=()=>setFrameMetrics({height:Math.max(doc.documentElement.scrollHeight,doc.body?.scrollHeight||900),scroll:win.scrollY,ready:doc.readyState==='complete'});const block=(event:Event)=>{event.preventDefault();event.stopImmediatePropagation();};win.addEventListener('click',block,true);win.addEventListener('submit',block,true);win.addEventListener('scroll',measure,{passive:true});const observer=new ResizeObserver(measure);observer.observe(doc.documentElement);const timer=setInterval(measure,1000);measure();cleanup=()=>{win.removeEventListener('click',block,true);win.removeEventListener('submit',block,true);win.removeEventListener('scroll',measure);observer.disconnect();clearInterval(timer);};}catch{setError('The page preview was blocked. Check same-origin frame headers.');}};const el=frame.current;el?.addEventListener('load',connect);connect();return()=>{el?.removeEventListener('load',connect);cleanup();};},[path,width]);
+ const options=[{page:'home',count:0},...current.pageOptions.filter(row=>row.page!=='home')];if(!options.some(row=>row.page===page))options.push({page,count:0});const home=current.pageOptions.find(row=>row.page==='home');if(home)options[0]=home;
+ const plotted=current.points.map(p=>{let x=p.x*width,y=p.y*frameMetrics.height-frameMetrics.scroll;try{if(p.targetPath){const node=frame.current?.contentDocument?.querySelector(p.targetPath);const rect=node?.getBoundingClientRect();if(rect&&rect.width&&rect.height){x=rect.left+(p.targetX??.5)*rect.width;y=rect.top+(p.targetY??.5)*rect.height;}}}catch{}return {...p,px:x,py:y};});
+ const field='mt-2 min-h-11 w-full rounded-xl border border-gray-200 bg-white px-3 text-sm text-gray-900 dark:border-gray-700 dark:bg-[#131c2c] dark:text-gray-100';
+ return <div className="space-y-6"><div className="flex flex-wrap items-start justify-between gap-4"><div><p className="text-xs font-semibold uppercase tracking-wide text-rose-600 dark:text-rose-300">Experience analytics</p><h2 className="mt-2 text-3xl font-semibold tracking-tight">See where attention lands.</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-gray-500 dark:text-slate-400">Real visitor clicks on the current website. Scroll inside the preview to explore the page.</p></div><button onClick={()=>setLive(!live)} className="admin-action"><span className={'h-2 w-2 rounded-full '+(live?'bg-emerald-500':'bg-gray-400')}/>{live?'Live · every 15 seconds':'Updates paused'}</button></div>
+ {error&&<p role="alert" className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">{error} <button className="underline" onClick={()=>void load()}>Retry</button></p>}
+ <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{[['Site clicks',current.metrics.siteTotal],['Selected page clicks',current.metrics.totalClicks],['Mapped document clicks',current.metrics.mappedClicks],['Average session scroll',current.metrics.avgScrollDepth+'%']].map(([label,value])=><div key={label} className="admin-stat"><p className="text-sm text-gray-500 dark:text-slate-400">{label}</p><p className="mt-3 text-3xl font-semibold tracking-tight">{!selectionReady?'—':typeof value==='number'?value.toLocaleString():value}</p></div>)}</div>
+ <div className="grid items-start gap-6 lg:grid-cols-[240px_minmax(0,1fr)]"><aside className="admin-stat space-y-6"><label className="block text-xs font-semibold text-gray-500 dark:text-slate-400">Page<select aria-label="Tracked page" value={page} onChange={e=>setPage(e.target.value)} className={field}>{options.map(row=><option key={row.page} value={row.page}>{row.page} ({row.count.toLocaleString()})</option>)}</select></label><label className="block text-xs font-semibold text-gray-500 dark:text-slate-400">Timeframe<select aria-label="Heatmap timeframe" value={days} onChange={e=>setDays(e.target.value)} className={field}>{[0,1,7,14,30,90,365].map(n=><option value={n} key={n}>{n===0?'All time':n===1?'Last 24 hours':'Last '+n+' days'}</option>)}</select></label><div><p className="text-xs font-semibold text-gray-500 dark:text-slate-400">Device layout</p><div className="mt-3 grid grid-cols-2 gap-2">{(['desktop','tablet','mobile','all'] as Device[]).map(value=><button key={value} onClick={()=>setDevice(value)} aria-pressed={device===value} className={'min-h-11 rounded-xl border px-2 text-xs font-medium capitalize '+(device===value?'border-rose-300 bg-rose-50 text-rose-700':'border-gray-200 text-gray-500 dark:text-slate-400 dark:border-gray-700')}>{value}</button>)}</div></div><p className="text-xs leading-5 text-gray-500 dark:text-slate-400">{device==='all'?'All devices combine different layouts on a desktop preview. Choose a device for a closer match.':'Coordinates are scaled to this device layout. Content and responsive layouts may have changed since a click.'}</p><div className="border-t border-gray-200 pt-4 text-xs leading-5 text-gray-500 dark:text-slate-400 dark:border-gray-700"><p>{current.metrics.legacyPoints.toLocaleString()} older viewport clicks retained in historical data. They cannot be accurately placed on a full page.</p><p className="mt-3">Total clicks include history without coordinates. New visitor clicks update both analytics views together.</p></div></aside>
+ <section className="min-w-0 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-[#172033]"><div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 p-4 dark:border-gray-700"><span className="inline-flex items-center gap-2 text-sm font-medium">{device==='mobile'?<Smartphone size={16}/>:device==='tablet'?<Tablet size={16}/>:<Monitor size={16}/>} {path||'Preview unavailable'} <span className="text-xs text-gray-500 dark:text-slate-400">{width}px</span></span><div className="flex gap-2"><button className="admin-action" onClick={()=>setShow(!show)} aria-pressed={show}>{show?<Eye size={16}/>:<EyeOff size={16}/>}Heat layer</button><button className="admin-action" aria-label="Refresh heatmap" disabled={loading} onClick={()=>void load()}><RefreshCw size={16} className={loading?'animate-spin':''}/></button></div></div>
+ <div ref={holder} className="relative w-full bg-slate-100 dark:bg-slate-950" style={{height:900*scale}}>{path?<div style={{width,height:900,transform:'scale('+scale+')',transformOrigin:'top left',position:'relative',marginInline:available>width?(available-width)/2:0}}><iframe ref={frame} src={path+'?heatmapPreview=1'} title="Current website heatmap preview" sandbox="allow-scripts allow-same-origin" className="h-full w-full border-0 bg-white"/><svg aria-label="Click density overlay" className="pointer-events-none absolute inset-0" width={width} height={900} viewBox={'0 0 '+width+' 900'}><defs><radialGradient id="click-heat"><stop offset="0" stopColor="#ef233c" stopOpacity=".9"/><stop offset=".35" stopColor="#ffb703" stopOpacity=".65"/><stop offset="1" stopColor="#3b82f6" stopOpacity="0"/></radialGradient></defs>{show&&frameMetrics.ready&&plotted.filter(p=>p.py>-50&&p.py<950).map((p,i)=><circle key={i} cx={p.px} cy={p.py} r={18+Math.min(28,Math.log2(p.weight+1)*5)} fill="url(#click-heat)" opacity={Math.min(.95,.45+Math.log2(p.weight+1)*.09)}/>)}</svg></div>:<p className="p-8 text-sm text-gray-500 dark:text-slate-400">This private or unsupported page cannot be previewed. Its click totals remain available.</p>}</div>
+ <div className="flex flex-wrap items-center justify-between gap-3 p-4 text-xs text-gray-500 dark:text-slate-400"><p>{loading?'Updating…':current.metrics.mappedClicks?'Weighted density from all matching document clicks.':'No document clicks yet for these filters.'}</p><span className="flex items-center gap-2">Low<span className="h-2 w-24 rounded-full bg-gradient-to-r from-blue-500 via-amber-400 to-rose-600"/>High</span></div></section></div></div>;
 }

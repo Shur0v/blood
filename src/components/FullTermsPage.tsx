@@ -42,9 +42,9 @@ BloodNet is a donor-recipient matching platform only. Organ selling is a crime a
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
               <FileText className="h-6 w-6" />
             </div>
-            <span className="text-xs font-black uppercase tracking-[4px] text-primary">Legal</span>
+            <span className="text-xs font-semibold uppercase tracking-[4px] text-primary">Legal</span>
           </motion.div>
-          <h1 className="text-4xl font-black tracking-tight text-gray-900 md:text-6xl mb-4">
+          <h1 className="text-4xl font-semibold tracking-tight text-gray-900 md:text-6xl mb-4">
             Terms & Conditions
           </h1>
           <p className="text-lg text-gray-500 max-w-2xl">

@@ -31,7 +31,7 @@ export default function MobilePreview() {
                 <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center">
                   <Heart className="h-4 w-4 text-white fill-white" />
                 </div>
-                <span className="text-sm font-black tracking-tight">BloodNet</span>
+                <span className="text-sm font-semibold tracking-tight">BloodNet</span>
               </div>
 
               {/* Mockup UI Elements */}
@@ -82,10 +82,10 @@ export default function MobilePreview() {
         >
           <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-primary">
             <Smartphone className="h-4 w-4" />
-            <span className="text-[10px] font-black uppercase tracking-widest">Mobile Experience</span>
+            <span className="text-[10px] font-semibold uppercase tracking-wide">Mobile Experience</span>
           </div>
           
-          <h2 className="mb-6 text-5xl font-black tracking-tight text-gray-900 md:text-6xl">
+          <h2 className="mb-6 text-5xl font-semibold tracking-tight text-gray-900 md:text-6xl">
             Life-saving <br />
             <span className="text-primary">in your pocket.</span>
           </h2>
@@ -96,13 +96,13 @@ export default function MobilePreview() {
 
           <div className="flex flex-col items-center gap-6 md:flex-row">
             <div className="flex h-14 items-center gap-3 rounded-2xl bg-gray-900 px-8 text-white shadow-xl transition-transform hover:scale-105">
-              <span className="text-sm font-bold uppercase tracking-widest opacity-50">Coming Soon to</span>
-              <span className="text-lg font-black">App Store</span>
+              <span className="text-sm font-bold uppercase tracking-wide opacity-50">Coming Soon to</span>
+              <span className="text-lg font-semibold">App Store</span>
             </div>
             
             <div className="flex items-center gap-2">
               <div className="h-2 w-2 animate-pulse rounded-full bg-primary" />
-              <span className="text-xs font-bold uppercase tracking-widest text-gray-400">Beta testing in progress</span>
+              <span className="text-xs font-bold uppercase tracking-wide text-gray-400">Beta testing in progress</span>
             </div>
           </div>
         </motion.div>

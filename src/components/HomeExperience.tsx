@@ -104,6 +104,8 @@ interface SessionUser {
 
 interface ProfileData {
   id: string;
+  profileCode?: string;
+  profileCodeNextChangeAt?: string | null;
   name: string;
   email: string;
   mobile: string;
@@ -216,6 +218,9 @@ export function HomeExperience({ forcedCountry }: { forcedCountry?: string } = {
       setIsSessionLoading(true);
     }
     try {
+      if (window.self !== window.top && new URLSearchParams(window.location.search).get('heatmapPreview') === '1') {
+        setSessionUser(null);setIsSessionLoading(false);return;
+      }
       const res = await fetch("/api/auth/session", {
         method: "GET",
         credentials: "include",
@@ -445,7 +450,7 @@ export function HomeExperience({ forcedCountry }: { forcedCountry?: string } = {
                 <button
                   type="button"
                   onClick={() => void loadProfile()}
-                  className="mt-4 rounded-xl bg-primary-dark px-6 py-2 text-xs font-bold uppercase tracking-widest text-white"
+                  className="mt-4 rounded-xl bg-primary-dark px-6 py-2 text-xs font-bold uppercase tracking-wide text-white"
                 >
                   Retry
                 </button>
@@ -518,7 +523,7 @@ export function HomeExperience({ forcedCountry }: { forcedCountry?: string } = {
 
         {!isProfileView && currentPage === "blog" && (
           <div className="mx-auto max-w-4xl px-4 py-32 text-center">
-            <h2 className="text-3xl font-black text-gray-900">Blog moved to dedicated SEO route</h2>
+            <h2 className="text-3xl font-semibold text-gray-900">Blog moved to dedicated SEO route</h2>
             <p className="mt-3 text-gray-600">
               Visit the text-only long-form journal at{" "}
               <a href="/blog" className="font-bold text-primary-dark">

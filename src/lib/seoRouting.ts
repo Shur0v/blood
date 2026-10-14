@@ -38,6 +38,7 @@ const ORGAN_SLUG_TO_NAME: Record<string, CanonicalOrgan> = {
   eye: "Eye",
   cornea: "Eye",
   sperm: "Sperm",
+  "bone-marrow": "Bone Marrow",
 };
 
 export const organFromSlug = (slug: string): CanonicalOrgan | null =>

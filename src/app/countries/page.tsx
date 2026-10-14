@@ -23,19 +23,19 @@ export default async function CountriesPage() {
   return (
     <main className="min-h-screen bg-bg px-4 py-20 text-gray-900">
       <section className="mx-auto max-w-5xl">
-        <h1 className="text-4xl font-black md:text-6xl">Active Countries</h1>
+        <h1 className="text-4xl font-semibold md:text-6xl">Active Countries</h1>
         <div className="mt-8 grid gap-4 sm:grid-cols-3">
           {countries.map((country) => {
             const shortcut = countryToShortcut(country);
             return (
-              <Link key={country} href={shortcut ? `/${shortcut}` : `/countries`} className="rounded-[8px] bg-white p-5 font-black shadow-card">
+              <Link key={country} href={shortcut ? `/${shortcut}` : `/countries`} className="rounded-[8px] bg-white p-5 font-semibold shadow-card">
                 {country}
               </Link>
             );
           })}
         </div>
 
-        <h2 className="mt-12 text-2xl font-black">Country SEO Keyword Hubs</h2>
+        <h2 className="mt-12 text-2xl font-semibold">Country SEO Keyword Hubs</h2>
         <p className="mt-3 text-sm font-medium text-gray-600">
           Use these curated hub pages to navigate country-specific long-tail queries with stronger regional relevance.
         </p>

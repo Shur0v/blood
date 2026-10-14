@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
-import { getAppEnv } from './env';
+import { getDatabaseEnv } from './env';
 
 const globalForPrisma = global as unknown as { prisma: PrismaClient };
 
@@ -9,7 +9,7 @@ let prismaClient: PrismaClient | undefined = globalForPrisma.prisma;
 
 export const getPrisma = (): PrismaClient => {
   if (!prismaClient) {
-    const env = getAppEnv();
+    const env = getDatabaseEnv();
     const connectionString = env.DATABASE_URL;
 
     const pool = new Pool({ connectionString });
@@ -17,7 +17,7 @@ export const getPrisma = (): PrismaClient => {
 
     prismaClient = new PrismaClient({
       adapter,
-      log: ['query'],
+      log: [],
     });
 
     if (env.NODE_ENV !== 'production') {

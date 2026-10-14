@@ -174,14 +174,14 @@ export default function MedicalAidFund() {
           <div className="flex-1 w-full text-center lg:text-left">
             <div className="inline-flex items-center gap-2 rounded-full bg-white/20 px-4 py-2 border border-white/30 mb-6 backdrop-blur-md">
               <Heart className="h-4 w-4 text-white animate-pulse fill-white" />
-              {/* <span className="text-[10px] font-black uppercase tracking-widest text-white drop-shadow-md"> BloodNet Global Initiative </span> */}
-              <span className="text-[10px] font-black uppercase tracking-widest text-white drop-shadow-md"> BloodNet Global </span>
+              {/* <span className="text-[10px] font-semibold uppercase tracking-wide text-white drop-shadow-md"> BloodNet Global Initiative </span> */}
+              <span className="text-[10px] font-semibold uppercase tracking-wide text-white drop-shadow-md"> BloodNet Global </span>
             </div>
 
-            {/* <h2 className="text-4xl font-black tracking-tight text-white md:text-5xl mb-6 leading-tight drop-shadow-lg">
+            {/* <h2 className="text-4xl font-semibold tracking-tight text-white md:text-5xl mb-6 leading-tight drop-shadow-lg">
               Medical Aid & <br className="hidden lg:block" /> Financial Support
             </h2> */}
-            <h2 className="text-4xl font-black tracking-tight text-white md:text-5xl mb-6 leading-tight drop-shadow-lg">
+            <h2 className="text-4xl font-semibold tracking-tight text-white md:text-5xl mb-6 leading-tight drop-shadow-lg">
               Current Essentials <br className="hidden lg:block" /> of Medicine
             </h2>
 
@@ -198,7 +198,7 @@ export default function MedicalAidFund() {
                   onClick={() => setIsDonateModalOpen(true)}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="group inline-flex w-full items-center justify-center gap-3 overflow-hidden rounded-2xl bg-white px-12 py-5 text-lg font-black uppercase tracking-widest text-[#FF3131] shadow-2xl transition-all hover:bg-gray-50 md:w-auto"
+                  className="group inline-flex w-full items-center justify-center gap-3 overflow-hidden rounded-2xl bg-white px-12 py-5 text-lg font-semibold uppercase tracking-wide text-[#FF3131] shadow-2xl transition-all hover:bg-gray-50 md:w-auto"
                 >
                   <div className="relative flex items-center gap-3">
                     <Heart className="h-6 w-6 text-[#FF3131] fill-[#FF3131] animate-[pulse_1.5s_ease-in-out_infinite]" />
@@ -228,28 +228,28 @@ export default function MedicalAidFund() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
               <motion.div whileHover={{ y: -5 }} className="rounded-3xl border border-white/20 bg-white/10 p-8 shadow-2xl backdrop-blur-xl transition-all">
-                {/* <p className="text-[10px] font-black uppercase tracking-widest text-white/70 mb-2">Total Raised</p> */}
-                <p className="text-[10px] font-black uppercase tracking-widest text-white/70 mb-2">TOTAL DOWNLOADS</p>
-                <div className="text-4xl font-black text-white tracking-tight drop-shadow-md">{stats.total_raised.toLocaleString()}+</div>
+                {/* <p className="text-[10px] font-semibold uppercase tracking-wide text-white/70 mb-2">Total Raised</p> */}
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-white/70 mb-2">TOTAL DOWNLOADS</p>
+                <div className="text-4xl font-semibold text-white tracking-tight drop-shadow-md">{stats.total_raised.toLocaleString()}+</div>
               </motion.div>
 
               <motion.div whileHover={{ y: -5 }} className="rounded-3xl border border-white/20 bg-white/10 p-8 shadow-2xl backdrop-blur-xl transition-all">
-                {/* <p className="text-[10px] font-black uppercase tracking-widest text-white/70 mb-2">Total Spent</p> */}
-                <p className="text-[10px] font-black uppercase tracking-widest text-white/70 mb-2">COMMUNITY SUPPORT</p>
-                <div className="text-4xl font-black text-white tracking-tight drop-shadow-md">${stats.total_spent.toLocaleString()}+</div>
+                {/* <p className="text-[10px] font-semibold uppercase tracking-wide text-white/70 mb-2">Total Spent</p> */}
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-white/70 mb-2">COMMUNITY SUPPORT</p>
+                <div className="text-4xl font-semibold text-white tracking-tight drop-shadow-md">${stats.total_spent.toLocaleString()}+</div>
               </motion.div>
 
               <motion.div whileHover={{ y: -5 }} className="rounded-3xl border border-white/40 bg-white/20 p-8 shadow-2xl backdrop-blur-xl transition-all relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-4 opacity-10"><Activity className="w-16 h-16" /></div>
-                {/* <p className="text-[10px] font-black uppercase tracking-widest text-white mb-2">Projects Completed</p> */}
-                <p className="text-[10px] font-black uppercase tracking-widest text-white mb-2">ACTIVE READERS</p>
-                <div className="text-4xl font-black text-white tracking-tight drop-shadow-lg">{stats.completed_ops.toLocaleString()}</div>
+                {/* <p className="text-[10px] font-semibold uppercase tracking-wide text-white mb-2">Projects Completed</p> */}
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-white mb-2">ACTIVE READERS</p>
+                <div className="text-4xl font-semibold text-white tracking-tight drop-shadow-lg">{stats.completed_ops.toLocaleString()}</div>
               </motion.div>
 
               <motion.div whileHover={{ y: -5 }} className="rounded-3xl border border-white/20 bg-white/10 p-8 shadow-2xl backdrop-blur-xl transition-all">
-                {/* <p className="text-[10px] font-black uppercase tracking-widest text-white/70 mb-2">Donation Requests</p> */}
-                <p className="text-[10px] font-black uppercase tracking-widest text-white/70 mb-2">SPONSORED COPIES</p>
-                <div className="text-4xl font-black text-white tracking-tight drop-shadow-md">{stats.donor_requests.toLocaleString()}</div>
+                {/* <p className="text-[10px] font-semibold uppercase tracking-wide text-white/70 mb-2">Donation Requests</p> */}
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-white/70 mb-2">SPONSORED COPIES</p>
+                <div className="text-4xl font-semibold text-white tracking-tight drop-shadow-md">{stats.donor_requests.toLocaleString()}</div>
               </motion.div>
 
             </div>
@@ -287,7 +287,7 @@ export default function MedicalAidFund() {
                 <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary">
                   <Activity className="h-6 w-6 animate-pulse" />
                 </div>
-                <h2 className="text-2xl font-black tracking-tight uppercase">REQUEST A SPONSORED COPY</h2>
+                <h2 className="text-2xl font-semibold tracking-tight uppercase">REQUEST A SPONSORED COPY</h2>
                 <div className="mt-4 rounded-xl bg-orange-50 border border-orange-200 p-4 flex items-start gap-4 text-left shadow-sm">
                   <ShieldAlert className="h-5 w-5 text-orange-500 shrink-0 mt-0.5" />
                   <p className="text-xs text-orange-800 leading-relaxed font-medium">
@@ -303,7 +303,7 @@ export default function MedicalAidFund() {
                   animate={{ scale: 1, opacity: 1 }}
                   className="rounded-3xl border border-green-200 bg-green-50 p-8 text-center mt-8"
                 >
-                  <h3 className="text-2xl font-black text-green-600 uppercase tracking-widest mb-2">Thank You!</h3>
+                  <h3 className="text-2xl font-semibold text-green-600 uppercase tracking-wide mb-2">Thank You!</h3>
                   <p className="text-green-800">Your request has been received. We&apos;ll review it and contact you by email if your sponsored copy is approved.</p>
                 </motion.div>
               ) : (
@@ -332,7 +332,7 @@ export default function MedicalAidFund() {
 
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-white/90">Full Name</label>
+                      <label className="text-[10px] font-semibold uppercase tracking-wide text-white/90">Full Name</label>
                       <div className="relative">
                         <User className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-white/60" />
                         <input
@@ -347,7 +347,7 @@ export default function MedicalAidFund() {
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-white/90">Occupation / Status</label>
+                      <label className="text-[10px] font-semibold uppercase tracking-wide text-white/90">Occupation / Status</label>
                       <div className="relative">
                         <Activity className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-white/60" />
                         <input
@@ -366,7 +366,7 @@ export default function MedicalAidFund() {
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-white/90">Institution / Organization</label>
+                    <label className="text-[10px] font-semibold uppercase tracking-wide text-white/90">Institution / Organization</label>
                     <div className="relative">
                       <Hospital className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-white/60" />
                       <input
@@ -385,7 +385,7 @@ export default function MedicalAidFund() {
 
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-white/90">Email Address</label>
+                      <label className="text-[10px] font-semibold uppercase tracking-wide text-white/90">Email Address</label>
                       <div className="relative">
                         <Mail className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-white/60" />
                         <input
@@ -410,7 +410,7 @@ export default function MedicalAidFund() {
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-white/90">Why do you need a sponsored copy?</label>
+                    <label className="text-[10px] font-semibold uppercase tracking-wide text-white/90">Why do you need a sponsored copy?</label>
                     <div className="relative">
                       <FileText className="absolute left-4 top-4 h-5 w-5 text-white/60" />
                       <textarea
@@ -427,7 +427,7 @@ export default function MedicalAidFund() {
                   {/* Document Upload Section (Optional Fields) */}
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-white/90">Supporting Docs (Optional)</label>
+                      <label className="text-[10px] font-semibold uppercase tracking-wide text-white/90">Supporting Docs (Optional)</label>
                       <div className="relative group cursor-pointer">
                         <input
                           type="file"
@@ -455,7 +455,7 @@ export default function MedicalAidFund() {
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-white/90">Additional Document (Optional)</label>
+                      <label className="text-[10px] font-semibold uppercase tracking-wide text-white/90">Additional Document (Optional)</label>
                       <div className="relative group cursor-pointer">
                         <input
                           type="file"
@@ -494,7 +494,7 @@ export default function MedicalAidFund() {
                     whileTap={{ scale: 0.99 }}
                     type="submit"
                     disabled={isLoading || !isPhoneValid}
-                    className="w-full rounded-xl bg-gradient-to-r from-primary to-rose-500 py-4 text-sm font-black uppercase tracking-widest text-white shadow-xl hover:opacity-90 disabled:opacity-50 mt-4"
+                    className="w-full rounded-xl bg-gradient-to-r from-primary to-rose-500 py-4 text-sm font-semibold uppercase tracking-wide text-white shadow-xl hover:opacity-90 disabled:opacity-50 mt-4"
                   >
                     {isLoading ? "Submitting Request..." : "SUBMIT SPONSORED COPY REQUEST"}
                   </motion.button>

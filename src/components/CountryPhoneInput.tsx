@@ -126,7 +126,7 @@ export default function CountryPhoneInput({
 
   return (
     <div className="space-y-2">
-      <label className={`block text-[10px] font-black uppercase tracking-widest ${adminLabelClass}`}>
+      <label className={`block text-[10px] font-semibold uppercase tracking-wide ${adminLabelClass}`}>
         {label}
         {required ? " *" : ""}
       </label>
@@ -194,14 +194,14 @@ export default function CountryPhoneInput({
             : "border-gray-200 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary dark:border-gray-700"
         } ${compact ? "bg-gray-50 dark:bg-[#0f1115]" : "bg-glass"}`}
       >
-        <span className={`pl-4 pr-3 text-sm font-bold ${forceWhiteText ? "text-white" : "text-muted"}`}>{value.dialCode || "+--"}</span>
-        <span className="mr-3 h-5 w-px bg-black/10 dark:bg-white/20" />
+        <span className={`shrink-0 whitespace-nowrap pl-4 pr-3 text-sm font-bold ${forceWhiteText ? "text-white" : "text-muted"}`}>{value.dialCode || "+--"}</span>
+        <span className="mr-3 h-5 w-px shrink-0 bg-black/10 dark:bg-white/20" />
         <input
           required={required}
           type="tel"
           inputMode="numeric"
           placeholder="Enter local number"
-          className={`w-full bg-transparent py-3 pr-4 text-sm font-semibold focus:outline-none ${adminTextClass}`}
+          className={`min-w-0 flex-1 bg-transparent py-3 pr-4 text-sm font-semibold focus:outline-none ${adminTextClass}`}
           value={value.localPhoneNumber}
           onChange={(e) => {
             const rawValue = e.target.value;

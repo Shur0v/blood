@@ -10,6 +10,7 @@ import { ensureNotRestricted, getFingerprintHash, getIpHash, recordRiskEvent } f
 import { getPrisma } from '../config/db';
 import { resolveSessionCookieDomain } from '../utils/cookieDomain';
 import { z } from 'zod';
+import { reserveGeneratedProfileCode } from '../services/profileIdentifiers';
 
 const authService = new AuthService();
 const userRepo = new UserRepository();
@@ -233,8 +234,10 @@ export class AuthController {
 
         const firstLocation = readyLocations[0];
         targetUser = await getPrisma().$transaction(async (tx) => {
+          const profileCode = await reserveGeneratedProfileCode(tx);
           const created = await tx.user.create({
             data: {
+              profile_code: profileCode,
               name,
               email,
               mobile: normalizedMobile,
@@ -269,6 +272,7 @@ export class AuthController {
             },
           });
 
+          await tx.profileIdentifier.update({ where: { code: profileCode }, data: { user_id: created.id } });
           await tx.userServiceCity.createMany({
             data: readyLocations.map((item) => ({
               user_id: created.id,

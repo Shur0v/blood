@@ -18,10 +18,10 @@ export default function DeferredClientEffects() {
     schedule(() => setReady(true));
   }, []);
 
-  if (!ready) return null;
   return (
     <>
-      <ThemeRuntimeSync />
+      {ready && <ThemeRuntimeSync />}
+      {/* Start recording with hydration; idle scheduling can miss early clicks. */}
       <ClickTracker />
     </>
   );

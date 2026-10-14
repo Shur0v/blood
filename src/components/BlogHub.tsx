@@ -76,8 +76,8 @@ export function BlogHub({ onOpenPost }: BlogHubProps) {
   return (
     <section className="mx-auto max-w-7xl px-4 pt-24 pb-28">
       <div className="overflow-hidden rounded-3xl border border-gray-200/70 bg-gradient-to-br from-white via-rose-50/30 to-red-100/30 p-8 md:p-12 shadow-[0_30px_70px_rgba(15,23,42,0.10)]">
-        <p className="text-xs font-black uppercase tracking-[0.3em] text-primary-dark">Editorial</p>
-        <h1 className="mt-3 text-4xl font-black tracking-tight text-gray-900 md:text-6xl">BloodNet Journal</h1>
+        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary-dark">Editorial</p>
+        <h1 className="mt-3 text-4xl font-semibold tracking-tight text-gray-900 md:text-6xl">BloodNet Journal</h1>
         <p className="mt-4 max-w-2xl text-base text-gray-600 md:text-lg">
           Modern donor intelligence, safety insights, and community-first medical guidance.
         </p>
@@ -105,7 +105,7 @@ export function BlogHub({ onOpenPost }: BlogHubProps) {
                 </span>
               </div>
               <div className="p-5">
-                <h2 className="text-xl font-black leading-tight text-gray-900">{post.title}</h2>
+                <h2 className="text-xl font-semibold leading-tight text-gray-900">{post.title}</h2>
                 <p className="mt-3 text-sm leading-relaxed text-gray-600">{post.excerpt}</p>
                 <div className="mt-4 flex flex-wrap items-center gap-3 text-xs font-semibold text-gray-500">
                   <span className="inline-flex items-center gap-1">
@@ -142,7 +142,7 @@ export function BlogDetail({ slug, onBack }: BlogDetailProps) {
     return (
       <section className="mx-auto max-w-4xl px-4 pt-24 pb-28">
         <div className="rounded-2xl border border-gray-200 bg-white p-10 text-center">
-          <h2 className="text-2xl font-black text-gray-900">Article Not Found</h2>
+          <h2 className="text-2xl font-semibold text-gray-900">Article Not Found</h2>
           <p className="mt-2 text-gray-600">This blog page does not exist or may have been removed.</p>
           <button
             onClick={onBack}
@@ -172,7 +172,7 @@ export function BlogDetail({ slug, onBack }: BlogDetailProps) {
             <span className="rounded-full bg-white/20 px-3 py-1 text-xs font-bold tracking-wide backdrop-blur">
               {post.category}
             </span>
-            <h1 className="mt-3 text-3xl font-black leading-tight md:text-5xl">{post.title}</h1>
+            <h1 className="mt-3 text-3xl font-semibold leading-tight md:text-5xl">{post.title}</h1>
           </div>
         </div>
 

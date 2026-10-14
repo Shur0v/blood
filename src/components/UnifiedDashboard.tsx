@@ -1,10 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { 
-  ShieldCheck, 
-  Activity, 
-  Stethoscope, 
-  Thermometer, 
+import {
+  ShieldCheck,
+  Activity,
+  Stethoscope,
+  Thermometer,
   CheckCircle2,
   Circle,
   MapPin,
@@ -21,6 +21,8 @@ import {
 } from "lucide-react";
 import OrganIcon from "./OrganIcon";
 import { ORGAN_CATALOG, normalizeOrganList } from "../lib/organCatalog";
+import ProfileIdentityCard from "./ProfileIdentityCard";
+import MedicalRecordsPanel from "./MedicalRecordsPanel";
 
 const VACCINES = ["COVID-19", "HBV", "BCG", "Influenza", "MMR", "Polio", "Tetanus"];
 const ALLERGIES = ["Peanuts", "Penicillin", "Latex", "Pollen", "Dust", "None"];
@@ -39,6 +41,8 @@ interface UnifiedDashboardProps {
   targetUserId?: string;
   profile: {
     id: string;
+    profileCode?: string;
+    profileCodeNextChangeAt?: string | null;
     name: string;
     city: string;
     country: string;
@@ -68,6 +72,7 @@ export default function UnifiedDashboard({
   targetUserId,
   profile,
 }: UnifiedDashboardProps) {
+  const [medicalRecordsOpen, setMedicalRecordsOpen] = useState(false);
   const [weight, setWeight] = useState(70);
   const [weightTouched, setWeightTouched] = useState(false);
   const [weightUnknown, setWeightUnknown] = useState(false);
@@ -519,38 +524,40 @@ export default function UnifiedDashboard({
   };
 
   const toggleVaccine = (v: string) => {
-    setSelectedVaccines(prev => 
+    setSelectedVaccines(prev =>
       prev.includes(v) ? prev.filter(item => item !== v) : [...prev, v]
     );
   };
 
   const toggleAllergy = (a: string) => {
-    setSelectedAllergies(prev => 
+    setSelectedAllergies(prev =>
       prev.includes(a) ? prev.filter(item => item !== a) : [...prev, a]
     );
   };
 
   const toggleOrgan = (o: string) => {
-    setRegisteredOrgans(prev => 
+    setRegisteredOrgans(prev =>
       prev.includes(o) ? prev.filter(item => item !== o) : [...prev, o]
     );
   };
 
   return (
-    <section className="dashboard-a11y mx-auto max-w-7xl px-4 py-12">
-      <motion.div 
+    <section className="profile-dashboard public-light-panel mx-auto max-w-7xl px-4 py-8 sm:py-12">
+      <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative overflow-hidden rounded-[40px] border border-border/10 bg-glass p-1 backdrop-blur-glass shadow-card"
+        className="relative overflow-hidden rounded-[28px] border border-slate-200 profile-animated-surface bg-[#fafbfc] text-slate-900 shadow-[0_16px_60px_-32px_rgba(15,23,42,0.18)] sm:rounded-[36px]"
       >
-        <div className="p-8 md:p-12">
-          {/* Header Section */}
-          <div className="mb-12 flex flex-col items-center gap-8 md:flex-row md:items-start">
-            <div className="relative">
+        <div className="p-4 sm:p-8 lg:p-10">
+          {/* Header: identity on the left, cities on the right on desktop. */}
+          <div className="mb-8 grid items-start gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,7fr)]">
+            <div className="min-w-0 space-y-6 text-center lg:order-1">
+              <div className="flex items-center justify-center gap-4">
+            <div className="relative w-fit shrink-0">
               <button
                 type="button"
                 onClick={() => void openProfileImagePicker()}
-                className="group relative block h-32 w-32 overflow-hidden rounded-[32px] border-4 border-white p-1 shadow-2xl transition-transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:cursor-not-allowed disabled:opacity-70"
+                className="group relative block h-24 w-24 overflow-hidden rounded-[32px] border-4 border-white p-1 shadow-2xl transition-transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:cursor-not-allowed disabled:opacity-70"
                 disabled={imageState === "uploading"}
                 aria-label={imageState === "uploading" ? "Uploading profile photo" : "Change profile photo"}
               >
@@ -562,12 +569,12 @@ export default function UnifiedDashboard({
                     referrerPolicy="no-referrer"
                   />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center rounded-[24px] bg-white/70 text-text/50">
+                  <div className="flex h-full w-full items-center justify-center rounded-[24px] bg-white/70 text-slate-600">
                     <UserCircle2 className="h-16 w-16" />
                   </div>
                 )}
                 {imageState === "uploading" && (
-                  <div className="absolute inset-0 flex items-center justify-center rounded-[24px] bg-black/35 text-[10px] font-black uppercase tracking-widest text-white">
+                  <div className="absolute inset-0 flex items-center justify-center rounded-[24px] bg-black/35 text-xs font-semibold tracking-wide text-white">
                     Uploading...
                   </div>
                 )}
@@ -584,17 +591,17 @@ export default function UnifiedDashboard({
               </div>
             </div>
 
-            <div className="flex-1 text-center md:text-left">
-              <div className="mb-2 flex flex-col items-center gap-3 md:flex-row">
-                <h1 className="text-4xl font-black tracking-tight text-text uppercase">{profile?.name ?? "Donor Profile"}</h1>
+              <div className="min-w-0">
+              <div className="mb-2 flex flex-col items-center gap-3">
+                <h1 className="w-full min-w-0 break-words text-2xl font-semibold tracking-tight text-slate-900">{profile?.name ?? "Donor Profile"}</h1>
                 {profile?.verificationStatus === "VERIFIED" && (
-                  <span className="rounded-full bg-primary/10 px-4 py-1 text-[10px] font-black uppercase tracking-widest text-primary ring-1 ring-primary/20">
+                  <span className="rounded-full bg-primary/10 px-4 py-1 text-xs font-semibold tracking-wide text-primary ring-1 ring-primary/20">
                     Verified Elite Donor
                   </span>
                 )}
               </div>
-              <div className="mb-8 flex flex-wrap justify-center gap-6 md:justify-start">
-                <div className="flex items-center gap-2 text-sm font-bold text-text/60">
+              <div className="mb-4 flex flex-wrap justify-center gap-3">
+                <div className="flex flex-wrap items-center justify-center gap-2 text-sm font-bold text-slate-600">
                   <Droplet className="h-4 w-4 text-primary" />
                   Blood Group: <span className="text-primary">{profile?.bloodGroup ?? "N/A"}</span>
                 </div>
@@ -604,22 +611,27 @@ export default function UnifiedDashboard({
                   </div>
                 )}
               </div>
+              </div>
+              </div>
+              {mode === "self" && profile?.id && <ProfileIdentityCard key={profile.id} userId={profile.id} initialCode={profile.profileCode} onSessionExpired={onSessionExpired} />}
+            </div>
+            <div className="min-w-0 lg:order-2">
               {mode === "self" && (
-                <div className="mb-8 rounded-2xl border border-border/10 bg-white/60 p-4">
-                  <div className="mb-2 flex items-center justify-between">
-                    <p className="text-xs font-black uppercase tracking-widest text-text/50">Manage Service Cities</p>
-                    <p className="text-[10px] font-bold text-text/40">{serviceCities?.length ?? 0}/5</p>
+                <div className="mb-8 rounded-2xl border border-border/10 bg-white p-4">
+                  <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
+                    <p className="text-xs font-semibold tracking-wide text-slate-600">Manage Service Cities</p>
+                    <p className="text-xs font-bold text-slate-600">{serviceCities?.length ?? 0}/5</p>
                   </div>
                   <div className="mb-3 flex flex-wrap gap-2">
                     {(serviceCities || []).map((city, idx) => (
-                      <span key={city.id} className="inline-flex items-center gap-2 rounded-full border border-border/10 bg-white px-3 py-1 text-xs font-semibold text-text/80">
+                      <span key={city.id} className="inline-flex items-center gap-2 rounded-full border border-border/10 bg-white px-3 py-1 text-xs font-semibold text-slate-700">
                         {idx < 2 && <MapPin className="h-3.5 w-3.5 text-primary" />}
                         {city.city}, {city.country}
                         {city.canRemove ? (
                           <button
                             type="button"
                             onClick={() => void removeServiceCity(city.id, true)}
-                            className="rounded-full bg-red-500/10 px-1.5 py-0.5 text-[10px] font-black text-red-600"
+                            className="rounded-full bg-red-500/10 px-1.5 py-0.5 text-xs font-semibold text-red-600"
                           >
                             ×
                           </button>
@@ -627,7 +639,7 @@ export default function UnifiedDashboard({
                           <button
                             type="button"
                             onClick={() => void removeServiceCity(city.id, false, city.remainingDays)}
-                            className="rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-black text-amber-700"
+                            className="rounded-full bg-amber-500/10 px-2 py-0.5 text-xs font-semibold text-amber-700"
                           >
                             {city.remainingDays}d
                           </button>
@@ -643,7 +655,7 @@ export default function UnifiedDashboard({
                         placeholder="Add another city..."
                         className="w-full rounded-xl border border-border/10 bg-white px-3 py-2 text-sm text-text outline-none focus:border-primary/50"
                       />
-                      {cityLoading && <span className="absolute right-3 top-2.5 text-[10px] font-bold text-text/40">Loading...</span>}
+                      {cityLoading && <span className="absolute right-3 top-2.5 text-xs font-bold text-slate-600">Loading...</span>}
                       {citySuggestions.length > 0 && (
                         <div className="absolute z-20 mt-1 max-h-44 w-full overflow-y-auto rounded-xl border border-border/10 bg-white p-1 shadow-lg">
                           {citySuggestions.map((suggestion) => (
@@ -651,7 +663,7 @@ export default function UnifiedDashboard({
                               key={suggestion.provider_place_id}
                               type="button"
                               onClick={() => void addServiceCity(suggestion)}
-                              className="w-full rounded-lg px-3 py-2 text-left text-sm font-semibold text-text/80 hover:bg-primary/5"
+                              className="w-full rounded-lg px-3 py-2 text-left text-sm font-semibold text-slate-700 hover:bg-primary/5"
                             >
                               {suggestion.city}, {suggestion.country}
                             </button>
@@ -667,24 +679,26 @@ export default function UnifiedDashboard({
               {/* Status Switch Integrated into Header */}
               <div className="flex justify-center md:justify-start">
                 <div className="flex items-center gap-4 rounded-3xl border border-border/5 bg-glass px-5 py-2.5 shadow-sm backdrop-blur-md">
-                  <span className={`font-mono text-[10px] font-black uppercase tracking-[2px] ${isReady ? "text-green-600" : "text-primary"}`}>
+                  <span className={`text-xs font-semibold uppercase tracking-wide ${isReady ? "text-green-600" : "text-primary"}`}>
                     Status: {isReady ? "Active" : "Inactive"}
                   </span>
-                  <button 
+                  <button
+                    aria-label="Available to donate"
+                    aria-pressed={isReady}
                     onClick={() => onToggleReady(!isReady)}
                     className={`relative flex h-8 w-24 items-center rounded-full p-1 transition-all duration-500 ${
-                      isReady 
-                        ? "bg-green-500 shadow-card" 
+                      isReady
+                        ? "bg-green-500 shadow-card"
                         : "bg-primary/10 ring-1 ring-primary/20"
                     }`}
                   >
-                    <div className={`absolute left-3 text-[8px] font-black uppercase tracking-wider transition-opacity duration-300 ${isReady ? "opacity-100 text-white" : "opacity-0"}`}>
+                    <div className={`absolute left-3 text-[10px] font-semibold uppercase tracking-wider transition-opacity duration-300 ${isReady ? "opacity-100 text-white" : "opacity-0"}`}>
                       Available
                     </div>
-                    <div className={`absolute right-3 text-[7px] font-black uppercase tracking-wider transition-opacity duration-300 ${!isReady ? "opacity-100 text-primary" : "opacity-0"}`}>
+                    <div className={`absolute right-3 text-[10px] font-semibold uppercase tracking-wider transition-opacity duration-300 ${!isReady ? "opacity-100 text-primary" : "opacity-0"}`}>
                       Unavailable
                     </div>
-                    <motion.div 
+                    <motion.div
                       animate={{ x: isReady ? 64 : 0 }}
                       transition={{ type: "spring", stiffness: 300, damping: 25 }}
                       className="relative z-10 flex h-6 w-6 items-center justify-center rounded-full bg-white shadow-md"
@@ -696,43 +710,49 @@ export default function UnifiedDashboard({
               </div>
             </div>
           </div>
-
-          <div className="grid grid-cols-1 gap-12 lg:grid-cols-12">
+          {mode === "self" && profile?.id && <div className="mb-8">
+            <button type="button" aria-expanded={medicalRecordsOpen} aria-controls="profile-medical-records" onClick={() => setMedicalRecordsOpen(value => !value)} className="flex min-h-14 w-full items-center justify-between gap-4 rounded-2xl border border-rose-200 bg-rose-50 px-5 py-4 text-left text-rose-800 shadow-sm transition-colors hover:bg-rose-100">
+              <span className="flex items-center gap-3"><BookOpen className="h-6 w-6 shrink-0" /><span><span className="block text-base font-semibold">Medical records</span><span className="block text-xs leading-5">Add reports or view your prescriptions</span></span></span>
+              <ChevronRight className={`h-5 w-5 shrink-0 transition-transform ${medicalRecordsOpen ? 'rotate-90' : ''}`} />
+            </button>
+            {medicalRecordsOpen && <div id="profile-medical-records" className="mt-4"><MedicalRecordsPanel key={profile.id} userId={profile.id} onSessionExpired={onSessionExpired} openReports /></div>}
+          </div>}
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
             {/* Left Column: Health Profile */}
-            <div className="lg:col-span-7 space-y-12">
+            <div className="min-w-0 lg:col-span-7 space-y-8">
               <div className="space-y-8">
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
                     <Activity className="h-6 w-6" />
                   </div>
-                  <h2 className="text-2xl font-black uppercase tracking-tight text-text">Health Profile</h2>
+                  <h2 className="text-2xl font-semibold tracking-tight text-text">Health Profile</h2>
                 </div>
 
-                <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   {/* Weight Slider */}
-                  <div className="space-y-4 rounded-3xl bg-glass p-6 ring-1 ring-border/5">
-                    <div className="flex items-center justify-between">
+                  <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6 ring-1 ring-border/5">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
                       <div className="flex flex-col">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-text/40">Body Weight</label>
-                        <span className={`text-lg font-black transition-colors ${(!weightTouched || weightUnknown) ? "text-text/20" : "text-primary"}`}>
+                        <label className="text-xs font-semibold tracking-wide text-slate-600">Body Weight</label>
+                        <span className={`text-lg font-semibold transition-colors ${(!weightTouched || weightUnknown) ? "text-slate-600" : "text-primary"}`}>
                           {!weightTouched ? "--" : weightUnknown ? "Not set" : `${weight} kg`}
                         </span>
                       </div>
-                      <button 
+                      <button
                         onClick={() => {
                           setWeightTouched(true);
                           setWeightUnknown(!weightUnknown);
                         }}
-                        className={`rounded-full px-5 py-2 text-[10px] font-black uppercase tracking-widest transition-all ${weightUnknown ? "bg-primary text-white shadow-lg shadow-primary/20" : "bg-text/5 text-text/40 hover:bg-text/10"}`}
+                        className={`rounded-full px-5 py-2 text-xs font-semibold tracking-wide transition-all ${weightUnknown ? "bg-primary text-white shadow-lg shadow-primary/20" : "bg-text/5 text-slate-600 hover:bg-text/10"}`}
                       >
                         Don't Know
                       </button>
                     </div>
-                    <div className={weightUnknown ? "opacity-20 pointer-events-none" : !weightTouched ? "opacity-40" : ""}>
-                      <input 
-                        type="range" 
-                        min="40" 
-                        max="150" 
+                    <div className={weightUnknown ? "opacity-60 pointer-events-none" : !weightTouched ? "opacity-100" : ""}>
+                      <input
+                        type="range"
+                        min="40"
+                        max="150"
                         value={weight}
                         onChange={(e) => {
                           setWeightTouched(true);
@@ -745,29 +765,29 @@ export default function UnifiedDashboard({
                   </div>
 
                   {/* Hemoglobin Slider */}
-                  <div className="space-y-4 rounded-3xl bg-glass p-6 ring-1 ring-border/5">
-                    <div className="flex items-center justify-between">
+                  <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6 ring-1 ring-border/5">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
                       <div className="flex flex-col">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-text/40">Hemoglobin Level</label>
-                        <span className={`text-lg font-black transition-colors ${(!hemoglobinTouched || hemoglobinUnknown) ? "text-text/20" : "text-primary"}`}>
+                        <label className="text-xs font-semibold tracking-wide text-slate-600">Hemoglobin Level</label>
+                        <span className={`text-lg font-semibold transition-colors ${(!hemoglobinTouched || hemoglobinUnknown) ? "text-slate-600" : "text-primary"}`}>
                           {!hemoglobinTouched ? "--" : hemoglobinUnknown ? "Not set" : `${hemoglobin} g/dL`}
                         </span>
                       </div>
-                      <button 
+                      <button
                         onClick={() => {
                           setHemoglobinTouched(true);
                           setHemoglobinUnknown(!hemoglobinUnknown);
                         }}
-                        className={`rounded-full px-5 py-2 text-[10px] font-black uppercase tracking-widest transition-all ${hemoglobinUnknown ? "bg-primary text-white shadow-lg shadow-primary/20" : "bg-text/5 text-text/40 hover:bg-text/10"}`}
+                        className={`rounded-full px-5 py-2 text-xs font-semibold tracking-wide transition-all ${hemoglobinUnknown ? "bg-primary text-white shadow-lg shadow-primary/20" : "bg-text/5 text-slate-600 hover:bg-text/10"}`}
                       >
                         Don't Know
                       </button>
                     </div>
-                    <div className={hemoglobinUnknown ? "opacity-20 pointer-events-none" : !hemoglobinTouched ? "opacity-40" : ""}>
-                      <input 
-                        type="range" 
-                        min="8" 
-                        max="20" 
+                    <div className={hemoglobinUnknown ? "opacity-60 pointer-events-none" : !hemoglobinTouched ? "opacity-100" : ""}>
+                      <input
+                        type="range"
+                        min="8"
+                        max="20"
                         step="0.1"
                         value={hemoglobin}
                         onChange={(e) => {
@@ -782,39 +802,39 @@ export default function UnifiedDashboard({
                 </div>
 
                 {/* User Height (Full Width) */}
-                <div className="rounded-3xl bg-glass p-8 ring-2 ring-border/5 shadow-sm">
+                <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-7 shadow-sm shadow-sm">
                   <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-8">
                     <div className="flex items-center gap-4">
                       <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                         <Activity className="h-6 w-6" />
                       </div>
                       <div>
-                        <h3 className="text-lg font-black text-text uppercase tracking-tight">Body Height</h3>
-                        <p className="text-[10px] font-bold text-text/40 uppercase tracking-widest">Physical Metrics</p>
+                        <h3 className="text-lg font-semibold text-text tracking-tight">Body Height</h3>
+                        <p className="text-xs font-bold text-slate-600 tracking-wide">Physical Metrics</p>
                       </div>
                     </div>
-                    <button 
+                    <button
                       onClick={() => {
                         setHeightTouched(true);
                         setHeightUnknown(!heightUnknown);
                       }}
-                      className={`rounded-full px-8 py-3 text-xs font-black uppercase tracking-widest transition-all ${heightUnknown ? "bg-primary text-white shadow-lg shadow-primary/20" : "bg-text/5 text-text/40 hover:bg-text/10"}`}
+                      className={`rounded-full px-8 py-3 text-xs font-semibold tracking-wide transition-all ${heightUnknown ? "bg-primary text-white shadow-lg shadow-primary/20" : "bg-text/5 text-slate-600 hover:bg-text/10"}`}
                     >
                       Don't Know
                     </button>
                   </div>
-                  
-                  <div className={heightUnknown ? "opacity-20 pointer-events-none transition-opacity" : !heightTouched ? "opacity-40 transition-opacity" : "transition-opacity"}>
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-text/40">Height Overview</span>
-                      <span className={`text-xl font-black transition-colors ${(!heightTouched || heightUnknown) ? "text-text/20" : "text-primary"}`}>
+
+                  <div className={heightUnknown ? "opacity-60 pointer-events-none transition-opacity" : !heightTouched ? "opacity-100 transition-opacity" : "transition-opacity"}>
+                    <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                      <span className="text-xs font-semibold tracking-wide text-slate-600">Height Overview</span>
+                      <span className={`text-xl font-semibold transition-colors ${(!heightTouched || heightUnknown) ? "text-slate-600" : "text-primary"}`}>
                         {!heightTouched ? "--" : heightUnknown ? "Not set" : `${height} cm`}
                       </span>
                     </div>
-                    <input 
-                      type="range" 
-                      min="100" 
-                      max="250" 
+                    <input
+                      type="range"
+                      min="100"
+                      max="250"
                       value={height}
                       onChange={(e) => {
                         setHeightTouched(true);
@@ -827,27 +847,27 @@ export default function UnifiedDashboard({
                 </div>
 
                 {/* Diabetes Toggle & Conditional Glucose */}
-                <div className="rounded-3xl bg-glass p-8 ring-2 ring-border/5 shadow-sm">
+                <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-7 shadow-sm shadow-sm">
                   <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-8">
                     <div className="flex items-center gap-4">
                       <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-600">
                         <Thermometer className="h-6 w-6" />
                       </div>
                       <div>
-                        <h3 className="text-lg font-black text-text uppercase tracking-tight">Diabetes History</h3>
-                        <p className="text-[10px] font-bold text-text/40 uppercase tracking-widest">Medical Screening</p>
+                        <h3 className="text-lg font-semibold text-text tracking-tight">Diabetes History</h3>
+                        <p className="text-xs font-bold text-slate-600 tracking-wide">Medical Screening</p>
                       </div>
                     </div>
                     <div className="flex rounded-full bg-text/5 p-1.5 min-w-[160px]">
-                      <button 
+                      <button
                         onClick={() => setIsDiabetic(false)}
-                        className={`flex-1 rounded-full px-6 py-3 text-xs font-black uppercase tracking-widest transition-all ${!isDiabetic ? "bg-white text-text shadow-md" : "text-text/40 hover:text-text/60"}`}
+                        className={`flex-1 rounded-full px-6 py-3 text-xs font-semibold tracking-wide transition-all ${!isDiabetic ? "bg-white text-text shadow-md" : "text-slate-600 hover:text-slate-600"}`}
                       >
                         No
                       </button>
-                      <button 
+                      <button
                         onClick={() => setIsDiabetic(true)}
-                        className={`flex-1 rounded-full px-6 py-3 text-xs font-black uppercase tracking-widest transition-all ${isDiabetic ? "bg-white text-text shadow-md" : "text-text/40 hover:text-text/60"}`}
+                        className={`flex-1 rounded-full px-6 py-3 text-xs font-semibold tracking-wide transition-all ${isDiabetic ? "bg-white text-text shadow-md" : "text-slate-600 hover:text-slate-600"}`}
                       >
                         Yes
                       </button>
@@ -856,35 +876,35 @@ export default function UnifiedDashboard({
 
                   <AnimatePresence>
                     {isDiabetic && (
-                      <motion.div 
+                      <motion.div
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: "auto", opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
                         className="overflow-hidden"
                       >
                         <div className="space-y-6 pt-6 border-t border-border/5">
-                          <div className="flex items-center justify-between">
+                          <div className="flex flex-wrap items-center justify-between gap-3">
                             <div className="flex flex-col">
-                              <label className="text-[10px] font-black uppercase tracking-widest text-text/40">Average Glucose Level</label>
-                              <span className={`text-lg font-black transition-colors ${(!glucoseTouched || glucoseUnknown) ? "text-text/20" : "text-blue-600"}`}>
+                              <label className="text-xs font-semibold tracking-wide text-slate-600">Average Glucose Level</label>
+                              <span className={`text-lg font-semibold transition-colors ${(!glucoseTouched || glucoseUnknown) ? "text-slate-600" : "text-blue-600"}`}>
                                 {!glucoseTouched ? "--" : glucoseUnknown ? "Not set" : `${glucose} mg/dL`}
                               </span>
                             </div>
-                            <button 
+                            <button
                               onClick={() => {
                                 setGlucoseTouched(true);
                                 setGlucoseUnknown(!glucoseUnknown);
                               }}
-                              className={`rounded-full px-5 py-2 text-[10px] font-black uppercase tracking-widest transition-all ${glucoseUnknown ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20" : "bg-text/5 text-text/40 hover:bg-text/10"}`}
+                              className={`rounded-full px-5 py-2 text-xs font-semibold tracking-wide transition-all ${glucoseUnknown ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20" : "bg-text/5 text-slate-600 hover:bg-text/10"}`}
                             >
                               Don't Know
                             </button>
                           </div>
-                          <div className={glucoseUnknown ? "opacity-20 pointer-events-none" : !glucoseTouched ? "opacity-40" : ""}>
-                            <input 
-                              type="range" 
-                              min="50" 
-                              max="300" 
+                          <div className={glucoseUnknown ? "opacity-60 pointer-events-none" : !glucoseTouched ? "opacity-100" : ""}>
+                            <input
+                              type="range"
+                              min="50"
+                              max="300"
                               value={glucose}
                               onChange={(e) => {
                                 setGlucoseTouched(true);
@@ -901,18 +921,18 @@ export default function UnifiedDashboard({
                 </div>
 
                 {/* Segmented Toggles for Vaccines & Allergies */}
-                <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="space-y-4">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-text/40">Vaccinations</label>
+                    <label className="text-xs font-semibold tracking-wide text-slate-600">Vaccinations</label>
                     <div className="flex flex-wrap gap-2">
                       {VACCINES.map(v => (
-                        <button 
+                        <button
                           key={v}
                           onClick={() => toggleVaccine(v)}
                           className={`rounded-full px-5 py-2.5 text-xs font-bold transition-all ${
                             selectedVaccines.includes(v)
                               ? "bg-primary text-white shadow-lg shadow-primary/20"
-                              : "bg-white/60 text-text/60 hover:bg-white ring-1 ring-border/5"
+                              : "bg-white text-slate-600 hover:bg-white ring-1 ring-border/5"
                           }`}
                         >
                           {v}
@@ -921,16 +941,16 @@ export default function UnifiedDashboard({
                     </div>
                   </div>
                   <div className="space-y-4">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-text/40">Allergies</label>
+                    <label className="text-xs font-semibold tracking-wide text-slate-600">Allergies</label>
                     <div className="flex flex-wrap gap-2">
                       {ALLERGIES.map(a => (
-                        <button 
+                        <button
                           key={a}
                           onClick={() => toggleAllergy(a)}
                           className={`rounded-full px-5 py-2.5 text-xs font-bold transition-all ${
                             selectedAllergies.includes(a)
                               ? "bg-primary text-white shadow-lg shadow-primary/20"
-                              : "bg-white/60 text-text/60 hover:bg-white ring-1 ring-border/5"
+                              : "bg-white text-slate-600 hover:bg-white ring-1 ring-border/5"
                           }`}
                         >
                           {a}
@@ -947,22 +967,23 @@ export default function UnifiedDashboard({
                   <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-500/10 text-purple-600">
                     <OrganIcon organ="Kidney" className="h-6 w-6" />
                   </div>
-                  <h2 className="text-2xl font-black uppercase tracking-tight text-text">Organ Registry</h2>
+                  <h2 className="text-2xl font-semibold tracking-tight text-text">Organ Registry</h2>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
                   {ORGANS.map(o => (
-                    <button 
+                    <button
                       key={o.name}
+                      aria-pressed={registeredOrgans.includes(o.name)}
                       onClick={() => toggleOrgan(o.name)}
-                      className={`flex flex-col items-center justify-center gap-4 rounded-3xl border p-6 transition-all ${
+                      className={`flex flex-col items-center justify-center gap-4 rounded-3xl border p-4 sm:p-5 transition-all ${
                         registeredOrgans.includes(o.name)
-                          ? "border-purple-500/50 bg-purple-500/10 text-purple-600 shadow-lg shadow-purple-500/5"
-                          : "border-border/5 bg-glass text-text/30 hover:bg-white"
+                          ? "border-rose-300 bg-rose-50 text-rose-700 shadow-sm"
+                          : "border-slate-200 bg-white text-slate-600 hover:bg-white"
                       }`}
                     >
                       {o.icon}
-                      <span className="text-[10px] font-black uppercase tracking-widest">{o.name}</span>
+                      <span className="text-xs font-semibold tracking-wide">{o.name}</span>
                     </button>
                   ))}
                 </div>
@@ -970,28 +991,28 @@ export default function UnifiedDashboard({
             </div>
 
             {/* Right Column: Verification & Credentials */}
-            <div className="lg:col-span-5 space-y-12">
+            <div className="min-w-0 lg:col-span-5 space-y-8">
               <div className="space-y-8">
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
                     <ShieldCheck className="h-6 w-6" />
                   </div>
-                  <h2 className="text-2xl font-black uppercase tracking-tight text-text">Verification</h2>
+                  <h2 className="text-2xl font-semibold tracking-tight text-text">Verification</h2>
                 </div>
 
                 {/* High-end Drag & Drop Zone */}
-                <div className="group relative overflow-hidden rounded-[32px] border-2 border-dashed border-border/10 bg-glass p-12 text-center transition-all hover:border-primary/40 hover:bg-white/60">
+                <div className="group relative overflow-hidden rounded-[32px] border-2 border-dashed border-slate-200 bg-white p-6 sm:p-8 text-center transition-all hover:border-primary/40 hover:bg-white">
                   <div className="relative z-10">
                     <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-transform group-hover:scale-110">
                       <Upload className="h-8 w-8" />
                     </div>
-                    <h3 className="mb-2 text-lg font-black text-text">Medical Credentials</h3>
-                    <p className="text-xs font-medium text-text/40 leading-relaxed">
+                    <h3 className="mb-2 text-lg font-semibold text-text">Medical Credentials</h3>
+                    <p className="text-xs font-medium text-slate-600 leading-relaxed">
                       Drag and drop your vaccine cards or hospital registry proof here. <br />
                       Supports PNG, JPG, WEBP (Max 10MB)
                     </p>
                     <div className="mt-8 flex flex-col items-center gap-3">
-                      <label className="cursor-pointer rounded-full bg-text px-8 py-3 text-[10px] font-black uppercase tracking-widest text-white transition-all hover:bg-primary">
+                      <label className="cursor-pointer rounded-full bg-text px-8 py-3 text-xs font-semibold tracking-wide text-white transition-all hover:bg-primary">
                         Browse Files
                         <input
                           type="file"
@@ -1001,13 +1022,13 @@ export default function UnifiedDashboard({
                         />
                       </label>
                       {verificationFile && (
-                        <p className="text-xs font-semibold text-text/70">{verificationFile.name}</p>
+                        <p className="text-xs font-semibold text-slate-700">{verificationFile.name}</p>
                       )}
                       <button
                         type="button"
                         onClick={submitVerificationDocument}
                         disabled={verificationState === "uploading" || !verificationFile}
-                        className="rounded-full border border-border/20 bg-white px-6 py-2 text-[10px] font-black uppercase tracking-widest text-text transition-all hover:bg-primary hover:text-white disabled:opacity-50"
+                        className="rounded-full border border-border/20 bg-white px-6 py-2 text-xs font-semibold tracking-wide text-text transition-all hover:bg-primary hover:text-white disabled:opacity-50"
                       >
                         {verificationState === "uploading" ? "Submitting..." : "Submit Verification"}
                       </button>
@@ -1018,7 +1039,7 @@ export default function UnifiedDashboard({
                       )}
                     </div>
                   </div>
-                  <div className="absolute inset-0 bg-gradient-to-b from-transparent to-primary/5 opacity-0 transition-opacity group-hover:opacity-100" />
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent to-primary/5 opacity-0 transition-opacity group-hover:opacity-100" />
                 </div>
 
                 {/* Verification Status List */}
@@ -1030,18 +1051,18 @@ export default function UnifiedDashboard({
               </div>
 
               {/* Quick Info Card */}
-              <div className="rounded-[32px] bg-gradient-to-br from-text to-text/80 p-8 text-white shadow-2xl">
+              <div className="rounded-[24px] bg-slate-900 p-6 sm:p-8 text-white shadow-2xl">
                 <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10">
                   <Info className="h-6 w-6 text-primary" />
                 </div>
-                <h3 className="mb-4 text-xl font-black uppercase tracking-tight">Donor Safety</h3>
-                <p className="mb-8 text-xs font-medium leading-relaxed text-white/60">
-                  Your data is encrypted with SHA protocols. We only share your contact details when you've explicitly accepted a donation request.
+                <h3 className="mb-4 text-xl font-semibold tracking-tight">Donor Safety</h3>
+                <p className="mb-8 text-xs font-medium leading-relaxed text-white/85">
+                  Your medical reports and prescriptions are private. Share your patient ID with your clinician to receive prescriptions. Donation decisions should remain lawful and medically supervised.
                 </p>
-                <button className="flex w-full items-center justify-between rounded-2xl bg-white/10 p-4 text-xs font-black uppercase tracking-widest transition-all hover:bg-white/20">
+                <a href="/safety-policy" className="flex w-full items-center justify-between rounded-2xl bg-white/10 p-4 text-sm font-semibold transition-all hover:bg-white/20">
                   Read Safety Guidelines
                   <ChevronRight className="h-4 w-4" />
-                </button>
+                </a>
               </div>
             </div>
           </div>
@@ -1052,10 +1073,10 @@ export default function UnifiedDashboard({
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10 text-blue-600">
                 <BookOpen className="h-6 w-6" />
               </div>
-              <h2 className="text-2xl font-black uppercase tracking-tight text-text">Share Your Journey</h2>
+              <h2 className="text-2xl font-semibold tracking-tight text-text">Share Your Journey</h2>
             </div>
-            
-            <div className="glass soft-moving-bg relative flex flex-col justify-between overflow-hidden rounded-[32px] p-8 transition-all">
+
+            <div className="border border-slate-200 bg-white relative flex flex-col justify-between overflow-hidden rounded-[24px] p-5 sm:p-7 transition-all">
               <div>
                 <p className="text-xs font-medium text-gray-500 mb-6">Share your real donor journey so others can learn and stay prepared.</p>
 
@@ -1066,7 +1087,7 @@ export default function UnifiedDashboard({
                     </div>
                     <h4 className="text-lg font-bold text-gray-900">Story Submitted for Review!</h4>
                     <p className="mt-2 text-sm text-gray-500">Once approved by the manager, it will appear in Community Stories and the main Blog page.</p>
-                    <button 
+                    <button
                       onClick={() => {
                         setBlogStatus("idle");
                         setStoryMessage("");
@@ -1079,33 +1100,33 @@ export default function UnifiedDashboard({
                 ) : (
                   <form onSubmit={handleBlogSubmit} className="space-y-4">
                     <div>
-                      <label className="mb-1 flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-gray-500">
+                      <label className="mb-1 flex items-center justify-between text-xs font-bold uppercase tracking-wider text-gray-500">
                         <span>Title (used as blog link)</span>
                       </label>
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         required
                         value={storyTitle}
                         onChange={(evt) => setStoryTitle(evt.target.value)}
-                        className="w-full rounded-xl border border-border/10 bg-glass px-4 py-3 text-sm font-semibold outline-none transition focus:border-blue-500 focus:bg-white/60 focus:ring-1 focus:ring-blue-500" 
+                        className="w-full rounded-xl border border-border/10 bg-glass px-4 py-3 text-sm font-semibold outline-none transition focus:border-blue-500 focus:bg-white focus:ring-1 focus:ring-blue-500"
                         placeholder="Write your story title..."
                       />
                     </div>
                     <div>
-                      <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-gray-500">Description</label>
-                      <textarea 
+                      <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-gray-500">Description</label>
+                      <textarea
                         required
                         value={storyContent}
                         onChange={(evt) => setStoryContent(evt.target.value)}
                         rows={5}
-                        className="w-full min-h-[220px] resize-y rounded-xl border border-border/10 bg-glass px-4 py-3 text-sm outline-none transition focus:border-blue-500 focus:bg-white/60 focus:ring-1 focus:ring-blue-500 lg:min-h-[600px]" 
+                        className="w-full min-h-[220px] resize-y rounded-xl border border-border/10 bg-glass px-4 py-3 text-sm outline-none transition focus:border-blue-500 focus:bg-white focus:ring-1 focus:ring-blue-500 lg:min-h-[260px]"
                         placeholder="Share your full experience..."
                       />
                     </div>
                   </form>
                 )}
               </div>
-              
+
               {blogStatus !== "success" && (
                 <div className="mt-8 pt-6 border-t border-black/5">
                   <div className="mb-4 flex items-center justify-between rounded-xl bg-glass px-4 py-3 border border-border/10">
@@ -1121,7 +1142,7 @@ export default function UnifiedDashboard({
                       <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${isAnonymous ? 'translate-x-6' : 'translate-x-1'}`} />
                     </button>
                   </div>
-                  <button 
+                  <button
                     onClick={() => void handleBlogSubmit()}
                     disabled={blogStatus === "submitting"}
                     className="group flex w-full items-center justify-center gap-2 rounded-xl bg-text px-4 py-3.5 font-bold text-white transition hover:bg-gray-800 disabled:opacity-70"
@@ -1145,8 +1166,8 @@ export default function UnifiedDashboard({
 function StatItem({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-[24px] bg-glass p-5 ring-1 ring-border/5 transition-all hover:bg-white hover:shadow-lg">
-      <div className="text-2xl font-black text-text">{value}</div>
-      <div className="text-[10px] font-black uppercase tracking-widest text-text/40">{label}</div>
+      <div className="text-2xl font-semibold text-text">{value}</div>
+      <div className="text-xs font-semibold tracking-wide text-slate-600">{label}</div>
     </div>
   );
 }
@@ -1154,14 +1175,14 @@ function StatItem({ label, value }: { label: string; value: string }) {
 function VerificationItem({ label, status }: { label: string; status: 'completed' | 'pending' }) {
   return (
     <div className="flex items-center justify-between rounded-2xl bg-glass p-4 ring-1 ring-border/5">
-      <span className="text-xs font-bold text-text/80">{label}</span>
+      <span className="text-xs font-bold text-slate-700">{label}</span>
       {status === 'completed' ? (
-        <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-green-600">
+        <div className="flex items-center gap-2 text-xs font-semibold tracking-wide text-green-600">
           <CheckCircle2 className="h-4 w-4" />
           Verified
         </div>
       ) : (
-        <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-orange-500">
+        <div className="flex items-center gap-2 text-xs font-semibold tracking-wide text-orange-500">
           <Circle className="h-4 w-4" />
           Pending
         </div>

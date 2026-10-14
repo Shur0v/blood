@@ -168,11 +168,11 @@ export default function ManualOrganDonorPage() {
         <Card title="Donor Primary Identity">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Full Name *</label>
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Full Name *</label>
               <input type="text" value={formData.name} onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))} className="w-full bg-gray-50 dark:bg-[#0f1115] border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-purple-500" required />
             </div>
             <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Email Address</label>
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Email Address</label>
               <input type="email" value={formData.email} onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))} className="w-full bg-gray-50 dark:bg-[#0f1115] border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-purple-500" />
             </div>
             <div>
@@ -187,7 +187,7 @@ export default function ManualOrganDonorPage() {
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Blood Group</label>
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Blood Group</label>
               <select value={formData.bloodGroup} onChange={(e) => setFormData((prev) => ({ ...prev, bloodGroup: e.target.value }))} className="w-full bg-gray-50 dark:bg-[#0f1115] border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-purple-500">
                 <option value="">Unknown / Not shared</option>
                 <option value="A+">A+</option>
@@ -232,7 +232,7 @@ export default function ManualOrganDonorPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div className="space-y-5">
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Medical Health Note</label>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Medical Health Note</label>
                 <textarea rows={2} value={formData.medicalNote} onChange={(e) => setFormData((prev) => ({ ...prev, medicalNote: e.target.value }))} className="w-full bg-gray-50 dark:bg-[#0f1115] border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm outline-none" placeholder="Underlying conditions affecting donation scope..."></textarea>
               </div>
               <div className="flex gap-4 flex-col">
@@ -242,7 +242,7 @@ export default function ManualOrganDonorPage() {
                 </label>
               </div>
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Visibility Preference</label>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Visibility Preference</label>
                 <select value={formData.visibilityPreference} onChange={(e) => setFormData((prev) => ({ ...prev, visibilityPreference: e.target.value }))} className="w-full bg-gray-50 dark:bg-[#0f1115] border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm outline-none">
                   <option value="PUBLIC_LISTED">Publicly Listed (Verified Request Scope)</option>
                   <option value="PRIVATE_REGISTRY">Private Registry (Backend Match Only)</option>
@@ -251,7 +251,7 @@ export default function ManualOrganDonorPage() {
             </div>
 
             <div>
-               <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Medical Credential / Form Upload</label>
+               <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Medical Credential / Form Upload</label>
                <div className="border-2 border-dashed border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/30 rounded-xl flex flex-col items-center justify-center h-[200px] cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition">
                  <UploadCloud className="text-gray-400 mb-2" size={32} />
                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Upload Consent PDF</p>

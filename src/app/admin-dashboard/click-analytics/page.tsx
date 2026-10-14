@@ -116,7 +116,7 @@ export default function ClickAnalyticsPage() {
           { label: 'This Year', val: analytics.summary.year, trend: `${formatTrend(analytics.summary.trends.year)} vs last year` },
         ].map((stat, i) => (
           <Card key={i} className="p-5 border-l-4 border-l-red-500 rounded-lg">
-            <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">{stat.label}</h4>
+            <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">{stat.label}</h4>
             <p className="text-3xl font-bold">{formatCount(stat.val)}</p>
             <p className="text-xs text-emerald-500 font-medium mt-2 flex items-center gap-1"><TrendingUp size={12}/> {stat.trend}</p>
           </Card>

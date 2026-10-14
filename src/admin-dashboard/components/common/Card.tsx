@@ -11,7 +11,7 @@ export function Card({ children, className = '', onClick, title }: CardProps) {
   // API Integration Note: Cards can be populated from any data fetching hook (useQuery, etc.)
   return (
     <div 
-      className={`bg-white dark:bg-[#1a1b23] border border-gray-100 dark:border-gray-800 rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] overflow-hidden transition-all duration-300 ${onClick ? 'cursor-pointer hover:shadow-lg hover:-translate-y-1' : ''} ${className}`}
+      className={`bg-white dark:bg-[#162033] border border-slate-200 dark:border-slate-700/60 rounded-[20px] shadow-[0_4px_24px_rgba(15,23,42,0.025)] overflow-hidden transition-all duration-300 ${onClick ? 'cursor-pointer hover:shadow-lg hover:-translate-y-1' : ''} ${className}`}
       onClick={onClick}
     >
       {title && (

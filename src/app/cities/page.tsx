@@ -10,5 +10,5 @@ export const metadata: Metadata = { title: "Active BloodNet Cities", description
 export default async function CitiesPage() {
   const stats = await getNetworkStats();
   const cities = Array.from(new Map(stats.rows.map((row) => [`${row.country}::${row.city}`, row])).values());
-  return <main className="min-h-screen bg-bg px-4 py-20 text-gray-900"><section className="mx-auto max-w-5xl"><h1 className="text-4xl font-black md:text-6xl">Active Cities</h1><div className="mt-8 grid gap-4 sm:grid-cols-3">{cities.map((row) => <Link key={`${row.country}-${row.city}`} href={`/city/${cityToSlug(row.city)}`} className="rounded-[8px] bg-white p-5 font-black shadow-card">{row.city}, {row.country}</Link>)}</div></section></main>;
+  return <main className="min-h-screen bg-bg px-4 py-20 text-gray-900"><section className="mx-auto max-w-5xl"><h1 className="text-4xl font-semibold md:text-6xl">Active Cities</h1><div className="mt-8 grid gap-4 sm:grid-cols-3">{cities.map((row) => <Link key={`${row.country}-${row.city}`} href={`/city/${cityToSlug(row.city)}`} className="rounded-[8px] bg-white p-5 font-semibold shadow-card">{row.city}, {row.country}</Link>)}</div></section></main>;
 }

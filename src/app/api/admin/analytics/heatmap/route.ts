@@ -1,164 +1,35 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
+import { Prisma } from '@prisma/client';
 import { getPrisma } from '@/src/backend/config/db';
-import { ADMIN_ROLES, getSessionFromRequest, hasRequiredRole } from '@/src/backend/utils/session';
-
-const QuerySchema = z.object({
-  page: z.string().min(1).max(120).default('home'),
-  device: z.enum(['all', 'mobile', 'tablet', 'desktop']).default('all'),
-  days: z.coerce.number().int().min(1).max(30).default(7),
-  limit: z.coerce.number().int().min(50).max(2000).default(600),
-});
-
-const toPercent = (value: number, total: number) => (total > 0 ? Number(((value / total) * 100).toFixed(1)) : 0);
-
-export async function GET(req: Request) {
-  const session = getSessionFromRequest(req);
-  if (!session) {
-    return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
-  }
-  if (!hasRequiredRole(session, ADMIN_ROLES)) {
-    return NextResponse.json({ success: false, message: 'Forbidden' }, { status: 403 });
-  }
-
-  try {
-    const url = new URL(req.url);
-    const parsed = QuerySchema.safeParse({
-      page: url.searchParams.get('page') || 'home',
-      device: url.searchParams.get('device') || 'all',
-      days: url.searchParams.get('days') || '7',
-      limit: url.searchParams.get('limit') || '600',
-    });
-    if (!parsed.success) {
-      return NextResponse.json({ success: false, message: 'Invalid query params.' }, { status: 400 });
-    }
-
-    const { page, device, days, limit } = parsed.data;
-    const prisma = getPrisma();
-    const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
-    const deviceFilter = device === 'all' ? undefined : device;
-
-    const whereAllEvents = {
-      page,
-      created_at: { gte: since },
-      ...(deviceFilter ? { device_type: deviceFilter } : {}),
-    };
-    const whereClickEvents = {
-      ...whereAllEvents,
-      event_type: 'click',
-    };
-    const whereScrollEvents = {
-      ...whereAllEvents,
-      event_type: 'scroll',
-    };
-
-    const [points, totalPoints, recentPoints, scrollAgg, sessionRows, deviceSplitRows, pagesRows] = await Promise.all([
-      prisma.analyticsHeatmapLog.findMany({
-        where: whereClickEvents,
-        orderBy: { created_at: 'desc' },
-        take: limit,
-        select: {
-          click_x: true,
-          click_y: true,
-          created_at: true,
-          device_type: true,
-        },
-      }),
-      prisma.analyticsHeatmapLog.count({ where: whereClickEvents }),
-      prisma.analyticsHeatmapLog.count({
-        where: {
-          ...whereClickEvents,
-          created_at: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
-        },
-      }),
-      prisma.analyticsHeatmapLog.aggregate({
-        where: whereScrollEvents,
-        _avg: { scroll_depth: true },
-      }),
-      prisma.analyticsHeatmapLog.groupBy({
-        by: ['session_id'],
-        where: {
-          ...whereAllEvents,
-          session_id: { not: null },
-        },
-      }),
-      prisma.analyticsHeatmapLog.groupBy({
-        by: ['device_type'],
-        where: {
-          page,
-          created_at: { gte: since },
-        },
-        _count: { _all: true },
-      }),
-      prisma.analyticsHeatmapLog.groupBy({
-        by: ['page'],
-        where: { created_at: { gte: since } },
-        _count: { _all: true },
-      }),
-    ]);
-
-    const avgScrollDepth = Math.round(scrollAgg._avg.scroll_depth ?? 0);
-
-    let tl = 0;
-    let tr = 0;
-    let bl = 0;
-    let br = 0;
-    for (const p of points) {
-      if (p.click_x < 0.5 && p.click_y < 0.5) tl += 1;
-      else if (p.click_x >= 0.5 && p.click_y < 0.5) tr += 1;
-      else if (p.click_x < 0.5 && p.click_y >= 0.5) bl += 1;
-      else br += 1;
-    }
-
-    const zoneRanks = [
-      { label: 'Top-Left Zone', count: tl },
-      { label: 'Top-Right Zone', count: tr },
-      { label: 'Bottom-Left Zone', count: bl },
-      { label: 'Bottom-Right Zone', count: br },
-    ].sort((a, b) => b.count - a.count);
-
-    const sessionsProxy = sessionRows.length;
-
-    const deviceTotal = deviceSplitRows.reduce((sum, row) => sum + row._count._all, 0);
-    const deviceSplit = deviceSplitRows.map((row) => ({
-      device: row.device_type,
-      clicks: row._count._all,
-      percent: toPercent(row._count._all, deviceTotal),
-    }));
-
-    return NextResponse.json({
-      success: true,
-      data: {
-        selected: { page, device, days },
-        metrics: {
-          totalPoints,
-          recentPoints,
-          sessionsProxy,
-          avgScrollDepth,
-          topZone: zoneRanks[0]?.label ?? 'No Data',
-        },
-        points: points.map((p) => ({
-          x: p.click_x ?? 0,
-          y: p.click_y ?? 0,
-          device: p.device_type,
-          at: p.created_at,
-        })),
-        zones: {
-          topLeft: tl,
-          topRight: tr,
-          bottomLeft: bl,
-          bottomRight: br,
-        },
-        deviceSplit,
-        pageOptions: pagesRows
-          .sort((a, b) => b._count._all - a._count._all)
-          .map((row) => ({
-            page: row.page,
-            count: row._count._all,
-          })),
-      },
-    });
-  } catch (error) {
-    return NextResponse.json({ success: false, message: 'Failed to fetch heatmap analytics.' }, { status: 500 });
-  }
+import { ADMIN_ROLES,getSessionFromRequest,hasRequiredRole } from '@/src/backend/utils/session';
+export async function GET(req:Request){
+ const session=getSessionFromRequest(req);
+ if(!session)return NextResponse.json({success:false,message:'Unauthorized'},{status:401});
+ if(!hasRequiredRole(session,ADMIN_ROLES))return NextResponse.json({success:false,message:'Forbidden'},{status:403});
+ try{
+ const url=new URL(req.url);
+ const parsed=z.object({page:z.string().min(1).max(2048),device:z.enum(['all','desktop','tablet','mobile']),days:z.coerce.number().int().min(0).max(365)}).safeParse({page:url.searchParams.get('page')||'home',device:url.searchParams.get('device')||'all',days:url.searchParams.get('days')||7});
+ if(!parsed.success)return NextResponse.json({success:false,message:'Invalid filters.'},{status:400});
+ const {page,device,days}=parsed.data;const db=getPrisma();const since=days===0?new Date(0):new Date(Date.now()-days*86400000);
+ const where={page,created_at:{gte:since},...(device==='all'?{}:{device_type:device})};
+ const heatWhere={...where,event_type:'click'};
+ const deviceSql=device==='all'?Prisma.empty:Prisma.sql`AND device_type=${device}`;
+ const [totalClicks,totalPoints,legacyPoints,bins,scrolls,pages,devices,siteTotal,recentPoints,sessionRows]=await Promise.all([
+ db.analyticsClickLog.count({where}),db.analyticsHeatmapLog.count({where:heatWhere}),
+ db.analyticsHeatmapLog.count({where:{...heatWhere,coordinate_space:'viewport'}}),
+ db.$queryRaw<Array<{x:number;y:number;weight:bigint;target_path:string|null;target_x:number|null;target_y:number|null}>>(Prisma.sql`SELECT AVG(click_x) AS x,AVG(click_y) AS y,target_path,AVG(target_x) AS target_x,AVG(target_y) AS target_y,COUNT(*) AS weight FROM "AnalyticsHeatmapLog" WHERE page=${page} AND created_at>=${since} ${deviceSql} AND event_type='click' AND coordinate_space='document' AND click_x IS NOT NULL AND click_y IS NOT NULL GROUP BY floor(click_x*80),floor(click_y*200),target_path`),
+ db.analyticsHeatmapLog.groupBy({by:['session_id'],where:{...where,event_type:'scroll'},_max:{scroll_depth:true}}),
+ db.analyticsClickLog.groupBy({by:['page'],where:{created_at:{gte:since}},_count:{_all:true}}),
+ db.analyticsClickLog.groupBy({by:['device_type'],where:{page,created_at:{gte:since}},_count:{_all:true}}),
+ db.analyticsClickLog.count({where:{created_at:{gte:since}}}),
+ db.analyticsHeatmapLog.count({where:{...heatWhere,created_at:{gte:new Date(Date.now()-86400000)}}}),
+ db.analyticsHeatmapLog.groupBy({by:['session_id'],where:{...where,session_id:{not:null}}})]);
+ const points=bins.map(p=>({x:Math.min(1,p.x),y:Math.min(1,p.y),weight:Number(p.weight),targetPath:p.target_path,targetX:p.target_x,targetY:p.target_y}));
+ const mappedClicks=points.reduce((n,p)=>n+p.weight,0);
+ const zones={topLeft:0,topRight:0,bottomLeft:0,bottomRight:0};for(const point of points){const key=point.y<.5?(point.x<.5?'topLeft':'topRight'):(point.x<.5?'bottomLeft':'bottomRight');zones[key]+=point.weight;}
+ const top=Object.entries(zones).sort((a,b)=>b[1]-a[1])[0];const labels={topLeft:'Top-Left Zone',topRight:'Top-Right Zone',bottomLeft:'Bottom-Left Zone',bottomRight:'Bottom-Right Zone'};
+ const depths=scrolls.map(row=>row._max.scroll_depth||0);
+ return NextResponse.json({success:true,data:{selected:{page,device,days},zones,metrics:{totalClicks,totalPoints,mappedClicks,legacyPoints,siteTotal,recentPoints,sessionsProxy:sessionRows.length,topZone:top&&top[1]>0?labels[top[0] as keyof typeof labels]:'No Data',avgScrollDepth:depths.length?Math.round(depths.reduce((a,b)=>a+b,0)/depths.length):0},points,pageOptions:pages.map(row=>({page:row.page,count:row._count._all})).sort((a,b)=>b.count-a.count),deviceSplit:devices.map(row=>({device:row.device_type,clicks:row._count._all,percent:devices.reduce((n,p)=>n+p._count._all,0)?Math.round(row._count._all/devices.reduce((n,p)=>n+p._count._all,0)*1000)/10:0}))}},{headers:{'Cache-Control':'no-store'}});
+ }catch{return NextResponse.json({success:false,message:'Heatmap unavailable. Verify the analytics migration and database connection.'},{status:500});}
 }

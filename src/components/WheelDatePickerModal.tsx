@@ -153,7 +153,7 @@ export default function WheelDatePickerModal({
             className={`relative w-full max-w-sm rounded-3xl border p-5 shadow-2xl backdrop-blur-2xl ${themeClasses.panel}`}
           >
             <div className="mb-4 text-center">
-              <h3 className="text-sm font-black uppercase tracking-wider">{title}</h3>
+              <h3 className="text-sm font-semibold uppercase tracking-wider">{title}</h3>
               <p className={`mt-1 text-[11px] ${themeClasses.subtitle}`}>{subtitle}</p>
             </div>
 
@@ -164,7 +164,7 @@ export default function WheelDatePickerModal({
                 </button>
                 <div className="space-y-1 text-center">
                   <div className={`text-lg font-semibold ${themeClasses.rowMuted}`}>{formatDay(dayPrev)}</div>
-                  <div className={`relative text-xl font-black ${themeClasses.rowActive}`}>
+                  <div className={`relative text-xl font-semibold ${themeClasses.rowActive}`}>
                     {formatDay(selectedDate)}
                     <span className={`absolute -bottom-1 left-1/2 h-0.5 w-10 -translate-x-1/2 rounded-full ${themeClasses.activeUnderline}`} />
                   </div>
@@ -181,7 +181,7 @@ export default function WheelDatePickerModal({
                 </button>
                 <div className="space-y-1 text-center">
                   <div className={`text-lg font-semibold ${themeClasses.rowMuted}`}>{formatMonth(monthPrev)}</div>
-                  <div className={`relative text-xl font-black ${themeClasses.rowActive}`}>
+                  <div className={`relative text-xl font-semibold ${themeClasses.rowActive}`}>
                     {formatMonth(selectedDate)}
                     <span className={`absolute -bottom-1 left-1/2 h-0.5 w-10 -translate-x-1/2 rounded-full ${themeClasses.activeUnderline}`} />
                   </div>
@@ -198,7 +198,7 @@ export default function WheelDatePickerModal({
                 </button>
                 <div className="space-y-1 text-center">
                   <div className={`text-lg font-semibold ${themeClasses.rowMuted}`}>{formatYear(yearPrev)}</div>
-                  <div className={`relative text-xl font-black ${themeClasses.rowActive}`}>
+                  <div className={`relative text-xl font-semibold ${themeClasses.rowActive}`}>
                     {formatYear(selectedDate)}
                     <span className={`absolute -bottom-1 left-1/2 h-0.5 w-10 -translate-x-1/2 rounded-full ${themeClasses.activeUnderline}`} />
                   </div>
@@ -212,11 +212,11 @@ export default function WheelDatePickerModal({
 
             <div className="mt-4 flex gap-2">
               {allowClear && (
-                <button type="button" onClick={handleClear} className={`flex-1 rounded-2xl border py-3 text-[11px] font-black uppercase tracking-widest transition ${themeClasses.clear}`}>
+                <button type="button" onClick={handleClear} className={`flex-1 rounded-2xl border py-3 text-[11px] font-semibold uppercase tracking-wide transition ${themeClasses.clear}`}>
                   {clearLabel}
                 </button>
               )}
-              <button type="button" onClick={handleConfirm} className={`rounded-2xl py-3 text-[11px] font-black uppercase tracking-widest ${allowClear ? "flex-1" : "w-full"} ${themeClasses.confirm}`}>
+              <button type="button" onClick={handleConfirm} className={`rounded-2xl py-3 text-[11px] font-semibold uppercase tracking-wide ${allowClear ? "flex-1" : "w-full"} ${themeClasses.confirm}`}>
                 {confirmLabel}
               </button>
             </div>

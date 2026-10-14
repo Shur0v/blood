@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getPrisma } from '@/src/backend/config/db';
 import { getRedactedRuntimeDiagnostics } from '@/src/backend/config/env';
-import { transporter } from '@/src/backend/utils/mailer';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -18,6 +17,7 @@ export async function GET(req: Request) {
   let storage: Status = 'ok';
   let migrationVersion: string | null = null;
   let errorMessage: string | null = null;
+  let diagnostics: ReturnType<typeof getRedactedRuntimeDiagnostics> | null = null;
 
   try {
     const prisma = getPrisma();
@@ -35,7 +35,7 @@ export async function GET(req: Request) {
   }
 
   try {
-    const diagnostics = getRedactedRuntimeDiagnostics();
+    diagnostics = getRedactedRuntimeDiagnostics();
     storage = diagnostics.media.hasR2 || diagnostics.media.localFallbackAllowed ? 'ok' : 'error';
     if (storage === 'error' && !errorMessage) {
       errorMessage = 'Storage configuration missing';
@@ -47,6 +47,7 @@ export async function GET(req: Request) {
 
   if (deep) {
     try {
+      const { transporter } = await import('@/src/backend/utils/mailer');
       await transporter.verify();
       smtp = 'ok';
     } catch (error) {
@@ -67,7 +68,7 @@ export async function GET(req: Request) {
           smtp,
         },
         migrationVersion,
-        diagnostics: getRedactedRuntimeDiagnostics(),
+        diagnostics,
         responseTimeMs: Date.now() - startedAt,
       },
       message: errorMessage || undefined,

@@ -61,9 +61,9 @@ export default async function KeywordLandingPage({ params }: { params: Promise<P
       <ManagedNativeAdSlot slotKey="native-ad-2" />
       <main className="mx-auto max-w-7xl px-4 pt-16 pb-10">
         <section className="rounded-[8px] border border-border/20 bg-white/90 p-6 shadow-card">
-          <h1 className="text-3xl font-black tracking-tight text-gray-900 md:text-4xl">{entry.keyword}</h1>
+          <h1 className="text-3xl font-semibold tracking-tight text-gray-900 md:text-4xl">{entry.keyword}</h1>
 
-          <h2 className="mt-6 text-xl font-black text-gray-900">Search Tags</h2>
+          <h2 className="mt-6 text-xl font-semibold text-gray-900">Search Tags</h2>
           <div className="mt-3 flex flex-wrap gap-2">
             {content.tags.map((tag) => (
               <span
@@ -77,7 +77,7 @@ export default async function KeywordLandingPage({ params }: { params: Promise<P
 
           {content.blocks.map((block, blockIndex) => (
             <section key={`${entry.slug}-block-${blockIndex}`} className="mt-7">
-              <h2 className="text-xl font-black text-gray-900">{block.title}</h2>
+              <h2 className="text-xl font-semibold text-gray-900">{block.title}</h2>
               {block.paragraphs.map((paragraph, paragraphIndex) => (
                 <p key={`${entry.slug}-p-${blockIndex}-${paragraphIndex}`} className="mt-3 max-w-4xl text-sm font-medium leading-7 text-gray-700 md:text-base">
                   {paragraph}
@@ -86,7 +86,7 @@ export default async function KeywordLandingPage({ params }: { params: Promise<P
             </section>
           ))}
 
-          <h2 className="mt-7 text-xl font-black text-gray-900">Related Long-Tail Searches</h2>
+          <h2 className="mt-7 text-xl font-semibold text-gray-900">Related Long-Tail Searches</h2>
           <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
             {related.map((item) => (
               <Link

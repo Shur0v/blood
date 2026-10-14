@@ -77,7 +77,7 @@ export default function CityLocationAutocomplete({
 
   return (
     <div className="space-y-2">
-      <label className="block text-[10px] font-black uppercase tracking-widest text-muted">{label}{required ? " *" : ""}</label>
+      <label className="block text-[10px] font-semibold uppercase tracking-wide text-muted">{label}{required ? " *" : ""}</label>
       <div className="relative">
         <MapPin className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
         <input
@@ -107,7 +107,7 @@ export default function CityLocationAutocomplete({
                 setQuery("");
                 setSuggestions([]);
               }}
-              className="absolute right-10 top-1/2 -translate-y-1/2 inline-flex items-center rounded-full border border-[#3f3f46] bg-[#3f3f46] px-3 py-1 text-[10px] font-black uppercase tracking-wider text-white hover:bg-[#52525b] focus:outline-none focus:ring-2 focus:ring-primary/60"
+              className="absolute right-10 top-1/2 -translate-y-1/2 inline-flex items-center rounded-full border border-[#3f3f46] bg-[#3f3f46] px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-white hover:bg-[#52525b] focus:outline-none focus:ring-2 focus:ring-primary/60"
               title="Clear city selection"
             >
               Clear

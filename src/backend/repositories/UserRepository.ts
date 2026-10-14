@@ -1,5 +1,6 @@
 import { getPrisma } from '../config/db';
 import { Prisma } from '@prisma/client';
+import { reserveGeneratedProfileCode } from '../services/profileIdentifiers';
 
 /**
  * UserRepository
@@ -25,9 +26,12 @@ export class UserRepository {
     });
   }
 
-  async createUser(data: Prisma.UserCreateInput) {
-    return await getPrisma().user.create({
-      data,
+  async createUser(data: Omit<Prisma.UserCreateInput, 'profile_code'>) {
+    return await getPrisma().$transaction(async (tx) => {
+      const code = await reserveGeneratedProfileCode(tx);
+      const user = await tx.user.create({ data: { ...data, profile_code: code } });
+      await tx.profileIdentifier.update({ where: { code }, data: { user_id: user.id } });
+      return user;
     });
   }
 

@@ -17,6 +17,10 @@ export default function LazyMount({
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
+    if (window.self !== window.top && new URLSearchParams(window.location.search).get('heatmapPreview') === '1') {
+      setVisible(true);
+      return;
+    }
     const node = ref.current;
     if (!node || visible) return;
 

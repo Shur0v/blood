@@ -8,6 +8,12 @@ type OrganIconProps = {
 };
 
 const ICON_BY_ORGAN: Record<CanonicalOrgan, (className?: string) => ReactElement> = {
+  "Bone Marrow": (className) => (
+    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
+      <path d="M7 8a3 3 0 1 1 1-5l8 8a3 3 0 1 1 5 1 3 3 0 1 1-5 5l-8-8a3 3 0 1 1-1-1Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+      <path d="m9 7 8 8M8 9l8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  ),
   Kidney: (className) => (
     <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
       <path d="M9.98556 6C10.1428 4.59395 9.00449 3 6.57134 3C4.04666 3 1.99999 5.46243 1.99999 8.5C1.99999 11.5376 3.53887 14 6.06355 14C7.67995 14 8.53551 12.7459 8.35578 11.6589" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />

@@ -40,6 +40,7 @@ export default function GlobalManagedAdsRuntime() {
   );
 
   useEffect(() => {
+    if (window.self !== window.top && new URLSearchParams(window.location.search).get('heatmapPreview') === '1') return;
     if (shouldHide) {
       removeManagedScripts();
       return;

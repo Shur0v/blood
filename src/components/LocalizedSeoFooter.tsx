@@ -105,7 +105,7 @@ export default function LocalizedSeoFooter({ forcedCountry }: Props) {
       <div className="rounded-[8px] border border-border/20 bg-white/90 p-6 shadow-card">
         <div className="grid gap-8 md:grid-cols-2">
           <div>
-            <h2 className="text-xl font-black text-gray-900">Nearby Cities in {context.country}</h2>
+            <h2 className="text-xl font-semibold text-gray-900">Nearby Cities in {context.country}</h2>
             <div className="mt-4 grid gap-2 sm:grid-cols-2">
               {nearbyCityLinks.map((city) => (
                 <Link
@@ -120,7 +120,7 @@ export default function LocalizedSeoFooter({ forcedCountry }: Props) {
           </div>
 
           <div>
-            <h2 className="text-xl font-black text-gray-900">Emergency Blood Groups in {activeCity}</h2>
+            <h2 className="text-xl font-semibold text-gray-900">Emergency Blood Groups in {activeCity}</h2>
             <div className="mt-4 grid gap-2 sm:grid-cols-2">
               {BLOOD_GROUPS.map((group) => (
                 <Link

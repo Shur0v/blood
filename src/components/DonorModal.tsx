@@ -76,11 +76,11 @@ export default function DonorModal({ donor, onClose }: DonorModalProps) {
             {/* Content */}
             <div className="flex flex-col items-center text-center">
               {/* Blood Group Badge */}
-              <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-primary-dark text-3xl font-black text-white shadow-card">
+              <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-primary-dark text-3xl font-semibold text-white shadow-card">
                 {donor.sourceType === "COMMUNITY" ? <Star className="h-8 w-8 fill-white text-white" /> : donor.group}
               </div>
 
-              <h2 className="mb-2 text-2xl font-black tracking-tight text-gray-900 uppercase">
+              <h2 className="mb-2 text-2xl font-semibold tracking-tight text-gray-900 uppercase">
                 {donor.name}
               </h2>
               
@@ -122,7 +122,7 @@ export default function DonorModal({ donor, onClose }: DonorModalProps) {
               </div>
 
               {isVerified && (
-                <p className="mt-6 text-xs font-bold uppercase tracking-widest text-gray-400">
+                <p className="mt-6 text-xs font-bold uppercase tracking-wide text-gray-400">
                   Verified Life Saver
                 </p>
               )}

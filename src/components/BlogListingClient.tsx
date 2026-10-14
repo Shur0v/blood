@@ -83,7 +83,7 @@ export default function BlogListingClient({
                 </span>
               </div>
 
-              <h2 className="text-2xl font-black leading-snug text-[#0F172A]">
+              <h2 className="text-2xl font-semibold leading-snug text-[#0F172A]">
                 <Link href={`/blog/${post.slug}`} className="transition group-hover:text-red-600">
                   {post.title}
                 </Link>

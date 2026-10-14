@@ -32,8 +32,8 @@ BloodNet collects profile, contact, location, and donation preference data to en
     <main className="min-h-screen bg-bg font-inter text-gray-800">
       <div className="bg-white border-b border-gray-200 py-16">
         <div className="mx-auto max-w-4xl px-6">
-          <p className="text-xs font-black uppercase tracking-[4px] text-primary mb-4">Compliance</p>
-          <h1 className="text-4xl font-black tracking-tight text-gray-900 md:text-6xl mb-4">
+          <p className="text-xs font-semibold uppercase tracking-[4px] text-primary mb-4">Compliance</p>
+          <h1 className="text-4xl font-semibold tracking-tight text-gray-900 md:text-6xl mb-4">
             Privacy Policy
           </h1>
           <p className="text-lg text-gray-500 max-w-2xl">

@@ -192,7 +192,7 @@ export default function FinancialRequestsPage() {
       {/* Header Section */}
       <div className="flex flex-col md:flex-row justify-between md:items-end gap-4">
         <div>
-          <h1 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
             <Heart className="h-6 w-6 text-rose-500 fill-rose-500" /> 
             Donation & Aid Management
           </h1>
@@ -217,41 +217,41 @@ export default function FinancialRequestsPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white dark:bg-[#1a1b23] border border-gray-200 dark:border-gray-800 rounded-2xl p-6 shadow-sm relative overflow-hidden group">
           <div className="absolute top-0 right-0 -mr-4 -mt-4 bg-green-500/10 w-24 h-24 rounded-full blur-xl group-hover:bg-green-500/20 transition-all text-green-500"></div>
-          <p className="text-xs font-bold text-gray-500 uppercase tracking-widest relative z-10">Total Raised</p>
+          <p className="text-xs font-bold text-gray-500 uppercase tracking-wide relative z-10">Total Raised</p>
           <div className="flex items-end gap-2 mt-2 relative z-10">
-            <span className="text-3xl font-black text-gray-900 dark:text-white">${stats.total_raised.toLocaleString()}</span>
+            <span className="text-3xl font-semibold text-gray-900 dark:text-white">${stats.total_raised.toLocaleString()}</span>
             <span className="text-xs font-bold text-green-500 mb-1 flex items-center"><TrendingUp size={12} className="mr-0.5"/> Tracking</span>
           </div>
         </div>
 
         <div className="bg-white dark:bg-[#1a1b23] border border-gray-200 dark:border-gray-800 rounded-2xl p-6 shadow-sm relative overflow-hidden group">
           <div className="absolute top-0 right-0 -mr-4 -mt-4 bg-orange-500/10 w-24 h-24 rounded-full blur-xl group-hover:bg-orange-500/20 transition-all text-orange-500"></div>
-          <p className="text-xs font-bold text-gray-500 uppercase tracking-widest relative z-10">Total Spent</p>
+          <p className="text-xs font-bold text-gray-500 uppercase tracking-wide relative z-10">Total Spent</p>
           <div className="flex items-end gap-2 mt-2 relative z-10">
-            <span className="text-3xl font-black text-gray-900 dark:text-white">${stats.total_spent.toLocaleString()}</span>
+            <span className="text-3xl font-semibold text-gray-900 dark:text-white">${stats.total_spent.toLocaleString()}</span>
             <span className="text-xs font-bold text-orange-500 mb-1">In {stats.completed_ops} Ops</span>
           </div>
         </div>
 
         <div className="bg-rose-500 dark:bg-rose-600 rounded-2xl p-6 shadow-md relative overflow-hidden text-white">
           <Activity className="absolute right-0 top-0 h-32 w-32 text-white/10 -mr-8 -mt-8" />
-          <p className="text-xs font-bold text-rose-100 uppercase tracking-widest relative z-10">Donated This Week</p>
+          <p className="text-xs font-bold text-rose-100 uppercase tracking-wide relative z-10">Donated This Week</p>
           <div className="flex items-end gap-2 mt-2 relative z-10">
-            <span className="text-3xl font-black">{stats.weekly_donors.toLocaleString()}</span>
+            <span className="text-3xl font-semibold">{stats.weekly_donors.toLocaleString()}</span>
             <span className="text-xs font-bold text-rose-200 mb-1">People</span>
           </div>
         </div>
 
         <div className="bg-white dark:bg-[#1a1b23] border border-gray-200 dark:border-gray-800 rounded-2xl p-6 shadow-sm relative overflow-hidden">
-          <p className="text-xs font-bold text-gray-500 uppercase tracking-widest relative z-10">Op Status</p>
+          <p className="text-xs font-bold text-gray-500 uppercase tracking-wide relative z-10">Op Status</p>
           <div className="flex items-end gap-4 mt-2 relative z-10">
             <div>
-              <span className="text-xl font-black text-gray-900 dark:text-white">{stats.completed_ops}</span>
+              <span className="text-xl font-semibold text-gray-900 dark:text-white">{stats.completed_ops}</span>
               <p className="text-[10px] text-green-500 font-bold uppercase">Completed</p>
             </div>
             <div className="w-px h-6 bg-gray-200 dark:bg-gray-800"></div>
             <div>
-              <span className="text-xl font-black text-gray-900 dark:text-white">{stats.uncompleted_ops}</span>
+              <span className="text-xl font-semibold text-gray-900 dark:text-white">{stats.uncompleted_ops}</span>
               <p className="text-[10px] text-orange-500 font-bold uppercase">Uncompleted</p>
             </div>
           </div>
@@ -311,11 +311,11 @@ export default function FinancialRequestsPage() {
                     <button className="text-[10px] uppercase font-bold text-blue-500 mt-1 hover:underline">Verify Identity</button>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="font-black text-lg text-gray-900 dark:text-white">${req.amount_required}</div>
+                    <div className="font-semibold text-lg text-gray-900 dark:text-white">${req.amount_required}</div>
                     <div className="text-xs text-gray-500">USD</div>
                   </td>
                   <td className="px-6 py-4">
-                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
+                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wide ${
                       req.status === 'PENDING' ? 'bg-orange-100 text-orange-600 border border-orange-200' :
                       req.status === 'APPROVED' ? 'bg-green-100 text-green-600 border border-green-200' :
                       'bg-red-100 text-red-600 border border-red-200'
@@ -379,25 +379,25 @@ export default function FinancialRequestsPage() {
               <div className="flex justify-between items-start mb-6 border-b border-gray-100 dark:border-gray-800 pb-4">
                 <div>
                   <div className="flex items-center gap-3 mb-1">
-                    <span className="bg-rose-100 text-rose-600 px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest">REQ-{selectedRequest.id.slice(-6)}</span>
+                    <span className="bg-rose-100 text-rose-600 px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide">REQ-{selectedRequest.id.slice(-6)}</span>
                     <span className="text-gray-400 text-xs">{new Date(selectedRequest.created_at).toLocaleDateString()}</span>
                   </div>
-                  <h2 className="text-2xl font-black text-gray-900 dark:text-white">{selectedRequest.patient_name}</h2>
+                  <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">{selectedRequest.patient_name}</h2>
                 </div>
                 <div className="text-right">
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Requested Fund</p>
-                  <p className="text-3xl font-black text-gray-900 dark:text-white">${selectedRequest.amount_required}</p>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">Requested Fund</p>
+                  <p className="text-3xl font-semibold text-gray-900 dark:text-white">${selectedRequest.amount_required}</p>
                 </div>
               </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                 <div className="space-y-4">
                   <div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 flex items-center gap-1.5 mb-2"><Hospital size={14}/> Medical Authority</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 flex items-center gap-1.5 mb-2"><Hospital size={14}/> Medical Authority</p>
                     <p className="text-sm font-bold text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-[#0f1115] p-3 rounded-xl border border-gray-100 dark:border-gray-800">{selectedRequest.hospital_name}</p>
                   </div>
                   <div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Contact Details</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 mb-2">Contact Details</p>
                     <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
                       <p className="flex items-center gap-2"><Mail size={14} className="text-gray-400"/> {selectedRequest.email}</p>
                       <p className="flex items-center gap-2"><Phone size={14} className="text-gray-400"/> {selectedRequest.phone}</p>
@@ -411,7 +411,7 @@ export default function FinancialRequestsPage() {
                 </div>
 
                 <div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 flex items-center gap-1.5"><FileText size={14}/> Medical Condition / Note</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 mb-2 flex items-center gap-1.5"><FileText size={14}/> Medical Condition / Note</p>
                   <div className="bg-gray-50 dark:bg-[#0f1115] p-4 rounded-xl border border-gray-100 dark:border-gray-800 text-sm text-gray-700 dark:text-gray-300 h-full">
                     {selectedRequest.medical_note}
                   </div>
@@ -420,10 +420,10 @@ export default function FinancialRequestsPage() {
 
               {/* Uploaded Documents */}
               <div className="mb-8">
-                 <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">Attached Verified Documents</p>
+                 <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 mb-3">Attached Verified Documents</p>
                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div className="rounded-xl border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900/60 p-3">
-                      <p className="mb-2 text-xs font-black uppercase tracking-widest text-gray-500">Prescriptions</p>
+                      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Prescriptions</p>
                       {parseStoredUrls(selectedRequest.prescription_url).length === 0 ? (
                         <p className="text-xs font-semibold text-gray-400">No Prescription</p>
                       ) : (
@@ -444,7 +444,7 @@ export default function FinancialRequestsPage() {
                       )}
                     </div>
                     <div className="rounded-xl border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900/60 p-3">
-                      <p className="mb-2 text-xs font-black uppercase tracking-widest text-gray-500">Medical Reports</p>
+                      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Medical Reports</p>
                       {parseStoredUrls(selectedRequest.report_url).length === 0 ? (
                         <p className="text-xs font-semibold text-gray-400">No Medical Report</p>
                       ) : (
@@ -472,14 +472,14 @@ export default function FinancialRequestsPage() {
                 <button
                   onClick={() => void handleDeleteRequest(selectedRequest.id)}
                   disabled={deletingRequestId === selectedRequest.id}
-                  className="px-6 py-3 text-xs font-black uppercase tracking-widest text-red-600 bg-red-50 hover:bg-red-100 transition-colors rounded-xl flex items-center gap-2 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-red-600 bg-red-50 hover:bg-red-100 transition-colors rounded-xl flex items-center gap-2 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   <Trash2 size={16} />
                   {deletingRequestId === selectedRequest.id ? "Deleting..." : "Delete Request"}
                 </button>
                 <button 
                   onClick={() => setSelectedRequest(null)}
-                  className="px-6 py-3 text-xs font-black uppercase tracking-widest text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors rounded-xl"
+                  className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors rounded-xl"
                 >
                   Close
                 </button>
@@ -487,20 +487,20 @@ export default function FinancialRequestsPage() {
                   <>
                     <button 
                       onClick={() => handleStatusChange(selectedRequest.id, 'REJECTED')}
-                      className="px-6 py-3 text-xs font-black uppercase tracking-widest text-red-600 bg-red-50 hover:bg-red-100 transition-colors rounded-xl flex items-center gap-2"
+                      className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-red-600 bg-red-50 hover:bg-red-100 transition-colors rounded-xl flex items-center gap-2"
                     >
                       <XCircle size={16}/> Reject & Ban
                     </button>
                     <button 
                       onClick={() => handleStatusChange(selectedRequest.id, 'APPROVED')}
-                      className="px-8 py-3 text-xs font-black uppercase tracking-widest text-white bg-green-600 hover:bg-green-700 transition-colors rounded-xl flex items-center gap-2 shadow-lg shadow-green-500/30"
+                      className="px-8 py-3 text-xs font-semibold uppercase tracking-wide text-white bg-green-600 hover:bg-green-700 transition-colors rounded-xl flex items-center gap-2 shadow-lg shadow-green-500/30"
                     >
                       <CheckCircle size={16}/> Approve to List
                     </button>
                   </>
                 )}
                 {selectedRequest.status !== 'PENDING' && (
-                   <span className={`inline-flex items-center gap-1 px-4 py-3 rounded-xl text-xs font-black uppercase tracking-widest ${
+                   <span className={`inline-flex items-center gap-1 px-4 py-3 rounded-xl text-xs font-semibold uppercase tracking-wide ${
                       selectedRequest.status === 'APPROVED' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
                     }`}>
                       {selectedRequest.status === 'APPROVED' ? <CheckCircle size={16}/> : <XCircle size={16}/>}
@@ -534,7 +534,7 @@ export default function FinancialRequestsPage() {
               className="bg-white dark:bg-[#1a1b23] relative w-full max-w-lg overflow-hidden rounded-[32px] shadow-2xl p-8 z-10"
             >
               <div className="mb-6">
-                 <h2 className="text-xl font-black text-gray-900 dark:text-white flex items-center gap-2">
+                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                    <Edit3 className="text-rose-500"/> Edit Platform Data
                  </h2>
                  <p className="text-xs text-gray-500 mt-1">Changes made here will instantly reflect on the homepage transparency dashboard.</p>
@@ -542,7 +542,7 @@ export default function FinancialRequestsPage() {
 
               <div className="space-y-4 mb-8">
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-1">Total Raised ($)</label>
+                  <label className="block text-xs font-bold uppercase tracking-wide text-gray-500 mb-1">Total Raised ($)</label>
                   <input 
                     type="number"
                     value={editFormData.total_raised}
@@ -551,7 +551,7 @@ export default function FinancialRequestsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-1">Total Spent ($)</label>
+                  <label className="block text-xs font-bold uppercase tracking-wide text-gray-500 mb-1">Total Spent ($)</label>
                   <input 
                     type="number"
                     value={editFormData.total_spent}
@@ -561,7 +561,7 @@ export default function FinancialRequestsPage() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-1">Completed Ops</label>
+                    <label className="block text-xs font-bold uppercase tracking-wide text-gray-500 mb-1">Completed Ops</label>
                     <input 
                       type="number"
                       value={editFormData.completed_ops}
@@ -570,7 +570,7 @@ export default function FinancialRequestsPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-1">Uncompleted Ops</label>
+                    <label className="block text-xs font-bold uppercase tracking-wide text-gray-500 mb-1">Uncompleted Ops</label>
                     <input 
                       type="number"
                       value={editFormData.uncompleted_ops}
@@ -580,7 +580,7 @@ export default function FinancialRequestsPage() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-1">Weekly Donors (People)</label>
+                  <label className="block text-xs font-bold uppercase tracking-wide text-gray-500 mb-1">Weekly Donors (People)</label>
                   <input 
                     type="number"
                     value={editFormData.weekly_donors}
@@ -589,7 +589,7 @@ export default function FinancialRequestsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-1">Total Donation Requests</label>
+                  <label className="block text-xs font-bold uppercase tracking-wide text-gray-500 mb-1">Total Donation Requests</label>
                   <input
                     type="number"
                     value={editFormData.donor_requests}

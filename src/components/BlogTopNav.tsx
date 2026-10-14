@@ -9,7 +9,7 @@ export default function BlogTopNav() {
           <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-dark">
             <Droplet className="h-5 w-5 fill-white text-white" />
           </span>
-          <span className="text-lg font-black tracking-tight text-[#0F172A]">BloodNet</span>
+          <span className="text-lg font-semibold tracking-tight text-[#0F172A]">BloodNet</span>
         </Link>
 
         <nav className="flex items-center gap-2">

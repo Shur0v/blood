@@ -30,6 +30,7 @@ export default function ManagedNativeAdSlot({ slotKey }: { slotKey: SlotKey }) {
   );
 
   useEffect(() => {
+    if (window.self !== window.top && new URLSearchParams(window.location.search).get('heatmapPreview') === '1') return;
     if (shouldHide) return;
     let active = true;
     const load = async () => {

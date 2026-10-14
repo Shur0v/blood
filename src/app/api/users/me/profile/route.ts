@@ -4,6 +4,7 @@ import { getPrisma } from '@/src/backend/config/db';
 import { ADMIN_ROLES, getSessionFromRequest, USER_ROLE } from '@/src/backend/utils/session';
 import { listServiceCities } from '@/src/backend/services/ServiceCityService';
 import { normalizeOrganList } from '@/src/lib/organCatalog';
+import { nextProfileCodeChange } from '@/src/lib/profileIdentifier';
 
 const ProfilePatchSchema = z.object({
   name: z.string().min(1).max(120).optional(),
@@ -58,6 +59,8 @@ export async function GET(req: Request) {
     success: true,
     data: {
       id: user.id,
+      profileCode: user.profile_code,
+      profileCodeNextChangeAt: nextProfileCodeChange(user.profile_code_changed_at),
       name: user.name,
       email: user.email,
       mobile: user.mobile,

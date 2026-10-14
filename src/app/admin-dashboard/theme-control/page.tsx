@@ -132,7 +132,7 @@ export default function ThemeControlPage() {
       <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-[#1a1b23]">
         <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
           <div>
-            <h2 className="flex items-center gap-2 text-2xl font-black text-gray-900 dark:text-white">
+            <h2 className="flex items-center gap-2 text-2xl font-semibold text-gray-900 dark:text-white">
               <Paintbrush className="h-6 w-6 text-red-500" />
               Global Theme Control
             </h2>
@@ -181,10 +181,10 @@ export default function ThemeControlPage() {
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <h3 className="text-lg font-black text-gray-900 dark:text-white">{UI_THEME_LABELS[themeKey]}</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{UI_THEME_LABELS[themeKey]}</h3>
                   <p className="mt-1 text-sm text-gray-500">{THEME_DESCRIPTIONS[themeKey]}</p>
                 </div>
-                {isLive && <span className="rounded-full bg-green-100 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-green-700">Live</span>}
+                {isLive && <span className="rounded-full bg-green-100 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-green-700">Live</span>}
               </div>
             </button>
           );
@@ -204,7 +204,7 @@ export default function ThemeControlPage() {
           <button
             onClick={() => void saveTheme()}
             disabled={saving || loading || !hasChanges}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-red-600 px-5 py-3 text-sm font-black text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-red-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {saving ? <RefreshCcw className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
             {saving ? "Saving..." : "Save Theme"}

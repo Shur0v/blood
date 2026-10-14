@@ -10,6 +10,7 @@ import { Search, Filter, Eye, Trash2, Shield, ShieldAlert, HeartPulse } from 'lu
 
 interface DashboardUser {
   id: string;
+  profileCode: string;
   name: string;
   avatar: string;
   bg: string;
@@ -96,6 +97,7 @@ export default function AllUserList() {
         .map((user: any) => ({
           id: user.id,
           name: user.name,
+          profileCode: user.profile_code || '',
           avatar: (user.name?.[0] || 'U').toUpperCase(),
           bg: user.blood_group,
           country: user.location_country || 'Unknown',
@@ -258,7 +260,7 @@ export default function AllUserList() {
                       {user.name}
                       <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-500 text-white leading-none">{user.bg}</span>
                     </h4>
-                    <p className="text-xs text-gray-500 mt-0.5">{user.id.slice(0, 8)}</p>
+                    <p className="mt-1 text-xs text-gray-500">Patient ID <span className="font-mono font-semibold tracking-wider text-rose-600 dark:text-rose-300">{user.profileCode || 'Pending'}</span></p><p className="mt-0.5 text-[10px] text-gray-400">{user.id.slice(0, 8)}</p>
                   </div>
                 </div>
               </TableCell>

@@ -23,12 +23,12 @@ export default async function CommonBloodSearchesPage() {
       <ManagedNativeAdSlot slotKey="native-ad-2" />
       <main className="mx-auto max-w-7xl px-4 pt-20 pb-14">
         <section className="rounded-[8px] border border-border/20 bg-white/80 p-6 shadow-card">
-          <h1 className="text-3xl font-black tracking-tight text-gray-900 md:text-4xl">Most Common Blood Searches</h1>
+          <h1 className="text-3xl font-semibold tracking-tight text-gray-900 md:text-4xl">Most Common Blood Searches</h1>
           <p className="mt-3 max-w-3xl text-sm font-medium text-gray-600 md:text-base">
             Quick access to the highest-demand blood group and city searches. Open any target page, then continue with the full landing view below.
           </p>
 
-          <h2 className="mt-8 text-xl font-black text-gray-900">Top Blood Group Searches</h2>
+          <h2 className="mt-8 text-xl font-semibold text-gray-900">Top Blood Group Searches</h2>
           <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-8">
             {BLOOD_GROUPS.map((group) => {
               const slug = bloodGroupToSlug(group);
@@ -37,7 +37,7 @@ export default async function CommonBloodSearchesPage() {
                 <Link
                   key={group}
                   href={`/blood/${slug}`}
-                  className="rounded-[8px] border border-border/20 bg-white px-4 py-3 text-center text-sm font-black text-primary shadow-sm"
+                  className="rounded-[8px] border border-border/20 bg-white px-4 py-3 text-center text-sm font-semibold text-primary shadow-sm"
                 >
                   {group}
                 </Link>
@@ -45,7 +45,7 @@ export default async function CommonBloodSearchesPage() {
             })}
           </div>
 
-          <h2 className="mt-8 text-xl font-black text-gray-900">Top City Searches</h2>
+          <h2 className="mt-8 text-xl font-semibold text-gray-900">Top City Searches</h2>
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {topCityRows.map((row) => (
               <Link
@@ -58,7 +58,7 @@ export default async function CommonBloodSearchesPage() {
             ))}
           </div>
 
-          <h2 className="mt-8 text-xl font-black text-gray-900">Country Keyword Hubs</h2>
+          <h2 className="mt-8 text-xl font-semibold text-gray-900">Country Keyword Hubs</h2>
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <Link href="/country-keyword-hubs/usa" className="rounded-[8px] border border-border/20 bg-white px-4 py-3 text-sm font-bold text-gray-900 shadow-sm">USA Keyword Hub</Link>
             <Link href="/country-keyword-hubs/uk" className="rounded-[8px] border border-border/20 bg-white px-4 py-3 text-sm font-bold text-gray-900 shadow-sm">UK Keyword Hub</Link>

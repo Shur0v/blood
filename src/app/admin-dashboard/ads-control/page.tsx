@@ -197,7 +197,7 @@ export default function AdsControlPage() {
       <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-[#1a1b23]">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <h2 className="text-2xl font-black text-gray-900 dark:text-white">Ad Control Center</h2>
+            <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">Ad Control Center</h2>
             <p className="mt-1 text-sm text-gray-500">Simple control for every ad slot. Edit each ad from modal, then save once.</p>
           </div>
           <button onClick={() => void loadSettings()} disabled={loading} className="inline-flex items-center gap-2 rounded-xl border border-gray-200 px-4 py-2 text-sm font-bold text-gray-700 hover:bg-gray-50 disabled:opacity-60 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800">
@@ -210,10 +210,10 @@ export default function AdsControlPage() {
       <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-[#1a1b23]">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <p className="text-xs font-black uppercase tracking-wider text-gray-500">Global Switch</p>
-            <p className="text-lg font-black text-gray-900 dark:text-white">{adsRuntimeEnabled ? "Ads ON (Live)" : "Ads OFF (Default Design)"}</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">Global Switch</p>
+            <p className="text-lg font-semibold text-gray-900 dark:text-white">{adsRuntimeEnabled ? "Ads ON (Live)" : "Ads OFF (Default Design)"}</p>
           </div>
-          <button onClick={() => void toggleGlobalRuntimeNow()} disabled={saving || loading} className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-black disabled:opacity-60 ${adsRuntimeEnabled ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+          <button onClick={() => void toggleGlobalRuntimeNow()} disabled={saving || loading} className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold disabled:opacity-60 ${adsRuntimeEnabled ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
             {adsRuntimeEnabled ? <ToggleRight className="h-5 w-5" /> : <ToggleLeft className="h-5 w-5" />}
             {adsRuntimeEnabled ? "Turn OFF All Ads" : "Turn ON All Ads"}
           </button>
@@ -225,13 +225,13 @@ export default function AdsControlPage() {
           <div key={unit.id} className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-[#1a1b23]">
             <div className="mb-3 flex items-start justify-between gap-3">
               <div>
-                <p className="text-sm font-black text-gray-900 dark:text-white">{unit.name}</p>
+                <p className="text-sm font-semibold text-gray-900 dark:text-white">{unit.name}</p>
                 <p className="text-xs font-semibold text-gray-500">{AD_TYPE_LABEL[unit.adType]} • {PLACEMENT_LABEL[unit.placement]}</p>
               </div>
               <button
                 onClick={() => void toggleSingleUnitNow(index)}
                 disabled={saving || loading}
-                className={`rounded-lg px-2 py-1 text-xs font-black disabled:opacity-60 ${unit.enabled ? "bg-green-100 text-green-700" : "bg-gray-200 text-gray-700"}`}
+                className={`rounded-lg px-2 py-1 text-xs font-semibold disabled:opacity-60 ${unit.enabled ? "bg-green-100 text-green-700" : "bg-gray-200 text-gray-700"}`}
               >
                 {unit.enabled ? "Enabled" : "Disabled"}
               </button>
@@ -252,7 +252,7 @@ export default function AdsControlPage() {
       </div>
 
       <div className="flex flex-wrap gap-3">
-        <button onClick={() => void save()} disabled={saving || loading || !hasChanges} className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-5 py-2 text-sm font-black text-white disabled:opacity-60">
+        <button onClick={() => void save()} disabled={saving || loading || !hasChanges} className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-5 py-2 text-sm font-semibold text-white disabled:opacity-60">
           {saving ? <RefreshCcw className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
           {saving ? "Saving..." : "Save All Changes"}
         </button>
@@ -265,7 +265,7 @@ export default function AdsControlPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
           <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-gray-200 bg-white p-5 shadow-2xl dark:border-gray-700 dark:bg-[#11131a]">
             <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-lg font-black text-gray-900 dark:text-white">Edit Ad Unit</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Edit Ad Unit</h3>
               <button onClick={closeEdit} className="rounded-lg p-2 hover:bg-gray-100 dark:hover:bg-gray-800"><X className="h-5 w-5" /></button>
             </div>
 
@@ -317,12 +317,12 @@ export default function AdsControlPage() {
             </div>
 
             <div className="mt-4 flex items-center justify-between">
-              <button onClick={() => setDraft({ ...draft, enabled: !draft.enabled })} className={`rounded-xl px-4 py-2 text-sm font-black ${draft.enabled ? "bg-green-100 text-green-700" : "bg-gray-200 text-gray-700"}`}>
+              <button onClick={() => setDraft({ ...draft, enabled: !draft.enabled })} className={`rounded-xl px-4 py-2 text-sm font-semibold ${draft.enabled ? "bg-green-100 text-green-700" : "bg-gray-200 text-gray-700"}`}>
                 {draft.enabled ? "Enabled" : "Disabled"}
               </button>
               <div className="flex gap-2">
                 <button onClick={closeEdit} className="rounded-xl border border-gray-300 px-4 py-2 text-sm font-bold">Cancel</button>
-                <button onClick={applyEdit} disabled={saving} className="rounded-xl bg-red-600 px-4 py-2 text-sm font-black text-white disabled:opacity-60">Apply</button>
+                <button onClick={applyEdit} disabled={saving} className="rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60">Apply</button>
               </div>
             </div>
           </div>

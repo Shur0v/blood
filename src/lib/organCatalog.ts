@@ -6,6 +6,7 @@ export const ORGAN_CATALOG = [
   "Intestine",
   "Eye",
   "Sperm",
+  "Bone Marrow",
 ] as const;
 
 export type CanonicalOrgan = (typeof ORGAN_CATALOG)[number];
@@ -27,6 +28,9 @@ const ORGAN_ALIAS_MAP: Record<string, CanonicalOrgan | null> = {
   sperm: "Sperm",
   sparm: "Sperm",
   semen: "Sperm",
+  "bone marrow": "Bone Marrow",
+  "bone-marrow": "Bone Marrow",
+  marrow: "Bone Marrow",
 
   heart: null,
   brain: null,

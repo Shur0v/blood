@@ -1,11 +1,12 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { Card } from '@/src/admin-dashboard/components/common/Card';
 import { Badge } from '@/src/admin-dashboard/components/common/Badge';
 import {
   Users, UserCheck, UserMinus, HeartPulse,
-  ShieldAlert, Database, FileText, TrendingUp, Activity, Plus, AlertTriangle
+  ShieldAlert, Database, FileText, RefreshCw, ArrowUpRight, AlertTriangle
 } from 'lucide-react';
 
 interface OverviewPayload {
@@ -78,6 +79,8 @@ const fmtCount = (num: number) => num.toLocaleString();
 export default function DashboardOverview() {
   const [data, setData] = React.useState<OverviewPayload>(emptyPayload);
   const [isLoading, setIsLoading] = React.useState(true);
+  const [error,setError] = React.useState('');
+  const [hasLoaded,setHasLoaded] = React.useState(false);
 
   const loadOverview = React.useCallback(async () => {
     setIsLoading(true);
@@ -89,10 +92,11 @@ export default function DashboardOverview() {
       });
       const payload = await res.json();
       if (!res.ok || !payload.success) {
-        setData(emptyPayload);
-        return;
+        throw new Error(payload.message || 'The overview could not load.');
       }
-      setData(payload.data as OverviewPayload);
+      setData(payload.data as OverviewPayload);setHasLoaded(true);setError('');
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Unable to refresh the overview.');
     } finally {
       setIsLoading(false);
     }
@@ -101,8 +105,8 @@ export default function DashboardOverview() {
   React.useEffect(() => {
     void loadOverview();
     const timer = setInterval(() => {
-      void loadOverview();
-    }, 10000);
+      if(document.visibilityState==='visible')void loadOverview();
+    }, 30000);
     return () => clearInterval(timer);
   }, [loadOverview]);
 
@@ -121,71 +125,55 @@ export default function DashboardOverview() {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold">Platform Overview</h2>
-          <p className="text-sm text-gray-500 mt-1">Real-time health and analytics of the donation network.</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-rose-600 dark:text-rose-300">Network workspace</p><h2 className="mt-2 text-3xl font-semibold tracking-tight">A clearer view of your community.</h2>
+          <p className="text-sm text-gray-500 dark:text-slate-400 mt-2">Donation activity, pending reviews and visitor engagement in one place.</p>
         </div>
         <div className="flex items-center gap-3">
           <button
             onClick={() => void loadOverview()}
-            className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition"
+            disabled={isLoading} className="admin-action disabled:opacity-50"
           >
-            <Plus size={16} /> Refresh
+            <RefreshCw size={16} className={isLoading?'animate-spin':''} /> Refresh
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {error&&<p role="alert" className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">{error} {hasLoaded?'Showing the last successful update.':''}</p>}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         {KPIS.map((kpi, idx) => {
           const Icon = kpi.icon;
           return (
-            <Card key={idx} className="p-5 flex items-start justify-between">
+            <div key={idx} className="admin-stat flex items-start justify-between gap-4">
               <div>
                 <p className="text-sm text-gray-500 dark:text-gray-400 font-medium mb-1">{kpi.title}</p>
-                <h3 className="text-2xl font-bold">{kpi.value}</h3>
+                <h3 className="mt-3 text-3xl font-semibold tracking-tight">{hasLoaded?kpi.value:'—'}</h3>
               </div>
               <div className={`p-3 rounded-xl bg-gray-50 dark:bg-gray-800 ${kpi.color}`}>
                 <Icon size={20} />
               </div>
-            </Card>
+            </div>
           );
         })}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card title="Traffic & Engagement" className="lg:col-span-2">
-          <div className="h-64 flex flex-col items-center justify-center border-2 border-dashed border-gray-200 dark:border-gray-800 rounded-xl relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-t from-red-50 to-transparent dark:from-red-500/5"></div>
-            <TrendingUp size={48} className="text-red-200 dark:text-red-500/20 mb-2" />
-            <p className="text-gray-400 font-medium">Live Traffic Snapshot</p>
-          </div>
-          <div className="grid grid-cols-3 gap-4 mt-6">
-            <div className="text-center">
-              <p className="text-sm text-gray-500">Today&apos;s Clicks</p>
-              <p className="text-lg font-bold">{fmtCount(data.traffic.todayClicks)}</p>
-            </div>
-            <div className="text-center border-l border-r border-gray-100 dark:border-gray-800">
-              <p className="text-sm text-gray-500">Weekly Clicks</p>
-              <p className="text-lg font-bold">{fmtCount(data.traffic.weekClicks)}</p>
-            </div>
-            <div className="text-center">
-              <p className="text-sm text-gray-500">Top CTA</p>
-              <p className="text-lg font-bold text-red-500">{data.traffic.topCTA}</p>
-            </div>
-          </div>
+        <Card title="Visitor engagement" className="lg:col-span-2">
+          <div className="grid gap-4 sm:grid-cols-2"><div className="rounded-2xl border border-rose-100 bg-rose-50/60 p-5 dark:border-rose-500/20 dark:bg-rose-500/5"><p className="text-xs font-medium text-slate-500 dark:text-slate-400">Clicks today</p><p className="mt-3 text-4xl font-semibold tracking-tight">{hasLoaded?fmtCount(data.traffic.todayClicks):'—'}</p><p className="mt-3 text-xs leading-5 text-slate-500 dark:text-slate-400">Recorded visitor interactions across the website.</p></div><div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-800/40"><p className="text-xs font-medium text-slate-500 dark:text-slate-400">Clicks this week</p><p className="mt-3 text-4xl font-semibold tracking-tight">{hasLoaded?fmtCount(data.traffic.weekClicks):'—'}</p><p className="mt-3 text-xs leading-5 text-slate-500 dark:text-slate-400">Use click analytics to compare changes over time.</p></div></div>
+          <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 p-4 dark:border-slate-700"><div className="min-w-0"><p className="text-xs text-slate-500 dark:text-slate-400">Most used action</p><p className="mt-1 break-words text-sm font-semibold">{hasLoaded?data.traffic.topCTA:'Loading…'}</p></div><Link href="/admin-dashboard/click-analytics" className="admin-action">Click analytics<ArrowUpRight size={15}/></Link></div><div className="mt-5 flex flex-wrap gap-3"><Link href="/admin-dashboard/heatmap" className="admin-action">Explore the live heatmap<ArrowUpRight size={15}/></Link><Link href="/admin-dashboard/medical-operations" className="admin-action">Medical operations<ArrowUpRight size={15}/></Link></div>
         </Card>
 
         <Card title="Priority Actions Queue">
           <div className="space-y-4">
             {[
-              { label: 'Pending Verifications', count: data.queue.pendingVerifications, type: 'warning' },
-              { label: 'Unresolved Reports', count: data.queue.unresolvedReports, type: 'danger' },
-              { label: 'Organ Requests Review', count: data.queue.organRequestsReview, type: 'danger' },
-              { label: 'Blog Approvals', count: data.queue.blogApprovals, type: 'info' },
-            ].map((action, i) => (
-              <div key={i} className="flex items-center justify-between p-3 rounded-lg border border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition cursor-pointer">
+              { label: 'Pending Verifications', count: data.queue.pendingVerifications, type: 'warning',href:'/admin-dashboard/users' },
+              { label: 'Unresolved Reports', count: data.queue.unresolvedReports, type: 'danger',href:'/admin-dashboard/reports' },
+              { label: 'Organ Requests Review', count: data.queue.organRequestsReview, type: 'danger',href:'/dashboard/user-management/organ-request' },
+              { label: 'Blog Approvals', count: data.queue.blogApprovals, type: 'info',href:'/admin-dashboard/write-blog' },
+            ].map((action) => (
+              <Link key={action.href} href={action.href} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 p-3.5 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800/50">
                 <span className="text-sm font-medium">{action.label}</span>
-                <Badge type={action.type as 'warning' | 'danger' | 'info'}>{action.count} Items</Badge>
-              </div>
+                <Badge type={action.type as 'warning' | 'danger' | 'info'}>{hasLoaded?action.count:'—'} Items</Badge>
+              </Link>
             ))}
           </div>
         </Card>
@@ -196,21 +184,21 @@ export default function DashboardOverview() {
           <div className="flex items-center justify-between mb-4">
             <div className="text-center p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg flex-1 mr-2">
               <h4 className="text-2xl font-bold">{fmtCount(data.regional.countries)}</h4>
-              <p className="text-xs text-gray-500 uppercase tracking-widest mt-1">Countries</p>
+              <p className="text-xs text-gray-500 dark:text-slate-400 uppercase tracking-wide mt-1">Countries</p>
             </div>
             <div className="text-center p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg flex-1 ml-2">
               <h4 className="text-2xl font-bold">{fmtCount(data.regional.cities)}</h4>
-              <p className="text-xs text-gray-500 uppercase tracking-widest mt-1">Cities</p>
+              <p className="text-xs text-gray-500 dark:text-slate-400 uppercase tracking-wide mt-1">Cities</p>
             </div>
           </div>
           <ul className="space-y-3">
             {data.regional.topRegions.length === 0 ? (
-              <li className="text-sm text-gray-500">No regional rows yet.</li>
+              <li className="text-sm text-gray-500 dark:text-slate-400">No regional rows yet.</li>
             ) : (
               data.regional.topRegions.map((row) => (
                 <li key={row.country} className="flex justify-between items-center text-sm">
                   <span className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-red-500"></span> {row.country}</span>
-                  <span className="font-medium text-gray-500">{fmtCount(row.users)} Users</span>
+                  <span className="font-medium text-gray-500 dark:text-slate-400">{fmtCount(row.users)} Users</span>
                 </li>
               ))
             )}
@@ -220,9 +208,9 @@ export default function DashboardOverview() {
         <Card title="Recent Live Activity">
           <div className="space-y-4">
             {isLoading ? (
-              <p className="text-sm text-gray-500">Loading activities...</p>
+              <p className="text-sm text-gray-500 dark:text-slate-400">Loading activities...</p>
             ) : data.recentActivity.length === 0 ? (
-              <p className="text-sm text-gray-500">No recent activity found.</p>
+              <p className="text-sm text-gray-500 dark:text-slate-400">No recent activity found.</p>
             ) : (
               data.recentActivity.map((feed, i) => (
                 <div key={`${feed.type}-${feed.at}-${i}`} className="flex gap-3">
@@ -231,7 +219,7 @@ export default function DashboardOverview() {
                   </div>
                   <div>
                     <p className="text-sm font-medium">{feed.message}</p>
-                    <p className="text-xs text-gray-500">{new Date(feed.at).toLocaleString()}</p>
+                    <p className="text-xs text-gray-500 dark:text-slate-400">{new Date(feed.at).toLocaleString()}</p>
                   </div>
                 </div>
               ))

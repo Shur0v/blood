@@ -22,12 +22,12 @@ export default async function CommonOrganSearchesPage() {
       <ManagedNativeAdSlot slotKey="native-ad-2" />
       <main className="mx-auto max-w-7xl px-4 pt-20 pb-14">
         <section className="rounded-[8px] border border-border/20 bg-white/80 p-6 shadow-card">
-          <h1 className="text-3xl font-black tracking-tight text-gray-900 md:text-4xl">Most Common Organ Searches</h1>
+          <h1 className="text-3xl font-semibold tracking-tight text-gray-900 md:text-4xl">Most Common Organ Searches</h1>
           <p className="mt-3 max-w-3xl text-sm font-medium text-gray-600 md:text-base">
             Quick links for high-demand organ support pages. Open a donor or request path and continue with the complete landing page below.
           </p>
 
-          <h2 className="mt-8 text-xl font-black text-gray-900">Top Organ Searches</h2>
+          <h2 className="mt-8 text-xl font-semibold text-gray-900">Top Organ Searches</h2>
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {organSlugs.map((slug) => (
               <Link
@@ -40,11 +40,11 @@ export default async function CommonOrganSearchesPage() {
             ))}
           </div>
 
-          <h2 className="mt-8 text-xl font-black text-gray-900">Verified Request Search</h2>
+          <h2 className="mt-8 text-xl font-semibold text-gray-900">Verified Request Search</h2>
           <div className="mt-4">
             <Link
               href="/organ/request"
-              className="inline-flex rounded-[8px] bg-primary-dark px-5 py-3 text-sm font-black uppercase tracking-widest text-white"
+              className="inline-flex rounded-[8px] bg-primary-dark px-5 py-3 text-sm font-semibold uppercase tracking-wide text-white"
             >
               Browse Verified Organ Requests
             </Link>

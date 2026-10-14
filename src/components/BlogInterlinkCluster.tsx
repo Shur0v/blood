@@ -36,7 +36,7 @@ export default async function BlogInterlinkCluster({ currentBlogId }: { currentB
 
   return (
     <section className="mt-10 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm md:p-8">
-      <h2 className="text-2xl font-black tracking-tight text-[#0F172A] md:text-3xl">Explore More Medical Guides</h2>
+      <h2 className="text-2xl font-semibold tracking-tight text-[#0F172A] md:text-3xl">Explore More Medical Guides</h2>
       <p className="mt-2 text-sm font-medium text-gray-600">
         Related reading links are refreshed dynamically to strengthen internal SEO flow.
       </p>
@@ -48,7 +48,7 @@ export default async function BlogInterlinkCluster({ currentBlogId }: { currentB
             href={`/blog/${item.slug}`}
             className="group rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-red-200 hover:bg-red-50/40 hover:text-red-700"
           >
-            <span className="mr-2 text-xs font-black uppercase tracking-wide text-red-600">#{idx + 1}</span>
+            <span className="mr-2 text-xs font-semibold uppercase tracking-wide text-red-600">#{idx + 1}</span>
             {item.title}
           </Link>
         ))}

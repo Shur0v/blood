@@ -771,7 +771,7 @@ export default function ManualBloodDonorPage() {
         <Card title="Donor Identity & Contact">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Full Name *</label>
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Full Name *</label>
               <input type="text" value={formData.name} onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))} className="w-full bg-gray-50 dark:bg-[#0f1115] border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-red-500 outline-none" required />
             </div>
             <div>
@@ -786,7 +786,7 @@ export default function ManualBloodDonorPage() {
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Email Address</label>
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Email Address</label>
               <input type="email" value={formData.email} onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))} className="w-full bg-gray-50 dark:bg-[#0f1115] border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-red-500 outline-none" />
             </div>
             <div className="lg:col-span-2">
@@ -800,7 +800,7 @@ export default function ManualBloodDonorPage() {
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Detailed Address Note</label>
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Detailed Address Note</label>
               <input type="text" value={formData.detailedAddressNote} onChange={(e) => setFormData((prev) => ({ ...prev, detailedAddressNote: e.target.value }))} className="w-full bg-gray-50 dark:bg-[#0f1115] border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-red-500 outline-none" />
             </div>
           </div>
@@ -810,7 +810,7 @@ export default function ManualBloodDonorPage() {
         <Card title="Medical Profile & Stats">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Blood Group *</label>
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Blood Group *</label>
               <select value={formData.bloodGroup} onChange={(e) => setFormData((prev) => ({ ...prev, bloodGroup: e.target.value }))} className="w-full bg-red-50 dark:bg-red-500/10 text-red-600 font-bold border border-red-200 dark:border-red-500/20 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-red-500 outline-none" required>
                 <option value="">Select Group</option>
                 <option>O+</option><option>O-</option><option>A+</option><option>A-</option>
@@ -818,7 +818,7 @@ export default function ManualBloodDonorPage() {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Availability Status</label>
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Availability Status</label>
               <select value={formData.availabilityStatus} onChange={(e) => setFormData((prev) => ({ ...prev, availabilityStatus: e.target.value }))} className="w-full bg-gray-50 dark:bg-[#0f1115] border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm outline-none">
                 <option value="ACTIVE_READY">Active / Ready</option>
                 <option value="INACTIVE_UNAVAILABLE">Inactive / Unavailable</option>
@@ -826,7 +826,7 @@ export default function ManualBloodDonorPage() {
               </select>
             </div>
             <div>
-               <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Last Donation Date</label>
+               <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Last Donation Date</label>
                <button
                  type="button"
                  onClick={() => setIsLastDonationPickerOpen(true)}
@@ -843,31 +843,31 @@ export default function ManualBloodDonorPage() {
             
             {/* Health Vitals */}
             <div>
-               <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Weight (kg) / Height (cm)</label>
+               <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Weight (kg) / Height (cm)</label>
                <div className="flex gap-2">
                  <input type="number" value={formData.weightKg} onChange={(e) => setFormData((prev) => ({ ...prev, weightKg: e.target.value }))} placeholder="kg" className="w-1/2 bg-gray-50 dark:bg-[#0f1115] border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm outline-none" />
                  <input type="number" value={formData.heightCm} onChange={(e) => setFormData((prev) => ({ ...prev, heightCm: e.target.value }))} placeholder="cm" className="w-1/2 bg-gray-50 dark:bg-[#0f1115] border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm outline-none" />
                </div>
             </div>
             <div>
-               <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Diabetic Level</label>
+               <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Diabetic Level</label>
                <select value={formData.diabeticLevel} onChange={(e) => setFormData((prev) => ({ ...prev, diabeticLevel: e.target.value }))} className="w-full bg-gray-50 dark:bg-[#0f1115] border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2 text-sm outline-none">
                  <option value="Non-Diabetic">Non-Diabetic</option><option value="Type 1">Type 1</option><option value="Type 2">Type 2</option>
                </select>
             </div>
             <div>
-               <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Hemoglobin Level (g/dL)</label>
+               <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Hemoglobin Level (g/dL)</label>
                <input type="text" value={formData.hemoglobin} onChange={(e) => setFormData((prev) => ({ ...prev, hemoglobin: e.target.value }))} className="w-full bg-gray-50 dark:bg-[#0f1115] border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2 text-sm outline-none" />
             </div>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
              <div>
-               <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Known Allergies</label>
+               <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Known Allergies</label>
                <input type="text" value={formData.allergies} onChange={(e) => setFormData((prev) => ({ ...prev, allergies: e.target.value }))} placeholder="e.g. Penicillin, Peanuts" className="w-full bg-gray-50 dark:bg-[#0f1115] border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm outline-none" />
              </div>
              <div>
-               <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Vaccinations</label>
+               <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Vaccinations</label>
                <input type="text" value={formData.vaccinations} onChange={(e) => setFormData((prev) => ({ ...prev, vaccinations: e.target.value }))} placeholder="e.g. Hep B, COVID-19" className="w-full bg-gray-50 dark:bg-[#0f1115] border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm outline-none" />
              </div>
           </div>
@@ -878,7 +878,7 @@ export default function ManualBloodDonorPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div className="space-y-5">
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Data Source Origin</label>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Data Source Origin</label>
                 <select value={formData.source} onChange={(e) => setFormData((prev) => ({ ...prev, source: e.target.value }))} className="w-full bg-gray-50 dark:bg-[#0f1115] border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm outline-none">
                   <option value="Offline Blood Camp">Offline Blood Camp</option>
                   <option value="Partner Hospital">Partner Hospital</option>
@@ -896,14 +896,14 @@ export default function ManualBloodDonorPage() {
                 </label>
               </div>
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Admin Notes</label>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Admin Notes</label>
                 <textarea rows={3} value={formData.adminNotes} onChange={(e) => setFormData((prev) => ({ ...prev, adminNotes: e.target.value }))} className="w-full bg-gray-50 dark:bg-[#0f1115] border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm outline-none" placeholder="Internal remarks regarding this record..."></textarea>
               </div>
             </div>
 
             {/* Document Upload Area */}
             <div>
-               <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Medical Proof / Prescription Upload</label>
+               <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Medical Proof / Prescription Upload</label>
                <div className="border-2 border-dashed border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/30 rounded-xl flex flex-col items-center justify-center h-48 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition">
                  <UploadCloud className="text-gray-400 mb-2" size={32} />
                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Drag & drop files or click to browse</p>

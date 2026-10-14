@@ -92,10 +92,10 @@ const Counter = ({ label, target, suffix, delay }: CounterProps) => {
       className="text-center"
     >
       <div className="mb-2 flex items-center justify-center">
-        <motion.span className="text-5xl font-black tracking-tighter text-text md:text-7xl">
+        <motion.span className="text-5xl font-semibold tracking-tighter text-text md:text-7xl">
           {rounded}
         </motion.span>
-        <span className="text-3xl font-black tracking-tighter text-text md:text-5xl">
+        <span className="text-3xl font-semibold tracking-tighter text-text md:text-5xl">
           {suffix}
         </span>
       </div>

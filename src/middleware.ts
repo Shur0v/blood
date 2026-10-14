@@ -27,7 +27,7 @@ const pickLocaleFromHeader = (header: string | null): string => {
   return DEFAULT_LOCALE;
 };
 
-const applySecurityHeaders = (response: NextResponse, isApiRoute: boolean) => {
+const applySecurityHeaders = (response: NextResponse, isApiRoute: boolean, preview: boolean) => {
   const isProd = process.env.NODE_ENV === 'production';
   const csp = [
     "default-src 'self'",
@@ -36,7 +36,7 @@ const applySecurityHeaders = (response: NextResponse, isApiRoute: boolean) => {
     `script-src 'self' ${isProd ? '' : "'unsafe-eval'"} 'unsafe-inline' https:`,
     "style-src 'self' 'unsafe-inline' https:",
     "connect-src 'self' https:",
-    "frame-ancestors 'none'",
+    preview ? "frame-ancestors 'self'" : "frame-ancestors 'none'",
     "base-uri 'self'",
     "form-action 'self'",
     "object-src 'none'",
@@ -47,9 +47,9 @@ const applySecurityHeaders = (response: NextResponse, isApiRoute: boolean) => {
 
   response.headers.set('Content-Security-Policy', csp);
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-  response.headers.set('X-Frame-Options', 'DENY');
+  response.headers.set('X-Frame-Options', preview ? 'SAMEORIGIN' : 'DENY');
   response.headers.set('X-Content-Type-Options', 'nosniff');
-  response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(self)');
+  response.headers.set('Permissions-Policy', 'camera=(self), microphone=(), geolocation=(self)');
   if (isProd) {
     response.headers.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
   }
@@ -89,11 +89,14 @@ export function middleware(request: NextRequest) {
   if (
     pathname.startsWith('/api/admin/') ||
     pathname.startsWith('/api/auth/') ||
+    pathname.startsWith('/api/integrations/') ||
     pathname.startsWith('/api/users/me/')
   ) {
     response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
   }
-  applySecurityHeaders(response, isApiRoute);
+  const preview = request.nextUrl.searchParams.get('heatmapPreview') === '1' && !/^\/(api|admin-dashboard|dashboard|profile)(\/|$)/.test(pathname);
+  if (preview) response.headers.set('Cache-Control', 'no-store');
+  applySecurityHeaders(response, isApiRoute, preview);
 
   return response;
 }

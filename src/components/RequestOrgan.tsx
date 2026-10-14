@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "motion/react";
 import { HeartPulse, Upload, AlertCircle, FileCheck, CheckCircle2 } from "lucide-react";
 import CityLocationAutocomplete, { type LocationSuggestion } from "./CityLocationAutocomplete";
@@ -6,6 +6,17 @@ import CountryPhoneInput, { emptyPhoneValue, type PhoneFieldValue } from "./Coun
 import { ORGAN_CATALOG } from "../lib/organCatalog";
 
 export default function RequestOrgan() {
+  const [organChosen, setOrganChosen] = useState(false);
+  const [compactScreen, setCompactScreen] = useState(false);
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 767px)");
+    const update = () => setCompactScreen(media.matches);
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
+  const detailsDisabled = compactScreen && !organChosen;
+  const detailsClass = organChosen ? "organ-request-details" : "hidden md:block";
   const [status, setStatus] = useState<"idle" | "submitting" | "success">("idle");
   const [errorMsg, setErrorMsg] = useState("");
   const [formData, setFormData] = useState({
@@ -94,7 +105,7 @@ export default function RequestOrgan() {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-4xl font-black tracking-tight text-text uppercase"
+          className="text-4xl font-semibold tracking-tight text-text uppercase"
         >
           Request an Organ
         </motion.h2>
@@ -116,8 +127,8 @@ export default function RequestOrgan() {
               <HeartPulse className="h-5 w-5 sm:h-6 sm:w-6" />
             </div>
             <div className="min-w-0">
-              <h3 className="text-lg leading-tight sm:text-xl font-black text-text uppercase tracking-tight">Recipient Application</h3>
-              <p className="mt-1 text-[11px] sm:text-xs font-bold text-muted uppercase tracking-widest">Medical Verification Required</p>
+              <h3 className="text-lg leading-tight sm:text-xl font-semibold text-text uppercase tracking-tight">Recipient Application</h3>
+              <p className="mt-1 text-[11px] sm:text-xs font-bold text-muted uppercase tracking-wide">Medical Verification Required</p>
             </div>
           </div>
           <div className="inline-flex w-fit max-w-full items-center gap-2 rounded-2xl bg-blue-500/10 px-3.5 py-2.5 text-[11px] sm:text-xs font-bold text-blue-600 leading-tight">
@@ -131,13 +142,14 @@ export default function RequestOrgan() {
             <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-green-500/10 text-green-500">
               <CheckCircle2 className="h-10 w-10" />
             </div>
-            <h4 className="text-2xl font-black text-text uppercase tracking-tight">Request Submitted!</h4>
+            <h4 className="text-2xl font-semibold text-text uppercase tracking-tight">Request Submitted!</h4>
             <p className="mt-4 text-sm font-medium text-muted max-w-md">
               Your request for a <strong>{formData.organType}</strong> has been submitted to database and will now show in user/admin management queues.
             </p>
             <button
               onClick={() => {
                 setStatus("idle");
+                setOrganChosen(false);
                 setFormData({
                   organType: "Kidney",
                   bloodGroup: "",
@@ -152,7 +164,7 @@ export default function RequestOrgan() {
                 setSelectedLocation(null);
                 setMedicalFiles([]);
               }}
-              className="mt-8 rounded-full bg-text px-8 py-3 text-xs font-black uppercase tracking-widest text-inverse transition hover:bg-text/80"
+              className="mt-8 rounded-full bg-text px-8 py-3 text-xs font-semibold uppercase tracking-wide text-inverse transition hover:bg-text/80"
             >
               Submit Another Request
             </button>
@@ -161,12 +173,17 @@ export default function RequestOrgan() {
           <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-8 md:grid-cols-2">
             <div className="space-y-6">
               <div>
-                <label className="mb-2 block text-[10px] font-black uppercase tracking-widest text-muted">Required Organ</label>
+                <label htmlFor="recipient-organ" className="mb-2 block text-[10px] font-semibold uppercase tracking-wide text-muted">Required Organ</label>
                 <select
-                  value={formData.organType}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, organType: e.target.value }))}
+                  id="recipient-organ"
+                  value={detailsDisabled ? "" : formData.organType}
+                  onChange={(e) => {
+                    setFormData((prev) => ({ ...prev, organType: e.target.value }));
+                    setOrganChosen(true);
+                  }}
                   className="w-full rounded-2xl border border-border bg-glass px-4 py-3.5 text-sm font-semibold text-text outline-none transition focus:border-primary focus:ring-1 focus:ring-primary"
                 >
+                  {detailsDisabled && <option value="" disabled>Select required organ</option>}
                   {ORGAN_CATALOG.map((organ) => (
                     <option key={organ} value={organ}>{organ}</option>
                   ))}
@@ -174,7 +191,7 @@ export default function RequestOrgan() {
               </div>
 
               <div>
-                <label className="mb-2 block text-[10px] font-black uppercase tracking-widest text-muted">Recipient Full Name</label>
+                <label className="mb-2 block text-[10px] font-semibold uppercase tracking-wide text-muted">Recipient Full Name</label>
                 <input
                   type="text"
                   required
@@ -185,8 +202,9 @@ export default function RequestOrgan() {
                 />
               </div>
 
+              <fieldset disabled={detailsDisabled} className={`${detailsClass} m-0 min-w-0 space-y-6 border-0 p-0`}>
               <div>
-                <label className="mb-2 block text-[10px] font-black uppercase tracking-widest text-muted">Blood Group *</label>
+                <label className="mb-2 block text-[10px] font-semibold uppercase tracking-wide text-muted">Blood Group *</label>
                 <select
                   required
                   value={formData.bloodGroup}
@@ -206,7 +224,7 @@ export default function RequestOrgan() {
               </div>
 
               <div>
-                <label className="mb-2 block text-[10px] font-black uppercase tracking-widest text-muted">Email Address</label>
+                <label className="mb-2 block text-[10px] font-semibold uppercase tracking-wide text-muted">Email Address</label>
                 <input
                   type="email"
                   required
@@ -225,11 +243,12 @@ export default function RequestOrgan() {
                 onSelect={setSelectedLocation}
                 onClear={() => setSelectedLocation(null)}
               />
+              </fieldset>
             </div>
 
-            <div className="space-y-6 flex flex-col">
+            <fieldset disabled={detailsDisabled} className={`${organChosen ? "organ-request-details flex" : "hidden md:flex"} m-0 min-w-0 space-y-6 flex-col border-0 p-0`}>
               <div>
-                <label className="mb-2 block text-[10px] font-black uppercase tracking-widest text-muted">Urgency / Timeline</label>
+                <label className="mb-2 block text-[10px] font-semibold uppercase tracking-wide text-muted">Urgency / Timeline</label>
                 <select
                   value={formData.urgency}
                   onChange={(e) => setFormData((prev) => ({ ...prev, urgency: e.target.value }))}
@@ -243,7 +262,7 @@ export default function RequestOrgan() {
               </div>
 
               <div>
-                <label className="mb-2 block text-[10px] font-black uppercase tracking-widest text-muted">Receiving Hospital</label>
+                <label className="mb-2 block text-[10px] font-semibold uppercase tracking-wide text-muted">Receiving Hospital</label>
                 <input
                   type="text"
                   required
@@ -263,7 +282,7 @@ export default function RequestOrgan() {
               />
 
               <div className="flex-1 min-h-[120px]">
-                <label className="mb-2 block text-[10px] font-black uppercase tracking-widest text-muted">Medical Documents</label>
+                <label className="mb-2 block text-[10px] font-semibold uppercase tracking-wide text-muted">Medical Documents</label>
                 <label className="flex h-[calc(100%-24px)] cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border bg-glass text-center px-4 transition hover:border-primary/60">
                   <input
                     type="file"
@@ -289,10 +308,10 @@ export default function RequestOrgan() {
                   )}
                 </label>
               </div>
-            </div>
+            </fieldset>
 
-            <div className="md:col-span-2">
-              <label className="mb-2 block text-[10px] font-black uppercase tracking-widest text-muted">Patient Background & Notes</label>
+            <fieldset disabled={detailsDisabled} className={`${detailsClass} m-0 min-w-0 border-0 p-0 md:col-span-2`}>
+              <label className="mb-2 block text-[10px] font-semibold uppercase tracking-wide text-muted">Patient Background & Notes</label>
               <textarea
                 required
                 rows={4}
@@ -301,12 +320,12 @@ export default function RequestOrgan() {
                 className="w-full resize-none rounded-2xl border border-border bg-glass px-4 py-3.5 text-sm font-semibold text-text outline-none transition focus:border-primary focus:ring-1 focus:ring-primary"
                 placeholder="Briefly describe the medical history and condition..."
               />
-            </div>
+            </fieldset>
 
-            <div className="border-t border-border pt-6 md:col-span-2">
+            <div className={`${detailsClass} border-t border-border pt-6 md:col-span-2`}>
               <div className="mb-6 flex items-center gap-3">
                 <FileCheck className="h-5 w-5 text-primary" />
-                <p className="text-[10px] font-bold uppercase tracking-widest text-muted">
+                <p className="text-[10px] font-bold uppercase tracking-wide text-muted">
                   By submitting, you confirm authorization to request organs on behalf of the registered account via the BloodNet Global Network.
                 </p>
               </div>
@@ -316,8 +335,8 @@ export default function RequestOrgan() {
                 </div>
               )}
               <button
-                disabled={status === "submitting" || uploadingFiles || !selectedLocation || !isPhoneValid}
-                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-text px-6 py-4 text-sm font-black uppercase tracking-widest text-inverse transition hover:bg-text/80 disabled:opacity-70"
+                disabled={detailsDisabled || status === "submitting" || uploadingFiles || !selectedLocation || !isPhoneValid}
+                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-text px-6 py-4 text-sm font-semibold uppercase tracking-wide text-inverse transition hover:bg-text/80 disabled:opacity-70"
               >
                 {status === "submitting" || uploadingFiles ? "Submitting..." : "Submit to Verification Board"}
               </button>

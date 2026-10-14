@@ -205,7 +205,7 @@ export default function PolicyUpdatePage() {
         <div className="xl:col-span-3 space-y-6">
           <Card className="p-0 overflow-hidden">
             <div className="p-4 border-b border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/10">
-              <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Policy Section</p>
+              <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Policy Section</p>
               <div className="flex flex-wrap gap-2">
                 {policyOptions.map((item) => (
                   <button
@@ -227,7 +227,7 @@ export default function PolicyUpdatePage() {
             <div className="p-4 space-y-4">
               <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">
                     {policyOptions.find((o) => o.key === activePolicy)?.label} Editor
                   </label>
                   <textarea
@@ -238,7 +238,7 @@ export default function PolicyUpdatePage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">
                     Live Preview (Edited Version)
                   </label>
                   <div className="min-h-[430px] rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#0f1115] p-4 overflow-y-auto">
@@ -250,7 +250,7 @@ export default function PolicyUpdatePage() {
               </div>
 
               <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-[#0f1115] p-4">
-                <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">All Policy Text Preview</p>
+                <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">All Policy Text Preview</p>
                 <div className="space-y-4 max-h-[520px] overflow-y-auto pr-1">
                   <div>
                     <p className="font-semibold text-sm mb-1">Terms of Service</p>
@@ -277,7 +277,7 @@ export default function PolicyUpdatePage() {
 
           <Card className="p-0 overflow-hidden">
             <div className="p-4 border-b border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/10">
-              <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">Footer Contact Information</p>
+              <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">Footer Contact Information</p>
             </div>
             <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -333,7 +333,7 @@ export default function PolicyUpdatePage() {
 
           <Card className="p-0 overflow-hidden">
             <div className="p-4 border-b border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/10">
-              <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">Homepage Impact + Join Community</p>
+              <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">Homepage Impact + Join Community</p>
             </div>
             <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -478,17 +478,17 @@ export default function PolicyUpdatePage() {
           <Card title="Live Metadata">
             <div className="space-y-4 text-sm">
               <div>
-                <p className="text-xs text-gray-500 uppercase tracking-widest mb-1">Status</p>
+                <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Status</p>
                 <span className="inline-flex px-2.5 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300">
                   {isLoading ? 'Loading...' : 'Connected'}
                 </span>
               </div>
               <div>
-                <p className="text-xs text-gray-500 uppercase tracking-widest mb-1">Last Updated</p>
+                <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Last Updated</p>
                 <p className="font-semibold">{form.updatedAt ? new Date(form.updatedAt).toLocaleString() : 'N/A'}</p>
               </div>
               <div>
-                <p className="text-xs text-gray-500 uppercase tracking-widest mb-1">Current Editor Block</p>
+                <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Current Editor Block</p>
                 <p className="font-semibold">Terms + Privacy + Footer Contact</p>
               </div>
             </div>

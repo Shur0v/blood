@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { getPrisma } from '@/src/backend/config/db';
 
 const EventSchema = z.object({
-  page: z.string().min(1).max(120),
+  page: z.string().min(1).max(2048),
   deviceType: z.enum(['mobile', 'tablet', 'desktop']),
   eventType: z.enum(['click', 'scroll']).default('click'),
   sessionId: z.string().min(8).max(160).optional(),

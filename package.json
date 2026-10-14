@@ -4,6 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "deploy:check": "tsx src/backend/scripts/deploymentCheck.ts",
+    "db:backup": "tsx src/backend/scripts/backupDatabase.ts",
     "dev": "next dev",
     "dev:full": "prisma generate && prisma migrate deploy && next dev --port=3000 --hostname=0.0.0.0",
     "db:generate": "prisma generate",
@@ -12,6 +14,10 @@
     "db:push": "echo \"Use db:migrate:dev or db:migrate:deploy instead of db:push\"",
     "db:studio": "prisma studio",
     "seed:admin": "tsx src/backend/scripts/seedAdmin.ts",
+    "worker:prescriptions": "tsx src/backend/scripts/prescriptionEmailWorker.ts",
+    "test:medical": "tsx --test tests/medical-profile.test.ts",
+    "test:env": "tsx --test tests/environment.test.ts",
+    "test:deployment": "tsx --test tests/database-deployment.test.ts",
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint"

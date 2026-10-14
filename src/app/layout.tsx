@@ -15,7 +15,7 @@ import { buildDatasetSchema, buildMedicalOrganizationSchema, buildServiceSchema,
 const baseUrl = getPublicBaseUrl();
 const inter = Inter({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800", "900"],
+  weight: ["400", "500", "600", "700"],
   style: ["normal"],
   display: "swap",
   variable: "--font-inter",

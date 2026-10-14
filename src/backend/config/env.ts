@@ -10,7 +10,7 @@ const boolFromEnv = z
 
 const EnvSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
-  DATABASE_URL: z.string().min(1),
+  DATABASE_URL: z.string().url().refine(value => /^postgres(?:ql)?:\/\//i.test(value), 'Use a PostgreSQL connection URL.'),
   JWT_SECRET: z.string().min(32),
   SMTP_HOST: z.string().min(1),
   SMTP_PORT: z.coerce.number().int().min(1).max(65535).default(465),
@@ -31,11 +31,20 @@ const EnvSchema = z.object({
   R2_ACCESS_KEY_ID: z.string().optional(),
   R2_SECRET_ACCESS_KEY: z.string().optional(),
   R2_BUCKET: z.string().optional(),
-  R2_PUBLIC_BASE_URL: z.string().url().optional(),
+  R2_PUBLIC_BASE_URL: z.preprocess((value) => value === '' ? undefined : value, z.string().url().optional()),
   ENABLE_LOCAL_UPLOAD_FALLBACK: boolFromEnv,
 });
 
 export type AppEnv = z.infer<typeof EnvSchema>;
+
+// Database reads must not depend on unrelated email, maps, or media settings.
+export const getDatabaseEnv = () => {
+  const parsed = EnvSchema.pick({ DATABASE_URL: true, NODE_ENV: true }).safeParse(process.env);
+  if (!parsed.success) {
+    throw new Error('Database configuration is missing or invalid. Set DATABASE_URL in the server environment.');
+  }
+  return parsed.data;
+};
 
 let cachedEnv: AppEnv | null = null;
 

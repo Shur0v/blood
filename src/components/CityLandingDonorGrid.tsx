@@ -88,7 +88,7 @@ export default function CityLandingDonorGrid({ mode, city, country }: CityLandin
   return (
     <section className="mx-auto w-full max-w-7xl px-4 pb-24">
       <div className="mb-8 rounded-xl border border-border/20 bg-white/70 p-6 backdrop-blur">
-        <h2 className="text-3xl font-black tracking-tight text-gray-900">
+        <h2 className="text-3xl font-semibold tracking-tight text-gray-900">
           {mode === "blood" ? "Urgent Blood Donation" : "Emergency Organ Donation"} in {city}
         </h2>
         <p className="mt-2 text-sm font-medium text-gray-600">
@@ -113,14 +113,14 @@ export default function CityLandingDonorGrid({ mode, city, country }: CityLandin
             >
               <div className="absolute inset-0 rounded-[8px] ring-1 ring-inset ring-white/50" />
               <div className="relative z-10 flex w-full items-center">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[8px] bg-primary-dark text-lg font-black text-white shadow-card">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[8px] bg-primary-dark text-lg font-semibold text-white shadow-card">
                   {mode === "blood" ? card.group : <OrganIcon organ={card.group} className="h-6 w-6" />}
                 </div>
                 <div className="ml-3 flex flex-1 flex-col overflow-hidden">
                   <div className="flex items-center justify-between">
                     <h3 className="truncate text-sm font-bold tracking-tight text-gray-900">{card.name}</h3>
                     {mode === "organ" && (
-                      <span className="ml-2 rounded bg-primary-dark/10 px-1.5 py-0.5 text-[10px] font-black text-primary-dark">
+                      <span className="ml-2 rounded bg-primary-dark/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary-dark">
                         {card.bloodGroup}
                       </span>
                     )}

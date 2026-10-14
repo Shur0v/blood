@@ -2,28 +2,9 @@
 
 import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
+import { documentClick, analyticsTargetPath, analyticsPageKey } from "@/src/lib/analytics";
 
 type DeviceType = "mobile" | "tablet" | "desktop";
-
-interface ClickEventPayload {
-  page: string;
-  component: string;
-  deviceType: DeviceType;
-  timestamp: string;
-}
-
-interface HeatmapEventPayload {
-  page: string;
-  deviceType: DeviceType;
-  eventType: "click" | "scroll";
-  sessionId: string;
-  clickX?: number;
-  clickY?: number;
-  viewportW: number;
-  viewportH: number;
-  scrollDepth?: number;
-  timestamp: string;
-}
 
 const MAX_COMPONENT_LENGTH = 120;
 const FLUSH_SIZE = 20;
@@ -65,7 +46,10 @@ const createSessionId = (): string => {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
     return crypto.randomUUID();
   }
-  return `session-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, token => {
+    const value = Math.floor(Math.random() * 16);
+    return (token === 'x' ? value : (value & 3) | 8).toString(16);
+  });
 };
 
 const getHeatmapSessionId = (): string => {
@@ -153,200 +137,59 @@ const extractComponentName = (target: HTMLElement | null): string | null => {
   return nearMenu ? `Menu: ${label}` : label;
 };
 
-const normalizePage = (pathname: string): string => {
-  if (pathname === "/") return "home";
-  return pathname.replace(/^\//, "").replace(/\//g, " > ") || "unknown";
-};
-
 export default function ClickTracker() {
   const pathname = usePathname();
-  const queueRef = useRef<ClickEventPayload[]>([]);
-  const heatmapQueueRef = useRef<HeatmapEventPayload[]>([]);
-  const flushTimerRef = useRef<number | null>(null);
-  const heatmapFlushTimerRef = useRef<number | null>(null);
-  const lastScrollEmitRef = useRef<number>(0);
-  const maxScrollDepthSentRef = useRef<number>(0);
-  const isFlushingRef = useRef(false);
-  const isHeatmapFlushingRef = useRef(false);
-  const hasBeaconFlushedRef = useRef(false);
-
+  const pending = useRef<Array<Record<string, unknown>>>([]);
+  const sending = useRef(false);
   useEffect(() => {
-    if (!pathname) return;
-    if (pathname.startsWith("/admin-dashboard")) return;
-    if (pathname.startsWith("/api")) return;
-    const heatmapSessionId = getHeatmapSessionId();
-
+    if (!pathname || /^\/(admin-dashboard|api|dashboard)(\/|$)/.test(pathname)) return;
+    if (window.self !== window.top) return;
+    const sessionId = getHeatmapSessionId();
+    let maxDepth = 0, lastScroll = 0;
     const flush = async () => {
-      if (isFlushingRef.current) return;
-      if (queueRef.current.length === 0) return;
-
-      isFlushingRef.current = true;
-      const batch = queueRef.current.splice(0, FLUSH_SIZE);
+      if (sending.current || !pending.current.length) return;
+      sending.current = true;
+      const batch = pending.current.splice(0, FLUSH_SIZE);
       try {
-        await fetch("/api/analytics/clicks", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ events: batch }),
-          keepalive: true,
-        });
-      } catch (error) {
-        queueRef.current = [...batch, ...queueRef.current];
-      } finally {
-        isFlushingRef.current = false;
-      }
+        const body=JSON.stringify({events:batch});
+        const response = await fetch('/api/analytics/clicks', { method:'POST',headers:{'Content-Type':'application/json'},body,keepalive:new Blob([body]).size<50000 });
+        if (!response.ok) throw new Error('Analytics unavailable');
+      } catch { pending.current = [...batch,...pending.current].slice(0,MAX_QUEUE_SIZE); }
+      finally { sending.current = false; }
     };
-
-    const flushHeatmap = async () => {
-      if (isHeatmapFlushingRef.current) return;
-      if (heatmapQueueRef.current.length === 0) return;
-
-      isHeatmapFlushingRef.current = true;
-      const batch = heatmapQueueRef.current.splice(0, FLUSH_SIZE);
-      try {
-        await fetch("/api/analytics/heatmap", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ events: batch }),
-          keepalive: true,
-        });
-      } catch (error) {
-        heatmapQueueRef.current = [...batch, ...heatmapQueueRef.current];
-      } finally {
-        isHeatmapFlushingRef.current = false;
-      }
+    const page = () => analyticsPageKey(pathname, document.body.dataset.analyticsPage);
+    const click = (event: MouseEvent) => {
+      const target = event.target instanceof Element ? event.target : null;
+      const privateArea = target?.closest('[data-analytics-private], [role="dialog"], dialog');
+      const component = privateArea ? 'Private form interaction' : extractComponentName(target as HTMLElement) || 'Page background';
+      const width = Math.max(document.documentElement.scrollWidth,window.innerWidth);
+      const height = Math.max(document.documentElement.scrollHeight,document.body.scrollHeight,window.innerHeight);
+      const anchor = target?.closest('button,a,input,select,textarea,[data-analytics-component]') || target;
+      const rect = anchor?.getBoundingClientRect();
+      const targetPath = !privateArea && anchor ? analyticsTargetPath(anchor) : undefined;
+      const point = documentClick(event.clientX,event.clientY,window.scrollX,window.scrollY,width,height);
+      pending.current.push({page:page(),component,deviceType:detectDeviceType(),timestamp:new Date().toISOString(),eventId:createSessionId(),sessionId,
+        clickX:point.x,clickY:point.y,targetPath,targetX:rect?Math.max(0,Math.min(1,(event.clientX-rect.left)/Math.max(1,rect.width))):undefined,targetY:rect?Math.max(0,Math.min(1,(event.clientY-rect.top)/Math.max(1,rect.height))):undefined,surface:privateArea?'overlay':'document',viewportW:window.innerWidth,viewportH:window.innerHeight,documentW:width,documentH:height});
+      if(pending.current.length>=FLUSH_SIZE) void flush();
+      if(pending.current.length>MAX_QUEUE_SIZE) pending.current=pending.current.slice(-MAX_QUEUE_SIZE);
     };
-
-    const enqueue = (event: MouseEvent) => {
-      const target = event.target as HTMLElement | null;
-      const component = extractComponentName(target);
-      if (!component) return;
-
-      const bodyPage = document.body.dataset.analyticsPage;
-      const page = bodyPage ? sanitizeLabel(bodyPage) : normalizePage(pathname);
-      queueRef.current.push({
-        page,
-        component,
-        deviceType: detectDeviceType(),
-        timestamp: new Date().toISOString(),
-      });
-
-      const width = window.innerWidth || 1;
-      const height = window.innerHeight || 1;
-      const x = Math.max(0, Math.min(1, event.clientX / width));
-      const y = Math.max(0, Math.min(1, event.clientY / height));
-      heatmapQueueRef.current.push({
-        page,
-        eventType: "click",
-        sessionId: heatmapSessionId,
-        deviceType: detectDeviceType(),
-        clickX: Number(x.toFixed(4)),
-        clickY: Number(y.toFixed(4)),
-        viewportW: width,
-        viewportH: height,
-        timestamp: new Date().toISOString(),
-      });
-      if (queueRef.current.length > MAX_QUEUE_SIZE) {
-        queueRef.current = queueRef.current.slice(queueRef.current.length - MAX_QUEUE_SIZE);
-      }
-      if (heatmapQueueRef.current.length > MAX_QUEUE_SIZE) {
-        heatmapQueueRef.current = heatmapQueueRef.current.slice(heatmapQueueRef.current.length - MAX_QUEUE_SIZE);
-      }
-
-      if (queueRef.current.length >= FLUSH_SIZE) {
-        void flush();
-      }
-      if (heatmapQueueRef.current.length >= FLUSH_SIZE) {
-        void flushHeatmap();
-      }
+    const scroll = () => {
+      if(Date.now()-lastScroll<SCROLL_THROTTLE_MS) return;
+      const depth=Math.min(100,Math.round(window.scrollY/Math.max(1,document.documentElement.scrollHeight-window.innerHeight)*100));
+      if(depth<maxDepth+SCROLL_EVENT_STEP_PERCENT) return;
+      maxDepth=depth;lastScroll=Date.now();
+      void fetch('/api/analytics/heatmap',{method:'POST',headers:{'Content-Type':'application/json'},keepalive:true,body:JSON.stringify({events:[{page:page(),deviceType:detectDeviceType(),eventType:'scroll',sessionId,scrollDepth:depth,viewportW:window.innerWidth,viewportH:window.innerHeight}]})}).catch(()=>{});
     };
-
-    const enqueueScrollDepth = () => {
-      const now = Date.now();
-      if (now - lastScrollEmitRef.current < SCROLL_THROTTLE_MS) return;
-
-      const scrollTop = window.scrollY || document.documentElement.scrollTop || 0;
-      const viewportHeight = window.innerHeight || 1;
-      const docHeight = Math.max(
-        document.documentElement.scrollHeight || 0,
-        document.body.scrollHeight || 0
-      );
-      const scrollable = Math.max(1, docHeight - viewportHeight);
-      const rawDepth = Math.round((scrollTop / scrollable) * 100);
-      const depth = Math.max(0, Math.min(100, rawDepth));
-      const shouldEmit =
-        depth >= maxScrollDepthSentRef.current + SCROLL_EVENT_STEP_PERCENT ||
-        (depth === 100 && depth !== maxScrollDepthSentRef.current);
-
-      if (!shouldEmit) return;
-
-      const bodyPage = document.body.dataset.analyticsPage;
-      const page = bodyPage ? sanitizeLabel(bodyPage) : normalizePage(pathname);
-      const width = window.innerWidth || 1;
-      const height = window.innerHeight || 1;
-      maxScrollDepthSentRef.current = depth;
-      lastScrollEmitRef.current = now;
-
-      heatmapQueueRef.current.push({
-        page,
-        eventType: "scroll",
-        sessionId: heatmapSessionId,
-        deviceType: detectDeviceType(),
-        viewportW: width,
-        viewportH: height,
-        scrollDepth: depth,
-        timestamp: new Date().toISOString(),
-      });
-
-      if (heatmapQueueRef.current.length > MAX_QUEUE_SIZE) {
-        heatmapQueueRef.current = heatmapQueueRef.current.slice(heatmapQueueRef.current.length - MAX_QUEUE_SIZE);
-      }
-      if (heatmapQueueRef.current.length >= FLUSH_SIZE) {
-        void flushHeatmap();
-      }
+    const beacon=()=>{
+      if(!pending.current.length) return;
+      const batch=pending.current.slice(0,MAX_QUEUE_SIZE);
+      if(navigator.sendBeacon?.('/api/analytics/clicks',new Blob([JSON.stringify({events:batch})],{type:'application/json'}))) pending.current.splice(0,batch.length);
+      else void flush();
     };
-
-    const flushWithBeacon = () => {
-      if (hasBeaconFlushedRef.current) return;
-      if (queueRef.current.length === 0 && heatmapQueueRef.current.length === 0) return;
-      hasBeaconFlushedRef.current = true;
-      const clickPayload = JSON.stringify({ events: queueRef.current.splice(0, MAX_QUEUE_SIZE) });
-      const heatPayload = JSON.stringify({ events: heatmapQueueRef.current.splice(0, MAX_QUEUE_SIZE) });
-      navigator.sendBeacon?.("/api/analytics/clicks", new Blob([clickPayload], { type: "application/json" }));
-      navigator.sendBeacon?.("/api/analytics/heatmap", new Blob([heatPayload], { type: "application/json" }));
-    };
-
-    const visibilityHandler = () => {
-      if (document.visibilityState === "hidden") {
-        flushWithBeacon();
-      }
-    };
-
-    document.addEventListener("click", enqueue, true);
-    window.addEventListener("scroll", enqueueScrollDepth, { passive: true });
-    window.addEventListener("beforeunload", flushWithBeacon);
-    document.addEventListener("visibilitychange", visibilityHandler);
-    flushTimerRef.current = window.setInterval(() => {
-      void flush();
-    }, FLUSH_INTERVAL_MS);
-    heatmapFlushTimerRef.current = window.setInterval(() => {
-      void flushHeatmap();
-    }, FLUSH_INTERVAL_MS);
-
-    return () => {
-      document.removeEventListener("click", enqueue, true);
-      window.removeEventListener("scroll", enqueueScrollDepth);
-      window.removeEventListener("beforeunload", flushWithBeacon);
-      document.removeEventListener("visibilitychange", visibilityHandler);
-      if (flushTimerRef.current) {
-        window.clearInterval(flushTimerRef.current);
-      }
-      if (heatmapFlushTimerRef.current) {
-        window.clearInterval(heatmapFlushTimerRef.current);
-      }
-      void flush();
-      void flushHeatmap();
-    };
-  }, [pathname]);
-
+    const visibility=()=>{if(document.visibilityState==='hidden')beacon();else void flush();};
+    document.addEventListener('click',click,true);window.addEventListener('scroll',scroll,{passive:true});window.addEventListener('pagehide',beacon);document.addEventListener('visibilitychange',visibility);
+    const timer=window.setInterval(()=>void flush(),FLUSH_INTERVAL_MS);
+    return()=>{document.removeEventListener('click',click,true);window.removeEventListener('scroll',scroll);window.removeEventListener('pagehide',beacon);document.removeEventListener('visibilitychange',visibility);clearInterval(timer);beacon();};
+  },[pathname]);
   return null;
 }

@@ -99,11 +99,11 @@ export default function ApprovedOrganRequests() {
     <>
     <section className="mx-auto w-full max-w-7xl px-4 pb-16">
       <div className="mb-8 rounded-[8px] border border-border/20 bg-white/70 p-6 backdrop-blur-sm">
-        <h2 className="text-3xl font-black tracking-tight text-gray-900">Approved Organ Requests</h2>
+        <h2 className="text-3xl font-semibold tracking-tight text-gray-900">Approved Organ Requests</h2>
         <p className="mt-2 text-sm font-medium text-gray-600">
           These are verified requests approved by the user management team and ready for donor response.
         </p>
-        <p className="mt-3 text-xs font-bold uppercase tracking-widest text-primary-dark">{totalLabel}</p>
+        <p className="mt-3 text-xs font-bold uppercase tracking-wide text-primary-dark">{totalLabel}</p>
       </div>
 
       {rows.length === 0 && !initialLoading ? (
@@ -123,10 +123,10 @@ export default function ApprovedOrganRequests() {
             >
               <div className="mb-3 flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-primary-dark">Requested Organ</p>
-                  <h3 className="mt-1 text-xl font-black text-gray-900">{row.organ_type}</h3>
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-primary-dark">Requested Organ</p>
+                  <h3 className="mt-1 text-xl font-semibold text-gray-900">{row.organ_type}</h3>
                 </div>
-                <span className="rounded-full bg-green-600/10 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-green-700">
+                <span className="rounded-full bg-green-600/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-green-700">
                   Approved
                 </span>
               </div>
@@ -170,8 +170,8 @@ export default function ApprovedOrganRequests() {
         <div className="w-full max-w-xl rounded-[8px] border border-white/30 bg-white p-6 shadow-2xl">
           <div className="mb-4 flex items-start justify-between">
             <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-primary-dark">Requested Organ</p>
-              <h3 className="mt-1 text-2xl font-black text-gray-900">{selectedRequest.organ_type}</h3>
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-primary-dark">Requested Organ</p>
+              <h3 className="mt-1 text-2xl font-semibold text-gray-900">{selectedRequest.organ_type}</h3>
             </div>
             <button
               type="button"
@@ -184,7 +184,7 @@ export default function ApprovedOrganRequests() {
 
           <div className="space-y-2 text-sm font-semibold text-gray-700">
             <p>
-              <span className="font-black text-gray-900">Recipient:</span> {selectedRequest.name}
+              <span className="font-semibold text-gray-900">Recipient:</span> {selectedRequest.name}
             </p>
             <p className="flex items-center gap-2">
               <PhoneCall className="h-4 w-4 text-primary-dark" />

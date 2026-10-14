@@ -140,33 +140,33 @@ export default function SocialMedia() {
   }, []);
 
   return (
-    <section className="mx-auto max-w-7xl px-4 py-8 lg:pb-16 xl:pb-20">
+    <section aria-labelledby="community-heading" className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
       <motion.div
         initial={{ y: 40, opacity: 0 }}
         whileInView={{ y: 0, opacity: 1 }}
         viewport={{ once: true }}
-        className="overflow-hidden rounded-[8px] border border-gray-100 bg-white p-6 shadow-[0_24px_80px_rgba(15,23,42,0.12)] sm:p-8 lg:p-10"
+        className="public-light-panel overflow-hidden rounded-[28px] border border-slate-200 bg-[#fafbfc] p-6 text-slate-900 shadow-[0_16px_60px_-32px_rgba(15,23,42,0.18)] sm:rounded-[36px] sm:p-10 lg:p-14"
       >
-        <div className="grid gap-8 lg:grid-cols-[1fr_0.95fr] lg:items-center">
-          <div className="flex flex-col items-start">
-            <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-red-50 px-4 py-2 text-[11px] font-black uppercase tracking-widest text-primary">
+        <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:gap-12">
+          <div className="flex min-w-0 flex-col items-start">
+            <div className="mb-5 inline-flex max-w-full items-center gap-2 rounded-full border border-rose-200 bg-white px-3 py-1.5 text-xs font-semibold tracking-wide text-rose-700">
               <Users className="h-4 w-4" />
               {communityData.joinCommunityTitle}
             </div>
 
             <div className="mb-5 flex items-start gap-4">
-              <h2 className="max-w-xl text-5xl font-black leading-[0.95] tracking-normal text-gray-950 sm:text-6xl lg:text-7xl">
+              <h2 id="community-heading" className="max-w-xl text-3xl font-bold leading-[1.12] tracking-tight text-slate-900 sm:text-4xl lg:text-5xl">
                 Be a Hero.
-                <span className="block text-primary">Save a Life.</span>
+                <span className="block text-rose-700">Save a Life.</span>
               </h2>
-              <Heart className="mt-3 hidden h-8 w-8 text-primary sm:block" />
+              <Heart className="mt-2 hidden h-7 w-7 shrink-0 text-rose-700 sm:block" />
             </div>
 
-            <p className="mb-7 max-w-xl text-base font-medium leading-relaxed text-gray-600">
+            <p className="mb-7 max-w-xl text-sm leading-7 text-slate-600 sm:text-base">
               {communityData.joinCommunityDescription}
             </p>
 
-            <div className="mb-8 grid w-full gap-4 sm:grid-cols-3">
+            <div className="mb-8 grid w-full min-w-0 gap-3 sm:grid-cols-3">
               <CommunityFeature
                 icon={<Users className="h-5 w-5" />}
                 title={communityData.joinCommunityMembersTitle}
@@ -190,11 +190,11 @@ export default function SocialMedia() {
               rel="noopener noreferrer"
               whileHover={{ scale: 1.02, y: -1 }}
               whileTap={{ scale: 0.98 }}
-              className="group mb-5 inline-flex items-center justify-center gap-3 rounded-[8px] bg-gradient-to-r from-[#ff3131] to-primary-dark px-7 py-4 text-sm font-black uppercase tracking-wide text-white shadow-[0_16px_35px_rgba(239,0,0,0.28)] transition-all hover:shadow-[0_18px_40px_rgba(239,0,0,0.34)] sm:text-base"
+              className="group mb-5 inline-flex min-h-12 w-full items-center justify-center gap-3 rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-rose-700 sm:w-auto sm:px-6"
             >
-              <Send className="h-5 w-5 rotate-[-20deg] transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
+              <Send className="h-4 w-4 shrink-0 rotate-[-20deg] transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
               Join Now on Telegram
-              <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+              <ArrowRight className="h-4 w-4 shrink-0 transition-transform group-hover:translate-x-1" />
             </motion.a>
 
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -212,10 +212,10 @@ export default function SocialMedia() {
                 ))}
               </div>
               <div className="flex flex-wrap items-center gap-3">
-                <span className="text-xs font-semibold text-gray-500">
+                <span className="text-xs leading-5 text-slate-600">
                   {communityData.joinCommunityTrustText}
                 </span>
-                <span className="inline-flex items-center gap-2 rounded-full bg-red-50 px-3 py-1.5 text-xs font-bold text-gray-800">
+                <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-800">
                   <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
                   {communityData.joinCommunityActiveRequestsText}
                 </span>
@@ -227,10 +227,10 @@ export default function SocialMedia() {
             initial={{ x: 40, opacity: 0 }}
             whileInView={{ x: 0, opacity: 1 }}
             viewport={{ once: true }}
-            className={`relative overflow-hidden rounded-[8px] shadow-[0_22px_55px_rgba(15,23,42,0.16)] ${
+            className={`relative min-w-0 overflow-hidden rounded-[24px] border border-slate-200 shadow-sm ${
               communityImageBannerAd
                 ? "min-h-[260px] bg-black"
-                : "min-h-[320px] sm:min-h-[420px] lg:min-h-[460px]"
+                : "min-h-[260px] sm:min-h-[360px] lg:min-h-[440px]"
             }`}
           >
             {communityImageBannerAd ? (
@@ -313,13 +313,13 @@ function CommunityImageBannerAdSlot({
 
 function CommunityFeature({ icon, title, desc }: { icon: React.ReactNode; title: string; desc: string }) {
   return (
-    <div className="flex min-w-0 items-start gap-3 border-gray-200 sm:border-r sm:pr-4 sm:last:border-r-0">
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-50 text-primary">
+    <div className="flex min-w-0 flex-col items-start gap-3 rounded-2xl border border-slate-200 bg-white p-4">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-rose-50 text-rose-700">
         {icon}
       </div>
       <div className="min-w-0">
-        <h4 className="text-sm font-black text-gray-950">{title}</h4>
-        <p className="mt-1 text-xs font-medium leading-snug text-gray-600">{desc}</p>
+        <h4 className="text-sm font-semibold leading-6 text-slate-900">{title}</h4>
+        <p className="mt-1 text-xs leading-5 text-slate-600">{desc}</p>
       </div>
     </div>
   );

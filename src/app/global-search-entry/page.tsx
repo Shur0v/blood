@@ -66,10 +66,10 @@ export default async function GlobalSearchEntryPage() {
       <ManagedNativeAdSlot slotKey="native-ad-2" />
       <main className="mx-auto max-w-7xl px-4 pt-16 pb-10">
         <section className="min-h-[15vh] rounded-[8px] border border-border/20 bg-white/90 p-6 shadow-card">
-          <h1 className="text-3xl font-black tracking-tight text-gray-900 md:text-4xl">
+          <h1 className="text-3xl font-semibold tracking-tight text-gray-900 md:text-4xl">
             Emergency Blood Donor Finder
           </h1>
-          <h2 className="mt-3 text-lg font-black text-primary-dark md:text-2xl">
+          <h2 className="mt-3 text-lg font-semibold text-primary-dark md:text-2xl">
             Urgent O-Negative Blood Request | Global Organ Donor Registry
           </h2>
           <p className="mt-3 max-w-4xl text-sm font-medium leading-7 text-gray-700 md:text-base">
@@ -81,22 +81,22 @@ export default async function GlobalSearchEntryPage() {
         <section className="mt-4 rounded-[8px] bg-gray-900 p-4 text-white shadow-card">
           <div className="grid gap-3 sm:grid-cols-3">
             <div className="rounded-[8px] border border-white/15 bg-white/5 p-4">
-              <p className="text-xs font-bold uppercase tracking-widest text-white/70">Verified Donors</p>
-              <p className="mt-1 text-3xl font-black">{stats.verifiedDonors.toLocaleString()}</p>
+              <p className="text-xs font-bold uppercase tracking-wide text-white/70">Verified Donors</p>
+              <p className="mt-1 text-3xl font-semibold">{stats.verifiedDonors.toLocaleString()}</p>
             </div>
             <div className="rounded-[8px] border border-white/15 bg-white/5 p-4">
-              <p className="text-xs font-bold uppercase tracking-widest text-white/70">Successful Transplants</p>
-              <p className="mt-1 text-3xl font-black">{stats.successfulTransplants.toLocaleString()}</p>
+              <p className="text-xs font-bold uppercase tracking-wide text-white/70">Successful Transplants</p>
+              <p className="mt-1 text-3xl font-semibold">{stats.successfulTransplants.toLocaleString()}</p>
             </div>
             <div className="rounded-[8px] border border-white/15 bg-white/5 p-4">
-              <p className="text-xs font-bold uppercase tracking-widest text-white/70">Active Requests</p>
-              <p className="mt-1 text-3xl font-black">{stats.activeRequests.toLocaleString()}</p>
+              <p className="text-xs font-bold uppercase tracking-wide text-white/70">Active Requests</p>
+              <p className="mt-1 text-3xl font-semibold">{stats.activeRequests.toLocaleString()}</p>
             </div>
           </div>
         </section>
 
         <section className="mt-5 rounded-[8px] border border-border/20 bg-white/80 p-5 shadow-card">
-          <h3 className="text-sm font-black uppercase tracking-widest text-gray-500">Common Search Tags</h3>
+          <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Common Search Tags</h3>
           <div className="mt-3 flex flex-wrap gap-2">
             <h3 className="rounded-[8px] border border-border/20 bg-white px-3 py-2 text-sm font-bold text-gray-800">
               Can I donate blood after a tattoo?
@@ -116,7 +116,7 @@ export default async function GlobalSearchEntryPage() {
         </section>
 
         <section className="mt-5 rounded-[8px] border border-border/20 bg-white/80 p-5 shadow-card">
-          <h3 className="text-sm font-black uppercase tracking-widest text-gray-500">Country Keyword Hubs</h3>
+          <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Country Keyword Hubs</h3>
           <p className="mt-3 text-sm font-medium text-gray-700">
             High-authority internal links to regional long-tail collections for USA, UK, Spain, Netherlands, Italy, Poland, and Australia.
           </p>

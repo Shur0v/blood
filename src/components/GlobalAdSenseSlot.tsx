@@ -36,6 +36,7 @@ export default function GlobalAdSenseSlot() {
   const shouldHide = BLOCKED_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
 
   useEffect(() => {
+    if (window.self !== window.top && new URLSearchParams(window.location.search).get('heatmapPreview') === '1') return;
     const loadAdRuntime = async () => {
       try {
         const res = await fetch("/api/public/ads-settings", { method: "GET", cache: "no-store" });

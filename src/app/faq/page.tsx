@@ -32,7 +32,7 @@ export default async function FaqPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema).replace(/</g, "\\u003c") }}
       />
-      <h1 className="text-3xl font-black tracking-tight text-gray-900 md:text-5xl">Frequently Asked Questions</h1>
+      <h1 className="text-3xl font-semibold tracking-tight text-gray-900 md:text-5xl">Frequently Asked Questions</h1>
       <p className="mt-3 text-sm font-medium text-gray-600 md:text-base">
         Clear answers about BloodNet safety rules, legal policy, and donor-recipient workflows.
       </p>

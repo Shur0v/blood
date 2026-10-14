@@ -39,6 +39,7 @@ export async function GET(req: Request) {
       ? {
           OR: [
             { name: { contains: search, mode: 'insensitive' as const } },
+            { profile_code: { equals: search.trim(), mode: 'insensitive' as const } },
             { email: { contains: search, mode: 'insensitive' as const } },
             { mobile: { contains: search, mode: 'insensitive' as const } },
             { location_city: { contains: search, mode: 'insensitive' as const } },

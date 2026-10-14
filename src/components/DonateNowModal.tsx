@@ -162,7 +162,7 @@ export default function DonateNowModal({ isOpen, onClose }: DonateNowModalProps)
             {/* Header section fixed */}
             <div className="bg-white px-6 sm:px-8 py-5 border-b border-gray-100 flex items-center justify-between sticky top-0 z-20">
               <div>
-                <h2 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight flex items-center gap-2">
+                <h2 className="text-2xl sm:text-3xl font-semibold text-gray-900 tracking-tight flex items-center gap-2">
                   <Heart className="h-6 w-6 text-[#FF3131] fill-[#FF3131]" />
                   {/* Support a Life Today */}
                   Get Current Essentials of Medicine
@@ -185,8 +185,8 @@ export default function DonateNowModal({ isOpen, onClose }: DonateNowModalProps)
               {/* Card Grid */}
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  {/* <h3 className="text-xs font-black uppercase tracking-widest text-gray-400">Select Donation Amount</h3> */}
-                  <h3 className="text-xs font-black uppercase tracking-widest text-gray-400">CHOOSE YOUR PRICE</h3>
+                  {/* <h3 className="text-xs font-semibold uppercase tracking-wide text-gray-400">Select Donation Amount</h3> */}
+                  <h3 className="text-xs font-semibold uppercase tracking-wide text-gray-400">CHOOSE YOUR PRICE</h3>
                   <span className="text-[10px] font-bold text-[#FF3131] bg-red-50 px-2 py-1 rounded border border-red-100 flex items-center gap-1">
                     {/* <Heart className="h-3 w-3 fill-current" /> {weeklyDonors} people donated this week */}
                     <Heart className="h-3 w-3 fill-current" /> {weeklyDonors} people purchased this week
@@ -215,7 +215,7 @@ export default function DonateNowModal({ isOpen, onClose }: DonateNowModalProps)
                         )}
 
                         <div className="flex items-end gap-2 mb-3">
-                          <span className="text-3xl font-black text-gray-900 leading-none">${tier.amount}</span>
+                          <span className="text-3xl font-semibold text-gray-900 leading-none">${tier.amount}</span>
                           <span className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">{tier.title}</span>
                         </div>
 
@@ -245,8 +245,8 @@ export default function DonateNowModal({ isOpen, onClose }: DonateNowModalProps)
                     }`}
                 >
                   <div className="flex items-center justify-between mb-2">
-                    {/* <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">Custom Amount</p> */}
-                    <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">PAY YOUR OWN PRICE</p>
+                    {/* <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">Custom Amount</p> */}
+                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">PAY YOUR OWN PRICE</p>
                     {!isValidCustomAmount && isCustomEnabled && (
                       <span className="text-[10px] font-bold text-orange-600 flex items-center gap-1">
                         <AlertCircle className="h-3 w-3" /> Minimum allowed is $05
@@ -259,7 +259,7 @@ export default function DonateNowModal({ isOpen, onClose }: DonateNowModalProps)
                       type="number"
                       min="05"
                       placeholder="Enter amount"
-                      className={`w-full bg-white border rounded-xl py-4 pl-10 pr-4 text-gray-900 font-black text-xl focus:outline-none transition-shadow ${isCustomEnabled && !isValidCustomAmount ? "border-orange-500 focus:ring-orange-500/20" : "border-gray-200 focus:border-[#FF3131] focus:ring-1 focus:ring-[#FF3131]"
+                      className={`w-full bg-white border rounded-xl py-4 pl-10 pr-4 text-gray-900 font-semibold text-xl focus:outline-none transition-shadow ${isCustomEnabled && !isValidCustomAmount ? "border-orange-500 focus:ring-orange-500/20" : "border-gray-200 focus:border-[#FF3131] focus:ring-1 focus:ring-[#FF3131]"
                         }`}
                       value={customAmount}
                       onChange={(e) => {
@@ -279,8 +279,8 @@ export default function DonateNowModal({ isOpen, onClose }: DonateNowModalProps)
                 <div className="absolute top-0 right-0 p-4 opacity-10">
                   <Heart className="w-24 h-24 text-white" />
                 </div>
-                {/* <h4 className="text-[10px] font-black uppercase tracking-widest text-[#FF3131] mb-2">Your Direct Impact</h4> */}
-                <h4 className="text-[10px] font-black uppercase tracking-widest text-[#FF3131] mb-2">Your Impact</h4>
+                {/* <h4 className="text-[10px] font-semibold uppercase tracking-wide text-[#FF3131] mb-2">Your Direct Impact</h4> */}
+                <h4 className="text-[10px] font-semibold uppercase tracking-wide text-[#FF3131] mb-2">Your Impact</h4>
                 <motion.p
                   key={activeContext.impact}
                   initial={{ opacity: 0, y: 5 }}
@@ -294,7 +294,7 @@ export default function DonateNowModal({ isOpen, onClose }: DonateNowModalProps)
 
               {/* Transparency Breakdown Chart */}
               <div className="pt-2">
-                <h3 className="text-xs font-black uppercase tracking-widest text-gray-400 mb-4 flex items-center gap-1.5">
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-4 flex items-center gap-1.5">
                   {/* <Info className="h-4 w-4" /> Fund Allocation Transparency */}
                   <Info className="h-4 w-4" /> HOW YOUR PURCHASE HELPS
                 </h3>
@@ -356,14 +356,14 @@ export default function DonateNowModal({ isOpen, onClose }: DonateNowModalProps)
               <div className="flex items-center gap-3 w-full sm:w-auto">
                 <button
                   onClick={onClose}
-                  className="px-6 py-4 text-xs font-black uppercase tracking-widest text-gray-500 hover:text-gray-900 hover:bg-gray-200 transition-colors rounded-xl hidden sm:block"
+                  className="px-6 py-4 text-xs font-semibold uppercase tracking-wide text-gray-500 hover:text-gray-900 hover:bg-gray-200 transition-colors rounded-xl hidden sm:block"
                 >
                   Cancel
                 </button>
                 <button
                   disabled={isProcessing || (isCustomEnabled && !isValidCustomAmount)}
                   onClick={handleDonate}
-                  className="flex-1 sm:flex-none relative overflow-hidden rounded-xl bg-gradient-to-r from-[#FF3131] to-rose-600 px-10 py-4 font-black uppercase tracking-widest text-white shadow-xl hover:shadow-red-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
+                  className="flex-1 sm:flex-none relative overflow-hidden rounded-xl bg-gradient-to-r from-[#FF3131] to-rose-600 px-10 py-4 font-semibold uppercase tracking-wide text-white shadow-xl hover:shadow-red-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
                 >
                   {/* {isProcessing ? "Processing..." : `Continue to Donate ${activeAmount ? '$' + activeAmount : ''}`} */}
                   {isProcessing ? "Processing..." : `GET THE BOOK ${activeAmount ? '$' + activeAmount : ''}`}

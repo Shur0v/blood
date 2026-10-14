@@ -8,6 +8,7 @@ import BlogInterlinkCluster from "@/src/components/BlogInterlinkCluster";
 import { DEFAULT_LOCALE, getRequestLocale } from "@/src/lib/locale";
 import { translateTextCached } from "@/src/backend/services/translationService";
 import { hasHtmlMarkup, sanitizeBlogHtml, stripHtmlTags } from "@/src/lib/blogContent";
+import BlogUnavailable from "@/src/components/BlogUnavailable";
 
 interface BlogPageProps {
   params: Promise<{ slug: string }>;
@@ -24,7 +25,9 @@ const getBlogBySlug = async (slug: string) => {
 
 export async function generateMetadata({ params }: BlogPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const post = await getBlogBySlug(slug);
+  let post: Awaited<ReturnType<typeof getBlogBySlug>>;
+  try { post = await getBlogBySlug(slug); }
+  catch { return { title: 'BloodNet Journal', robots: { index: false } }; }
   if (!post) {
     return { title: "Blog not found" };
   }
@@ -49,6 +52,16 @@ export async function generateMetadata({ params }: BlogPageProps): Promise<Metad
 }
 
 export default async function BlogDetailPage({ params }: BlogPageProps) {
+  try { return await loadBlogDetail({params}); }
+  catch (error) {
+    // Preserve Next's real not-found/redirect control flow.
+    if (error instanceof Error && 'digest' in error && String(error.digest).startsWith('NEXT_')) throw error;
+    console.error('Blog article unavailable. Check server configuration and database connectivity.');
+    return <BlogUnavailable />;
+  }
+}
+
+async function loadBlogDetail({ params }: BlogPageProps) {
   const { slug } = await params;
   const locale = await getRequestLocale();
   const prisma = getPrisma();
@@ -141,10 +154,10 @@ export default async function BlogDetailPage({ params }: BlogPageProps) {
             </span>
           </div>
 
-          <h1 className="text-3xl font-black tracking-tight text-[#0F172A] md:text-5xl">{localizedTitle}</h1>
+          <h1 className="text-3xl font-semibold tracking-tight text-[#0F172A] md:text-5xl">{localizedTitle}</h1>
 
           {post.primary_keyword && (
-            <p className="mt-4 text-xs font-bold uppercase tracking-widest text-red-600">
+            <p className="mt-4 text-xs font-bold uppercase tracking-wide text-red-600">
               Primary keyword: {post.primary_keyword}
             </p>
           )}
@@ -172,7 +185,7 @@ export default async function BlogDetailPage({ params }: BlogPageProps) {
 
           {isHtmlContent ? (
             <div
-              className="blog-html-content mt-8 text-[17px] leading-8 text-slate-700 md:text-[19px] md:leading-9 [&_h2]:mt-8 [&_h2]:text-2xl [&_h2]:font-black [&_h2]:text-[#0F172A] [&_h3]:mt-6 [&_h3]:text-xl [&_h3]:font-bold [&_h3]:text-[#0F172A] [&_p]:mt-4 [&_ul]:mt-4 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:mt-4 [&_ol]:list-decimal [&_ol]:pl-6 [&_a]:font-semibold [&_a]:text-red-600 [&_blockquote]:mt-6 [&_blockquote]:border-l-4 [&_blockquote]:border-red-200 [&_blockquote]:bg-red-50/40 [&_blockquote]:px-4 [&_blockquote]:py-3 [&_table]:min-w-full [&_table]:border-collapse [&_th]:border [&_th]:border-slate-300 [&_th]:bg-slate-100 [&_th]:px-3 [&_th]:py-2 [&_th]:text-left [&_td]:border [&_td]:border-slate-300 [&_td]:px-3 [&_td]:py-2 [&_.bn-table-wrap]:my-6 [&_.bn-table-wrap]:w-full [&_.bn-table-wrap]:overflow-x-auto"
+              className="blog-html-content mt-8 text-[17px] leading-8 text-slate-700 md:text-[19px] md:leading-9 [&_h2]:mt-8 [&_h2]:text-2xl [&_h2]:font-semibold [&_h2]:text-[#0F172A] [&_h3]:mt-6 [&_h3]:text-xl [&_h3]:font-bold [&_h3]:text-[#0F172A] [&_p]:mt-4 [&_ul]:mt-4 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:mt-4 [&_ol]:list-decimal [&_ol]:pl-6 [&_a]:font-semibold [&_a]:text-red-600 [&_blockquote]:mt-6 [&_blockquote]:border-l-4 [&_blockquote]:border-red-200 [&_blockquote]:bg-red-50/40 [&_blockquote]:px-4 [&_blockquote]:py-3 [&_table]:min-w-full [&_table]:border-collapse [&_th]:border [&_th]:border-slate-300 [&_th]:bg-slate-100 [&_th]:px-3 [&_th]:py-2 [&_th]:text-left [&_td]:border [&_td]:border-slate-300 [&_td]:px-3 [&_td]:py-2 [&_.bn-table-wrap]:my-6 [&_.bn-table-wrap]:w-full [&_.bn-table-wrap]:overflow-x-auto"
               dangerouslySetInnerHTML={{ __html: safeHtml }}
             />
           ) : (

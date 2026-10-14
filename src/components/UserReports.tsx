@@ -45,7 +45,7 @@ export default function UserReports() {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-4xl font-black tracking-tight text-gray-900 uppercase"
+          className="text-4xl font-semibold tracking-tight text-gray-900 uppercase"
         >
           Community Guardian
         </motion.h2>

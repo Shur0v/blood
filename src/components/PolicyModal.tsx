@@ -85,7 +85,7 @@ export const PolicyModal = ({ isOpen, onClose, type }: PolicyModalProps) => {
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/20 text-primary">
                 {type === 'terms' ? <FileText className="h-6 w-6" /> : <Shield className="h-6 w-6" />}
               </div>
-              <h2 className="text-2xl font-black tracking-tight text-white uppercase">
+              <h2 className="text-2xl font-semibold tracking-tight text-white uppercase">
                 {type === 'terms' ? 'Terms of Service' : 'Privacy Summary'}
               </h2>
             </div>
@@ -95,7 +95,7 @@ export const PolicyModal = ({ isOpen, onClose, type }: PolicyModalProps) => {
               <div className="rounded-2xl border border-primary/30 bg-primary/10 p-4">
                 <div className="mb-1 flex items-center gap-2 text-primary">
                   <AlertTriangle className="h-4 w-4" />
-                  <span className="text-[10px] font-black uppercase tracking-widest">Safety Protocol</span>
+                  <span className="text-[10px] font-semibold uppercase tracking-wide">Safety Protocol</span>
                 </div>
                 <p className="text-sm font-bold text-white leading-relaxed">
                   CRITICAL: Never pay any money before the donor arrives at the hospital.
@@ -115,7 +115,7 @@ export const PolicyModal = ({ isOpen, onClose, type }: PolicyModalProps) => {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={onClose}
-              className="mt-8 w-full rounded-2xl bg-gradient-to-r from-[#FF6B6B] to-primary py-4 text-sm font-black uppercase tracking-widest text-white shadow-xl shadow-primary/20 transition-all hover:opacity-90"
+              className="mt-8 w-full rounded-2xl bg-gradient-to-r from-[#FF6B6B] to-primary py-4 text-sm font-semibold uppercase tracking-wide text-white shadow-xl shadow-primary/20 transition-all hover:opacity-90"
             >
               I Understand & Agree
             </motion.button>
@@ -131,7 +131,7 @@ function PolicyPoint({ icon, title, description }: { icon: React.ReactNode, titl
     <div className="flex gap-4">
       <div className="mt-1 text-primary opacity-80">{icon}</div>
       <div>
-        <h4 className="text-xs font-black uppercase tracking-wider text-white/60 mb-1">{title}</h4>
+        <h4 className="text-xs font-semibold uppercase tracking-wider text-white/60 mb-1">{title}</h4>
         <p className="text-sm font-medium text-white/90 leading-snug">{description}</p>
       </div>
     </div>

@@ -1,16 +1,14 @@
 import { motion, useMotionValue, useTransform, animate } from "motion/react";
-import { useEffect, useRef, useState } from "react";
-import { Search, X } from "lucide-react";
-import { gsap } from "gsap";
+import { useEffect, useState } from "react";
 import DonorModal from "./DonorModal";
 import useViewerGeo from "./useViewerGeo";
 import { maskPhoneTail } from "../lib/phoneMask";
 import { ORGAN_CATALOG, normalizeOrganName } from "../lib/organCatalog";
 import OrganIcon from "./OrganIcon";
+import DonorBloodFilters from "./DonorBloodFilters";
 
 const organs = ORGAN_CATALOG.map((name) => ({ name }));
 
-const bloodGroups = ["AB+", "AB-", "A+", "A-", "B+", "B-", "O+", "O-"];
 
 interface OrganDonor {
   id: string;
@@ -52,7 +50,6 @@ interface OrganDonorApiResponse {
 export default function OrganHero({ forcedCountry }: { forcedCountry?: string }) {
   const [activeOrgan, setActiveOrgan] = useState<string | null>(null);
   const [activeBloodGroup, setActiveBloodGroup] = useState<string | null>(null);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDonor, setSelectedDonor] = useState<OrganDonor | null>(null);
   const [donors, setDonors] = useState<OrganDonor[]>([]);
@@ -60,9 +57,6 @@ export default function OrganHero({ forcedCountry }: { forcedCountry?: string })
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
-  const controlsWrapperRef = useRef<HTMLDivElement>(null);
-  const searchContainerRef = useRef<HTMLDivElement>(null);
-  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const count = useMotionValue(0);
   const rounded = useTransform(count, (latest) => Math.round(latest));
@@ -112,48 +106,6 @@ export default function OrganHero({ forcedCountry }: { forcedCountry?: string })
     return controls.stop;
   }, [count, totalOrganDonors]);
 
-  useEffect(() => {
-    if (isSearchOpen) {
-      gsap.to(controlsWrapperRef.current, {
-        opacity: 0,
-        y: -10,
-        duration: 0.3,
-        display: "none",
-        ease: "power2.inOut"
-      });
-
-      gsap.fromTo(searchContainerRef.current,
-        { opacity: 0, scaleX: 0.8, display: "none" },
-        {
-          opacity: 1,
-          scaleX: 1,
-          display: "flex",
-          duration: 0.5,
-          ease: "expo.out",
-          onComplete: () => searchInputRef.current?.focus()
-        }
-      );
-    } else {
-      gsap.to(searchContainerRef.current, {
-        opacity: 0,
-        scaleX: 0.8,
-        duration: 0.3,
-        display: "none",
-        ease: "power2.inOut"
-      });
-
-      gsap.fromTo(controlsWrapperRef.current,
-        { opacity: 0, y: 10, display: "none" },
-        {
-          opacity: 1,
-          y: 0,
-          display: "flex",
-          duration: 0.5,
-          ease: "expo.out"
-        }
-      );
-    }
-  }, [isSearchOpen]);
 
   useEffect(() => {
     const loadDonors = async () => {
@@ -228,7 +180,7 @@ export default function OrganHero({ forcedCountry }: { forcedCountry?: string })
               className="mb-10 inline-flex flex-col items-center rounded-[8px] bg-gray-900 p-1.5 shadow-2xl"
             >
               <div className="flex min-w-[160px] items-center justify-center rounded-[6px] bg-white py-4">
-                <motion.span className="text-5xl font-black tabular-nums tracking-tighter text-gray-900">
+                <motion.span className="text-5xl font-semibold tabular-nums tracking-tighter text-gray-900">
                   {rounded}
                 </motion.span>
               </div>
@@ -247,111 +199,13 @@ export default function OrganHero({ forcedCountry }: { forcedCountry?: string })
             </p>
 
             <div className="relative mx-auto flex flex-col gap-4 w-full max-w-5xl">
-              <div className="flex w-full items-center gap-1.5 md:gap-2">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setActiveOrgan(null)}
-                  data-analytics-component="Organ Filter All"
-                  className={`flex h-12 flex-1 items-center justify-center rounded-[8px] text-[10px] font-bold transition-all sm:text-xs md:text-sm ${
-                    activeOrgan === null
-                      ? "bg-primary-dark text-white shadow-lg shadow-primary-dark/30"
-                      : "glass text-gray-600 hover:border-primary-dark/30 hover:text-primary-dark"
-                  }`}
-                >
-                  All
-                </motion.button>
-                {organs.map((organ) => (
-                  <motion.button
-                    key={organ.name}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => setActiveOrgan(organ.name)}
-                    data-analytics-component={`Organ Filter ${organ.name}`}
-                    className={`flex h-12 flex-1 items-center justify-center rounded-[8px] text-[10px] font-bold transition-all sm:text-xs md:text-sm ${
-                      activeOrgan === organ.name
-                        ? "bg-primary-dark text-white shadow-lg shadow-primary-dark/30"
-                        : "glass text-gray-600 hover:border-primary-dark/30 hover:text-primary-dark"
-                    }`}
-                  >
-                    {organ.name}
-                  </motion.button>
-                ))}
-              </div>
-
-              <div className="relative flex h-14 w-full items-center gap-2 overflow-hidden">
-                <div ref={controlsWrapperRef} className="flex w-full items-center gap-2">
-                  <div className="flex min-w-0 flex-1 items-center gap-1.5 md:gap-2">
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => setActiveBloodGroup(null)}
-                      data-analytics-component="Organ Blood Filter All"
-                      className={`flex h-12 flex-1 items-center justify-center rounded-[8px] text-[10px] font-bold transition-all sm:text-xs md:text-sm ${
-                        activeBloodGroup === null
-                          ? "bg-primary-dark text-white shadow-lg shadow-primary-dark/30"
-                          : "glass text-gray-600 hover:border-primary-dark/30 hover:text-primary-dark"
-                      }`}
-                    >
-                      All
-                    </motion.button>
-                    {bloodGroups.map((group) => (
-                      <motion.button
-                        key={group}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => setActiveBloodGroup(group)}
-                        data-analytics-component={`Organ Blood Filter ${group}`}
-                        className={`flex h-12 flex-1 items-center justify-center rounded-[8px] text-[10px] font-bold transition-all sm:text-xs md:text-sm ${
-                          activeBloodGroup === group
-                            ? "bg-primary-dark text-white shadow-lg shadow-primary-dark/30"
-                            : "glass text-gray-600 hover:border-primary-dark/30 hover:text-primary-dark"
-                        }`}
-                      >
-                        {group}
-                      </motion.button>
-                    ))}
-                  </div>
-
-                  <div className="flex shrink-0 items-center justify-end">
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => setIsSearchOpen(true)}
-                      data-analytics-component="Organ Search Open"
-                      className="flex h-12 w-12 items-center justify-center rounded-[8px] glass text-gray-600 hover:border-primary-dark/30 hover:text-primary-dark"
-                    >
-                      <Search className="h-5 w-5" />
-                    </motion.button>
-                  </div>
-                </div>
-
-                <div ref={searchContainerRef} className="absolute inset-0 z-20 hidden items-center gap-2 px-2">
-                  <div className="relative flex-1">
-                    <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
-                    <input
-                      ref={searchInputRef}
-                      type="text"
-                      placeholder="Search cities or donor name..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="h-12 w-full rounded-[8px] border-none bg-white/80 pl-12 pr-4 font-medium text-gray-900 shadow-xl outline-none ring-2 ring-primary-dark/20 backdrop-blur-md focus:ring-primary-dark"
-                    />
-                  </div>
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => {
-                      setIsSearchOpen(false);
-                      setSearchQuery("");
-                    }}
-                    data-analytics-component="Organ Search Close"
-                    className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[8px] bg-primary-dark text-white shadow-lg shadow-primary-dark/30"
-                  >
-                    <X className="h-5 w-5" />
-                  </motion.button>
+              <div className="w-full min-w-0 text-left">
+                <div className="mb-3 flex items-center justify-between gap-3"><p className="text-sm font-semibold text-slate-700">Donation type</p><button type="button" aria-pressed={activeOrgan === null} onClick={() => setActiveOrgan(null)} data-analytics-component="Organ Filter All" className={`min-h-10 rounded-full border px-4 text-sm font-semibold ${activeOrgan === null ? 'border-rose-700 bg-rose-700 text-white' : 'border-slate-200 bg-white text-slate-700'}`}>All organs</button></div>
+                <div className="grid grid-cols-4 gap-2 md:grid-cols-8" aria-label="Filter by donation type">
+                  {organs.map(organ => <button key={organ.name} type="button" aria-pressed={activeOrgan === organ.name} onClick={() => setActiveOrgan(organ.name)} data-analytics-component={`Organ Filter ${organ.name}`} className={`flex min-h-20 min-w-0 flex-col items-center justify-center gap-2 rounded-xl border px-1 py-3 text-xs font-semibold transition-colors ${activeOrgan === organ.name ? 'border-rose-700 bg-rose-700 text-white' : 'border-slate-200 bg-white text-slate-700 hover:border-rose-400 hover:bg-rose-50'}`}><OrganIcon organ={organ.name} className="h-5 w-5 shrink-0" /><span className="leading-4">{organ.name}</span></button>)}
                 </div>
               </div>
+              <DonorBloodFilters activeGroup={activeBloodGroup} onGroupChange={setActiveBloodGroup} searchQuery={searchQuery} onSearchChange={setSearchQuery} placeholder="Search city or donor name…" analyticsPrefix="Organ Blood" />
             </div>
           </div>
 
@@ -383,14 +237,14 @@ export default function OrganHero({ forcedCountry }: { forcedCountry?: string })
                 <div className="absolute inset-0 rounded-[8px] ring-1 ring-inset ring-white/50" />
 
                 <div className="relative z-10 flex w-full items-center">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[8px] bg-primary-dark text-lg font-black text-white shadow-card">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[8px] bg-primary-dark text-lg font-semibold text-white shadow-card">
                     <OrganIcon organ={donor.organ} className="h-6 w-6" />
                   </div>
 
                   <div className="ml-3 flex flex-1 flex-col overflow-hidden">
                     <div className="flex items-center justify-between">
                       <h3 className="truncate text-sm font-bold tracking-tight text-gray-900">{donor.name}</h3>
-                      <span className="text-[10px] font-black text-primary-dark bg-primary-dark/10 px-1.5 py-0.5 rounded ml-2">{donor.bloodGroup}</span>
+                      <span className="text-[10px] font-semibold text-primary-dark bg-primary-dark/10 px-1.5 py-0.5 rounded ml-2">{donor.bloodGroup}</span>
                     </div>
                     <div className="mt-0.5 flex flex-col text-[10px] font-medium text-gray-600">
                       <span className="truncate">{donor.maskedPhone}</span>

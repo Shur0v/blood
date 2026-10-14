@@ -1,12 +1,12 @@
 import { motion, useMotionValue, useTransform, animate } from "motion/react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Search, Star, X } from "lucide-react";
+import { Star } from "lucide-react";
 import DonorModal from "./DonorModal";
 import useViewerGeo from "./useViewerGeo";
 import { maskPhoneTail } from "../lib/phoneMask";
 import FooterBottomBannerAd from "./FooterBottomBannerAd";
+import DonorBloodFilters from "./DonorBloodFilters";
 
-const bloodGroups = ["AB+", "AB-", "A+", "A-", "B+", "B-", "O+", "O-"];
 
 interface Donor {
   id: string;
@@ -120,7 +120,6 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
   };
 
   const [activeGroup, setActiveGroup] = useState<string | null>(null);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDonor, setSelectedDonor] = useState<Donor | null>(null);
   const [donors, setDonors] = useState<Donor[]>([]);
@@ -134,7 +133,6 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
   const [failedAdSlots, setFailedAdSlots] = useState<Record<number, boolean>>({});
   const [hasLoadedMoreOnce, setHasLoadedMoreOnce] = useState(false);
 
-  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const count = useMotionValue(0);
   const rounded = useTransform(count, (latest) => Math.round(latest));
@@ -234,13 +232,6 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
     return controls.stop;
   }, [count, totalActiveDonors]);
 
-  useEffect(() => {
-    if (!isSearchOpen) return;
-    const focusTimer = window.setTimeout(() => {
-      searchInputRef.current?.focus();
-    }, 120);
-    return () => window.clearTimeout(focusTimer);
-  }, [isSearchOpen]);
 
   useEffect(() => {
     const loadDonors = async () => {
@@ -390,7 +381,7 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
               className="mb-10 inline-flex flex-col items-center rounded-[8px] bg-gray-900 p-1.5 shadow-2xl"
             >
               <div className="flex min-w-[160px] items-center justify-center rounded-[6px] bg-white py-4">
-                <motion.span className="text-5xl font-black tabular-nums tracking-tighter text-gray-900">
+                <motion.span className="text-5xl font-semibold tabular-nums tracking-tighter text-gray-900">
                   {rounded}
                 </motion.span>
               </div>
@@ -410,87 +401,7 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
               {forcedCountry ? ` Showing active donor results for ${forcedCountry}.` : ""}
             </p>
 
-            <div className="relative mx-auto flex h-14 w-full max-w-5xl items-center gap-2 overflow-hidden">
-              <div
-                className={`flex w-full items-center gap-2 transition-all duration-300 ${
-                  isSearchOpen ? "pointer-events-none -translate-y-2 opacity-0" : "translate-y-0 opacity-100"
-                }`}
-              >
-                <div className="flex min-w-0 flex-1 items-center gap-1.5 md:gap-2">
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => setActiveGroup(null)}
-                    data-analytics-component="Blood Filter All"
-                    className={`flex h-12 flex-1 items-center justify-center rounded-[8px] text-[10px] font-bold transition-all sm:text-xs md:text-sm ${
-                      activeGroup === null
-                        ? "bg-primary-dark text-white shadow-lg shadow-primary-dark/30"
-                        : "glass text-gray-600 hover:border-primary-dark/30 hover:text-primary-dark"
-                    }`}
-                  >
-                    All
-                  </motion.button>
-                  {bloodGroups.map((group) => (
-                    <motion.button
-                      key={group}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => setActiveGroup(group)}
-                      data-analytics-component={`Blood Filter ${group}`}
-                      className={`flex h-12 flex-1 items-center justify-center rounded-[8px] text-[10px] font-bold transition-all sm:text-xs md:text-sm ${
-                        activeGroup === group
-                          ? "bg-primary-dark text-white shadow-lg shadow-primary-dark/30"
-                          : "glass text-gray-600 hover:border-primary-dark/30 hover:text-primary-dark"
-                      }`}
-                    >
-                      {group}
-                    </motion.button>
-                  ))}
-                </div>
-
-                <div className="flex shrink-0 items-center justify-end">
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => setIsSearchOpen(true)}
-                    data-analytics-component="Blood Search Open"
-                    className="flex h-12 w-12 items-center justify-center rounded-[8px] glass text-gray-600 hover:border-primary-dark/30 hover:text-primary-dark"
-                  >
-                    <Search className="h-5 w-5" />
-                  </motion.button>
-                </div>
-              </div>
-
-              <div
-                className={`absolute inset-0 z-20 flex items-center gap-2 px-2 transition-all duration-300 ${
-                  isSearchOpen ? "scale-100 opacity-100" : "pointer-events-none scale-95 opacity-0"
-                }`}
-              >
-                <div className="relative flex-1">
-                  <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
-                  <input
-                    ref={searchInputRef}
-                    type="text"
-                    placeholder="Search city, donor, or type 'community'..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="h-12 w-full rounded-[8px] border-none bg-white/80 pl-12 pr-4 font-medium text-gray-900 shadow-xl outline-none ring-2 ring-primary-dark/20 backdrop-blur-md focus:ring-primary-dark"
-                  />
-                </div>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => {
-                    setIsSearchOpen(false);
-                    setSearchQuery("");
-                  }}
-                  data-analytics-component="Blood Search Close"
-                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[8px] bg-primary-dark text-white shadow-lg shadow-primary-dark/30"
-                >
-                  <X className="h-5 w-5" />
-                </motion.button>
-              </div>
-            </div>
+            <div className="mx-auto w-full max-w-5xl"><DonorBloodFilters activeGroup={activeGroup} onGroupChange={setActiveGroup} searchQuery={searchQuery} onSearchChange={setSearchQuery} placeholder="Search city or donor name…" analyticsPrefix="Blood" /></div>
           </div>
 
           <div className="absolute inset-0 -z-10 opacity-[0.03]">
@@ -531,7 +442,7 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
                   <div className="absolute inset-0 rounded-[8px] ring-1 ring-inset ring-white/50" />
 
                   <div className="relative z-10 flex w-full items-center">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[8px] bg-primary-dark text-lg font-black text-white shadow-card">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[8px] bg-primary-dark text-lg font-semibold text-white shadow-card">
                       {donor.sourceType === "COMMUNITY" ? (
                         <Star className="h-5 w-5 fill-white text-white" />
                       ) : (

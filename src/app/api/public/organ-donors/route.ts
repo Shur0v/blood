@@ -97,6 +97,7 @@ export async function GET(req: Request) {
       WHEN LOWER(TRIM(op.organ_type)) IN ('intestine', 'small intestine') THEN 'Intestine'
       WHEN LOWER(TRIM(op.organ_type)) IN ('eye', 'eyes', 'cornea', 'corneas', 'corneas (eyes)') THEN 'Eye'
       WHEN LOWER(TRIM(op.organ_type)) IN ('sperm', 'sparm', 'semen') THEN 'Sperm'
+      WHEN LOWER(TRIM(op.organ_type)) IN ('bone marrow', 'bone-marrow', 'marrow') THEN 'Bone Marrow'
       ELSE NULL
     END`;
     const userFilterByOrgan = normalizedOrganFilter ? Prisma.sql`AND ${normalizedUserOrgan} = ${normalizedOrganFilter}` : Prisma.empty;
@@ -110,6 +111,7 @@ export async function GET(req: Request) {
       WHEN LOWER(TRIM(mo.organ_raw)) IN ('intestine', 'small intestine') THEN 'Intestine'
       WHEN LOWER(TRIM(mo.organ_raw)) IN ('eye', 'eyes', 'cornea', 'corneas', 'corneas (eyes)') THEN 'Eye'
       WHEN LOWER(TRIM(mo.organ_raw)) IN ('sperm', 'sparm', 'semen') THEN 'Sperm'
+      WHEN LOWER(TRIM(mo.organ_raw)) IN ('bone marrow', 'bone-marrow', 'marrow') THEN 'Bone Marrow'
       ELSE NULL
     END`;
     const manualFilterByOrgan = normalizedOrganFilter ? Prisma.sql`AND ${normalizedManualOrgan} = ${normalizedOrganFilter}` : Prisma.empty;

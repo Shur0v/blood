@@ -88,13 +88,13 @@ export default async function CountryKeywordHubPage({ params }: { params: Promis
       <ManagedNativeAdSlot slotKey="native-ad-2" />
       <main className="mx-auto max-w-7xl px-4 pt-16 pb-12">
         <section className="rounded-[8px] border border-border/20 bg-white/90 p-6 shadow-card">
-        <h1 className="text-3xl font-black tracking-tight text-gray-900 md:text-4xl">{hub.title}</h1>
+        <h1 className="text-3xl font-semibold tracking-tight text-gray-900 md:text-4xl">{hub.title}</h1>
         <p className="mt-4 max-w-4xl text-sm font-medium leading-7 text-gray-700 md:text-base">{hub.intro}</p>
         <p className="mt-3 text-sm font-semibold text-gray-600">
           These pages are curated for human-readable intent coverage and regional relevance. Use them as index hubs and internal link anchors.
         </p>
 
-        <h2 className="mt-8 text-xl font-black text-gray-900">Best Regional Long-Tail Pages</h2>
+        <h2 className="mt-8 text-xl font-semibold text-gray-900">Best Regional Long-Tail Pages</h2>
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {list.map((entry) => (
             <Link

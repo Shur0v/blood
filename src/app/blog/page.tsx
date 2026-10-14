@@ -4,6 +4,7 @@ import { DEFAULT_LOCALE, getRequestLocale } from "@/src/lib/locale";
 import { translateTextCached } from "@/src/backend/services/translationService";
 import { stripHtmlTags } from "@/src/lib/blogContent";
 import BlogListingClient from "@/src/components/BlogListingClient";
+import BlogUnavailable from "@/src/components/BlogUnavailable";
 
 export const dynamic = "force-dynamic";
 
@@ -23,6 +24,14 @@ type BlogClientRow = {
 };
 
 export default async function BlogListingPage() {
+  try { return await loadBlogListing(); }
+  catch {
+    console.error('Blog listing unavailable. Check server configuration and database connectivity.');
+    return <BlogUnavailable />;
+  }
+}
+
+async function loadBlogListing() {
   const prisma = getPrisma();
   const locale = await getRequestLocale();
 
@@ -137,7 +146,7 @@ export default async function BlogListingPage() {
           <p className="mb-3 inline-flex rounded-full border border-red-200 bg-white px-3 py-1 text-xs font-bold uppercase tracking-wider text-red-600">
             BloodNet Journal
           </p>
-          <h1 className="max-w-4xl text-3xl font-black tracking-tight text-[#0F172A] md:text-5xl">{heroTitle}</h1>
+          <h1 className="max-w-4xl text-3xl font-semibold tracking-tight text-[#0F172A] md:text-5xl">{heroTitle}</h1>
           <p className="mt-4 max-w-3xl text-base font-medium leading-relaxed text-slate-600 md:text-lg">{heroDesc}</p>
         </section>
 

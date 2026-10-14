@@ -9,6 +9,8 @@ datasource db {
 
 model User {
   id                  String   @id @default(uuid())
+  profile_code        String   @unique @db.VarChar(4)
+  profile_code_changed_at DateTime?
   name                String
   email               String   @unique
   mobile              String   @unique
@@ -42,6 +44,9 @@ model User {
   DonorStatusHistory  DonorStatusHistory[]
   ServiceCities       UserServiceCity[]
   AuthRiskEvents      AuthRiskEvent[]
+  ProfileIdentifiers  ProfileIdentifier[]
+  MedicalReports      MedicalReport[]
+  Prescriptions       Prescription[]
 
   @@index([is_active_donor, blood_group, location_country, location_city, updated_at])
 }
@@ -196,7 +201,8 @@ model CommunityDonor {
   created_at          DateTime  @default(now())
 
   @@unique([organization_name])
-  @@index([is_active, location_country, location_city, created_at])
+  // Preserve the existing PostgreSQL index name (truncated by PostgreSQL to 63 bytes).
+  @@index([is_active, location_country, location_city, created_at], map: "CommunityDonor_is_active_location_country_location_city_created")
 }
 
 model ManualOrganDonor {
@@ -269,6 +275,7 @@ model Policy {
 
 model AnalyticsClickLog {
   id          String   @id @default(uuid())
+  event_key   String?  @unique
   page        String
   component   String
   device_type String
@@ -280,6 +287,13 @@ model AnalyticsClickLog {
 
 model AnalyticsHeatmapLog {
   id          String   @id @default(uuid())
+  event_key   String?  @unique
+  coordinate_space String @default("viewport")
+  document_w Int?
+  document_h Int?
+  target_path String?
+  target_x Float?
+  target_y Float?
   page        String
   device_type String
   event_type  String   @default("click") // click | scroll
@@ -510,4 +524,62 @@ model FaqItem {
   updated_at DateTime @updatedAt
 
   @@index([is_active, sort_order, updated_at(sort: Desc)])
+}
+
+// Retired codes remain reserved, including after account deletion.
+model ProfileIdentifier {
+  code       String   @id @db.VarChar(4)
+  user_id    String?
+  created_at DateTime @default(now())
+  User       User?    @relation(fields: [user_id], references: [id], onDelete: SetNull)
+  @@index([user_id])
+}
+
+model MedicalReport {
+  id         String   @id @default(uuid())
+  user_id    String
+  payload    Bytes    // AES-256-GCM encrypted report metadata
+  record_kind String @default("REPORT")
+  record_date DateTime? @db.Date
+  upload_key String?
+  request_hash String?
+  created_at DateTime @default(now())
+  User       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  Files      MedicalReportFile[]
+  @@index([user_id, created_at(sort: Desc)])
+  @@index([user_id, record_kind, record_date(sort: Desc), id(sort: Desc)])
+  @@unique([user_id, upload_key])
+}
+
+model MedicalReportFile {
+  id         String   @id @default(uuid())
+  report_id  String
+  payload    Bytes    // Encrypted bytes; no public asset URL
+  mime_type  String
+  size_bytes Int
+  Report     MedicalReport @relation(fields: [report_id], references: [id], onDelete: Cascade)
+  @@index([report_id])
+}
+
+model Prescription {
+  id              String   @id @default(uuid())
+  user_id         String
+  recipient_code  String   @db.VarChar(4)
+  source          String
+  external_id     String
+  request_hash    String
+  payload         Bytes    // Encrypted complete prescription
+  issued_at       DateTime
+  read_at         DateTime?
+  email_status    String   @default("PENDING")
+  email_attempts  Int      @default(0)
+  email_next_attempt_at DateTime @default(now())
+  email_locked_until DateTime?
+  email_sent_at   DateTime?
+  created_at      DateTime @default(now())
+  User            User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  @@unique([source, external_id])
+  @@index([user_id, created_at(sort: Desc)])
+  @@index([user_id, issued_at(sort: Desc), id(sort: Desc)])
+  @@index([email_status, email_next_attempt_at])
 }

@@ -277,7 +277,7 @@ export const getSiteContent = async (prisma: PrismaClient): Promise<SiteContentP
           version,
         },
       }),
-    ]);
+    ].map(operation => operation.catch(error => { if (error?.code !== 'P2002') throw error; })));
 
     rows = await prisma.policy.findMany({
       where: {

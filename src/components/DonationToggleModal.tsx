@@ -54,7 +54,7 @@ export default function DonationToggleModal({ isOpen, onClose, onConfirm }: Dona
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/20 text-primary">
                 <Calendar className="h-6 w-6" />
               </div>
-              <h3 className="text-xl font-black uppercase tracking-tight text-white">Last Donation</h3>
+              <h3 className="text-xl font-semibold uppercase tracking-tight text-white">Last Donation</h3>
               <p className="mt-2 text-xs font-medium text-white/40 leading-relaxed">
                 To ensure your safety and the quality of blood, please provide your last donation date.
               </p>
@@ -62,7 +62,7 @@ export default function DonationToggleModal({ isOpen, onClose, onConfirm }: Dona
 
             <div className="space-y-6">
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-white/40">Approximate Date</label>
+                <label className="text-[10px] font-semibold uppercase tracking-wide text-white/40">Approximate Date</label>
                 <div className="relative">
                   <Calendar className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-white/30" />
                   <button
@@ -84,7 +84,7 @@ export default function DonationToggleModal({ isOpen, onClose, onConfirm }: Dona
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleConfirm}
-                  className="w-full flex items-center justify-center gap-2 rounded-2xl bg-primary py-4 text-xs font-black uppercase tracking-widest text-white shadow-xl shadow-primary/20 transition-all hover:opacity-90"
+                  className="w-full flex items-center justify-center gap-2 rounded-2xl bg-primary py-4 text-xs font-semibold uppercase tracking-wide text-white shadow-xl shadow-primary/20 transition-all hover:opacity-90"
                 >
                   <CheckCircle2 className="h-4 w-4" />
                   Confirm Status

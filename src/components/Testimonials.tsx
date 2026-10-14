@@ -101,7 +101,7 @@ export default function Testimonials() {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-4xl font-black tracking-tight text-gray-900 uppercase"
+          className="text-4xl font-semibold tracking-tight text-gray-900 uppercase"
         >
           Community Stories
         </motion.h2>
@@ -146,7 +146,7 @@ export default function Testimonials() {
                 className="glass soft-moving-bg relative flex h-full flex-col justify-between overflow-hidden rounded-[24px] p-8 shadow-card transition-all duration-300 hover:-translate-y-2 hover:shadow-card"
               >
                 <div>
-                  <h3 className="mb-4 text-xl font-black leading-tight text-gray-900 group-hover:text-primary-dark transition-colors">
+                  <h3 className="mb-4 text-xl font-semibold leading-tight text-gray-900 group-hover:text-primary-dark transition-colors">
                     {story.title}
                   </h3>
                   <p className="text-sm leading-relaxed text-gray-600 font-medium mb-8">

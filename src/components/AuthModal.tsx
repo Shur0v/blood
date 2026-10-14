@@ -341,30 +341,35 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            className="absolute inset-0 bg-slate-950/45 backdrop-blur-sm"
           />
 
           <motion.div
             initial={{ scale: 0.9, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.9, opacity: 0, y: 20 }}
-            className="glass relative flex max-h-[92vh] w-full max-w-md flex-col overflow-hidden rounded-[24px] bg-white/10 p-5 shadow-2xl ring-1 ring-white/20 backdrop-blur-2xl sm:rounded-[32px] sm:p-8"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="auth-title"
+            className="auth-panel relative flex max-h-[calc(100dvh-1.5rem)] w-full max-w-md flex-col overflow-hidden rounded-[24px] border border-slate-200 bg-white p-5 text-slate-900 shadow-2xl sm:max-h-[calc(100dvh-2rem)] sm:rounded-[28px] sm:p-8"
           >
             <button
               onClick={onClose}
-              className="absolute right-4 top-4 sm:right-6 sm:top-6 text-white/50 transition-colors hover:text-white"
+              type="button"
+              aria-label="Close authentication dialog"
+              className="absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 sm:right-4 sm:top-4"
             >
               <X className="h-5 w-5 sm:h-6 sm:w-6" />
             </button>
 
-            <div className="mb-6 sm:mb-8 text-center">
+            <div className="mb-4 shrink-0 text-center sm:mb-5">
               <div className="mx-auto mb-4 flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-2xl bg-primary/20 text-primary">
                 <ShieldCheck className="h-7 w-7 sm:h-8 sm:w-8" />
               </div>
-              <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white uppercase">
+              <h2 id="auth-title" className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
                 {step === "register" ? (authMode === "register" ? "Join BloodNet" : "Login to BloodNet") : "Verify Identity"}
               </h2>
-              <p className="mt-2 text-sm text-white/60">
+              <p className="mt-2 text-sm text-slate-600">
                 {step === "register"
                   ? authMode === "register" ? "Create your life-saver profile in seconds." : "Use your email to receive login OTP."
                   : "We've sent a 6-digit code to your email."}
@@ -374,7 +379,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
                 {errorMsg && (
                   <motion.div
                     initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                    className="mt-4 p-3 rounded-xl bg-red-500/20 border border-red-500/30 text-red-200 text-sm font-medium"
+                    className="mt-4 p-3 rounded-xl bg-red-50 border border-red-500/30 text-red-700 text-sm font-medium"
                   >
                     {errorMsg}
                   </motion.div>
@@ -382,19 +387,21 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
               </AnimatePresence>
             </div>
 
-            <div className="flex-1 overflow-y-auto custom-scrollbar px-1 py-5">
+            <div className="scrollbar-hidden min-h-0 flex-1 overflow-y-auto overscroll-contain px-1 pb-1 pt-2">
               {step === "register" ? (
                 <form onSubmit={handleRequestOtp} noValidate className="space-y-4 pb-0">
                 {authMode === "register" && (
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-white/40">Full Name</label>
+                    <label htmlFor="auth-name" className="text-xs font-semibold tracking-wide text-slate-600">Full Name</label>
                     <div className="relative">
-                      <User className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-white/30" />
+                      <User className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500" />
                       <input
                         required
+                        id="auth-name"
+                        autoComplete="name"
                         type="text"
                         placeholder="John Doe"
-                        className="w-full rounded-2xl border border-white/10 bg-white/5 py-4 pl-12 pr-4 text-white placeholder:text-white/20 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/50"
+                        className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-4 pl-12 pr-4 text-slate-900 placeholder:text-slate-500 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/50"
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       />
@@ -404,31 +411,33 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
 
                 {authMode === "register" && (
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-white/40">Date of Birth</label>
+                    <label className="text-xs font-semibold tracking-wide text-slate-600">Date of Birth</label>
                     <button
                       type="button"
                       onClick={() => setIsDobPickerOpen(true)}
-                      className={`relative w-full rounded-2xl border bg-white/5 py-4 pl-12 pr-4 text-left transition focus:outline-none focus:ring-1 ${
+                      className={`relative w-full rounded-2xl border bg-slate-50 py-4 pl-12 pr-4 text-left transition focus:outline-none focus:ring-1 ${
                         formData.dateOfBirth
-                          ? "border-emerald-400/60 text-white ring-1 ring-emerald-400/40"
-                          : "border-white/10 text-white/40 focus:border-primary/50 focus:ring-primary/50"
+                          ? "border-emerald-400/60 text-slate-900 ring-1 ring-emerald-400/40"
+                          : "border-slate-200 text-slate-600 focus:border-primary/50 focus:ring-primary/50"
                       }`}
                     >
-                      <CalendarDays className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-white/30" />
+                      <CalendarDays className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500" />
                       {formData.dateOfBirth ? formatDobLabel(formData.dateOfBirth) : "Select your date of birth"}
                     </button>
                   </div>
                 )}
 
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-white/40">Email Address</label>
+                  <label htmlFor="auth-email" className="text-xs font-semibold tracking-wide text-slate-600">Email Address</label>
                   <div className="relative">
-                    <Mail className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-white/30" />
+                    <Mail className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500" />
                     <input
                       required
+                      id="auth-email"
+                      autoComplete="email"
                       type="email"
                       placeholder="name@example.com"
-                      className="w-full rounded-2xl border border-white/10 bg-white/5 py-4 pl-12 pr-4 text-white placeholder:text-white/20 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/50"
+                      className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-4 pl-12 pr-4 text-slate-900 placeholder:text-slate-500 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/50"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     />
@@ -438,37 +447,38 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
                 {authMode === "register" && (
                   <>
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-white/40">Location (City only)</label>
+                      <label htmlFor="auth-city" className="text-xs font-semibold tracking-wide text-slate-600">Location (City only)</label>
                       <div className="relative">
-                        <MapPin className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-white/30" />
+                        <MapPin className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500" />
                         <input
                           type="text"
+                          id="auth-city"
                           placeholder="Search your city"
                           value={locationInput}
                           onChange={(e) => {
                             setLocationInput(e.target.value);
                           }}
-                          className={`w-full rounded-2xl border bg-white/5 py-4 pl-12 pr-20 text-white placeholder:text-white/20 focus:outline-none focus:ring-1 ${
+                          className={`w-full rounded-2xl border bg-slate-50 py-4 pl-12 pr-20 text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-1 ${
                             selectedLocations.length > 0
                               ? "border-emerald-400/60 ring-emerald-400/40"
-                              : "border-white/10 focus:border-primary/50 focus:ring-primary/50"
+                              : "border-slate-200 focus:border-primary/50 focus:ring-primary/50"
                           }`}
                         />
                         {isFetchingLocations ? (
-                          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-white/50">Loading...</span>
+                          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-500">Loading...</span>
                         ) : null}
                       </div>
                       {selectedLocations.length > 0 && (
                         <div className="mt-2 flex flex-wrap gap-2">
                           {selectedLocations.map((item) => (
-                            <span key={item.provider_place_id} className="inline-flex items-center gap-2 rounded-full bg-emerald-500/20 px-3 py-1 text-xs font-semibold text-emerald-200">
+                            <span key={item.provider_place_id} className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800">
                               {item.city}, {item.country}
                               <button
                                 type="button"
                                 onClick={() => {
                                   setSelectedLocations((prev) => prev.filter((loc) => loc.provider_place_id !== item.provider_place_id));
                                 }}
-                                className="rounded-full bg-black/20 px-1.5 py-0.5 text-[10px] font-black text-white/90 hover:bg-black/40"
+                                className="rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-700 hover:bg-emerald-200"
                                 aria-label={`Remove ${item.city}`}
                               >
                                 ×
@@ -477,15 +487,15 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
                           ))}
                         </div>
                       )}
-                      <p className="text-[10px] font-semibold text-white/45">
+                      <p className="text-[10px] font-semibold text-slate-600">
                         Selected {selectedLocations.length}/{MAX_CITIES} cities
                       </p>
                       {locationLookupError && (
-                        <p className="text-xs font-semibold text-amber-300">{locationLookupError}</p>
+                        <p className="text-xs font-semibold text-amber-800">{locationLookupError}</p>
                       )}
 
                       {minCharsReached && locationSuggestions.length > 0 && (
-                        <div className="rounded-2xl border border-white/10 bg-[#1a1a2e]/95 backdrop-blur-2xl p-2 max-h-48 overflow-y-auto custom-scrollbar">
+                        <div className="rounded-2xl border border-slate-200 bg-white backdrop-blur-2xl p-2 max-h-48 overflow-y-auto scrollbar-hidden">
                           {locationSuggestions.map((item) => (
                             <button
                               key={item.provider_place_id}
@@ -505,31 +515,34 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
                                   return [...prev, item];
                                 });
                               }}
-                              className="w-full text-left rounded-xl px-3 py-2.5 transition bg-transparent hover:bg-white/10"
+                              className="w-full text-left rounded-xl px-3 py-2.5 transition bg-transparent hover:bg-slate-100"
                             >
-                              <p className="text-sm font-semibold text-white">{item.city}</p>
-                              <p className="text-xs text-white/60">{item.country}</p>
+                              <p className="text-sm font-semibold text-slate-900">{item.city}</p>
+                              <p className="text-xs text-slate-600">{item.country}</p>
                             </button>
                           ))}
                         </div>
                       )}
 
                       {minCharsReached && !isFetchingLocations && locationSuggestions.length === 0 && (
-                        <p className="text-xs font-medium text-white/50">No city-only matches found.</p>
+                        <p className="text-xs font-medium text-slate-500">No city-only matches found.</p>
                       )}
                     </div>
 
                     <div className="space-y-4">
                       <div className="space-y-2 relative">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-white/40">Blood Group</label>
+                        <label className="text-xs font-semibold tracking-wide text-slate-600">Blood Group</label>
                         <div className="relative">
-                          <div
+                          <button
                             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                            className={`w-full cursor-pointer flex justify-between items-center rounded-2xl border border-white/10 bg-white/5 py-4 px-4 text-sm ${!formData.bloodGroup ? "text-white/40" : "text-white font-medium"}`}
+                            type="button"
+                            aria-label="Blood group"
+                            aria-expanded={isDropdownOpen}
+                            className={`w-full cursor-pointer flex justify-between items-center rounded-2xl border border-slate-200 bg-slate-50 py-4 px-4 text-sm ${!formData.bloodGroup ? "text-slate-600" : "text-slate-900 font-medium"}`}
                           >
                             {formData.bloodGroup || "Select"}
-                            <ChevronDown className={`h-4 w-4 text-white/30 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`} />
-                          </div>
+                            <ChevronDown className={`h-4 w-4 text-slate-500 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`} />
+                          </button>
 
                           <AnimatePresence>
                             {isDropdownOpen && (
@@ -539,22 +552,22 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
                                   initial={{ opacity: 0, y: -10 }}
                                   animate={{ opacity: 1, y: 0 }}
                                   exit={{ opacity: 0, y: -10 }}
-                                  className="absolute top-full left-0 w-full mt-2 z-50 rounded-2xl border border-white/10 bg-[#1a1a2e]/95 backdrop-blur-2xl p-2 shadow-2xl max-h-48 overflow-y-auto custom-scrollbar"
+                                  className="relative w-full mt-2 z-50 rounded-2xl border border-slate-200 bg-white backdrop-blur-2xl p-2 shadow-2xl max-h-48 overflow-y-auto scrollbar-hidden"
                                 >
                                   {BLOOD_GROUPS.map((bg) => (
-                                    <div
+                                    <button type="button"
                                       key={bg}
                                       onClick={() => {
                                         setFormData({ ...formData, bloodGroup: bg });
                                         setIsDropdownOpen(false);
                                       }}
-                                      className={`cursor-pointer rounded-xl px-4 py-3 text-sm font-bold transition-all ${formData.bloodGroup === bg
+                                      className={`w-full text-left cursor-pointer rounded-xl px-4 py-3 text-sm font-bold transition-all ${formData.bloodGroup === bg
                                         ? "bg-primary border border-primary/50 text-white"
-                                        : "text-white/70 hover:bg-white/10 hover:text-white"
+                                        : "text-slate-700 hover:bg-slate-100 hover:text-slate-900"
                                         }`}
                                     >
                                       {bg}
-                                    </div>
+                                    </button>
                                   ))}
                                 </motion.div>
                               </>
@@ -564,16 +577,18 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
                       </div>
 
                       <div className="space-y-2">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-white/40">Phone Number</label>
+                        <label className="text-xs font-semibold tracking-wide text-slate-600">Phone Number</label>
                         <div className="space-y-2">
                           <div className="relative">
                             <button
                               type="button"
+                              aria-label="Phone country"
+                              aria-expanded={isCountryDropdownOpen}
                               onClick={() => setIsCountryDropdownOpen((prev) => !prev)}
-                              className={`w-full flex items-center justify-between rounded-2xl border bg-white/5 px-4 py-4 text-sm transition ${
+                              className={`w-full flex items-center justify-between rounded-2xl border bg-slate-50 px-4 py-4 text-sm transition ${
                                 phoneData.countryCode
-                                  ? "border-emerald-400/60 text-white ring-1 ring-emerald-400/40"
-                                  : "border-white/10 text-white/60"
+                                  ? "border-emerald-400/60 text-slate-900 ring-1 ring-emerald-400/40"
+                                  : "border-slate-200 text-slate-600"
                               }`}
                             >
                               <span className="truncate">
@@ -581,7 +596,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
                                   ? `${phoneData.countryName} (${phoneData.dialCode})`
                                   : "Select country"}
                               </span>
-                              <ChevronDown className={`h-4 w-4 text-white/40 transition-transform ${isCountryDropdownOpen ? "rotate-180" : ""}`} />
+                              <ChevronDown className={`h-4 w-4 text-slate-600 transition-transform ${isCountryDropdownOpen ? "rotate-180" : ""}`} />
                             </button>
 
                             <AnimatePresence>
@@ -592,16 +607,16 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
                                     initial={{ opacity: 0, y: -8 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: -8 }}
-                                    className="absolute left-0 top-full z-50 mt-2 w-full rounded-2xl border border-white/10 bg-[#1a1a2e]/95 p-2 backdrop-blur-2xl shadow-2xl"
+                                    className="relative z-50 mt-2 w-full rounded-2xl border border-slate-200 bg-white p-2 backdrop-blur-2xl shadow-2xl"
                                   >
                                     <input
                                       type="text"
                                       placeholder="Search country..."
-                                      className="mb-2 w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/35 focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/60"
+                                      className="mb-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-500 focus:border-primary/60 focus:outline-none focus:ring-1 focus:ring-primary/60"
                                       value={countrySearch}
                                       onChange={(e) => setCountrySearch(e.target.value)}
                                     />
-                                    <div className="max-h-48 overflow-y-auto custom-scrollbar">
+                                    <div className="max-h-48 overflow-y-auto scrollbar-hidden">
                                       {filteredCountryOptions.map((country) => (
                                         <button
                                           key={country.code}
@@ -618,13 +633,13 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
                                             setIsCountryDropdownOpen(false);
                                             setCountrySearch("");
                                           }}
-                                          className="w-full rounded-xl px-3 py-2 text-left text-sm text-white/80 transition hover:bg-white/10 hover:text-white"
+                                          className="w-full rounded-xl px-3 py-2 text-left text-sm text-slate-700 transition hover:bg-slate-100 hover:text-slate-900"
                                         >
                                           {country.name} ({country.dialCode})
                                         </button>
                                       ))}
                                       {filteredCountryOptions.length === 0 && (
-                                        <p className="px-3 py-2 text-xs text-white/50">No country found.</p>
+                                        <p className="px-3 py-2 text-xs text-slate-500">No country found.</p>
                                       )}
                                     </div>
                                   </motion.div>
@@ -633,23 +648,25 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
                             </AnimatePresence>
                           </div>
 
-                          <div
-                            className={`flex items-center rounded-2xl border bg-white/5 ${
+                          {phoneData.countryCode && <div
+                            className={`flex items-center rounded-2xl border bg-slate-50 ${
                               phoneError
                                 ? "border-red-400/60 ring-1 ring-red-400/40"
-                                : "border-white/10 focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/50"
+                                : "border-slate-200 focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/50"
                             }`}
                           >
-                            <span className="pl-4 pr-3 text-sm font-bold text-white/75">
+                            <span className="shrink-0 whitespace-nowrap pl-4 pr-3 text-sm font-semibold tabular-nums text-slate-700">
                               {phoneData.dialCode || "+--"}
                             </span>
-                            <span className="mr-3 h-5 w-px bg-white/15" />
+                            <span className="mr-3 h-5 w-px shrink-0 bg-slate-200" />
                             <input
                               required
+                              aria-label="Local phone number"
+                              autoComplete="tel-national"
                               type="tel"
                               inputMode="numeric"
                               placeholder="Enter local number"
-                              className="w-full bg-transparent py-4 pr-4 text-white placeholder:text-white/25 focus:outline-none"
+                              className="min-w-0 flex-1 bg-transparent py-4 pr-4 text-base text-slate-900 placeholder:text-slate-500 focus:outline-none"
                               value={phoneData.localPhoneNumber}
                               onChange={(e) => {
                                 const rawValue = e.target.value;
@@ -678,10 +695,10 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
                                 setPhoneError(result.error);
                               }}
                             />
-                          </div>
-                          {phoneError && <p className="text-xs font-semibold text-red-300">{phoneError}</p>}
+                          </div>}
+                          {phoneData.countryCode && phoneError && <p className="text-xs font-semibold text-red-700">{phoneError}</p>}
                           {!phoneError && isPhoneValid && (
-                            <p className="text-xs font-semibold text-emerald-300">Number looks good</p>
+                            <p className="text-xs font-semibold text-emerald-700">Number looks good</p>
                           )}
                         </div>
                       </div>
@@ -694,7 +711,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
                   whileTap={{ scale: 0.98 }}
                   type="submit"
                   disabled={isLoading || isRegisterSubmitDisabled}
-                  className="group mt-4 flex w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-primary to-primary py-4 text-sm font-black uppercase tracking-widest text-white shadow-xl shadow-primary/20 transition-all hover:opacity-90 disabled:opacity-50"
+                  className="group mt-4 flex w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-primary to-primary py-4 text-sm font-semibold uppercase tracking-wide text-white shadow-xl shadow-primary/20 transition-all hover:opacity-90 disabled:bg-none disabled:bg-slate-200 disabled:text-slate-600 disabled:shadow-none disabled:opacity-100"
                 >
                   {isLoading ? "Processing..." : "Send OTP to Email"}
                   {!isLoading && <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />}
@@ -719,7 +736,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
                     setCountrySearch("");
                     setIsCountryDropdownOpen(false);
                   }}
-                  className="w-full text-xs font-bold text-white/40 transition-colors hover:text-white"
+                  className="w-full text-xs font-bold text-slate-600 transition-colors hover:text-slate-900"
                 >
                   {authMode === "register" ? "Already have an account? Login" : "Need a new account? Register"}
                 </button>
@@ -734,8 +751,9 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
                       type="text"
                       inputMode="numeric"
                       pattern="[0-9]*"
+                      aria-label={`Verification digit ${index + 1}`}
                       maxLength={1}
-                      className="h-12 sm:h-14 min-w-0 w-full rounded-xl border border-white/10 bg-white/5 text-center text-lg sm:text-xl font-black text-white focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/50"
+                      className="h-12 sm:h-14 min-w-0 w-full rounded-xl border border-slate-200 bg-slate-50 text-center text-lg sm:text-xl font-semibold text-slate-900 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/50"
                       value={digit}
                       onChange={(e) => handleOtpChange(index, e.target.value)}
                       onPaste={(e) => handleOtpPaste(index, e)}
@@ -749,13 +767,13 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
                     whileTap={{ scale: 0.98 }}
                     onClick={handleVerify}
                     disabled={isLoading}
-                    className="w-full rounded-2xl bg-gradient-to-r from-primary to-primary py-4 text-sm font-black uppercase tracking-widest text-white shadow-xl shadow-primary/20 transition-all hover:opacity-90 disabled:opacity-50"
+                    className="w-full rounded-2xl bg-gradient-to-r from-primary to-primary py-4 text-sm font-semibold uppercase tracking-wide text-white shadow-xl shadow-primary/20 transition-all hover:opacity-90 disabled:bg-none disabled:bg-slate-200 disabled:text-slate-600 disabled:shadow-none disabled:opacity-100"
                   >
                     {isLoading ? "Verifying..." : "Verify & Login"}
                   </motion.button>
                   <button
                     onClick={() => setStep("register")}
-                    className="w-full text-xs font-bold text-white/40 transition-colors hover:text-white"
+                    className="w-full text-xs font-bold text-slate-600 transition-colors hover:text-slate-900"
                   >
                     Change email address?
                   </button>
@@ -777,7 +795,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
               confirmLabel="Confirm Date of Birth"
               minDate={minDobDate}
               maxDate={maxDobDate}
-              theme="dark"
+              theme="light"
             />
           </motion.div>
         </div>

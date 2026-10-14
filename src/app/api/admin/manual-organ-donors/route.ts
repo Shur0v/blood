@@ -99,7 +99,7 @@ export async function POST(req: Request) {
       ...(payload.otherOrgan?.trim() ? [payload.otherOrgan] : []),
     ]);
     if (organList.length === 0) {
-      return NextResponse.json({ success: false, message: 'Select valid organs only (Kidney, Liver, Lung, Pancreas, Intestine, Eye, Sperm).' }, { status: 400 });
+      return NextResponse.json({ success: false, message: 'Select valid organs only (Kidney, Liver, Lung, Pancreas, Intestine, Eye, Sperm, Bone Marrow).' }, { status: 400 });
     }
 
     const created = await getPrisma().manualOrganDonor.create({
