@@ -1,24 +1,13 @@
 "use client";
 
+import usePublicAds from "./usePublicAds";
+
 import { useEffect, useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
 
-type RuntimeAd = {
-  id: string;
-  adType: "script" | "smartlink" | "native_banner" | "iframe_banner";
-  scriptSrc?: string | null;
-  bannerKey?: string | null;
-  bannerWidth?: number | null;
-  bannerHeight?: number | null;
-  placement: "head" | "body_end" | "footer_inline" | "hero_center" | "donor_cards_mix" | "community_image_slot";
-};
-
-type RuntimePayload = {
-  adsRuntimeEnabled: boolean;
-  adUnits: RuntimeAd[];
-};
 
 export default function FooterBottomBannerAd() {
+  const adsConfig = usePublicAds();
   const pathname = usePathname();
   const [ad, setAd] = useState<{
     id: string;
@@ -34,18 +23,9 @@ export default function FooterBottomBannerAd() {
   );
 
   useEffect(() => {
-    if (shouldHide) return;
-    let active = true;
-    const load = async () => {
-      try {
-        const res = await fetch("/api/public/ads-settings", { method: "GET", cache: "no-store" });
-        const payload = await res.json();
-        if (!active || !res.ok || !payload?.success) return;
-        const data = payload.data as RuntimePayload;
-        if (!data.adsRuntimeEnabled) {
-          setAd(null);
-          return;
-        }
+    const data = adsConfig;
+    if (!data?.adsRuntimeEnabled || shouldHide) { setAd(null); return; }
+    (() => {
         const found = data.adUnits.find(
           (item) =>
             item.adType === "iframe_banner" &&
@@ -67,17 +47,8 @@ export default function FooterBottomBannerAd() {
           bannerWidth: Number(found.bannerWidth),
           bannerHeight: Number(found.bannerHeight),
         });
-      } catch {
-        // ignore transient issues
-      }
-    };
-    void load();
-    const t = window.setInterval(() => void load(), 8000);
-    return () => {
-      active = false;
-      window.clearInterval(t);
-    };
-  }, [shouldHide]);
+    })();
+  }, [adsConfig, shouldHide]);
 
   useEffect(() => {
     if (shouldHide || !ad) return;

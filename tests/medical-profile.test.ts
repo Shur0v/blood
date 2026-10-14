@@ -21,6 +21,7 @@ import { GET as inbox, POST as uploadPrescription } from '../src/app/api/users/m
 import { GET as downloadPrescription } from '../src/app/api/users/me/prescriptions/[prescriptionId]/route';
 import { POST as submitPrescription } from '../src/app/api/integrations/prescriptions/route';
 import { POST as searchMedicalHistory } from '../src/app/api/users/me/medical-records/history/route';
+import { POST as uploadMedicalReport } from '../src/app/api/users/me/medical-reports/route';
 import { POST as collectClicks } from '../src/app/api/analytics/clicks/route';
 import { POST as collectLegacyHeatmap } from '../src/app/api/analytics/heatmap/route';
 import { GET as heatmapAnalytics } from '../src/app/api/admin/analytics/heatmap/route';
@@ -154,6 +155,30 @@ test('existing sessions and migrated users can use IDs, reports, prescriptions, 
   assert.ok((await getPrisma().prescription.findUniqueOrThrow({where:{id:prescription.id}})).user_id === migratedUserId);
   await getPrisma().organPledge.create({data:{user_id:migratedUserId,organ_type:'Bone Marrow'}});
   assert.equal((await getPrisma().organPledge.findMany({where:{user_id:migratedUserId}})).length, 2);
+});
+
+test('VPS HTTPS cookie sessions can open history and save reports through an internal HTTP proxy', integration, async () => {
+  const previous = process.env.NEXT_PUBLIC_BASE_URL;
+  process.env.NEXT_PUBLIC_BASE_URL = 'https://bloodnet.live';
+  const headers = { origin: 'https://bloodnet.live', cookie: `bloodnet_session=${existingToken}`, 'content-type': 'application/json' };
+  const request = () => new Request('http://127.0.0.1:3000/api/users/me/medical-records/history', { method: 'POST', headers, body: JSON.stringify({ mode: 'reports' }) });
+  try {
+    assert.equal((await searchMedicalHistory(request())).status, 200);
+    const form = new FormData();
+    for (const [name, value] of Object.entries({ title: 'Proxy regression report', category: 'Lab result', reportDate: '2026-01-01', facility: 'Synthetic Lab' })) form.set(name, value);
+    const image = await sharp({ create: { width: 8, height: 8, channels: 3, background: 'white' } }).png().toBuffer();
+    form.append('files', new File([new Uint8Array(image)], 'report.png', { type: 'image/png' }));
+    const uploaded = await uploadMedicalReport(new Request('http://127.0.0.1:3000/api/users/me/medical-reports', { method: 'POST', headers: { origin: headers.origin, cookie: headers.cookie }, body: form }));
+    assert.equal(uploaded.status, 201);
+    const record = await getPrisma().medicalReport.findFirstOrThrow({ where: { user_id: migratedUserId }, orderBy: { created_at: 'desc' } });
+    assert.equal(record.user_id, migratedUserId);
+    const foreign = new Request(request(), { headers: { ...headers, origin: 'https://evil.example', 'x-forwarded-host': 'evil.example', 'x-forwarded-proto': 'https' } });
+    const blocked = await searchMedicalHistory(foreign);
+    assert.equal(blocked.status, 403);
+    assert.equal(blocked.headers.get('set-cookie'), null);
+    assert.equal((await searchMedicalHistory(request())).status, 200);
+    assert.equal((await searchMedicalHistory(new Request(request(), { headers: { origin: headers.origin, 'content-type': 'application/json' } }))).status, 401);
+  } finally { if (previous === undefined) delete process.env.NEXT_PUBLIC_BASE_URL; else process.env.NEXT_PUBLIC_BASE_URL = previous; }
 });
 test('new registrations get reserved IDs; concurrent claims have one winner', integration, async () => {
   const [first,second] = await Promise.all([newPatient(),newPatient()]);

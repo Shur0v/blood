@@ -686,22 +686,22 @@ export default function UnifiedDashboard({
                     aria-label="Available to donate"
                     aria-pressed={isReady}
                     onClick={() => onToggleReady(!isReady)}
-                    className={`relative flex h-8 w-24 items-center rounded-full p-1 transition-all duration-500 ${
+                    className={`relative flex h-8 w-24 items-center rounded-full p-1 transition-all duration-500 md:max-lg:h-10 md:max-lg:w-36 ${
                       isReady
                         ? "bg-green-500 shadow-card"
                         : "bg-primary/10 ring-1 ring-primary/20"
                     }`}
                   >
-                    <div className={`absolute left-3 text-[10px] font-semibold uppercase tracking-wider transition-opacity duration-300 ${isReady ? "opacity-100 text-white" : "opacity-0"}`}>
+                    <div className={`absolute left-3 text-[10px] md:max-lg:text-sm md:max-lg:tracking-normal font-semibold uppercase tracking-wider transition-opacity duration-300 ${isReady ? "opacity-100 text-white" : "opacity-0"}`}>
                       Available
                     </div>
-                    <div className={`absolute right-3 text-[10px] font-semibold uppercase tracking-wider transition-opacity duration-300 ${!isReady ? "opacity-100 text-primary" : "opacity-0"}`}>
+                    <div className={`absolute right-3 text-[10px] md:max-lg:text-sm md:max-lg:tracking-normal font-semibold uppercase tracking-wider transition-opacity duration-300 ${!isReady ? "opacity-100 text-primary" : "opacity-0"}`}>
                       Unavailable
                     </div>
                     <motion.div
-                      animate={{ x: isReady ? 64 : 0 }}
+                      animate={{ left: isReady ? 'calc(100% - 28px)' : '4px' }}
                       transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                      className="relative z-10 flex h-6 w-6 items-center justify-center rounded-full bg-white shadow-md"
+                      className="absolute z-10 flex h-6 w-6 items-center justify-center rounded-full bg-white shadow-md"
                     >
                       <Power className={`h-3 w-3 ${isReady ? "text-green-500" : "text-primary"}`} />
                     </motion.div>

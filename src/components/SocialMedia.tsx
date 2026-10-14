@@ -1,3 +1,6 @@
+"use client";
+
+import usePublicAds from "./usePublicAds";
 import React, { useEffect, useState } from "react";
 import { motion } from "motion/react";
 import { ArrowRight, Bell, Droplet, Heart, Send, ShieldCheck, Users } from "lucide-react";
@@ -23,22 +26,9 @@ type PublicPolicyData = {
   joinCommunityActiveRequestsText?: string;
 };
 
-type RuntimeAdUnit = {
-  id: string;
-  adType: "script" | "smartlink" | "native_banner" | "iframe_banner";
-  scriptSrc?: string | null;
-  bannerKey?: string | null;
-  bannerWidth?: number | null;
-  bannerHeight?: number | null;
-  placement: "head" | "body_end" | "footer_inline" | "hero_center" | "donor_cards_mix" | "community_image_slot";
-};
-
-type PublicAdsPayload = {
-  adsRuntimeEnabled: boolean;
-  adUnits: RuntimeAdUnit[];
-};
 
 export default function SocialMedia() {
+  const adsConfig = usePublicAds();
   const [communityData, setCommunityData] = useState({
     joinCommunityTelegramUrl: "https://t.me/bloodnet",
     joinCommunityTitle: "JOIN THE COMMUNITY",
@@ -96,17 +86,9 @@ export default function SocialMedia() {
   }, []);
 
   useEffect(() => {
-    let active = true;
-    const loadAds = async () => {
-      try {
-        const res = await fetch("/api/public/ads-settings", { method: "GET", cache: "no-store" });
-        const payload = await res.json();
-        if (!active || !res.ok || !payload?.success) return;
-        const data = payload.data as PublicAdsPayload;
-        if (!data.adsRuntimeEnabled) {
-          setCommunityImageBannerAd(null);
-          return;
-        }
+    const data = adsConfig;
+    if (!data?.adsRuntimeEnabled) { setCommunityImageBannerAd(null); return; }
+    (() => {
         const match = data.adUnits.find(
           (item) =>
             item.adType === "iframe_banner" &&
@@ -127,17 +109,8 @@ export default function SocialMedia() {
           bannerWidth: Number(match.bannerWidth),
           bannerHeight: Number(match.bannerHeight),
         });
-      } catch {
-        // fallback to image
-      }
-    };
-    void loadAds();
-    const t = window.setInterval(() => void loadAds(), 3000);
-    return () => {
-      active = false;
-      window.clearInterval(t);
-    };
-  }, []);
+    })();
+  }, [adsConfig]);
 
   return (
     <section aria-labelledby="community-heading" className="mx-auto max-w-7xl px-4 py-12 sm:py-16">

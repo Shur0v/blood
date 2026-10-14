@@ -33,7 +33,7 @@ export default function MedicalRecordUploader({mode,onSaved,onSessionExpired}:{m
       item.files.forEach(file=>body.append('files',file));
       try {
         const response=await fetch(`/api/users/me/${prescription?'prescriptions':'medical-reports'}`,{method:'POST',credentials:'include',body});
-        if(response.status===401||response.status===403)onSessionExpired?.();
+        if(response.status===401)onSessionExpired?.();
         const payload=await response.json();
         if(!response.ok||!payload.success)throw new Error(payload.message||'This entry could not be saved.');
         saved++;setDrafts(items=>items.filter(draft=>draft.key!==item.key));

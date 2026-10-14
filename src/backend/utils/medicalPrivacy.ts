@@ -1,6 +1,7 @@
 import { createCipheriv, createDecipheriv, randomBytes } from 'node:crypto';
 import { NextResponse } from 'next/server';
 import { getSessionFromRequest, USER_ROLE } from './session';
+import { getPublicBaseUrl } from '../config/env';
 
 export class MedicalError extends Error {
   constructor(message: string, public status = 400) { super(message); }
@@ -35,7 +36,10 @@ export function medicalUser(req: Request): string {
   if (session.role !== USER_ROLE) throw new MedicalError('Only the patient can access these records.', 403);
   // Reject cross-origin cookie-based writes. Server clients can use existing bearer sessions.
   const origin = req.headers.get('origin');
-  if (!['GET', 'HEAD'].includes(req.method) && origin && origin !== new URL(req.url).origin) {
+  // TLS terminates at the VPS proxy, so req.url may be an internal HTTP URL.
+  // Trust the configured public origin, never an arbitrary forwarded host header.
+  const trustedOrigins = new Set([new URL(req.url).origin, new URL(getPublicBaseUrl()).origin]);
+  if (!['GET', 'HEAD'].includes(req.method) && origin && !trustedOrigins.has(origin)) {
     throw new MedicalError('Cross-origin request rejected.', 403);
   }
   return session.user_id;

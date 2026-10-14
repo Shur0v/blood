@@ -1,5 +1,7 @@
 "use client";
 
+import { publishAdsRuntime } from "@/src/components/usePublicAds";
+
 import { useEffect, useMemo, useState } from "react";
 import { CheckCircle2, Edit3, RefreshCcw, Save, ToggleLeft, ToggleRight, X } from "lucide-react";
 
@@ -65,6 +67,7 @@ export default function AdsControlPage() {
     if (!res.ok || !payload?.success) throw new Error(payload?.message || "Failed to save ad settings.");
     const savedEnabled = Boolean(payload.data.adsRuntimeEnabled);
     const savedUnits = (payload.data.adUnits || []) as AdUnit[];
+    publishAdsRuntime({ adsRuntimeEnabled: savedEnabled, adUnits: savedUnits.filter(unit => unit.enabled) });
     setAdsRuntimeEnabled(savedEnabled);
     setAdUnits(savedUnits);
     setPersistedHash(JSON.stringify({ adsRuntimeEnabled: savedEnabled, adUnits: savedUnits }));

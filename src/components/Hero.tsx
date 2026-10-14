@@ -1,3 +1,6 @@
+"use client";
+
+import usePublicAds from "./usePublicAds";
 import { motion, useMotionValue, useTransform, animate } from "motion/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Star } from "lucide-react";
@@ -105,6 +108,7 @@ function MixedDonorBannerCard({ ad, onFail }: { ad: InlineBannerAdUnit; onFail: 
 const DONOR_GRID_AD_SLOTS = 4;
 
 export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
+  const adsConfig = usePublicAds();
   const readServerRenderedDonorTotal = () => {
     if (forcedCountry) return 0;
     if (typeof window !== "undefined") {
@@ -283,17 +287,10 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
   }, [activeGroup, normalizedSearch, viewerGeo.city, viewerGeo.country]);
 
   useEffect(() => {
-    let active = true;
-    const loadInlineBannerConfig = async () => {
-      try {
-        const res = await fetch("/api/public/ads-settings", { method: "GET", cache: "no-store" });
-        const payload = await res.json();
-        if (!active || !res.ok || !payload?.success) return;
-        if (!payload?.data?.adsRuntimeEnabled) {
-          setInlineBannerAd(null);
-          return;
-        }
-        const found = (payload.data.adUnits || []).find((item: any) =>
+    const data = adsConfig;
+    if (!data?.adsRuntimeEnabled) { setInlineBannerAd(null); return; }
+    (() => {
+        const found = (data.adUnits || []).find((item: any) =>
           item?.adType === "iframe_banner" &&
           item?.placement === "donor_cards_mix" &&
           item?.scriptSrc &&
@@ -315,17 +312,8 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
           placement: "donor_cards_mix",
         });
         setHideInlineBanner(false);
-      } catch {
-        // ignore transient failures
-      }
-    };
-    void loadInlineBannerConfig();
-    const t = window.setInterval(() => void loadInlineBannerConfig(), 3000);
-    return () => {
-      active = false;
-      window.clearInterval(t);
-    };
-  }, []);
+    })();
+  }, [adsConfig]);
 
   const handleLoadMore = async () => {
     if (!nextCursor || isLoadingMore) return;

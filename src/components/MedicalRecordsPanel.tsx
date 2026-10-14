@@ -32,7 +32,7 @@ export default function MedicalRecordsPanel({userId,onSessionExpired,openReports
       if(!silent)setLoading(true);
       try {
         const response=await fetch('/api/users/me/medical-records/history',{...recordRequest(tab,{q,category,from,to}),signal:controller.signal});
-        if(response.status===401||response.status===403)onSessionExpired?.();
+        if(response.status===401)onSessionExpired?.();
         const payload=await response.json();
         if(!response.ok||!payload.success)throw new Error(payload.message||'Unable to load records.');
         if(controller.signal.aborted)return;
@@ -53,7 +53,7 @@ export default function MedicalRecordsPanel({userId,onSessionExpired,openReports
     const requestGeneration=generation.current;
     try {
       const response=await fetch('/api/users/me/medical-records/history',recordRequest(tab,{q,category,from,to},nextCursor));
-      if(response.status===401||response.status===403)onSessionExpired?.();
+      if(response.status===401)onSessionExpired?.();
       const payload=await response.json();if(!response.ok||!payload.success)throw new Error(payload.message||'Unable to load older records.');
       if(requestGeneration!==generation.current)return;
       setItems(previous=>Array.from(new Map([...previous,...payload.data.items].map(item=>[`${item.kind}:${item.id}`,item])).values()).sort(sortRecords));setNextCursor(payload.data.nextCursor);
