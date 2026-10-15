@@ -1,48 +1,16 @@
-import { getPrisma } from "@/src/backend/config/db";
-import { getPublicBaseUrl } from "@/src/backend/config/env";
-import { toLocationSlug } from "@/src/backend/utils/locationSlug";
-import { renderUrlSetXml } from "@/src/lib/sitemapXml";
-
-interface CityRow {
-  city: string | null;
-  country: string | null;
-}
-
+import { getPublicBaseUrl } from '@/src/backend/config/env';
+import { getDonorLocations, donorLocationPath } from '@/src/backend/services/donorLocations';
+import { renderUrlSetXml } from '@/src/lib/sitemapXml';
+export const dynamic = 'force-dynamic';
 export async function GET() {
-  const baseUrl = getPublicBaseUrl();
-  const now = new Date();
   try {
-    const prisma = getPrisma();
-    const rows = await prisma.$queryRaw<CityRow[]>`
-      SELECT city, country FROM (
-        SELECT usc.city, usc.country FROM "UserServiceCity" usc
-        UNION
-        SELECT u.location_city AS city, u.location_country AS country FROM "User" u
-        UNION
-        SELECT mbd.location_city AS city, mbd.location_country AS country FROM "ManualBloodDonor" mbd
-        UNION
-        SELECT mod.location_city AS city, mod.location_country AS country FROM "ManualOrganDonor" mod
-      ) loc
-    `;
-
-    const seen = new Set<string>();
-    const urls: Array<{ url: string; lastModified: Date }> = [];
-    for (const row of rows) {
-      const city = (row.city || "").trim();
-      const country = (row.country || "").trim();
-      if (!city || !country) continue;
-      const citySlug = toLocationSlug(city);
-      const countrySlug = toLocationSlug(country);
-      if (!citySlug || !countrySlug) continue;
-      const key = `${countrySlug}/${citySlug}`;
-      if (seen.has(key)) continue;
-      seen.add(key);
-
-      urls.push({ url: `${baseUrl}/blood-donors/${countrySlug}/${citySlug}`, lastModified: now });
-      urls.push({ url: `${baseUrl}/organ-donors/${countrySlug}/${citySlug}`, lastModified: now });
-    }
-    return renderUrlSetXml(urls);
+    const base = getPublicBaseUrl(), rows = await getDonorLocations();
+    const urls = rows.flatMap(row => [
+      ...(row.bloodCount > 0 ? [{ url: base + donorLocationPath(row,'blood'), lastModified: row.updatedAt }] : []),
+      ...(row.organCount > 0 ? [{ url: base + donorLocationPath(row,'organ'), lastModified: row.updatedAt }] : []),
+    ]);
+    return renderUrlSetXml(urls, 'public, max-age=0, s-maxage=300, stale-while-revalidate=300');
   } catch {
-    return renderUrlSetXml([]);
+    return new Response('Location sitemap temporarily unavailable.', { status:503, headers:{'Cache-Control':'no-store','Retry-After':'60'} });
   }
 }

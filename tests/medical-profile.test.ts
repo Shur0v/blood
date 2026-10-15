@@ -32,6 +32,12 @@ import { AuthService } from '../src/backend/services/AuthService';
 import { signLocationProof } from '../src/backend/utils/locationProof';
 import { PATCH as updateOrgans } from '../src/app/api/users/me/organs/route';
 import { GET as publicOrganDonors } from '../src/app/api/public/organ-donors/route';
+import { GET as publicBloodDonors } from '../src/app/api/public/donors/route';
+import { getDonorLocations, findDonorLocation, donorLocationPath } from '../src/backend/services/donorLocations';
+import { donorLocationMetadata } from '../src/components/DonorLocationLanding';
+import { GET as locationSitemap } from '../src/app/sitemap-location.xml/route';
+import { getOrganTypesWithData } from '../src/backend/services/seoData';
+import { toLocationSlug } from '../src/backend/utils/locationSlug';
 
 // Always use process-local test secrets, never production credentials.
 process.env.MEDICAL_RECORDS_ENCRYPTION_KEY = randomBytes(32).toString('hex');
@@ -431,4 +437,65 @@ test('medical operations returns aggregate counts without patient content',integ
 
 test('concurrent first policy reads preserve content and do not race on initialization',integration,async()=>{
  const values=await Promise.all(Array.from({length:8},()=>getSiteContent(getPrisma())));assert.equal(values.length,8);assert.ok(values.every(value=>Boolean(value.termsOfService)));const original=await getPrisma().policy.findMany({orderBy:{type:'asc'}});await getSiteContent(getPrisma());assert.deepEqual(await getPrisma().policy.findMany({orderBy:{type:'asc'}}),original);
+});
+
+test('new registrations lead All groups and every blood filter regardless of location or older profile edits', integration, async () => {
+  const db = getPrisma(), prefix = `Newest-${randomUUID()}`;
+  const groups = ['AB+', 'AB-', 'A+', 'A-', 'B+', 'B-', 'O+', 'O-'];
+  const start = Date.now() + 86_400_000;
+  const expected: string[] = [];
+  const older = await newPatient();
+  await db.user.update({ where: { id: older.id }, data: { name: prefix + '-older-local', blood_group: 'O-', location_city: 'Delhi', location_country: 'India', verification_status: 'VERIFIED', created_at: new Date('2020-01-01'), updated_at: new Date(start + 999_999) } });
+  const query = async (group?: string, cursor?: string, limit = 16, sort?: string) => {
+    const params = new URLSearchParams({ search: prefix, viewerCity: 'Delhi', viewerCountry: 'India', limit: String(limit) });
+    if (group) params.set('bloodGroup', group);
+    if (cursor) params.set('cursor', cursor);
+    if (sort) params.set('sort', sort);
+    const response = await publicBloodDonors(new Request(`http://localhost/api/public/donors?${params}`));
+    assert.equal(response.status, 200); assert.match(response.headers.get('cache-control') || '', /no-store/);
+    return response.json();
+  };
+  for (const [index, group] of groups.entries()) {
+    const user = await newPatient(); expected.unshift(user.id);
+    await db.user.update({ where: { id: user.id }, data: { name: prefix + '-' + index, blood_group: group, created_at: new Date(start + index * 1000), location_city: 'Dhaka', location_country: 'Bangladesh' } });
+    assert.equal((await query(group)).data[0].id, user.id);
+    assert.equal((await query()).data[0].id, user.id);
+  }
+  await db.manualBloodDonor.create({ data: { name: prefix + '-manual', mobile: randomUUID(), blood_group: 'O-', location_city: 'Dhaka', location_country: 'Bangladesh', location_lat: 23.8, location_lng: 90.4, source: 'TEST', added_by_admin: 'TEST', created_at: new Date(start + 999_999) } });
+  await db.communityDonor.create({ data: { organization_name: prefix + '-community', mobile: randomUUID(), location_city: 'Dhaka', location_country: 'Bangladesh', location_lat: 23.8, location_lng: 90.4, source: 'TEST', added_by_admin: 'TEST', created_at: new Date(start + 999_999) } });
+  assert.deepEqual((await query()).data.slice(0, 8).map((row: { id: string }) => row.id), expected);
+  const next = await newPatient();
+  await db.user.update({ where: { id: next.id }, data: { name: prefix + '-next', blood_group: 'O-', created_at: new Date(start + 10_000) } });
+  assert.deepEqual((await query('O-')).data.slice(0, 2).map((row: { id: string }) => row.id), [next.id, expected[0]]);
+  assert.equal((await query('O-', undefined, 16, 'NEARBY')).data[0].id, older.id);
+  const first = await query(undefined, undefined, 2), second = await query(undefined, first.pagination.nextCursor, 2);
+  assert.equal(new Set([...first.data, ...second.data].map(row => row.id)).size, 4);
+  // The ORM fallback must preserve the same registration order, too.
+  await sql.query('ALTER TABLE "UserServiceCity" RENAME COLUMN created_at TO created_at_test_unavailable');
+  try {
+    const fallback = await query('O-'); assert.equal(fallback.meta.fallback, true);
+    assert.deepEqual(fallback.data.slice(0, 2).map((row: { id: string }) => row.id), [next.id, expected[0]]);
+  } finally { await sql.query('ALTER TABLE "UserServiceCity" RENAME COLUMN created_at_test_unavailable TO created_at'); }
+});
+
+test('SEO locations include active primary/service cities, correct country canonicals and marrow without private data', integration, async () => {
+  const db = getPrisma(), marker = `Seo-${randomUUID()}`;
+  const user = await newPatient();
+  await db.user.update({ where:{id:user.id},data:{location_city:marker,location_country:'Bangladesh'} });
+  await db.organPledge.create({data:{user_id:user.id,organ_type:'Bone Marrow'}});
+  for (const [city,country] of [[marker,'Bangladesh'],[marker,'India']]) await db.userServiceCity.create({data:{user_id:user.id,city,country,formatted_location:`${city}, ${country}`,lat:1,lng:1,provider_place_id:randomUUID(),locked_until:new Date()}});
+  const inactive=await newPatient();await db.user.update({where:{id:inactive.id},data:{is_active_donor:false,location_city:marker+'-inactive'}});
+  const rows=await getDonorLocations(), primary=rows.find(row=>row.city===marker&&row.country==='Bangladesh')!, service=rows.find(row=>row.city===marker&&row.country==='India')!;
+  assert.equal(primary.bloodCount,1);assert.equal(primary.organCount,1);assert.deepEqual(primary.organs,['Bone Marrow']);
+  assert.equal(service.bloodCount,1);assert.equal(service.organCount,1);assert.ok(!rows.some(row=>row.city===marker+'-inactive'));
+  const params={country:'india',city:toLocationSlug(marker)};
+  assert.equal((await findDonorLocation(params.country,params.city))?.country,'India');
+  const metadata=await donorLocationMetadata(params,'organ');
+  assert.equal(metadata.alternates?.canonical,donorLocationPath(service,'organ'));assert.match(String(metadata.description),/Bone Marrow/);
+  const missing=await donorLocationMetadata({country:'nowhere',city:'not-a-registered-city'},'blood');
+  assert.deepEqual(missing.robots,{index:false,follow:true});
+  const response=await locationSitemap();assert.equal(response.status,200);const xml=await response.text();
+  assert.ok(xml.includes(donorLocationPath(primary,'blood')));assert.ok(xml.includes(donorLocationPath(service,'organ')));
+  assert.ok(!xml.includes(marker+'-inactive'));assert.ok(!JSON.stringify(rows).includes(user.email));assert.ok(!JSON.stringify(rows).includes(user.profile_code));
+  assert.ok((await getOrganTypesWithData()).includes('bone-marrow'));
 });

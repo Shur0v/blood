@@ -42,6 +42,9 @@ export default function CityLandingDonorGrid({ mode, city, country }: CityLandin
         limit: "16",
         viewerCity: city,
         viewerCountry: country,
+        sort: 'NEARBY',
+        country,
+        search: city,
       });
       if (cursor) {
         params.set("cursor", cursor);
@@ -92,7 +95,7 @@ export default function CityLandingDonorGrid({ mode, city, country }: CityLandin
           {mode === "blood" ? "Urgent Blood Donation" : "Emergency Organ Donation"} in {city}
         </h2>
         <p className="mt-2 text-sm font-medium text-gray-600">
-          Priority results from {city}, {country}. If not enough, nearest country/global verified donors are shown.
+          Active donor entries matching {city}, {country}. Confirm availability and medical requirements with the donor and your hospital.
         </p>
       </div>
 

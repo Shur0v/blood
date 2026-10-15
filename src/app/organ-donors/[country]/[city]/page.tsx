@@ -1,10 +1,6 @@
-import { HomeExperience } from "@/src/components/HomeExperience";
-import { fromLocationSlug } from "@/src/backend/utils/locationSlug";
+import DonorLocationLanding, { donorLocationMetadata, type LocationParams } from '@/src/components/DonorLocationLanding';
 
 export const dynamic = "force-dynamic";
 
-export default async function OrganCityLandingPage({ params }: { params: Promise<{ country: string; city: string }> }) {
-  const p = await params;
-  const country = fromLocationSlug(p.country);
-  return <HomeExperience forcedCountry={country} />;
-}
+export async function generateMetadata({params}:{params:Promise<LocationParams>}) { return donorLocationMetadata(await params,'organ'); }
+export default async function Page({params}:{params:Promise<LocationParams>}) { return <DonorLocationLanding params={await params} mode="organ"/>; }

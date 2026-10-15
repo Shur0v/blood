@@ -6,13 +6,16 @@ import { buildOrganRequestSlug, getBloodGroupCityCounts, getOrganDonors, getOrga
 import { BLOOD_GROUPS, COUNTRY_SHORTCUTS, bloodGroupToSlug, cityToSlug, countryToShortcut, organToSlug } from '@/src/lib/seoRouting';
 import { REGIONS } from '@/src/lib/regions';
 import { KEYWORD_LANDINGS } from '@/src/lib/keywordLandings';
+import { getDonorLocations, type DonorLocation } from '@/src/backend/services/donorLocations';
+
+export const dynamic = 'force-dynamic';
 
 interface CityRow {
   city: string | null;
   country: string | null;
 }
 
-const buildCityRoutes = (baseUrl: string, rows: CityRow[]) => {
+const buildCityRoutes = (baseUrl: string, rows: DonorLocation[]) => {
   const seen = new Set<string>();
   const routes: MetadataRoute.Sitemap = [];
 
@@ -29,13 +32,13 @@ const buildCityRoutes = (baseUrl: string, rows: CityRow[]) => {
     if (seen.has(key)) continue;
     seen.add(key);
 
-    routes.push({
+    if (row.bloodCount > 0) routes.push({
       url: `${baseUrl}/blood-donors/${countrySlug}/${citySlug}`,
-      lastModified: new Date(),
+      lastModified: row.updatedAt,
     });
-    routes.push({
+    if (row.organCount > 0) routes.push({
       url: `${baseUrl}/organ-donors/${countrySlug}/${citySlug}`,
-      lastModified: new Date(),
+      lastModified: row.updatedAt,
     });
   }
 
@@ -96,17 +99,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         where: { status: 'PUBLISHED', slug: { not: null } },
         select: { slug: true, updated_at: true },
       }),
-      prisma.$queryRaw<CityRow[]>`
-        SELECT city, country FROM (
-          SELECT usc.city, usc.country FROM "UserServiceCity" usc
-          UNION
-          SELECT u.location_city AS city, u.location_country AS country FROM "User" u
-          UNION
-          SELECT mbd.location_city AS city, mbd.location_country AS country FROM "ManualBloodDonor" mbd
-          UNION
-          SELECT mod.location_city AS city, mod.location_country AS country FROM "ManualOrganDonor" mod
-        ) loc
-      `,
+      getDonorLocations(),
       getBloodGroupCityCounts(),
       getOrganTypesWithData(),
       getOrganDonors(),

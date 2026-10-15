@@ -28,7 +28,10 @@ export const metadata: Metadata = {
     template: "%s | BloodNet",
   },
   description:
-    "Join BloodNet.live to connect with blood and organ donors in your region. Fast, secure, and volunteer-first donor-recipient matching.",
+    "Find active blood donors by blood group, city and country. Explore organ donor pledges and connect with volunteers through BloodNet's free donor directory.",
+  applicationName: 'BloodNet',
+  robots: { index: true, follow: true, googleBot: { index: true, follow: true, 'max-image-preview': 'large' } },
+  verification: { google: process.env.GOOGLE_SITE_VERIFICATION || undefined, ...(process.env.BING_SITE_VERIFICATION ? { other: { 'msvalidate.01': process.env.BING_SITE_VERIFICATION } } : {}) },
   keywords: [
     "blood donation",
     "urgent blood donation",
@@ -42,13 +45,6 @@ export const metadata: Metadata = {
   },
   alternates: {
     canonical: "/",
-    languages: {
-      "en-IN": "/india",
-      "en-PK": "/pakistan",
-      "en-NP": "/nepal",
-      "bn-BD": "/bangladesh",
-      "x-default": "/",
-    },
   },
   openGraph: {
     type: "website",
@@ -57,9 +53,11 @@ export const metadata: Metadata = {
       "Connect with nearby blood and organ donors instantly. Built for fast emergency matching and trusted community support.",
     url: baseUrl,
     siteName: "BloodNet",
+    images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: 'BloodNet blood and organ donor directory' }],
   },
   twitter: {
     card: "summary_large_image",
+    images: ['/opengraph-image'],
     title: "BloodNet | Global Blood & Organ Donation Network",
     description:
       "Search active blood donors by blood group and city, and browse verified organ donation request pages.",
@@ -128,6 +126,7 @@ export default async function RootLayout({
               {
                 "@context": "https://schema.org",
                 "@type": "WebSite",
+                "@id": `${baseUrl}#website`,
                 name: "BloodNet",
                 url: baseUrl,
                 potentialAction: {

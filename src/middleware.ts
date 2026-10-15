@@ -86,11 +86,16 @@ export function middleware(request: NextRequest) {
   }
 
   const isApiRoute = pathname.startsWith('/api/');
+  if (isApiRoute || /^\/(admin-dashboard|dashboard|account|profile|private)(\/|$)/.test(pathname) || request.nextUrl.searchParams.has('heatmapPreview')) {
+    response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+  }
   if (
     pathname.startsWith('/api/admin/') ||
+    pathname.startsWith('/api/management/') ||
     pathname.startsWith('/api/auth/') ||
     pathname.startsWith('/api/integrations/') ||
-    pathname.startsWith('/api/users/me/')
+    pathname.startsWith('/api/users/') ||
+    pathname === '/api/public/donors'
   ) {
     response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
   }

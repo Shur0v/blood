@@ -4,19 +4,15 @@ const baseUrl = getPublicBaseUrl().replace(/\/$/, "");
 
 export const buildMedicalOrganizationSchema = () => ({
   "@context": "https://schema.org",
-  "@type": "MedicalOrganization",
+  "@type": "Organization",
   "@id": `${baseUrl}#medical-org`,
   name: "BloodNet",
   url: baseUrl,
   logo: `${baseUrl}/favicon.png`,
   description:
     "BloodNet is a blood and organ donor discovery platform for emergency matching, location based donor search, and safety-first coordination.",
-  areaServed: ["India", "Pakistan", "Nepal", "Bangladesh"],
-  sameAs: [
-    `${baseUrl}/about`,
-    `${baseUrl}/safety-policy`,
-    `${baseUrl}/organ-donation-ethics`,
-  ],
+  areaServed: 'Worldwide',
+  knowsAbout: ['Blood donor discovery', 'Voluntary donation', 'Organ donation pledges'],
 });
 
 export const buildServiceSchema = () => ({
@@ -28,7 +24,7 @@ export const buildServiceSchema = () => ({
     "@id": `${baseUrl}#medical-org`,
   },
   serviceType: "Blood donor and organ donor discovery",
-  areaServed: ["India", "Pakistan", "Nepal", "Bangladesh"],
+  areaServed: 'Worldwide',
   availableChannel: {
     "@type": "ServiceChannel",
     serviceUrl: baseUrl,

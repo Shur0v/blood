@@ -2,6 +2,7 @@ import { Prisma } from "@prisma/client";
 import { getPrisma } from "@/src/backend/config/db";
 import { BLOOD_GROUPS, type BloodGroup, cityToSlug, organFromSlug, organToSlug } from "@/src/lib/seoRouting";
 import { normalizeOrganName } from "@/src/lib/organCatalog";
+import { getDonorLocations } from './donorLocations';
 
 export interface PublicDonorSeoRow {
   id: string;
@@ -59,6 +60,7 @@ const normalizedUserOrgan = Prisma.sql`CASE
   WHEN LOWER(TRIM(op.organ_type)) IN ('intestine', 'small intestine') THEN 'Intestine'
   WHEN LOWER(TRIM(op.organ_type)) IN ('eye', 'eyes', 'cornea', 'corneas', 'corneas (eyes)') THEN 'Eye'
   WHEN LOWER(TRIM(op.organ_type)) IN ('sperm', 'sparm', 'semen') THEN 'Sperm'
+  WHEN LOWER(TRIM(op.organ_type)) IN ('bone marrow', 'bone-marrow', 'marrow') THEN 'Bone Marrow'
   ELSE NULL
 END`;
 
@@ -70,6 +72,7 @@ const normalizedManualOrgan = Prisma.sql`CASE
   WHEN LOWER(TRIM(mo.organ_raw)) IN ('intestine', 'small intestine') THEN 'Intestine'
   WHEN LOWER(TRIM(mo.organ_raw)) IN ('eye', 'eyes', 'cornea', 'corneas', 'corneas (eyes)') THEN 'Eye'
   WHEN LOWER(TRIM(mo.organ_raw)) IN ('sperm', 'sparm', 'semen') THEN 'Sperm'
+  WHEN LOWER(TRIM(mo.organ_raw)) IN ('bone marrow', 'bone-marrow', 'marrow') THEN 'Bone Marrow'
   ELSE NULL
 END`;
 
@@ -237,12 +240,9 @@ export const buildOrganRequestSlug = (row: Pick<OrganRequestSeoRow, "id" | "orga
 };
 
 export const getOrganTypesWithData = async () => {
-  const [donors, requests] = await Promise.all([getOrganDonors(), getVerifiedOrganRequests()]);
+  const [locations, requests] = await Promise.all([getDonorLocations(), getVerifiedOrganRequests()]);
   const slugs = new Set<string>();
-  donors.forEach((row) => {
-    const slug = organToSlug(row.organ_type);
-    if (slug) slugs.add(slug);
-  });
+  locations.forEach(row => row.organs.forEach(organ => { const slug=organToSlug(organ); if(slug) slugs.add(slug); }));
   requests.forEach((row) => {
     const slug = organToSlug(row.organ_type);
     if (slug) slugs.add(slug);

@@ -142,10 +142,11 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
   const rounded = useTransform(count, (latest) => Math.round(latest));
 
   const normalizedSearch = searchQuery.trim();
-  const donorCacheKey = "bloodnet_public_donors_cache";
+  const donorCacheKey = `bloodnet_public_donors_cache:v2:${forcedCountry || 'all'}:${activeGroup || 'all'}:${normalizedSearch}`;
+  const donorRequests = useRef<AbortController | null>(null);
   const viewerGeo = useViewerGeo();
   const buildBaseParams = () => {
-    const params = new URLSearchParams({ limit: "16" });
+    const params = new URLSearchParams({ limit: "16", sort: 'NEWEST' });
     if (forcedCountry) {
       params.set("country", forcedCountry);
     }
@@ -238,6 +239,8 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
 
 
   useEffect(() => {
+    const controller = new AbortController();
+    donorRequests.current = controller;
     const loadDonors = async () => {
       try {
         const params = buildBaseParams();
@@ -245,8 +248,10 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
         const res = await fetch(`/api/public/donors?${params.toString()}`, {
           method: "GET",
           cache: "no-store",
+          signal: controller.signal,
         });
         const payload = (await res.json()) as DonorApiResponse;
+        if (controller.signal.aborted) return;
 
         if (!res.ok || !payload.success) {
           setIsDonorApiDown(true);
@@ -268,6 +273,7 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
         setIsDonorApiDown(false);
         setIsInitialDonorLoad(false);
       } catch (error) {
+        if (controller.signal.aborted) return;
         setIsDonorApiDown(true);
         if (donors.length === 0) {
           const hydrated = await hydrateFromSiteState();
@@ -278,7 +284,8 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
     };
 
     void loadDonors();
-  }, [activeGroup, normalizedSearch, viewerGeo.city, viewerGeo.country]);
+    return () => controller.abort();
+  }, [activeGroup, normalizedSearch, viewerGeo.city, viewerGeo.country, forcedCountry]);
 
   useEffect(() => {
     setHasLoadedMoreOnce(false);
@@ -324,6 +331,7 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
       const res = await fetch(`/api/public/donors?${params.toString()}`, {
         method: "GET",
         cache: "no-store",
+        signal: donorRequests.current?.signal,
       });
       const payload = (await res.json()) as DonorApiResponse;
       if (!res.ok || !payload.success) {

@@ -1,56 +1,6 @@
-import type { Metadata } from "next";
-import Link from "next/link";
-import { getNetworkStats } from "@/src/backend/services/seoData";
-import { countryToShortcut } from "@/src/lib/seoRouting";
-
-export const revalidate = 1800;
-export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "Active BloodNet Countries", description: "Browse active BloodNet country donor network pages.", alternates: { canonical: "/countries" } };
-
-export default async function CountriesPage() {
-  const stats = await getNetworkStats();
-  const countries = Array.from(new Set(stats.rows.map((row) => row.country))).sort();
-  const hubLinks = [
-    { slug: "usa", label: "USA Keyword Hub" },
-    { slug: "uk", label: "UK Keyword Hub" },
-    { slug: "spain", label: "Spain Keyword Hub" },
-    { slug: "netherlands", label: "Netherlands Keyword Hub" },
-    { slug: "italy", label: "Italy Keyword Hub" },
-    { slug: "poland", label: "Poland Keyword Hub" },
-    { slug: "australia", label: "Australia Keyword Hub" },
-  ];
-
-  return (
-    <main className="min-h-screen bg-bg px-4 py-20 text-gray-900">
-      <section className="mx-auto max-w-5xl">
-        <h1 className="text-4xl font-semibold md:text-6xl">Active Countries</h1>
-        <div className="mt-8 grid gap-4 sm:grid-cols-3">
-          {countries.map((country) => {
-            const shortcut = countryToShortcut(country);
-            return (
-              <Link key={country} href={shortcut ? `/${shortcut}` : `/countries`} className="rounded-[8px] bg-white p-5 font-semibold shadow-card">
-                {country}
-              </Link>
-            );
-          })}
-        </div>
-
-        <h2 className="mt-12 text-2xl font-semibold">Country SEO Keyword Hubs</h2>
-        <p className="mt-3 text-sm font-medium text-gray-600">
-          Use these curated hub pages to navigate country-specific long-tail queries with stronger regional relevance.
-        </p>
-        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {hubLinks.map((hub) => (
-            <Link
-              key={hub.slug}
-              href={`/country-keyword-hubs/${hub.slug}`}
-              className="rounded-[8px] border border-border/20 bg-white px-4 py-3 text-sm font-bold text-gray-900 shadow-sm"
-            >
-              {hub.label}
-            </Link>
-          ))}
-        </div>
-      </section>
-    </main>
-  );
-}
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import { getDonorLocations,donorLocationPath } from '@/src/backend/services/donorLocations';
+export const dynamic = 'force-dynamic';
+export const metadata:Metadata={title:'Find blood and organ donors by country',description:'Explore active blood donor and organ pledge listings by country and city. Discover volunteer donor support across the BloodNet network.',alternates:{canonical:'/countries'}};
+export default async function Page(){const rows=await getDonorLocations();const countries=[...new Set(rows.map(row=>row.country))];return <main className="min-h-screen bg-bg px-4 py-16"><div className="mx-auto max-w-7xl"><h1 className="text-4xl font-semibold text-slate-900">Donor support by country</h1><p className="mt-4 max-w-3xl text-sm leading-7 text-slate-600">Browse locations where active volunteers have registered or offer service. Choose a city to view relevant donor entries.</p>{countries.map(country=><section key={country} className="mt-10"><h2 className="text-2xl font-semibold text-slate-900">{country}</h2><ul className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{rows.filter(row=>row.country===country).map(row=><li key={row.city} className="rounded-2xl border border-slate-200 bg-white p-5"><h3 className="font-semibold">{row.city}</h3>{row.bloodCount>0&&<Link className="mt-3 block text-sm text-rose-700 underline" href={donorLocationPath(row,'blood')}>Blood donors in {row.city}</Link>}{row.organCount>0&&<Link className="mt-3 block text-sm text-rose-700 underline" href={donorLocationPath(row,'organ')}>Organ donors in {row.city}</Link>}</li>)}</ul></section>)}</div></main>}

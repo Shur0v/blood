@@ -4,6 +4,9 @@ import { Prisma } from '@prisma/client';
 import { getPrisma } from '@/src/backend/config/db';
 import { NEARBY_COUNTRY_MAP, normalizeCountryToken } from '@/src/lib/geoCountry';
 
+export const dynamic = 'force-dynamic';
+const freshDonorHeaders = { 'Cache-Control': 'no-store, no-cache, must-revalidate' };
+
 const QuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(16).default(16),
   cursor: z.string().optional(),
@@ -12,6 +15,7 @@ const QuerySchema = z.object({
   viewerCity: z.string().min(1).max(120).optional(),
   viewerCountry: z.string().min(1).max(120).optional(),
   country: z.string().min(1).max(120).optional(),
+  sort: z.enum(['NEWEST', 'NEARBY']).default('NEWEST'),
 });
 
 interface PublicDonorRow {
@@ -46,13 +50,14 @@ export async function GET(req: Request) {
       viewerCity: url.searchParams.get('viewerCity') || undefined,
       viewerCountry: url.searchParams.get('viewerCountry') || undefined,
       country: url.searchParams.get('country') || undefined,
+      sort: url.searchParams.get('sort') || 'NEWEST',
     });
 
     if (!parsed.success) {
       return NextResponse.json({ success: false, message: 'Invalid query params.' }, { status: 400 });
     }
 
-    const { limit, cursor, bloodGroup, search, viewerCity, viewerCountry, country } = parsed.data;
+    const { limit, cursor, bloodGroup, search, viewerCity, viewerCountry, country, sort } = parsed.data;
     const offset = cursor ? Number.parseInt(cursor, 10) : 0;
     const safeOffset = Number.isNaN(offset) || offset < 0 ? 0 : offset;
     const normalizedSearch = search?.trim();
@@ -171,7 +176,7 @@ export async function GET(req: Request) {
           u.last_donation_date,
           'REGISTERED'::text AS source_type,
           u.created_at,
-          GREATEST(u.created_at, u.updated_at) AS sort_at,
+          u.created_at AS sort_at,
           FALSE AS is_community,
           1 AS community_rank
         FROM "User" u
@@ -258,6 +263,13 @@ export async function GET(req: Request) {
         ${communityFilterBySearch}
       ) AS donors
       ORDER BY
+        CASE WHEN ${sort === 'NEWEST'} THEN
+          CASE WHEN ${hasCommunityKeyword} AND donors.is_community THEN -1
+            WHEN donors.source_type = 'REGISTERED' THEN 0
+            WHEN donors.source_type = 'MANUAL' THEN 1 ELSE 2 END
+          ELSE 0 END ASC,
+        CASE WHEN ${sort === 'NEWEST'} THEN donors.created_at ELSE NULL END DESC,
+        CASE WHEN ${sort === 'NEWEST'} THEN donors.id ELSE NULL END DESC,
         CASE
           WHEN ${hasCommunityKeyword} AND donors.is_community THEN 0
           WHEN donors.is_community AND donors.community_rank = 0 THEN 0
@@ -268,7 +280,8 @@ export async function GET(req: Request) {
         ${donorViewerCityRank} ASC,
         ${donorViewerCountryRank} ASC,
         donors.location_country ASC,
-        donors.sort_at DESC
+        donors.sort_at DESC,
+        donors.id DESC
       LIMIT ${limit + 1}
       OFFSET ${safeOffset}
     `);
@@ -331,7 +344,7 @@ export async function GET(req: Request) {
       meta: {
         globalTotal,
       },
-    });
+    }, { headers: freshDonorHeaders });
   } catch (error) {
     try {
       const url = new URL(req.url);
@@ -343,13 +356,14 @@ export async function GET(req: Request) {
         viewerCity: url.searchParams.get('viewerCity') || undefined,
         viewerCountry: url.searchParams.get('viewerCountry') || undefined,
         country: url.searchParams.get('country') || undefined,
+        sort: url.searchParams.get('sort') || 'NEWEST',
       });
 
       if (!parsed.success) {
         return NextResponse.json({ success: false, message: 'Invalid query params.' }, { status: 400 });
       }
 
-      const { limit, cursor, bloodGroup, search, viewerCity, viewerCountry, country } = parsed.data;
+      const { limit, cursor, bloodGroup, search, viewerCity, viewerCountry, country, sort } = parsed.data;
       const offset = cursor ? Number.parseInt(cursor, 10) : 0;
       const safeOffset = Number.isNaN(offset) || offset < 0 ? 0 : offset;
       const q = search?.trim();
@@ -368,10 +382,10 @@ export async function GET(req: Request) {
         is_active_donor: true,
         ...(normalizedCountry
           ? {
-              OR: [
+              AND: [{ OR: [
                 { location_country: { equals: normalizedCountry, mode: 'insensitive' as const } },
                 { ServiceCities: { some: { country: { equals: normalizedCountry, mode: 'insensitive' as const } } } },
-              ],
+              ] }],
             }
           : {}),
         ...(bloodGroup ? { blood_group: bloodGroup } : {}),
@@ -382,6 +396,7 @@ export async function GET(req: Request) {
                 { location_city: { contains: q, mode: 'insensitive' as const } },
                 { location_country: { contains: q, mode: 'insensitive' as const } },
                 { mobile: { contains: q, mode: 'insensitive' as const } },
+                { ServiceCities: { some: { OR: [{ city: { contains: q, mode: 'insensitive' as const } }, { country: { contains: q, mode: 'insensitive' as const } }] } } },
               ],
             }
           : {}),
@@ -430,7 +445,7 @@ export async function GET(req: Request) {
       };
 
       const [users, manualRows, communityRows, userCount, manualCount, communityCount, globalUserCount, globalManualCount, globalCommunityCount] = await Promise.all([
-        prisma.user.findMany({ where: userWhere, orderBy: { updated_at: 'desc' }, take: limit + safeOffset + 1 }),
+        prisma.user.findMany({ where: userWhere, orderBy: [{ created_at: 'desc' }, { id: 'desc' }], take: limit + safeOffset + 1 }),
         prisma.manualBloodDonor.findMany({ where: manualWhere, orderBy: { created_at: 'desc' }, take: limit + safeOffset + 1 }),
         prisma.communityDonor.findMany({ where: communityWhere, orderBy: { created_at: 'desc' }, take: limit + safeOffset + 8 }),
         prisma.user.count({ where: userWhere }),
@@ -457,7 +472,7 @@ export async function GET(req: Request) {
           last_donation_date: u.last_donation_date,
           source_type: 'REGISTERED' as const,
           created_at: u.created_at,
-          sort_at: u.updated_at,
+          sort_at: u.created_at,
           is_community: false,
           community_rank: 1,
         })),
@@ -501,6 +516,10 @@ export async function GET(req: Request) {
           if (a.source_type === 'COMMUNITY' && b.source_type !== 'COMMUNITY') return -1;
           if (a.source_type !== 'COMMUNITY' && b.source_type === 'COMMUNITY') return 1;
         }
+        if (sort === 'NEWEST') {
+          const rank = (source: string) => source === 'REGISTERED' ? 0 : source === 'MANUAL' ? 1 : 2;
+          return rank(a.source_type) - rank(b.source_type) || b.created_at.getTime() - a.created_at.getTime() || b.id.localeCompare(a.id);
+        }
         let aCityRank = 1, bCityRank = 1;
         let aCountryRank = 1, bCountryRank = 1;
 
@@ -525,7 +544,7 @@ export async function GET(req: Request) {
         const countryCompare = (a.location_country || '').localeCompare(b.location_country || '');
         if (countryCompare !== 0) return countryCompare;
 
-        return b.sort_at.getTime() - a.sort_at.getTime();
+        return b.sort_at.getTime() - a.sort_at.getTime() || b.id.localeCompare(a.id);
       });
 
       const slice = merged.slice(safeOffset, safeOffset + limit + 1);
@@ -547,7 +566,7 @@ export async function GET(req: Request) {
           globalTotal,
           fallback: true,
         },
-      });
+      }, { headers: freshDonorHeaders });
     } catch (fallbackError) {
       return NextResponse.json({ success: false, message: 'Failed to fetch donors.' }, { status: 500 });
     }

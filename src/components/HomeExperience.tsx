@@ -147,7 +147,7 @@ const readCachedJson = <T,>(key: string): T | null => {
   }
 };
 
-export function HomeExperience({ forcedCountry }: { forcedCountry?: string } = {}) {
+export function HomeExperience({ forcedCountry, locationDirectory }: { forcedCountry?: string; locationDirectory?: React.ReactNode } = {}) {
   const pathname = usePathname();
   const router = useRouter();
   const profileIntentHandledRef = useRef(false);
@@ -479,6 +479,7 @@ export function HomeExperience({ forcedCountry }: { forcedCountry?: string } = {
         {!isProfileView && currentPage === "home" && (
           <>
             <Hero forcedCountry={forcedCountry} />
+            {locationDirectory}
             <div className="mx-auto mt-2 w-full max-w-7xl px-4">
               <ManagedNativeAdSlot slotKey="native-ad-1" />
             </div>
