@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { Prisma } from '@prisma/client';
 import { getPrisma } from '@/src/backend/config/db';
+import { getActiveBloodDonorCounts } from '@/src/backend/services/donorCounts';
 import { NEARBY_COUNTRY_MAP, normalizeCountryToken } from '@/src/lib/geoCountry';
 
 export const dynamic = 'force-dynamic';
@@ -321,17 +322,7 @@ export async function GET(req: Request) {
     const totalValue = totalRows[0]?.total ?? 0;
     const total = typeof totalValue === 'bigint' ? Number(totalValue) : Number(totalValue);
 
-    const globalRows = await prisma.$queryRaw<CountRow[]>`
-      SELECT (
-        (SELECT COUNT(*) FROM "User" u WHERE u.is_active_donor = true)
-        +
-        (SELECT COUNT(*) FROM "ManualBloodDonor" mbd WHERE mbd.is_active_donor = true)
-        +
-        (SELECT COUNT(*) FROM "CommunityDonor" cd WHERE cd.is_active = true)
-      ) AS total
-    `;
-    const globalValue = globalRows[0]?.total ?? 0;
-    const globalTotal = typeof globalValue === 'bigint' ? Number(globalValue) : Number(globalValue);
+    const { total: globalTotal } = await getActiveBloodDonorCounts();
 
     return NextResponse.json({
       success: true,
@@ -444,16 +435,14 @@ export async function GET(req: Request) {
           : {}),
       };
 
-      const [users, manualRows, communityRows, userCount, manualCount, communityCount, globalUserCount, globalManualCount, globalCommunityCount] = await Promise.all([
+      const [users, manualRows, communityRows, userCount, manualCount, communityCount, globalCounts] = await Promise.all([
         prisma.user.findMany({ where: userWhere, orderBy: [{ created_at: 'desc' }, { id: 'desc' }], take: limit + safeOffset + 1 }),
         prisma.manualBloodDonor.findMany({ where: manualWhere, orderBy: { created_at: 'desc' }, take: limit + safeOffset + 1 }),
         prisma.communityDonor.findMany({ where: communityWhere, orderBy: { created_at: 'desc' }, take: limit + safeOffset + 8 }),
         prisma.user.count({ where: userWhere }),
         prisma.manualBloodDonor.count({ where: manualWhere }),
         prisma.communityDonor.count({ where: communityWhere }),
-        prisma.user.count({ where: { is_active_donor: true } }),
-        prisma.manualBloodDonor.count({ where: { is_active_donor: true } }),
-        prisma.communityDonor.count({ where: { is_active: true } }),
+        getActiveBloodDonorCounts(),
       ]);
 
       const merged = [
@@ -552,7 +541,7 @@ export async function GET(req: Request) {
       const data = slice.slice(0, limit);
       const publicData = data;
       const total = userCount + manualCount + communityCount;
-      const globalTotal = globalUserCount + globalManualCount + globalCommunityCount;
+      const globalTotal = globalCounts.total;
 
       return NextResponse.json({
         success: true,

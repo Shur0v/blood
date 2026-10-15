@@ -3,6 +3,8 @@ import { getPrisma } from "@/src/backend/config/db";
 import { getPublicBotStats } from "@/src/backend/services/seoData";
 import { DEFAULT_UI_THEME } from "@/src/lib/uiTheme";
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const prisma = getPrisma();
@@ -34,13 +36,13 @@ export async function GET() {
         },
         meta: {
           lastUpdated: publicNetwork.lastUpdated,
-          cache: "public, s-maxage=300, stale-while-revalidate=1800",
+          cache: "no-store",
         },
       },
       {
         status: 200,
         headers: {
-          "Cache-Control": "public, s-maxage=300, stale-while-revalidate=1800",
+          "Cache-Control": "no-store",
         },
       },
     );

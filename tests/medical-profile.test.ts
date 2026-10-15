@@ -38,6 +38,11 @@ import { donorLocationMetadata } from '../src/components/DonorLocationLanding';
 import { GET as locationSitemap } from '../src/app/sitemap-location.xml/route';
 import { getOrganTypesWithData } from '../src/backend/services/seoData';
 import { toLocationSlug } from '../src/backend/utils/locationSlug';
+import { getActiveBloodDonorCounts } from '../src/backend/services/donorCounts';
+import { getPublicBotStats } from '../src/backend/services/seoData';
+import { GET as dashboardOverview } from '../src/app/api/admin/dashboard-overview/route';
+import { GET as siteState } from '../src/app/site-state.json/route';
+import { GET as platformStats } from '../src/app/api/public/platform-stats/route';
 
 // Always use process-local test secrets, never production credentials.
 process.env.MEDICAL_RECORDS_ENCRYPTION_KEY = randomBytes(32).toString('hex');
@@ -498,4 +503,44 @@ test('SEO locations include active primary/service cities, correct country canon
   assert.ok(xml.includes(donorLocationPath(primary,'blood')));assert.ok(xml.includes(donorLocationPath(service,'organ')));
   assert.ok(!xml.includes(marker+'-inactive'));assert.ok(!JSON.stringify(rows).includes(user.email));assert.ok(!JSON.stringify(rows).includes(user.profile_code));
   assert.ok((await getOrganTypesWithData()).includes('bone-marrow'));
+});
+
+test('admin, public feed, and server statistics share active donor counts across all sources', integration, async () => {
+  const db = getPrisma();
+  const baseline = await getActiveBloodDonorCounts();
+  const patient = await newPatient();
+  const location = { location_city: 'Count-Test', location_country: 'Bangladesh', location_lat: 1, location_lng: 1 };
+  const manual = await db.manualBloodDonor.create({ data: { name: 'Count test', mobile: randomUUID(), blood_group: 'O-', ...location, source: 'TEST', added_by_admin: 'TEST' } });
+  const community = await db.communityDonor.create({ data: { organization_name: randomUUID(), mobile: randomUUID(), ...location, source: 'TEST', added_by_admin: 'TEST' } });
+  const inactive = await newPatient();
+  await db.user.update({ where: { id: inactive.id }, data: { is_active_donor: false } });
+  await db.manualBloodDonor.create({ data: { name: 'Inactive test', mobile: randomUUID(), blood_group: 'A+', ...location, is_active_donor: false, source: 'TEST', added_by_admin: 'TEST' } });
+  await db.communityDonor.create({ data: { organization_name: randomUUID(), mobile: randomUUID(), ...location, is_active: false, source: 'TEST', added_by_admin: 'TEST' } });
+  await db.userServiceCity.create({ data: { user_id: patient.id, city: 'Extra city', country: 'Bangladesh', formatted_location: 'Extra city', lat: 1, lng: 1, provider_place_id: randomUUID(), locked_until: new Date() } });
+  const check = async (total: number) => {
+    const response = await dashboardOverview(new Request('http://localhost/api/admin/dashboard-overview', { headers: { authorization: `Bearer ${signToken({ user_id: randomUUID(), role: 'ADMIN' })}` } }));
+    assert.equal(response.status, 200);
+    assert.match(response.headers.get('cache-control') || '', /no-store/);
+    const kpis = (await response.json()).data.kpis;
+    assert.equal(kpis.totalActiveDonors, total);
+    assert.equal(kpis.activeDonorSources.total, total);
+    for (const suffix of ['', '?bloodGroup=O-', '?search=NoMatchingDonor']) {
+      const feed = await publicBloodDonors(new Request('http://localhost/api/public/donors' + suffix));
+      assert.equal(feed.status, 200);
+      assert.equal((await feed.json()).meta.globalTotal, total, 'Filters must not change the global total');
+    }
+    assert.equal((await getPublicBotStats()).activeBloodDonors, total);
+    for (const route of [siteState, platformStats]) {
+      const stats = await route(); assert.equal(stats.status, 200);
+      assert.match(stats.headers.get('cache-control') || '', /no-store/);
+      const payload = await stats.json();
+      assert.equal((payload.publicNetwork || payload.data.publicNetwork).activeBloodDonors, total);
+    }
+  };
+  assert.deepEqual(await getActiveBloodDonorCounts(), { registered: baseline.registered + 1, manual: baseline.manual + 1, community: baseline.community + 1, total: baseline.total + 3 });
+  await check(baseline.total + 3);
+  await db.communityDonor.update({ where: { id: community.id }, data: { is_active: false } });
+  await db.manualBloodDonor.update({ where: { id: manual.id }, data: { is_active_donor: false } });
+  await db.user.update({ where: { id: patient.id }, data: { is_active_donor: false } });
+  await check(baseline.total);
 });

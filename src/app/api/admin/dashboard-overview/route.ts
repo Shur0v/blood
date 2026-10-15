@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
 import { getPrisma } from '@/src/backend/config/db';
+import { getActiveBloodDonorCounts } from '@/src/backend/services/donorCounts';
 import { ADMIN_ROLES, getSessionFromRequest, hasRequiredRole } from '@/src/backend/utils/session';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+export const dynamic = 'force-dynamic';
 const startOfUtcDay = (date: Date) => new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
 const addDays = (date: Date, days: number) => new Date(date.getTime() + days * DAY_MS);
 const startOfUtcWeek = (date: Date) => {
@@ -32,8 +34,7 @@ export async function GET(req: Request) {
 
     const [
       totalUsers,
-      activeUserDonors,
-      activeManualDonors,
+      activeDonorCounts,
       inactiveUserDonors,
       userOrganPledges,
       manualOrganDonors,
@@ -53,8 +54,7 @@ export async function GET(req: Request) {
       topCtaRow,
     ] = await Promise.all([
       prisma.user.count(),
-      prisma.user.count({ where: { is_active_donor: true } }),
-      prisma.manualBloodDonor.count({ where: { is_active_donor: true } }),
+      getActiveBloodDonorCounts(),
       prisma.user.count({ where: { is_active_donor: false } }),
       prisma.organPledge.count({ where: { is_active: true } }),
       prisma.manualOrganDonor.count(),
@@ -183,7 +183,8 @@ export async function GET(req: Request) {
       data: {
         kpis: {
           totalRegisteredUsers: totalUsers,
-          totalActiveDonors: activeUserDonors + activeManualDonors,
+          totalActiveDonors: activeDonorCounts.total,
+          activeDonorSources: activeDonorCounts,
           totalInactiveDonors: inactiveUserDonors,
           organRegistryEntries: userOrganPledges + manualOrganDonors,
           pendingVerifications,
@@ -215,7 +216,7 @@ export async function GET(req: Request) {
           at: row.at.toISOString(),
         })),
       },
-    });
+    }, { headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' } });
   } catch (error) {
     return NextResponse.json({ success: false, message: 'Failed to load dashboard overview.' }, { status: 500 });
   }

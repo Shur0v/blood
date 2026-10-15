@@ -204,7 +204,7 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
     try {
       const res = await fetch("/site-state.json", {
         method: "GET",
-        cache: "force-cache",
+        cache: "no-store",
       });
       const payload = await res.json();
       const nextTotal = Number(

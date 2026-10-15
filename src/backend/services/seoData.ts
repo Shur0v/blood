@@ -3,6 +3,7 @@ import { getPrisma } from "@/src/backend/config/db";
 import { BLOOD_GROUPS, type BloodGroup, cityToSlug, organFromSlug, organToSlug } from "@/src/lib/seoRouting";
 import { normalizeOrganName } from "@/src/lib/organCatalog";
 import { getDonorLocations } from './donorLocations';
+import { getActiveBloodDonorCounts } from './donorCounts';
 
 export interface PublicDonorSeoRow {
   id: string;
@@ -255,14 +256,12 @@ export const getRelatedBloodGroups = (current: BloodGroup) => BLOOD_GROUPS.filte
 export const getPublicBotStats = async () => {
   const prisma = getPrisma();
   const [
-    activeRegisteredDonors,
-    activeManualBloodDonors,
+    activeDonorCounts,
     manualOrganDonors,
     verifiedOrganRequests,
     cityRows,
   ] = await Promise.all([
-    prisma.user.count({ where: { is_active_donor: true } }),
-    prisma.manualBloodDonor.count({ where: { is_active_donor: true } }),
+    getActiveBloodDonorCounts(),
     prisma.manualOrganDonor.count(),
     prisma.organRequest.count({ where: { status: "VERIFIED" } }),
     prisma.$queryRaw<Array<{ city: string; country: string }>>`
@@ -279,7 +278,7 @@ export const getPublicBotStats = async () => {
       ) regions
     `,
   ]);
-  const activeBloodDonors = activeRegisteredDonors + activeManualBloodDonors;
+  const activeBloodDonors = activeDonorCounts.total;
 
   return {
     registeredUsers: activeBloodDonors,
@@ -290,7 +289,7 @@ export const getPublicBotStats = async () => {
     activeCountries: new Set(cityRows.map((row) => row.country)).size,
     activeCities: new Set(cityRows.map((row) => `${row.country}::${row.city}`)).size,
     publicCountingPolicy:
-      "Public statistics count all active BloodNet donor entries as registered active donors. Internal onboarding source is not public.",
+      "Public statistics count active registered, manual, and community donor entries once per listing, regardless of service-city count.",
     lastUpdated: new Date().toISOString(),
   };
 };
