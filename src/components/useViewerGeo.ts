@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { requestBrowserLocation } from '../lib/preciseLocation';
 
 interface ViewerGeo {
   city?: string;
@@ -64,31 +65,53 @@ const deriveCountryFromLocale = (): string | undefined => {
 
 let pending: Promise<ViewerGeo> | undefined;
 let recent: ViewerGeo | undefined;
+let precisePending: Promise<ViewerGeo> | undefined;
+const GEO_EVENT='bloodnet-viewer-geo';
 const TTL=10*60*1000;
 async function automaticLocation(): Promise<ViewerGeo> {
   if(recent?.updatedAt&&Date.now()-recent.updatedAt<TTL)return recent;
   if(pending)return pending;
   pending=(async()=>{
+    const started=Date.now();
     try {
       const response=await fetch('/api/location/ip',{cache:'no-store',signal:AbortSignal.timeout(5000)});
       const payload=await response.json();
       if(response.ok&&payload.success&&payload.data?.country) {
+        if(recent?.source==='gps'&&recent.updatedAt!>=started)return recent;
         return recent={...payload.data,source:'ip',resolved:true,updatedAt:Date.now()};
       }
     } catch { /* Use an approximate, permission-free fallback. */ }
+    if(recent?.source==='gps'&&recent.updatedAt!>=started)return recent;
     const timezone=deriveCountryFromTimezone(),locale=deriveCountryFromLocale();
     return recent={country:timezone||locale,source:timezone?'timezone':'locale',resolved:true,updatedAt:Date.now()};
   })().finally(()=>{pending=undefined;});
   return pending;
 }
 
-// Public browsing never invokes the browser Geolocation API or a permission prompt.
+// Automatic browsing is permission-free; GPS is available only on request.
 export default function useViewerGeo() {
   const [geo,setGeo]=useState<ViewerGeo>({});
+  const [locating,setLocating]=useState(false),[locationMessage,setLocationMessage]=useState('');
   useEffect(()=>{
     let cancelled=false;
-    void automaticLocation().then(value=>{if(!cancelled)setGeo(value);});
-    return()=>{cancelled=true;};
+    const changed=()=>{if(recent&&!cancelled)setGeo(recent);};
+    window.addEventListener(GEO_EVENT,changed);
+    void automaticLocation().then(value=>{if(!cancelled)setGeo(recent?.source==='gps'?recent:value);});
+    return()=>{cancelled=true;window.removeEventListener(GEO_EVENT,changed);};
   },[]);
-  return geo;
+  const requestPreciseLocation=async()=>{
+    setLocating(true);setLocationMessage('');
+    try {
+      if(!navigator.geolocation)throw new Error('Browser location is unavailable. You can choose your country instead.');
+      if(!precisePending)precisePending=requestBrowserLocation(navigator.geolocation).then(location=>{
+        recent={...location,source:'gps',resolved:true,updatedAt:Date.now()};
+        window.dispatchEvent(new Event(GEO_EVENT));return recent;
+      }).finally(()=>{precisePending=undefined;});
+      const confirmed=await precisePending;
+      setLocationMessage(`Browser location confirmed: ${[confirmed.city,confirmed.country].filter(Boolean).join(', ')}.`);
+      return confirmed;
+    }catch(error){setLocationMessage(error instanceof Error?error.message:'Location could not be confirmed. Automatic detection remains available.');return null;}
+    finally{setLocating(false);}
+  };
+  return {...geo,requestPreciseLocation,locating,locationMessage};
 }

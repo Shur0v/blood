@@ -64,7 +64,7 @@ export async function GET(req: Request) {
     reverseUrl.searchParams.set('format', 'json');
     reverseUrl.searchParams.set('apiKey', apiKey);
 
-    const response = await fetch(reverseUrl.toString(), { method: 'GET' });
+    const response = await fetch(reverseUrl.toString(), { method: 'GET', signal: AbortSignal.timeout(4000) });
     if (!response.ok) {
       return NextResponse.json({ success: true, data: resolveFallback(lat, lng), meta: { fallback: true } });
     }
@@ -76,12 +76,11 @@ export async function GET(req: Request) {
 
     const city =
       payload.results?.[0]?.city ||
-      payload.features?.[0]?.properties?.city ||
-      resolveFallback(lat, lng).city;
+      payload.features?.[0]?.properties?.city;
     const country =
       payload.results?.[0]?.country ||
-      payload.features?.[0]?.properties?.country ||
-      resolveFallback(lat, lng).country;
+      payload.features?.[0]?.properties?.country;
+    if (!country) return NextResponse.json({ success: false, message: 'Could not confirm the country for these coordinates.' }, { status: 502 });
 
     return NextResponse.json({
       success: true,

@@ -212,7 +212,7 @@ export default function OrganHero({ forcedCountry }: { forcedCountry?: string })
             </p>
 
             <div className="relative mx-auto flex flex-col gap-4 w-full max-w-5xl">
-              <DonorCountryFilter country={viewerGeo.country} onChange={viewerGeo.chooseCountry} locked={Boolean(forcedCountry)}/>{discoveryNotice&&<p role="status" className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-left text-sm leading-6 text-amber-900">{discoveryNotice}</p>}
+              <DonorCountryFilter country={viewerGeo.country} onChange={viewerGeo.chooseCountry} locked={Boolean(forcedCountry)} onLocate={()=>void viewerGeo.confirmLocation()} locating={viewerGeo.locating} locationMessage={viewerGeo.locationMessage}/>{discoveryNotice&&<p role="status" className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-left text-sm leading-6 text-amber-900">{discoveryNotice}</p>}
               <div className="w-full min-w-0 text-left">
                 <div className="mb-3 flex items-center justify-between gap-3"><p className="text-sm font-semibold text-slate-700">Donation type</p><button type="button" aria-pressed={activeOrgan === null} onClick={() => setActiveOrgan(null)} data-analytics-component="Organ Filter All" className={`min-h-10 rounded-full border px-4 text-sm font-semibold ${activeOrgan === null ? 'border-rose-700 bg-rose-700 text-white' : 'border-slate-200 bg-white text-slate-700'}`}>All organs</button></div>
                 <div className="grid grid-cols-4 gap-2 md:grid-cols-8" aria-label="Filter by donation type">
