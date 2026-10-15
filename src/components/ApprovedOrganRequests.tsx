@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "motion/react";
 import { CalendarDays, MapPin, PhoneCall, X } from "lucide-react";
-import useViewerGeo from "./useViewerGeo";
+import useDonorRegion from "./useDonorRegion";
 import { maskPhoneTail } from "../lib/phoneMask";
 
 interface OrganRequestRow {
@@ -46,15 +46,19 @@ const extractShortNote = (raw: string): string => {
   return note.length > 180 ? `${note.slice(0, 180)}...` : note;
 };
 
-export default function ApprovedOrganRequests() {
+export default function ApprovedOrganRequests({forcedCountry}:{forcedCountry?:string} = {}) {
   const [rows, setRows] = useState<OrganRequestRow[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [selectedRequest, setSelectedRequest] = useState<OrganRequestRow | null>(null);
-  const viewerGeo = useViewerGeo();
+  const viewerGeo = useDonorRegion(forcedCountry);
+  const [loadedCountry, setLoadedCountry] = useState('');
+  const requestRef = useRef<AbortController | null>(null);
 
   const loadRows = async (cursor?: string) => {
+    if (!viewerGeo.country) return;
+    const signal = requestRef.current?.signal;
     setLoading(true);
     try {
       const params = new URLSearchParams({ limit: "16" });
@@ -67,31 +71,36 @@ export default function ApprovedOrganRequests() {
       const res = await fetch(`/api/public/organ-requests?${params.toString()}`, {
         method: "GET",
         cache: "no-store",
+        signal,
       });
       const payload = (await res.json()) as OrganRequestApiResponse;
-      if (!res.ok || !payload.success) {
+      if (signal?.aborted || !res.ok || !payload.success) {
         return;
       }
 
       const incoming = payload.data || [];
       setRows((prev) => (cursor ? [...prev, ...incoming] : incoming));
       setNextCursor(payload.pagination?.nextCursor ?? null);
+    } catch { /* Keep this country's results on temporary network errors. */
     } finally {
-      setLoading(false);
-      setInitialLoading(false);
+      if (!signal?.aborted) { setLoading(false); setInitialLoading(false); }
     }
   };
 
   useEffect(() => {
+    const controller = new AbortController(); requestRef.current = controller;
+    setRows([]); setNextCursor(null); setSelectedRequest(null);
+    setInitialLoading(Boolean(viewerGeo.country)); setLoadedCountry(viewerGeo.country);
     void loadRows();
-  }, [viewerGeo.city, viewerGeo.country, viewerGeo.source]);
+    return () => controller.abort();
+  }, [viewerGeo.city, viewerGeo.country]);
 
   const totalLabel = useMemo(() => {
     if (initialLoading) return "Loading approved requests...";
     return rows.length > 0 ? `${rows.length} approved request${rows.length > 1 ? "s" : ""} visible` : "No approved requests yet";
   }, [initialLoading, rows.length]);
 
-  if (!initialLoading && rows.length === 0) {
+  if (!viewerGeo.country || loadedCountry !== viewerGeo.country || (!initialLoading && rows.length === 0)) {
     return null;
   }
 

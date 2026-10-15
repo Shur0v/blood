@@ -1,7 +1,8 @@
 import { motion, useMotionValue, useTransform, animate } from "motion/react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import DonorModal from "./DonorModal";
-import useViewerGeo from "./useViewerGeo";
+import useDonorRegion from "./useDonorRegion";
+import DonorCountryFilter from './DonorCountryFilter';
 import { maskPhoneTail } from "../lib/phoneMask";
 import { ORGAN_CATALOG, normalizeOrganName } from "../lib/organCatalog";
 import OrganIcon from "./OrganIcon";
@@ -61,11 +62,15 @@ export default function OrganHero({ forcedCountry }: { forcedCountry?: string })
   const count = useMotionValue(0);
   const rounded = useTransform(count, (latest) => Math.round(latest));
   const normalizedSearch = searchQuery.trim();
-  const viewerGeo = useViewerGeo();
+  const viewerGeo = useDonorRegion(forcedCountry);
+  const [loadedCountry, setLoadedCountry] = useState('');
+  const [initialLoading, setInitialLoading] = useState(false);
+  const requests = useRef<AbortController | null>(null);
+  const localReady = Boolean(viewerGeo.country) && loadedCountry === viewerGeo.country;
   const buildBaseParams = () => {
     const params = new URLSearchParams({ limit: "16" });
-    if (forcedCountry) {
-      params.set("country", forcedCountry);
+    if (viewerGeo.country) {
+      params.set("country", viewerGeo.country);
     }
     if (activeOrgan) {
       params.set("organ", activeOrgan);
@@ -108,6 +113,12 @@ export default function OrganHero({ forcedCountry }: { forcedCountry?: string })
 
 
   useEffect(() => {
+    const controller = new AbortController();
+    requests.current = controller;
+    setDonors([]); setNextCursor(null); setSelectedDonor(null);
+    setLoadedCountry(viewerGeo.country);
+    setInitialLoading(Boolean(viewerGeo.country));
+    if (!viewerGeo.country) return () => controller.abort();
     const loadDonors = async () => {
       try {
         const params = buildBaseParams();
@@ -115,8 +126,10 @@ export default function OrganHero({ forcedCountry }: { forcedCountry?: string })
         const res = await fetch(`/api/public/organ-donors?${params.toString()}`, {
           method: "GET",
           cache: "no-store",
+          signal: controller.signal,
         });
         const payload = (await res.json()) as OrganDonorApiResponse;
+        if (controller.signal.aborted) return;
         if (!res.ok || !payload.success) {
           setDonors([]);
           setTotalOrganDonors(0);
@@ -130,17 +143,22 @@ export default function OrganHero({ forcedCountry }: { forcedCountry?: string })
         setNextCursor(payload.pagination?.nextCursor ?? null);
         setTotalOrganDonors(Number(payload.meta?.globalTotal ?? payload.pagination?.total ?? 0));
       } catch (error) {
+        if (controller.signal.aborted) return;
         setDonors([]);
         setTotalOrganDonors(0);
         setNextCursor(null);
+      } finally {
+        if (!controller.signal.aborted) setInitialLoading(false);
       }
     };
 
     void loadDonors();
-  }, [activeOrgan, activeBloodGroup, normalizedSearch, viewerGeo.city, viewerGeo.country]);
+    return () => controller.abort();
+  }, [activeOrgan, activeBloodGroup, normalizedSearch, viewerGeo.city, viewerGeo.country, forcedCountry]);
 
   const handleLoadMore = async () => {
-    if (!nextCursor || isLoadingMore) return;
+    if (!nextCursor || isLoadingMore || !localReady) return;
+    const signal = requests.current?.signal;
     setIsLoadingMore(true);
     try {
       const params = buildBaseParams();
@@ -148,15 +166,16 @@ export default function OrganHero({ forcedCountry }: { forcedCountry?: string })
       const res = await fetch(`/api/public/organ-donors?${params.toString()}`, {
         method: "GET",
         cache: "no-store",
+        signal,
       });
       const payload = (await res.json()) as OrganDonorApiResponse;
-      if (!res.ok || !payload.success) {
+      if (signal?.aborted || !res.ok || !payload.success) {
         return;
       }
       const mapped = mapRows(payload.data || []);
       setDonors((prev) => [...prev, ...mapped]);
       setNextCursor(payload.pagination?.nextCursor ?? null);
-    } finally {
+    } catch { /* Preserve local cards on failed or cancelled pagination. */ } finally {
       setIsLoadingMore(false);
     }
   };
@@ -185,7 +204,7 @@ export default function OrganHero({ forcedCountry }: { forcedCountry?: string })
                 </motion.span>
               </div>
               <div className="px-4 py-2">
-                <span className="text-base font-bold lowercase tracking-[2px] text-white">organ donors</span>
+                <span className="text-base font-bold lowercase tracking-[2px] text-white">organ donors worldwide</span>
               </div>
             </motion.div>
 
@@ -195,10 +214,10 @@ export default function OrganHero({ forcedCountry }: { forcedCountry?: string })
 
             <p className="mx-auto mb-8 max-w-2xl text-base text-gray-500">
               Connect with organ donors instantly. Our platform facilitates the matching process for life-saving transplants with utmost care and security.
-              {forcedCountry ? ` Showing active organ donor results for ${forcedCountry}.` : ""}
             </p>
 
             <div className="relative mx-auto flex flex-col gap-4 w-full max-w-5xl">
+              <DonorCountryFilter country={viewerGeo.country} onChange={viewerGeo.chooseCountry} locked={Boolean(forcedCountry)}/>
               <div className="w-full min-w-0 text-left">
                 <div className="mb-3 flex items-center justify-between gap-3"><p className="text-sm font-semibold text-slate-700">Donation type</p><button type="button" aria-pressed={activeOrgan === null} onClick={() => setActiveOrgan(null)} data-analytics-component="Organ Filter All" className={`min-h-10 rounded-full border px-4 text-sm font-semibold ${activeOrgan === null ? 'border-rose-700 bg-rose-700 text-white' : 'border-slate-200 bg-white text-slate-700'}`}>All organs</button></div>
                 <div className="grid grid-cols-4 gap-2 md:grid-cols-8" aria-label="Filter by donation type">
@@ -214,7 +233,7 @@ export default function OrganHero({ forcedCountry }: { forcedCountry?: string })
           </div>
         </motion.div>
 
-        {donors.length === 0 ? (
+        {!viewerGeo.country ? <p className="py-10 text-center text-sm text-slate-600">Select your country above to find local organ donors.</p> : initialLoading || !localReady ? <p className="py-10 text-center text-sm text-slate-600">Loading donors in {viewerGeo.country}...</p> : donors.length === 0 ? (
           <div className="mx-auto max-w-4xl rounded-[8px] border border-white/40 bg-white/20 p-8 text-center text-sm font-semibold text-gray-700">
             No organ donors found for this filter.
           </div>
@@ -258,7 +277,7 @@ export default function OrganHero({ forcedCountry }: { forcedCountry?: string })
             ))}
           </div>
         )}
-        {nextCursor && donors.length > 0 && (
+        {localReady && nextCursor && donors.length > 0 && (
           <div className="mt-8 flex justify-center">
             <button
               type="button"
@@ -273,7 +292,7 @@ export default function OrganHero({ forcedCountry }: { forcedCountry?: string })
         )}
       </div>
 
-      <DonorModal donor={selectedDonor as any} onClose={() => setSelectedDonor(null)} />
+      <DonorModal donor={localReady ? selectedDonor as any : null} onClose={() => setSelectedDonor(null)} />
     </section>
   );
 }

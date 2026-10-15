@@ -488,7 +488,7 @@ export function HomeExperience({ forcedCountry, locationDirectory }: { forcedCou
             <LazyMount><ImageSlider /></LazyMount>
             <LazyMount><MedicalAidFund /></LazyMount>
             <LazyMount><AboutBloodNet onTermsClick={() => handlePageChange("terms-conditions")} /></LazyMount>
-            <LazyMount><FloatingDonorTags /></LazyMount>
+            <LazyMount><FloatingDonorTags forcedCountry={forcedCountry}/></LazyMount>
             <LazyMount><ImpactData /></LazyMount>
             <LazyMount><RequestOrgan /></LazyMount>
             <LazyMount><Testimonials /></LazyMount>
@@ -504,13 +504,13 @@ export function HomeExperience({ forcedCountry, locationDirectory }: { forcedCou
         {!isProfileView && currentPage === "organ" && (
           <>
             <OrganHero forcedCountry={forcedCountry} />
-            <LazyMount><ApprovedOrganRequests /></LazyMount>
+            <LazyMount><ApprovedOrganRequests forcedCountry={forcedCountry}/></LazyMount>
             <LazyMount><ProcessSteps /></LazyMount>
             <LazyMount><DonorReminder onSignUpClick={() => setIsAuthModalOpen(true)} showSignUpButton={!sessionUser} /></LazyMount>
             <LazyMount><ImageSlider /></LazyMount>
             <LazyMount><MedicalAidFund /></LazyMount>
             <LazyMount><AboutBloodNet onTermsClick={() => handlePageChange("terms-conditions")} /></LazyMount>
-            <LazyMount><FloatingDonorTags /></LazyMount>
+            <LazyMount><FloatingDonorTags forcedCountry={forcedCountry}/></LazyMount>
             <LazyMount><ImpactData /></LazyMount>
             <LazyMount><RequestOrgan /></LazyMount>
             <LazyMount><Testimonials /></LazyMount>

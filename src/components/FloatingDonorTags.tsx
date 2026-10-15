@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "motion/react";
 import { gsap } from "gsap";
 import DonorModal from "./DonorModal";
-import useViewerGeo from "./useViewerGeo";
+import useDonorRegion from "./useDonorRegion";
 import { maskPhoneTail } from "../lib/phoneMask";
 
 interface PublicDonorRow {
@@ -90,8 +90,9 @@ const getDeviceSeed = () => {
   }
 };
 
-export default function FloatingDonorTags() {
-  const viewerGeo = useViewerGeo();
+export default function FloatingDonorTags({forcedCountry}:{forcedCountry?:string} = {}) {
+  const viewerGeo = useDonorRegion(forcedCountry);
+  const [loadedCountry, setLoadedCountry] = useState('');
   const [selectedDonor, setSelectedDonor] = useState<any>(null);
   const [pool, setPool] = useState<FloatingDonor[]>([]);
   const [seed, setSeed] = useState("initial-seed");
@@ -104,6 +105,8 @@ export default function FloatingDonorTags() {
     if (typeof window === "undefined") return;
     const win = window;
     let cancelled = false;
+    setPool([]); setSelectedDonor(null); setLoadedCountry(viewerGeo.country);
+    if (!viewerGeo.country) return;
     const isSmallDevice = win.matchMedia("(max-width: 768px)").matches;
 
     const toFloating = (row: PublicDonorRow): FloatingDonor => ({
@@ -128,11 +131,12 @@ export default function FloatingDonorTags() {
         const targetRows = isSmallDevice ? 16 : 64;
         const pageLimit = isSmallDevice ? "8" : "16";
 
-        while (pageCount < maxPages && collected.length < targetRows) {
+        while (!cancelled && pageCount < maxPages && collected.length < targetRows) {
           const params = new URLSearchParams({ limit: pageLimit });
           if (cursor) params.set("cursor", cursor);
           if (viewerGeo.city) params.set("viewerCity", viewerGeo.city);
           if (viewerGeo.country) {
+            params.set("country", viewerGeo.country);
             params.set("viewerCountry", viewerGeo.country);
           }
 
@@ -190,7 +194,7 @@ export default function FloatingDonorTags() {
   }, [seed, viewerGeo.city, viewerGeo.country]);
 
   const rows = useMemo(() => {
-    if (pool.length === 0) return [[], [], [], [], []] as FloatingDonor[][];
+    if (!viewerGeo.country || loadedCountry !== viewerGeo.country || pool.length === 0) return [[], [], [], [], []] as FloatingDonor[][];
     const rowCount = 5;
     const rowSize = Math.min(Math.max(Math.ceil(pool.length / rowCount), 8), 16);
     return Array.from({ length: rowCount }, (_, rowIndex) =>
@@ -199,7 +203,7 @@ export default function FloatingDonorTags() {
         return pool[idx];
       }),
     );
-  }, [pool]);
+  }, [pool, loadedCountry, viewerGeo.country]);
 
   return (
     <section className="relative overflow-hidden py-24">
@@ -226,7 +230,7 @@ export default function FloatingDonorTags() {
 
       {pool.length === 0 ? (
         <div className="relative z-10 mx-auto max-w-4xl rounded-[10px] border border-white/40 bg-white/20 p-8 text-center text-sm font-semibold text-gray-700 backdrop-blur-xl">
-          Live donor stream is preparing nearby profiles.
+          {viewerGeo.country ? `No local donor profiles to show in ${viewerGeo.country} yet.` : 'Choose your country above to see your local donor community.'}
         </div>
       ) : (
         <div className="relative z-10 flex flex-col gap-4 [mask-image:linear-gradient(to_right,transparent,black_15%,black_85%,transparent)]">
@@ -241,7 +245,7 @@ export default function FloatingDonorTags() {
       )}
 
       <DonorModal 
-        donor={selectedDonor} 
+        donor={loadedCountry === viewerGeo.country ? selectedDonor : null}
         onClose={() => setSelectedDonor(null)} 
       />
     </section>

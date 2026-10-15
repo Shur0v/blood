@@ -43,6 +43,8 @@ import { getPublicBotStats } from '../src/backend/services/seoData';
 import { GET as dashboardOverview } from '../src/app/api/admin/dashboard-overview/route';
 import { GET as siteState } from '../src/app/site-state.json/route';
 import { GET as platformStats } from '../src/app/api/public/platform-stats/route';
+import { GET as publicOrganRequests } from '../src/app/api/public/organ-requests/route';
+import { GET as detectCountry } from '../src/app/api/location/ip/route';
 
 // Always use process-local test secrets, never production credentials.
 process.env.MEDICAL_RECORDS_ENCRYPTION_KEY = randomBytes(32).toString('hex');
@@ -543,4 +545,69 @@ test('admin, public feed, and server statistics share active donor counts across
   await db.manualBloodDonor.update({ where: { id: manual.id }, data: { is_active_donor: false } });
   await db.user.update({ where: { id: patient.id }, data: { is_active_donor: false } });
   await check(baseline.total);
+});
+
+test('local donor lists isolate countries, preserve newest-first filters and use matching service locations', integration, async () => {
+  const db = getPrisma(), marker = `Region-${randomUUID()}`;
+  const groups = ['AB+', 'AB-', 'A+', 'A-', 'B+', 'B-', 'O+', 'O-'];
+  const newest = new Map<string,string>();
+  for (const country of ['India','Bangladesh']) {
+    for (const [index,blood_group] of groups.entries()) {
+      const donor = await newPatient();
+      await db.user.update({where:{id:donor.id},data:{name:marker,blood_group,location_country:country,location_city:marker,created_at:new Date(Date.now()+index*1000)}});
+      if (country==='India') newest.set(blood_group,donor.id);
+      await db.organPledge.create({data:{user_id:donor.id,organ_type:'Bone Marrow'}});
+    }
+    const location = {location_country:country,location_city:marker,location_lat:1,location_lng:1};
+    await db.manualBloodDonor.create({data:{name:marker,mobile:randomUUID(),blood_group:'O-',...location,source:'TEST',added_by_admin:'TEST'}});
+    await db.communityDonor.create({data:{organization_name:marker+country,mobile:randomUUID(),...location,source:'TEST',added_by_admin:'TEST'}});
+    await db.manualOrganDonor.create({data:{name:marker,mobile:randomUUID(),blood_group:'O-',organ_type:'Bone Marrow',...location,source:'TEST',added_by_admin:'TEST'}});
+    await db.organRequest.create({data:{name:marker,contact:randomUUID(),organ_type:'Kidney',status:'VERIFIED',...location}});
+  }
+  const read = async (route:typeof publicBloodDonors, params:Record<string,string>) => {
+    const response=await route(new Request('http://localhost/api/public/donors?'+new URLSearchParams({limit:'16',search:marker,...params})));
+    assert.equal(response.status,200);return response.json();
+  };
+  for (const bloodGroup of groups) {
+    const payload=await read(publicBloodDonors,{country:'India',bloodGroup});
+    assert.equal(payload.data[0].id,newest.get(bloodGroup));
+    assert.ok(payload.data.every(row=>row.location_country==='India'));
+  }
+  for (const country of ['India','Bangladesh']) {
+    for (const route of [publicBloodDonors,publicOrganDonors]) {
+      const payload=await read(route,{country});
+      assert.ok(payload.data.length>0);
+      assert.ok(payload.data.every(row=>row.location_country===country));
+    }
+    const requests=await publicOrganRequests(new Request('http://localhost/api/public/organ-requests?viewerCountry='+country));
+    assert.equal(requests.status,200);assert.ok((await requests.json()).data.every(row=>row.location_country===country));
+  }
+  assert.equal((await read(publicBloodDonors,{country:'Nepal'})).data.length,0,'Empty local results cannot broaden to foreign donors');
+  const first=await read(publicBloodDonors,{country:'India',limit:'2'});
+  const second=await read(publicBloodDonors,{country:'India',limit:'2',cursor:first.pagination.nextCursor});
+  assert.ok(second.data.every(row=>row.location_country==='India'));
+  assert.equal(new Set([...first.data,...second.data].map(row=>row.id)).size,4);
+
+  const traveler=await newPatient();
+  await db.user.update({where:{id:traveler.id},data:{name:marker+'-service',location_country:'Bangladesh'}});
+  await db.organPledge.create({data:{user_id:traveler.id,organ_type:'Kidney'}});
+  for (const [city,country] of [['Dhaka','Bangladesh'],['Delhi','India']]) await db.userServiceCity.create({data:{user_id:traveler.id,city,country,formatted_location:city,lat:1,lng:1,provider_place_id:randomUUID(),locked_until:new Date()}});
+  for (const route of [publicBloodDonors,publicOrganDonors]) {
+    const local=await read(route,{country:'India',search:marker+'-service'});
+    assert.equal(local.data.length,1);assert.equal(local.data[0].location_country,'India');assert.equal(local.data[0].location_city,'Delhi');
+  }
+  await sql.query('ALTER TABLE "UserServiceCity" RENAME COLUMN created_at TO created_at_test_unavailable');
+  try {
+    const fallback=await read(publicBloodDonors,{country:'India',search:marker+'-service'});
+    assert.equal(fallback.meta.fallback,true);assert.equal(fallback.data.length,1);assert.equal(fallback.data[0].location_country,'India');
+  } finally {await sql.query('ALTER TABLE "UserServiceCity" RENAME COLUMN created_at_test_unavailable TO created_at');}
+});
+
+test('visitor country lookup is uncached and never supplies a default country', async () => {
+  for (const [code,country] of [['IN','India'],['BD','Bangladesh']]) {
+    const result=await detectCountry(new Request('http://localhost/api/location/ip',{headers:{'cf-ipcountry':code}}));
+    assert.equal(result.status,200);assert.equal((await result.json()).data.country,country);
+    assert.match(result.headers.get('cache-control')||'',/no-store/);
+  }
+  assert.equal((await detectCountry(new Request('http://localhost/api/location/ip'))).status,404);
 });

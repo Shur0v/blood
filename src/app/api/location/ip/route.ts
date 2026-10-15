@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
 const countryNameFromCode = (code?: string | null) => {
   const normalized = (code || '').trim().toUpperCase();
   if (!normalized || normalized.length !== 2) return null;
@@ -32,7 +34,7 @@ export async function GET(req: Request) {
       data: {
         country,
       },
-    });
+    }, { headers: { 'Cache-Control': 'private, no-store', Vary: 'x-vercel-ip-country, cf-ipcountry, x-country-code, cloudfront-viewer-country' } });
   } catch {
     return NextResponse.json({ success: false, message: 'Failed to detect IP location.' }, { status: 500 });
   }

@@ -185,6 +185,7 @@ export async function GET(req: Request) {
           SELECT usc.city, usc.country
           FROM "UserServiceCity" usc
           WHERE usc.user_id = u.id
+            ${normalizedCountry ? Prisma.sql`AND LOWER(usc.country) = LOWER(${normalizedCountry})` : Prisma.empty}
           ORDER BY
             ${serviceCitySearchRank} ASC,
             ${serviceCityViewerCityRank} ASC,
@@ -436,7 +437,8 @@ export async function GET(req: Request) {
       };
 
       const [users, manualRows, communityRows, userCount, manualCount, communityCount, globalCounts] = await Promise.all([
-        prisma.user.findMany({ where: userWhere, orderBy: [{ created_at: 'desc' }, { id: 'desc' }], take: limit + safeOffset + 1 }),
+        prisma.user.findMany({ where: userWhere, orderBy: [{ created_at: 'desc' }, { id: 'desc' }], take: limit + safeOffset + 1,
+          include: { ServiceCities: { where: normalizedCountry ? { country: { equals: normalizedCountry, mode: 'insensitive' } } : undefined, select: { city: true, country: true }, orderBy: { id: 'asc' }, take: 1 } } }),
         prisma.manualBloodDonor.findMany({ where: manualWhere, orderBy: { created_at: 'desc' }, take: limit + safeOffset + 1 }),
         prisma.communityDonor.findMany({ where: communityWhere, orderBy: { created_at: 'desc' }, take: limit + safeOffset + 8 }),
         prisma.user.count({ where: userWhere }),
@@ -450,8 +452,8 @@ export async function GET(req: Request) {
           id: u.id,
           name: u.name,
           blood_group: u.blood_group,
-          location_city: u.location_city,
-          location_country: u.location_country,
+          location_city: normalizedCountry ? u.ServiceCities[0]?.city || u.location_city : u.location_city,
+          location_country: normalizedCountry ? u.ServiceCities[0]?.country || u.location_country : u.location_country,
           mobile: u.mobile,
           verification_status: u.verification_status,
           hemoglobin:

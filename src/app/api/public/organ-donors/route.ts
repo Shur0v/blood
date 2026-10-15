@@ -5,6 +5,8 @@ import { getPrisma } from '@/src/backend/config/db';
 import { normalizeOrganName } from '@/src/lib/organCatalog';
 import { NEARBY_COUNTRY_MAP, normalizeCountryToken } from '@/src/lib/geoCountry';
 
+export const dynamic = 'force-dynamic';
+
 const QuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(16).default(16),
   cursor: z.string().optional(),
@@ -190,6 +192,7 @@ export async function GET(req: Request) {
           SELECT usc.city, usc.country
           FROM "UserServiceCity" usc
           WHERE usc.user_id = u.id
+            ${normalizedCountry ? Prisma.sql`AND LOWER(usc.country) = LOWER(${normalizedCountry})` : Prisma.empty}
           ORDER BY
             ${serviceCitySearchRank} ASC,
             ${serviceCityViewerCityRank} ASC,

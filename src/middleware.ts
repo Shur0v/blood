@@ -95,7 +95,10 @@ export function middleware(request: NextRequest) {
     pathname.startsWith('/api/auth/') ||
     pathname.startsWith('/api/integrations/') ||
     pathname.startsWith('/api/users/') ||
-    pathname === '/api/public/donors'
+    pathname === '/api/public/donors' ||
+    pathname === '/api/public/organ-donors' ||
+    pathname === '/api/public/organ-requests' ||
+    pathname.startsWith('/api/location/')
   ) {
     response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
   }

@@ -81,14 +81,14 @@ export default function useViewerGeo() {
         const nextRank = next.source ? sourceRank[next.source] : 0;
         const shouldReplace =
           !prev.country ||
-          nextRank >= prevRank ||
-          (next.country && prev.country && next.country.toLowerCase() !== prev.country.toLowerCase());
+          nextRank >= prevRank;
         if (!shouldReplace) return prev;
-        return { ...prev, ...next };
+        return { ...next };
       });
     };
 
-    const cachedRaw = sessionStorage.getItem(CACHE_KEY);
+    let cachedRaw: string | null = null;
+    try { cachedRaw = sessionStorage.getItem(CACHE_KEY); } catch { /* Storage can be disabled. */ }
     if (cachedRaw) {
       try {
         const cached = JSON.parse(cachedRaw) as ViewerGeo;
@@ -96,7 +96,7 @@ export default function useViewerGeo() {
           ...cached,
           source: cached.source || "locale",
         };
-        setIfActive(normalizedCached);
+        if (cached.updatedAt && Date.now() - cached.updatedAt < 10 * 60 * 1000) setIfActive(normalizedCached);
       } catch {
         // ignore invalid cache
       }
@@ -110,11 +110,15 @@ export default function useViewerGeo() {
       }
     };
 
+    let fallbackStarted = false;
     const applyGeoFallback = async () => {
+      if (fallbackStarted) return;
+      fallbackStarted = true;
       try {
         const res = await fetch("/api/location/ip", {
           method: "GET",
           cache: "no-store",
+          signal: AbortSignal.timeout(5000),
         });
         const payload = (await res.json()) as {
           success?: boolean;
@@ -147,8 +151,9 @@ export default function useViewerGeo() {
       }
     };
 
+    // Resolve a country promptly even while a GPS permission prompt is pending.
+    void applyGeoFallback();
     if (typeof navigator === "undefined" || !navigator.geolocation) {
-      void applyGeoFallback();
       return () => {
         cancelled = true;
       };

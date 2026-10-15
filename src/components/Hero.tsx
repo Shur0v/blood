@@ -5,7 +5,8 @@ import { motion, useMotionValue, useTransform, animate } from "motion/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Star } from "lucide-react";
 import DonorModal from "./DonorModal";
-import useViewerGeo from "./useViewerGeo";
+import useDonorRegion from "./useDonorRegion";
+import DonorCountryFilter from './DonorCountryFilter';
 import { maskPhoneTail } from "../lib/phoneMask";
 import FooterBottomBannerAd from "./FooterBottomBannerAd";
 import DonorBloodFilters from "./DonorBloodFilters";
@@ -142,13 +143,15 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
   const rounded = useTransform(count, (latest) => Math.round(latest));
 
   const normalizedSearch = searchQuery.trim();
-  const donorCacheKey = `bloodnet_public_donors_cache:v2:${forcedCountry || 'all'}:${activeGroup || 'all'}:${normalizedSearch}`;
+  const viewerGeo = useDonorRegion(forcedCountry);
+  const [loadedCountry, setLoadedCountry] = useState('');
+  const localReady = Boolean(viewerGeo.country) && loadedCountry === viewerGeo.country;
+  const donorCacheKey = `bloodnet_public_donors_cache:v3:${viewerGeo.country}:${activeGroup || 'all'}:${normalizedSearch}`;
   const donorRequests = useRef<AbortController | null>(null);
-  const viewerGeo = useViewerGeo();
   const buildBaseParams = () => {
     const params = new URLSearchParams({ limit: "16", sort: 'NEWEST' });
-    if (forcedCountry) {
-      params.set("country", forcedCountry);
+    if (viewerGeo.country) {
+      params.set("country", viewerGeo.country);
     }
     if (activeGroup) {
       params.set("bloodGroup", activeGroup);
@@ -190,6 +193,7 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
       const parsed = JSON.parse(raw) as { donors: Donor[]; totalActiveDonors: number };
       if (Array.isArray(parsed.donors) && typeof parsed.totalActiveDonors === "number") {
         setDonors(parsed.donors);
+        setLoadedCountry(viewerGeo.country);
         setTotalActiveDonors(parsed.totalActiveDonors);
         return true;
       }
@@ -199,12 +203,13 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
     }
   };
 
-  const hydrateFromSiteState = async () => {
+  const hydrateFromSiteState = async (signal?: AbortSignal) => {
     if (forcedCountry) return false;
     try {
       const res = await fetch("/site-state.json", {
         method: "GET",
         cache: "no-store",
+        signal,
       });
       const payload = await res.json();
       const nextTotal = Number(
@@ -241,6 +246,12 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
   useEffect(() => {
     const controller = new AbortController();
     donorRequests.current = controller;
+    setSelectedDonor(null);
+    setNextCursor(null);
+    setDonors([]);
+    setLoadedCountry(viewerGeo.country);
+    setIsInitialDonorLoad(Boolean(viewerGeo.country));
+    if (!viewerGeo.country) return () => controller.abort();
     const loadDonors = async () => {
       try {
         const params = buildBaseParams();
@@ -256,7 +267,8 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
         if (!res.ok || !payload.success) {
           setIsDonorApiDown(true);
           if (donors.length === 0) {
-            const hydrated = await hydrateFromSiteState();
+            const hydrated = await hydrateFromSiteState(controller.signal);
+            if (controller.signal.aborted) return;
             if (!hydrated) hydrateFromCache();
           }
           setIsInitialDonorLoad(false);
@@ -266,6 +278,7 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
         const mapped = mapRows(payload.data || []);
 
         setDonors(mapped);
+        setLoadedCountry(viewerGeo.country);
         setNextCursor(payload.pagination?.nextCursor ?? null);
         const nextTotal = Number(forcedCountry ? payload.pagination?.total : payload.meta?.globalTotal ?? payload.pagination?.total ?? 0);
         setTotalActiveDonors(nextTotal);
@@ -276,7 +289,8 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
         if (controller.signal.aborted) return;
         setIsDonorApiDown(true);
         if (donors.length === 0) {
-          const hydrated = await hydrateFromSiteState();
+          const hydrated = await hydrateFromSiteState(controller.signal);
+          if (controller.signal.aborted) return;
           if (!hydrated) hydrateFromCache();
         }
         setIsInitialDonorLoad(false);
@@ -323,7 +337,8 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
   }, [adsConfig]);
 
   const handleLoadMore = async () => {
-    if (!nextCursor || isLoadingMore) return;
+    if (!nextCursor || isLoadingMore || !localReady) return;
+    const signal = donorRequests.current?.signal;
     setIsLoadingMore(true);
     try {
       const params = buildBaseParams();
@@ -331,17 +346,17 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
       const res = await fetch(`/api/public/donors?${params.toString()}`, {
         method: "GET",
         cache: "no-store",
-        signal: donorRequests.current?.signal,
+        signal,
       });
       const payload = (await res.json()) as DonorApiResponse;
-      if (!res.ok || !payload.success) {
+      if (signal?.aborted || !res.ok || !payload.success) {
         return;
       }
       const mapped = mapRows(payload.data || []);
       setDonors((prev) => [...prev, ...mapped]);
       setNextCursor(payload.pagination?.nextCursor ?? null);
       setHasLoadedMoreOnce(true);
-    } finally {
+    } catch { /* Preserve local cards if pagination fails or is cancelled. */ } finally {
       setIsLoadingMore(false);
     }
   };
@@ -383,7 +398,7 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
               </div>
               <div className="px-4 py-2">
                 <span className="text-base font-bold lowercase tracking-[2px] text-white">
-                  active donor
+                  {forcedCountry ? `matching donors in ${forcedCountry}` : 'active donors worldwide'}
                 </span>
               </div>
             </motion.div>
@@ -394,10 +409,9 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
 
             <p className="mx-auto mb-8 max-w-2xl text-base text-gray-500">
               Join our premium community of life-savers. Connect with donors instantly and manage blood stocks with our futuristic medical dashboard.
-              {forcedCountry ? ` Showing active donor results for ${forcedCountry}.` : ""}
             </p>
 
-            <div className="mx-auto w-full max-w-5xl"><DonorBloodFilters activeGroup={activeGroup} onGroupChange={setActiveGroup} searchQuery={searchQuery} onSearchChange={setSearchQuery} placeholder="Search city or donor name…" analyticsPrefix="Blood" /></div>
+            <div className="mx-auto w-full max-w-5xl"><DonorCountryFilter country={viewerGeo.country} onChange={viewerGeo.chooseCountry} locked={Boolean(forcedCountry)}/><DonorBloodFilters activeGroup={activeGroup} onGroupChange={setActiveGroup} searchQuery={searchQuery} onSearchChange={setSearchQuery} placeholder="Search city or donor name…" analyticsPrefix="Blood" /></div>
           </div>
 
           <div className="absolute inset-0 -z-10 opacity-[0.03]">
@@ -405,7 +419,7 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
           </div>
         </motion.div>
 
-        {isInitialDonorLoad ? (
+        {!viewerGeo.country ? <p className="py-10 text-center text-sm text-slate-600">Select your country above to find local donors.</p> : isInitialDonorLoad || !localReady ? (
           <div className="mx-auto min-h-[320px] max-w-4xl rounded-[8px] border border-white/40 bg-white/20 p-8 text-center text-sm font-semibold text-gray-700">
             Loading nearby active donors...
           </div>
@@ -471,7 +485,7 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
             Live donor feed is reconnecting. Showing last available data.
           </p>
         )}
-        {nextCursor && !hasNoResults && (
+        {localReady && nextCursor && !hasNoResults && (
           <div className="mt-8 flex justify-center">
             <button
               type="button"
@@ -489,7 +503,7 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
         </div>
       </div>
 
-      <DonorModal donor={selectedDonor} onClose={() => setSelectedDonor(null)} />
+      <DonorModal donor={localReady ? selectedDonor : null} onClose={() => setSelectedDonor(null)} />
     </section>
   );
 }
