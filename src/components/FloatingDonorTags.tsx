@@ -1,3 +1,4 @@
+import { discoverDonors } from '../lib/donorDiscovery';
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "motion/react";
 import { gsap } from "gsap";
@@ -93,6 +94,8 @@ const getDeviceSeed = () => {
 export default function FloatingDonorTags({forcedCountry}:{forcedCountry?:string} = {}) {
   const viewerGeo = useDonorRegion(forcedCountry);
   const [loadedCountry, setLoadedCountry] = useState('');
+  const [discoveryNotice,setDiscoveryNotice]=useState('');
+  const regionKey=viewerGeo.country||'global';
   const [selectedDonor, setSelectedDonor] = useState<any>(null);
   const [pool, setPool] = useState<FloatingDonor[]>([]);
   const [seed, setSeed] = useState("initial-seed");
@@ -105,8 +108,8 @@ export default function FloatingDonorTags({forcedCountry}:{forcedCountry?:string
     if (typeof window === "undefined") return;
     const win = window;
     let cancelled = false;
-    setPool([]); setSelectedDonor(null); setLoadedCountry(viewerGeo.country);
-    if (!viewerGeo.country) return;
+    setPool([]); setSelectedDonor(null); setLoadedCountry(regionKey);
+    if (!viewerGeo.resolved) return;
     const isSmallDevice = win.matchMedia("(max-width: 768px)").matches;
 
     const toFloating = (row: PublicDonorRow): FloatingDonor => ({
@@ -126,27 +129,25 @@ export default function FloatingDonorTags({forcedCountry}:{forcedCountry?:string
       try {
         const collected: PublicDonorRow[] = [];
         let cursor: string | null = null;
+        let effectiveQuery:URLSearchParams|undefined;
         let pageCount = 0;
         const maxPages = isSmallDevice ? 1 : 4;
         const targetRows = isSmallDevice ? 16 : 64;
         const pageLimit = isSmallDevice ? "8" : "16";
 
         while (!cancelled && pageCount < maxPages && collected.length < targetRows) {
-          const params = new URLSearchParams({ limit: pageLimit });
+          const params = new URLSearchParams(effectiveQuery || { limit: pageLimit });
           if (cursor) params.set("cursor", cursor);
           if (viewerGeo.city) params.set("viewerCity", viewerGeo.city);
-          if (viewerGeo.country) {
+          if (!effectiveQuery && viewerGeo.country) {
             params.set("country", viewerGeo.country);
             params.set("viewerCountry", viewerGeo.country);
           }
 
-          const res = await fetch(`/api/public/donors?${params.toString()}`, {
-            method: "GET",
-            cache: "no-store",
-          });
-          const payload = (await res.json()) as PublicDonorApiResponse;
-          if (!res.ok || !payload.success) break;
-
+          if(viewerGeo.lat!==undefined&&viewerGeo.lng!==undefined){params.set('viewerLat',String(viewerGeo.lat));params.set('viewerLng',String(viewerGeo.lng));}
+          const discovery=await discoverDonors('/api/public/donors',params);
+          const payload=discovery.payload;effectiveQuery=discovery.params;
+          if(!cancelled&&discovery.notice)setDiscoveryNotice(discovery.notice);
           const rows = payload.data || [];
           collected.push(...rows);
           cursor = payload.pagination?.nextCursor || null;
@@ -191,10 +192,10 @@ export default function FloatingDonorTags({forcedCountry}:{forcedCountry?:string
       cancelled = true;
       win.clearTimeout(timeoutId);
     };
-  }, [seed, viewerGeo.city, viewerGeo.country]);
+  }, [seed, viewerGeo.city, viewerGeo.country,viewerGeo.resolved,viewerGeo.lat,viewerGeo.lng]);
 
   const rows = useMemo(() => {
-    if (!viewerGeo.country || loadedCountry !== viewerGeo.country || pool.length === 0) return [[], [], [], [], []] as FloatingDonor[][];
+    if (!viewerGeo.resolved || loadedCountry !== regionKey || pool.length === 0) return [[], [], [], [], []] as FloatingDonor[][];
     const rowCount = 5;
     const rowSize = Math.min(Math.max(Math.ceil(pool.length / rowCount), 8), 16);
     return Array.from({ length: rowCount }, (_, rowIndex) =>
@@ -203,7 +204,7 @@ export default function FloatingDonorTags({forcedCountry}:{forcedCountry?:string
         return pool[idx];
       }),
     );
-  }, [pool, loadedCountry, viewerGeo.country]);
+  }, [pool, loadedCountry, regionKey,viewerGeo.resolved]);
 
   return (
     <section className="relative overflow-hidden py-24">
@@ -228,6 +229,7 @@ export default function FloatingDonorTags({forcedCountry}:{forcedCountry?:string
         <div className="mt-2 h-1.5 w-24 bg-primary-dark mx-auto rounded-full" />
       </div>
 
+      {discoveryNotice&&<p className="mx-auto mb-5 max-w-4xl px-4 text-center text-sm text-slate-600">{discoveryNotice}</p>}
       {pool.length === 0 ? (
         <div className="relative z-10 mx-auto max-w-4xl rounded-[10px] border border-white/40 bg-white/20 p-8 text-center text-sm font-semibold text-gray-700 backdrop-blur-xl">
           {viewerGeo.country ? `No local donor profiles to show in ${viewerGeo.country} yet.` : 'Choose your country above to see your local donor community.'}
@@ -245,7 +247,7 @@ export default function FloatingDonorTags({forcedCountry}:{forcedCountry?:string
       )}
 
       <DonorModal 
-        donor={loadedCountry === viewerGeo.country ? selectedDonor : null}
+        donor={loadedCountry === regionKey ? selectedDonor : null}
         onClose={() => setSelectedDonor(null)} 
       />
     </section>

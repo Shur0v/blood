@@ -1,4 +1,5 @@
 "use client";
+import { discoverDonors } from '../lib/donorDiscovery';
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "motion/react";
@@ -54,30 +55,27 @@ export default function ApprovedOrganRequests({forcedCountry}:{forcedCountry?:st
   const [selectedRequest, setSelectedRequest] = useState<OrganRequestRow | null>(null);
   const viewerGeo = useDonorRegion(forcedCountry);
   const [loadedCountry, setLoadedCountry] = useState('');
+  const [discoveryNotice,setDiscoveryNotice]=useState('');
+  const effectiveQuery=useRef<URLSearchParams|null>(null);
+  const regionKey=viewerGeo.country||'global';
   const requestRef = useRef<AbortController | null>(null);
 
   const loadRows = async (cursor?: string) => {
-    if (!viewerGeo.country) return;
+    if (!viewerGeo.resolved) return;
     const signal = requestRef.current?.signal;
     setLoading(true);
     try {
-      const params = new URLSearchParams({ limit: "16" });
+      const params = new URLSearchParams(cursor&&effectiveQuery.current ? effectiveQuery.current : { limit: "16" });
       if (cursor) params.set("cursor", cursor);
       const canApplyCountryFilter = Boolean(viewerGeo.country);
-      if (canApplyCountryFilter) {
+      if (!cursor&&canApplyCountryFilter) {
         params.set("viewerCountry", viewerGeo.country!);
       }
 
-      const res = await fetch(`/api/public/organ-requests?${params.toString()}`, {
-        method: "GET",
-        cache: "no-store",
-        signal,
-      });
-      const payload = (await res.json()) as OrganRequestApiResponse;
-      if (signal?.aborted || !res.ok || !payload.success) {
-        return;
-      }
-
+      const discovery=await discoverDonors('/api/public/organ-requests',params,signal);
+      const payload=discovery.payload;if(signal?.aborted)return;
+      effectiveQuery.current=discovery.params;
+      if(!cursor)setDiscoveryNotice(discovery.notice);
       const incoming = payload.data || [];
       setRows((prev) => (cursor ? [...prev, ...incoming] : incoming));
       setNextCursor(payload.pagination?.nextCursor ?? null);
@@ -90,17 +88,17 @@ export default function ApprovedOrganRequests({forcedCountry}:{forcedCountry?:st
   useEffect(() => {
     const controller = new AbortController(); requestRef.current = controller;
     setRows([]); setNextCursor(null); setSelectedRequest(null);
-    setInitialLoading(Boolean(viewerGeo.country)); setLoadedCountry(viewerGeo.country);
+    setInitialLoading(Boolean(viewerGeo.resolved)); setLoadedCountry(regionKey);
     void loadRows();
     return () => controller.abort();
-  }, [viewerGeo.city, viewerGeo.country]);
+  }, [viewerGeo.city, viewerGeo.country,viewerGeo.resolved]);
 
   const totalLabel = useMemo(() => {
     if (initialLoading) return "Loading approved requests...";
     return rows.length > 0 ? `${rows.length} approved request${rows.length > 1 ? "s" : ""} visible` : "No approved requests yet";
   }, [initialLoading, rows.length]);
 
-  if (!viewerGeo.country || loadedCountry !== viewerGeo.country || (!initialLoading && rows.length === 0)) {
+  if (!viewerGeo.resolved || loadedCountry !== regionKey || (!initialLoading && rows.length === 0)) {
     return null;
   }
 
@@ -112,6 +110,7 @@ export default function ApprovedOrganRequests({forcedCountry}:{forcedCountry?:st
         <p className="mt-2 text-sm font-medium text-gray-600">
           These are verified requests approved by the user management team and ready for donor response.
         </p>
+        {discoveryNotice&&<p role="status" className="mt-3 text-sm text-amber-800">{discoveryNotice}</p>}
         <p className="mt-3 text-xs font-bold uppercase tracking-wide text-primary-dark">{totalLabel}</p>
       </div>
 

@@ -10,6 +10,6 @@ export default function DonorCountryFilter({country,onChange,locked=false}:{coun
       {country&&!DONOR_COUNTRIES.includes(country)&&<option value={country}>{country}</option>}
       {DONOR_COUNTRIES.map(name=><option key={name} value={name}>{name}</option>)}
     </select>
-    <p className="mt-2 text-xs leading-5 text-slate-500">{country ? `Showing donors serving ${country}. Search a city below to narrow your results.` : 'Choose your country to see local donors. Location detection may suggest a country.'}</p>
+    <p className="mt-2 text-xs leading-5 text-slate-500">{country ? `Prioritising ${country}. If local matches are unavailable, other nearby listings appear below.` : 'Detecting your country automatically. You can also choose it here.'}</p>
   </div>;
 }

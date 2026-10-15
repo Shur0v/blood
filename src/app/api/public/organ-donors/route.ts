@@ -16,9 +16,12 @@ const QuerySchema = z.object({
   viewerCity: z.string().min(1).max(120).optional(),
   viewerCountry: z.string().min(1).max(120).optional(),
   country: z.string().min(1).max(120).optional(),
+  viewerLat: z.coerce.number().min(-90).max(90).optional(),
+  viewerLng: z.coerce.number().min(-180).max(180).optional(),
 });
 
 interface PublicOrganDonorRow {
+  internal_lat: number; internal_lng: number;
   id: string;
   name: string;
   blood_group: string | null;
@@ -50,13 +53,15 @@ export async function GET(req: Request) {
       viewerCity: url.searchParams.get('viewerCity') || undefined,
       viewerCountry: url.searchParams.get('viewerCountry') || undefined,
       country: url.searchParams.get('country') || undefined,
+      viewerLat: url.searchParams.get('viewerLat') ?? undefined,
+      viewerLng: url.searchParams.get('viewerLng') ?? undefined,
     });
 
     if (!parsed.success) {
       return NextResponse.json({ success: false, message: 'Invalid query params.' }, { status: 400 });
     }
 
-    const { limit, cursor, organ, bloodGroup, search, viewerCity, viewerCountry, country } = parsed.data;
+    const { limit, cursor, organ, bloodGroup, search, viewerCity, viewerCountry, country, viewerLat, viewerLng } = parsed.data;
     const normalizedOrganFilter = organ ? normalizeOrganName(organ) : null;
     if (organ && !normalizedOrganFilter) {
       return NextResponse.json({
@@ -176,6 +181,7 @@ export async function GET(req: Request) {
           ${normalizedUserOrgan} AS organ_type,
           COALESCE(sc.city, u.location_city) AS location_city,
           COALESCE(sc.country, u.location_country) AS location_country,
+          COALESCE(sc.lat,u.location_lat) AS internal_lat, COALESCE(sc.lng,u.location_lng) AS internal_lng,
           u.mobile,
           u.verification_status,
           CASE
@@ -189,7 +195,7 @@ export async function GET(req: Request) {
         FROM "OrganPledge" op
         JOIN "User" u ON u.id = op.user_id
         LEFT JOIN LATERAL (
-          SELECT usc.city, usc.country
+          SELECT usc.city, usc.country, usc.lat, usc.lng
           FROM "UserServiceCity" usc
           WHERE usc.user_id = u.id
             ${normalizedCountry ? Prisma.sql`AND LOWER(usc.country) = LOWER(${normalizedCountry})` : Prisma.empty}
@@ -216,6 +222,7 @@ export async function GET(req: Request) {
           ${normalizedManualOrgan} AS organ_type,
           mod.location_city,
           mod.location_country,
+          mod.location_lat AS internal_lat, mod.location_lng AS internal_lng,
           mod.mobile,
           NULL::text AS verification_status,
           NULL::text AS hemoglobin,
@@ -236,6 +243,7 @@ export async function GET(req: Request) {
         ${manualFilterBySearch}
       ) AS organ_donors
       ORDER BY
+        ${viewerLat !== undefined && viewerLng !== undefined ? Prisma.sql`acos(LEAST(1.0, GREATEST(-1.0, sin(radians(${viewerLat}::float8))*sin(radians(organ_donors.internal_lat)) + cos(radians(${viewerLat}::float8))*cos(radians(organ_donors.internal_lat))*cos(radians(organ_donors.internal_lng-${viewerLng}::float8)))))` : Prisma.sql`NULL::float8`} ASC NULLS LAST,
         ${donorViewerCityRank} ASC,
         ${donorViewerCountryRank} ASC,
         organ_donors.sort_at DESC
@@ -245,7 +253,7 @@ export async function GET(req: Request) {
 
     const hasMore = rows.length > limit;
     const data = rows.slice(0, limit);
-    const publicData = data.map((row) => ({
+    const publicData = data.map(({internal_lat,internal_lng,...row}) => ({
       ...row,
       source_type: 'REGISTERED' as const,
     }));

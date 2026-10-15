@@ -29,5 +29,5 @@ export default function useDonorRegion(forcedCountry?: string) {
     window.dispatchEvent(new CustomEvent(EVENT, { detail: country }));
   };
   const country = forcedCountry || chosen || geo.country || '';
-  return { country, city: country === geo.country ? geo.city : undefined, chooseCountry };
+  return { country, city: country === geo.country ? geo.city : undefined, lat:country===geo.country?geo.lat:undefined, lng:country===geo.country?geo.lng:undefined, resolved:Boolean(country)||geo.resolved, chooseCountry };
 }

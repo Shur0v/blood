@@ -96,7 +96,7 @@ Multipart fields: `title`, `category`, `reportDate` (`YYYY-MM-DD`), `facility`, 
 
 Files: PDF, JPG, PNG, WEBP; up to five, 10 MB each, 20 MB aggregate. Signature checks reject mismatched content types, and images are re-encoded with metadata stripped. PDFs are served as downloads with sandbox headers. Existing public image-upload and donor-verification routes remain unchanged; the new personal medical report path deliberately does not publish asset URLs.
 
-Report metadata, files, and full prescriptions are encrypted with AES-256-GCM, with patient/record identity bound as authenticated data. Owner checks happen before downloads; admin sessions and other patients cannot read these new records. Responses are uncached. New records are not put in browser local storage. Attachments are stored as encrypted database bytes, which keeps deployment self-contained but increases database storage/backups; a future private object-store adapter can replace this without introducing public file URLs.
+Report metadata, files, and full prescriptions are encrypted with AES-256-GCM, with patient/record identity bound as authenticated data. Patient endpoints enforce ownership. Authorized ADMIN/MANAGER sessions can review a selected patient's records through separate read-only profile-audit endpoints; other patients cannot access them. Responses are uncached. New records are not put in browser local storage. Attachments are stored as encrypted database bytes, which keeps deployment self-contained but increases database storage/backups; a future private object-store adapter can replace this without introducing public file URLs.
 
 ## Bone marrow
 

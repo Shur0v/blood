@@ -1,4 +1,5 @@
 "use client";
+import { discoverDonors } from '../lib/donorDiscovery';
 
 import usePublicAds from "./usePublicAds";
 import { motion, useMotionValue, useTransform, animate } from "motion/react";
@@ -145,7 +146,10 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
   const normalizedSearch = searchQuery.trim();
   const viewerGeo = useDonorRegion(forcedCountry);
   const [loadedCountry, setLoadedCountry] = useState('');
-  const localReady = Boolean(viewerGeo.country) && loadedCountry === viewerGeo.country;
+  const [discoveryNotice,setDiscoveryNotice]=useState('');
+  const effectiveQuery=useRef<URLSearchParams|null>(null);
+  const regionKey=viewerGeo.country||'global';
+  const localReady = Boolean(viewerGeo.resolved) && loadedCountry === regionKey;
   const donorCacheKey = `bloodnet_public_donors_cache:v3:${viewerGeo.country}:${activeGroup || 'all'}:${normalizedSearch}`;
   const donorRequests = useRef<AbortController | null>(null);
   const buildBaseParams = () => {
@@ -165,6 +169,7 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
     if (viewerGeo.country) {
       params.set("viewerCountry", viewerGeo.country);
     }
+    if(viewerGeo.lat!==undefined&&viewerGeo.lng!==undefined){params.set("viewerLat",String(viewerGeo.lat));params.set("viewerLng",String(viewerGeo.lng));}
     return params;
   };
 
@@ -193,7 +198,7 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
       const parsed = JSON.parse(raw) as { donors: Donor[]; totalActiveDonors: number };
       if (Array.isArray(parsed.donors) && typeof parsed.totalActiveDonors === "number") {
         setDonors(parsed.donors);
-        setLoadedCountry(viewerGeo.country);
+        setLoadedCountry(regionKey);
         setTotalActiveDonors(parsed.totalActiveDonors);
         return true;
       }
@@ -249,40 +254,25 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
     setSelectedDonor(null);
     setNextCursor(null);
     setDonors([]);
-    setLoadedCountry(viewerGeo.country);
-    setIsInitialDonorLoad(Boolean(viewerGeo.country));
-    if (!viewerGeo.country) return () => controller.abort();
+    setLoadedCountry(regionKey);
+    setIsInitialDonorLoad(Boolean(viewerGeo.resolved));
+    if (!viewerGeo.resolved) return () => controller.abort();
     const loadDonors = async () => {
       try {
         const params = buildBaseParams();
 
-        const res = await fetch(`/api/public/donors?${params.toString()}`, {
-          method: "GET",
-          cache: "no-store",
-          signal: controller.signal,
-        });
-        const payload = (await res.json()) as DonorApiResponse;
-        if (controller.signal.aborted) return;
-
-        if (!res.ok || !payload.success) {
-          setIsDonorApiDown(true);
-          if (donors.length === 0) {
-            const hydrated = await hydrateFromSiteState(controller.signal);
-            if (controller.signal.aborted) return;
-            if (!hydrated) hydrateFromCache();
-          }
-          setIsInitialDonorLoad(false);
-          return;
-        }
-
+        const discovery=await discoverDonors('/api/public/donors',params,controller.signal);
+        const payload=discovery.payload;
+        if(controller.signal.aborted)return;
+        effectiveQuery.current=discovery.params;setDiscoveryNotice(discovery.notice);
         const mapped = mapRows(payload.data || []);
 
         setDonors(mapped);
-        setLoadedCountry(viewerGeo.country);
+        setLoadedCountry(regionKey);
         setNextCursor(payload.pagination?.nextCursor ?? null);
-        const nextTotal = Number(forcedCountry ? payload.pagination?.total : payload.meta?.globalTotal ?? payload.pagination?.total ?? 0);
+        const nextTotal = Number(payload.meta?.globalTotal ?? payload.pagination?.total ?? 0);
         setTotalActiveDonors(nextTotal);
-        persistCache(mapped, nextTotal);
+        if(!discovery.notice)persistCache(mapped, nextTotal);
         setIsDonorApiDown(false);
         setIsInitialDonorLoad(false);
       } catch (error) {
@@ -299,7 +289,7 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
 
     void loadDonors();
     return () => controller.abort();
-  }, [activeGroup, normalizedSearch, viewerGeo.city, viewerGeo.country, forcedCountry]);
+  }, [activeGroup, normalizedSearch, viewerGeo.city, viewerGeo.country, viewerGeo.resolved, viewerGeo.lat, viewerGeo.lng, forcedCountry]);
 
   useEffect(() => {
     setHasLoadedMoreOnce(false);
@@ -341,7 +331,7 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
     const signal = donorRequests.current?.signal;
     setIsLoadingMore(true);
     try {
-      const params = buildBaseParams();
+      const params = new URLSearchParams(effectiveQuery.current || buildBaseParams());
       params.set("cursor", nextCursor);
       const res = await fetch(`/api/public/donors?${params.toString()}`, {
         method: "GET",
@@ -398,7 +388,7 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
               </div>
               <div className="px-4 py-2">
                 <span className="text-base font-bold lowercase tracking-[2px] text-white">
-                  {forcedCountry ? `matching donors in ${forcedCountry}` : 'active donors worldwide'}
+                  active donors worldwide
                 </span>
               </div>
             </motion.div>
@@ -411,7 +401,7 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
               Join our premium community of life-savers. Connect with donors instantly and manage blood stocks with our futuristic medical dashboard.
             </p>
 
-            <div className="mx-auto w-full max-w-5xl"><DonorCountryFilter country={viewerGeo.country} onChange={viewerGeo.chooseCountry} locked={Boolean(forcedCountry)}/><DonorBloodFilters activeGroup={activeGroup} onGroupChange={setActiveGroup} searchQuery={searchQuery} onSearchChange={setSearchQuery} placeholder="Search city or donor name…" analyticsPrefix="Blood" /></div>
+            <div className="mx-auto w-full max-w-5xl"><DonorCountryFilter country={viewerGeo.country} onChange={viewerGeo.chooseCountry} locked={Boolean(forcedCountry)}/>{discoveryNotice&&<p role="status" className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-left text-sm leading-6 text-amber-900">{discoveryNotice}</p>}<DonorBloodFilters activeGroup={activeGroup} onGroupChange={setActiveGroup} searchQuery={searchQuery} onSearchChange={setSearchQuery} placeholder="Search city or donor name…" analyticsPrefix="Blood" /></div>
           </div>
 
           <div className="absolute inset-0 -z-10 opacity-[0.03]">
@@ -419,7 +409,7 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
           </div>
         </motion.div>
 
-        {!viewerGeo.country ? <p className="py-10 text-center text-sm text-slate-600">Select your country above to find local donors.</p> : isInitialDonorLoad || !localReady ? (
+        {!viewerGeo.resolved || isInitialDonorLoad || !localReady ? (
           <div className="mx-auto min-h-[320px] max-w-4xl rounded-[8px] border border-white/40 bg-white/20 p-8 text-center text-sm font-semibold text-gray-700">
             Loading nearby active donors...
           </div>

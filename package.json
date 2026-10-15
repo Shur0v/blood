@@ -19,6 +19,7 @@
     "test:env": "tsx --test tests/environment.test.ts",
     "test:deployment": "tsx --test tests/database-deployment.test.ts",
     "test:ads": "tsx --test tests/ads-runtime.test.ts",
+    "test:discovery": "tsx --test tests/donor-discovery.test.ts",
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint"

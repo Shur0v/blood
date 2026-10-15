@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { automaticIpLocation } from '@/src/backend/services/automaticLocation';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,8 +22,9 @@ export async function GET(req: Request) {
       req.headers.get('cloudfront-viewer-country');
 
     const country = countryNameFromCode(countryCode);
+    const detected = country ? {country} : await automaticIpLocation(req);
 
-    if (!country) {
+    if (!detected) {
       return NextResponse.json(
         { success: false, message: 'IP location unavailable.' },
         { status: 404 }
@@ -31,9 +33,7 @@ export async function GET(req: Request) {
 
     return NextResponse.json({
       success: true,
-      data: {
-        country,
-      },
+      data: detected,
     }, { headers: { 'Cache-Control': 'private, no-store', Vary: 'x-vercel-ip-country, cf-ipcountry, x-country-code, cloudfront-viewer-country' } });
   } catch {
     return NextResponse.json({ success: false, message: 'Failed to detect IP location.' }, { status: 500 });

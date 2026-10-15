@@ -1,7 +1,8 @@
 import { createCipheriv, createDecipheriv, randomBytes } from 'node:crypto';
 import { NextResponse } from 'next/server';
-import { getSessionFromRequest, USER_ROLE } from './session';
+import { ADMIN_ROLES, getSessionFromRequest, hasRequiredRole, USER_ROLE } from './session';
 import { getPublicBaseUrl } from '../config/env';
+import { getPrisma } from '../config/db';
 
 export class MedicalError extends Error {
   constructor(message: string, public status = 400) { super(message); }
@@ -34,6 +35,11 @@ export function medicalUser(req: Request): string {
   const session = getSessionFromRequest(req);
   if (!session) throw new MedicalError('Unauthorized.', 401);
   if (session.role !== USER_ROLE) throw new MedicalError('Only the patient can access these records.', 403);
+  medicalOrigin(req);
+  return session.user_id;
+}
+
+function medicalOrigin(req: Request) {
   // Reject cross-origin cookie-based writes. Server clients can use existing bearer sessions.
   const origin = req.headers.get('origin');
   // TLS terminates at the VPS proxy, so req.url may be an internal HTTP URL.
@@ -42,7 +48,16 @@ export function medicalUser(req: Request): string {
   if (!['GET', 'HEAD'].includes(req.method) && origin && !trustedOrigins.has(origin)) {
     throw new MedicalError('Cross-origin request rejected.', 403);
   }
-  return session.user_id;
+}
+
+// Separate audit access never impersonates the patient or grants patient writes.
+export async function medicalAuditUser(req: Request, userId: string): Promise<string> {
+  const session = getSessionFromRequest(req);
+  if (!session) throw new MedicalError('Unauthorized.', 401);
+  if (!hasRequiredRole(session, ADMIN_ROLES)) throw new MedicalError('Administrator access required.', 403);
+  medicalOrigin(req);
+  if (!await getPrisma().user.findUnique({where:{id:userId},select:{id:true}})) throw new MedicalError('User not found.',404);
+  return userId;
 }
 
 export function medicalFailure(error: unknown) {

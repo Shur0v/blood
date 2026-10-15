@@ -5,8 +5,8 @@ import { Check, Copy, Fingerprint, Pencil, X } from 'lucide-react';
 import { normalizeProfileCode, PROFILE_CODE_PATTERN } from '@/src/lib/profileIdentifier';
 
 type Identity = { profileCode: string; nextChangeAt: string | null; available?: boolean };
-export default function ProfileIdentityCard({ userId, initialCode, onSessionExpired }: {
-  userId: string; initialCode?: string; onSessionExpired?: () => void;
+export default function ProfileIdentityCard({ userId, initialCode, onSessionExpired, readOnly=false, nextChangeAt=null }: {
+  userId: string; initialCode?: string; onSessionExpired?: () => void; readOnly?: boolean; nextChangeAt?: string | null;
 }) {
   const [identity, setIdentity] = useState<Identity>({ profileCode: initialCode || '', nextChangeAt: null });
   const [editing, setEditing] = useState(false);
@@ -18,17 +18,18 @@ export default function ProfileIdentityCard({ userId, initialCode, onSessionExpi
 
   useEffect(() => {
     const controller = new AbortController();
-    setIdentity({ profileCode: initialCode || '', nextChangeAt: null });
+    setIdentity({ profileCode: initialCode || '', nextChangeAt });
     setEditing(false);
+    if (readOnly) return () => controller.abort();
     fetch('/api/users/me/profile-id', { credentials: 'include', cache: 'no-store', signal: controller.signal })
       .then(async res => {
-        if (res.status === 401 || res.status === 403) onSessionExpired?.();
+        if (res.status === 401) onSessionExpired?.();
         const data = await res.json();
         if (!res.ok || !data.success) throw new Error(data.message || 'Unable to load your profile ID.');
         setIdentity(data.data);
       }).catch(error => { if (error.name !== 'AbortError') setMessage(error.message); });
     return () => controller.abort();
-  }, [userId, initialCode, onSessionExpired]);
+  }, [userId, initialCode, onSessionExpired, readOnly, nextChangeAt]);
 
   useEffect(() => {
     setAvailable(null);
@@ -70,7 +71,7 @@ export default function ProfileIdentityCard({ userId, initialCode, onSessionExpi
           <button type="button" disabled={!identity.profileCode} aria-label="Copy patient ID" className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-50" onClick={async () => {
             try { await navigator.clipboard.writeText(identity.profileCode); setMessage('Patient ID copied.'); } catch { setMessage(`Your ID is ${identity.profileCode}.`); }
           }}><Copy className="h-4 w-4" /></button>
-          <button type="button" aria-label="Edit patient ID" title="Edit patient ID" disabled={locked || !identity.profileCode} onClick={() => { setCandidate(identity.profileCode); setMessage(''); setEditing(!editing); }} className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-700 hover:bg-slate-50 disabled:opacity-50"><Pencil className="h-4 w-4" /></button>
+          <button type="button" aria-label="Edit patient ID" title="Edit patient ID" disabled={readOnly || locked || !identity.profileCode} onClick={() => { setCandidate(identity.profileCode); setMessage(''); setEditing(!editing); }} className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-700 hover:bg-slate-50 disabled:opacity-50"><Pencil className="h-4 w-4" /></button>
         </div>
       </div>
       <p className="mt-3 text-xs leading-5 text-slate-600">Share this ID with your doctor to receive prescriptions in your profile and email. {locked ? `Next change: ${new Date(identity.nextChangeAt!).toLocaleDateString()}.` : 'Choose four letters or numbers; changes then unlock every six months.'}</p>

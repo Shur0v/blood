@@ -45,6 +45,13 @@ import { GET as siteState } from '../src/app/site-state.json/route';
 import { GET as platformStats } from '../src/app/api/public/platform-stats/route';
 import { GET as publicOrganRequests } from '../src/app/api/public/organ-requests/route';
 import { GET as detectCountry } from '../src/app/api/location/ip/route';
+import { GET as auditProfile } from '../src/app/api/admin/users/[userId]/route';
+import { GET as selfProfile } from '../src/app/api/users/me/profile/route';
+import { POST as auditHistory } from '../src/app/api/admin/users/[userId]/medical-records/history/route';
+import { GET as auditFile } from '../src/app/api/admin/users/[userId]/medical-reports/[reportId]/files/[fileId]/route';
+import { GET as auditPrescription } from '../src/app/api/admin/users/[userId]/prescriptions/[prescriptionId]/route';
+import { discoverDonors } from '../src/lib/donorDiscovery';
+import { automaticIpLocation, publicClientIp } from '../src/backend/services/automaticLocation';
 
 // Always use process-local test secrets, never production credentials.
 process.env.MEDICAL_RECORDS_ENCRYPTION_KEY = randomBytes(32).toString('hex');
@@ -610,4 +617,84 @@ test('visitor country lookup is uncached and never supplies a default country', 
     assert.match(result.headers.get('cache-control')||'',/no-store/);
   }
   assert.equal((await detectCountry(new Request('http://localhost/api/location/ip'))).status,404);
+});
+
+test('profile audit matches the patient profile and reads encrypted uploads without modifying patient records', integration, async () => {
+  const db=getPrisma(),owner=await newPatient(),other=await newPatient();
+  await db.userServiceCity.create({data:{user_id:owner.id,city:'Mumbai',country:'India',formatted_location:'Mumbai, India',lat:19,lng:72,provider_place_id:randomUUID(),locked_until:new Date()}});
+  await db.user.update({where:{id:owner.id},data:{profile_image_url:'https://example.invalid/current-avatar.webp',health_data:{weight:68},is_active_donor:true}});
+  const adminHeaders={authorization:`Bearer ${signToken({user_id:randomUUID(),role:'ADMIN'})}`};
+  const auditRequest=(path:string,method='GET',body?:string)=>new Request('http://localhost'+path,{method,headers:{...adminHeaders,...(body?{'Content-Type':'application/json'}:{})},...(body?{body}:{})});
+  const context={params:Promise.resolve({userId:owner.id})};
+  const admin=await auditProfile(auditRequest('/api/admin/users/'+owner.id),context);
+  const patient=await selfProfile(patientRequest('http://localhost/api/users/me/profile',owner.id));
+  const auditData=(await admin.json()).data,selfData=(await patient.json()).data;
+  for(const field of ['profileCode','profileCodeNextChangeAt','name','profileImageUrl','healthData','activeOrgans','serviceCities']) assert.deepEqual(auditData[field],selfData[field],field);
+
+  const captured=await sharp({create:{width:1200,height:1600,channels:3,background:'white'}}).jpeg({quality:100}).withMetadata().toBuffer();
+  const saved=[];
+  for(const mode of ['reports','prescriptions']) {
+    const form=await uploadForm(mode==='reports'?'Audit CBC':'Audit prescription');
+    form.append('files',new File([new Uint8Array(captured)],'camera-capture.jpg',{type:'image/jpeg'}));
+    const result=await (mode==='reports'?uploadMedicalReport:uploadPrescription)(new Request('http://localhost/api/users/me/'+(mode==='reports'?'medical-reports':'prescriptions'),{method:'POST',headers:{authorization:`Bearer ${signToken({user_id:owner.id,role:'USER'})}`},body:form}));
+    assert.equal(result.status,201);const report=(await result.json()).data;saved.push(report);
+    const persisted=await db.medicalReport.findUniqueOrThrow({where:{id:report.id}});
+    assert.ok(!Buffer.from(persisted.payload).includes(Buffer.from(report.title)));
+    assert.equal(await db.medicalReportFile.count({where:{report_id:report.id}}),2);
+    const body=JSON.stringify({mode});
+    const audited=await auditHistory(auditRequest('/api/admin/history','POST',body),context);
+    assert.equal(audited.status,200);assert.match(audited.headers.get('cache-control')||'',/no-store/);
+    const own=await searchMedicalHistory(new Request('http://localhost/api/users/me/medical-records/history',{method:'POST',headers:{authorization:`Bearer ${signToken({user_id:owner.id,role:'USER'})}`,'Content-Type':'application/json'},body}));
+    assert.deepEqual((await audited.json()).data,(await own.json()).data);
+    for(const file of report.files) {
+      const params={reportId:report.id,fileId:file.id};
+      const auditDownload=await auditFile(auditRequest('/api/admin/file?preview=1'),{params:Promise.resolve({...params,userId:owner.id})});
+      const ownDownload=await downloadFile(patientRequest('http://localhost/api/file?preview=1',owner.id),{params:Promise.resolve(params)});
+      assert.equal(auditDownload.status,200);assert.equal(auditDownload.headers.get('content-type'),'image/webp');
+      assert.deepEqual(Buffer.from(await auditDownload.arrayBuffer()),Buffer.from(await ownDownload.arrayBuffer()));
+      assert.equal((await auditFile(auditRequest('/api/admin/file'),{params:Promise.resolve({...params,userId:other.id})})).status,404);
+    }
+  }
+  const delivery=await acceptPrescription('doctor-portal',samplePrescription(owner.profile_code));
+  const before=await db.prescription.findUniqueOrThrow({where:{id:delivery.id}});
+  const auditedRx=await auditPrescription(auditRequest('/api/admin/prescription'),{params:Promise.resolve({userId:owner.id,prescriptionId:delivery.id})});
+  assert.equal(auditedRx.status,200);
+  const ownRx=await downloadPrescription(patientRequest('http://localhost/api/prescription',owner.id),{params:Promise.resolve({prescriptionId:delivery.id})});
+  assert.equal(await auditedRx.text(),await ownRx.text());
+  assert.deepEqual(await db.prescription.findUniqueOrThrow({where:{id:delivery.id}}),before,'An audit must not mark patient prescriptions read or change mail state');
+  assert.equal((await auditHistory(new Request('http://localhost/api/admin/history',{method:'POST',body:'{}'}),context)).status,401);
+  assert.equal((await auditHistory(patientRequest('http://localhost/api/admin/history',other.id,'POST'),context)).status,403);
+  assert.equal((await auditHistory(new Request('http://localhost/api/admin/history',{method:'POST',headers:{...adminHeaders,origin:'https://foreign.invalid'},body:JSON.stringify({mode:'reports'})}),context)).status,403);
+  assert.equal((await auditHistory(auditRequest('/api/admin/history','POST',JSON.stringify({mode:'reports'})),{params:Promise.resolve({userId:randomUUID()})})).status,404);
+});
+
+test('discovery falls back to real nearby donors without exposing coordinates or disturbing newest local order',integration,async()=>{
+  const db=getPrisma(),near=await newPatient(),far=await newPatient();
+  await db.user.update({where:{id:near.id},data:{name:'Nearest fixture',blood_group:'AB-',location_country:'India',location_lat:89.124,location_lng:170.123,created_at:new Date('2020-01-01')}});
+  await db.user.update({where:{id:far.id},data:{name:'Far fixture',blood_group:'AB-',location_country:'India',location_lat:-80,location_lng:-100,created_at:new Date(Date.now()+10000)}});
+  for(const user of [near,far])await db.organPledge.create({data:{user_id:user.id,organ_type:'Kidney'}});
+  for(const [endpoint,route] of [['/api/public/donors',publicBloodDonors],['/api/public/organ-donors',publicOrganDonors]] as const) {
+    const query=new URLSearchParams({country:'NoDonorsHere',bloodGroup:'AB-',viewerLat:'89.123',viewerLng:'170.123'});
+    const fetcher=(async(input)=>route(new Request(new URL(String(input),'http://localhost')))) as typeof fetch;
+    const result=await discoverDonors(endpoint,query,undefined,fetcher);
+    assert.equal(result.payload.data[0].id,near.id);assert.equal(result.params.has('country'),false);
+    assert.match(result.notice,/other locations/);assert.equal(result.payload.meta.fallback,undefined,'Normal SQL path must succeed');
+    assert.ok(!JSON.stringify(result.payload.data).includes('internal_lat'));assert.ok(!JSON.stringify(result.payload.data).includes('internal_lng'));
+  }
+  const newest=await publicBloodDonors(new Request('http://localhost/api/public/donors?country=India&bloodGroup=AB-&sort=NEWEST&viewerLat=89.123&viewerLng=170.123'));
+  assert.equal((await newest.json()).data[0].id,far.id,'Distance must not change newest-first local feeds');
+});
+
+test('automatic IP location uses the visitor address, deduplicates lookups, and skips private/VPS addresses',async()=>{
+  const request=new Request('http://localhost/api/location/ip',{headers:{'x-real-ip':'8.8.4.4'}});
+  assert.equal(publicClientIp(request),'8.8.4.4');
+  assert.equal(publicClientIp(new Request('http://localhost',{headers:{'x-real-ip':'127.0.0.1'}})),null);
+  assert.equal(publicClientIp(new Request('http://localhost')),null);
+  const originalFetch=globalThis.fetch;let calls=0;
+  globalThis.fetch=(async(input)=>{calls++;const url=new URL(String(input));assert.equal(url.hostname,'api.geoapify.com');assert.equal(url.searchParams.get('ip'),'8.8.4.4');return Response.json({country:{name:'India'},city:{name:'Delhi'},location:{latitude:28.61,longitude:77.2}});}) as typeof fetch;
+  try {
+    const [one,two]=await Promise.all([automaticIpLocation(request),automaticIpLocation(request)]);
+    assert.equal(calls,1);assert.deepEqual(one,{country:'India',city:'Delhi',lat:28.61,lng:77.2});assert.deepEqual(one,two);
+    assert.equal(await automaticIpLocation(new Request('http://localhost')),null);assert.equal(calls,1);
+  }finally{globalThis.fetch=originalFetch;}
 });

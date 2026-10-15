@@ -1,19 +1,13 @@
 import { NextResponse } from 'next/server';
 import { getPrisma } from '@/src/backend/config/db';
-import { decodePrescription, prescriptionHtml } from '@/src/backend/services/prescriptions';
+import { medicalPrescriptionResponse } from '@/src/backend/services/medicalRecordReads';
 import { medicalFailure, medicalUser, privateHeaders, MedicalError } from '@/src/backend/utils/medicalPrivacy';
 
 export async function GET(req: Request, { params }: { params: Promise<{ prescriptionId: string }> }) {
   try {
     const userId = medicalUser(req);
     const { prescriptionId } = await params;
-    const record = await getPrisma().prescription.findFirst({ where: { id: prescriptionId, user_id: userId },
-      include: { User: { select: { name: true } } } });
-    if (!record) throw new MedicalError('Prescription not found.', 404);
-    const details = decodePrescription(record);
-    return new Response(prescriptionHtml(details, record.User.name), { headers: { ...privateHeaders,
-      'Content-Type': 'text/html; charset=utf-8', 'Content-Disposition': 'attachment; filename="prescription.html"',
-      'Content-Security-Policy': "sandbox; default-src 'none'; style-src 'unsafe-inline'" } });
+    return await medicalPrescriptionResponse(userId, prescriptionId);
   } catch (error) { return medicalFailure(error); }
 }
 

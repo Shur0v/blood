@@ -27,6 +27,9 @@ interface DashboardUser {
 
 interface AdminProfileData {
   id: string;
+  profileCode?: string;
+  profileCodeNextChangeAt?: string | null;
+  serviceCities?: Array<{id:string;city:string;country:string;formatted_location:string;remainingDays:number;canRemove:boolean}>;
   name: string;
   city: string;
   country: string;
@@ -60,6 +63,9 @@ export default function AllUserList() {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [selectedProfile, setSelectedProfile] = useState<AdminProfileData | null>(null);
   const [isProfileLoading, setIsProfileLoading] = useState(false);
+  const [profileError, setProfileError] = useState('');
+  const profileRequest = React.useRef<AbortController | null>(null);
+  useEffect(() => () => profileRequest.current?.abort(), []);
 
   const countryOptions = useMemo(() => {
     const set = new Set<string>(['All Countries']);
@@ -133,6 +139,9 @@ export default function AllUserList() {
   }, [searchQuery, countryFilter, bloodFilter]);
 
   const openUserProfile = async (userId: string) => {
+    profileRequest.current?.abort();
+    const controller = new AbortController(); profileRequest.current = controller;
+    setSelectedProfile(null); setProfileError('');
     setSelectedUserId(userId);
     setIsDetailOpen(true);
     setIsProfileLoading(true);
@@ -141,14 +150,20 @@ export default function AllUserList() {
         method: 'GET',
         credentials: 'include',
         cache: 'no-store',
+        signal: controller.signal,
       });
       const payload = await res.json();
+      if (controller.signal.aborted) return;
       if (!res.ok || !payload.success) {
         setSelectedProfile(null);
+        setProfileError(payload.message || 'Unable to load this profile.');
         return;
       }
       setSelectedProfile({
         id: payload.data.id,
+        profileCode: payload.data.profileCode,
+        profileCodeNextChangeAt: payload.data.profileCodeNextChangeAt,
+        serviceCities: payload.data.serviceCities || [],
         name: payload.data.name,
         city: payload.data.city,
         country: payload.data.country,
@@ -159,8 +174,10 @@ export default function AllUserList() {
         activeOrgans: payload.data.activeOrgans || [],
         isActiveDonor: Boolean(payload.data.isActiveDonor),
       });
+    } catch (error) {
+      if (!controller.signal.aborted) setProfileError('Unable to load this profile. Please retry.');
     } finally {
-      setIsProfileLoading(false);
+      if (!controller.signal.aborted) setIsProfileLoading(false);
     }
   };
 
@@ -340,15 +357,20 @@ export default function AllUserList() {
         }
       >
         {isProfileLoading && <div className="py-8 text-sm text-gray-500">Loading user profile...</div>}
+        {profileError && <div role="alert" className="py-8 text-sm text-rose-700">{profileError} <button type="button" className="underline" onClick={()=>selectedUserId&&void openUserProfile(selectedUserId)}>Retry</button></div>}
         {!isProfileLoading && selectedProfile && selectedUserId && (
           <div className="rounded-3xl bg-white p-2">
             <UnifiedDashboard
+              key={selectedUserId}
               isReady={selectedProfile.isActiveDonor}
               onToggleReady={(ready) => void updateAdminDonorStatus(ready)}
               mode="admin"
               targetUserId={selectedUserId}
               profile={{
                 id: selectedProfile.id,
+                profileCode: selectedProfile.profileCode,
+                profileCodeNextChangeAt: selectedProfile.profileCodeNextChangeAt,
+                serviceCities: selectedProfile.serviceCities,
                 name: selectedProfile.name,
                 city: selectedProfile.city,
                 country: selectedProfile.country,

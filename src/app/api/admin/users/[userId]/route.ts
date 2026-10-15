@@ -4,6 +4,8 @@ import { Prisma } from '@prisma/client';
 import { getPrisma } from '@/src/backend/config/db';
 import { ADMIN_ROLES, getSessionFromRequest, hasRequiredRole } from '@/src/backend/utils/session';
 import { normalizeOrganList } from '@/src/lib/organCatalog';
+import { nextProfileCodeChange } from '@/src/lib/profileIdentifier';
+import { listServiceCities } from '@/src/backend/services/ServiceCityService';
 
 const UserPatchSchema = z.object({
   name: z.string().min(1).max(120).optional(),
@@ -50,15 +52,14 @@ export async function GET(req: Request, context: { params: Promise<{ userId: str
     where: { user_id: user.id, is_active: true },
     select: { organ_type: true },
   });
-  const serviceCities = await prisma.userServiceCity.findMany({
-    where: { user_id: user.id },
-    orderBy: { created_at: 'asc' },
-  });
+  const serviceCities = await listServiceCities(user.id);
 
   return NextResponse.json({
     success: true,
     data: {
       id: user.id,
+      profileCode: user.profile_code,
+      profileCodeNextChangeAt: nextProfileCodeChange(user.profile_code_changed_at),
       name: user.name,
       email: user.email,
       mobile: user.mobile,
@@ -72,17 +73,7 @@ export async function GET(req: Request, context: { params: Promise<{ userId: str
       lastDonationDate: user.last_donation_date,
       healthData: user.health_data ?? {},
       activeOrgans: normalizeOrganList(activeOrgans.map((row) => row.organ_type)),
-      serviceCities: serviceCities.map((city) => ({
-        id: city.id,
-        city: city.city,
-        country: city.country,
-        formatted_location: city.formatted_location,
-        latitude: city.lat,
-        longitude: city.lng,
-        provider_place_id: city.provider_place_id,
-        locked_until: city.locked_until,
-        canRemove: city.locked_until.getTime() <= Date.now(),
-      })),
+      serviceCities,
       createdAt: user.created_at,
       updatedAt: user.updated_at,
     },

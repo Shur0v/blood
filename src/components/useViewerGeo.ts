@@ -2,12 +2,13 @@ import { useEffect, useState } from "react";
 
 interface ViewerGeo {
   city?: string;
+  lat?: number;
+  lng?: number;
+  resolved?: boolean;
   country?: string;
   source?: "gps" | "ip" | "timezone" | "locale";
   updatedAt?: number;
 }
-
-const CACHE_KEY = "bloodnet_viewer_geo_v1";
 
 const TIMEZONE_COUNTRY_MAP: Array<{ zone: string; country: string }> = [
   { zone: "Asia/Dhaka", country: "Bangladesh" },
@@ -61,171 +62,33 @@ const deriveCountryFromLocale = (): string | undefined => {
   }
 };
 
+let pending: Promise<ViewerGeo> | undefined;
+let recent: ViewerGeo | undefined;
+const TTL=10*60*1000;
+async function automaticLocation(): Promise<ViewerGeo> {
+  if(recent?.updatedAt&&Date.now()-recent.updatedAt<TTL)return recent;
+  if(pending)return pending;
+  pending=(async()=>{
+    try {
+      const response=await fetch('/api/location/ip',{cache:'no-store',signal:AbortSignal.timeout(5000)});
+      const payload=await response.json();
+      if(response.ok&&payload.success&&payload.data?.country) {
+        return recent={...payload.data,source:'ip',resolved:true,updatedAt:Date.now()};
+      }
+    } catch { /* Use an approximate, permission-free fallback. */ }
+    const timezone=deriveCountryFromTimezone(),locale=deriveCountryFromLocale();
+    return recent={country:timezone||locale,source:timezone?'timezone':'locale',resolved:true,updatedAt:Date.now()};
+  })().finally(()=>{pending=undefined;});
+  return pending;
+}
+
+// Public browsing never invokes the browser Geolocation API or a permission prompt.
 export default function useViewerGeo() {
-  const [geo, setGeo] = useState<ViewerGeo>({});
-
-  useEffect(() => {
-    let cancelled = false;
-
-    const sourceRank: Record<NonNullable<ViewerGeo["source"]>, number> = {
-      locale: 1,
-      timezone: 2,
-      ip: 3,
-      gps: 4,
-    };
-
-    const setIfActive = (next: ViewerGeo) => {
-      if (cancelled) return;
-      setGeo((prev) => {
-        const prevRank = prev.source ? sourceRank[prev.source] : 0;
-        const nextRank = next.source ? sourceRank[next.source] : 0;
-        const shouldReplace =
-          !prev.country ||
-          nextRank >= prevRank;
-        if (!shouldReplace) return prev;
-        return { ...next };
-      });
-    };
-
-    let cachedRaw: string | null = null;
-    try { cachedRaw = sessionStorage.getItem(CACHE_KEY); } catch { /* Storage can be disabled. */ }
-    if (cachedRaw) {
-      try {
-        const cached = JSON.parse(cachedRaw) as ViewerGeo;
-        const normalizedCached: ViewerGeo = {
-          ...cached,
-          source: cached.source || "locale",
-        };
-        if (cached.updatedAt && Date.now() - cached.updatedAt < 10 * 60 * 1000) setIfActive(normalizedCached);
-      } catch {
-        // ignore invalid cache
-      }
-    }
-
-    const persist = (next: ViewerGeo) => {
-      try {
-        sessionStorage.setItem(CACHE_KEY, JSON.stringify(next));
-      } catch {
-        // ignore storage issues
-      }
-    };
-
-    let fallbackStarted = false;
-    const applyGeoFallback = async () => {
-      if (fallbackStarted) return;
-      fallbackStarted = true;
-      try {
-        const res = await fetch("/api/location/ip", {
-          method: "GET",
-          cache: "no-store",
-          signal: AbortSignal.timeout(5000),
-        });
-        const payload = (await res.json()) as {
-          success?: boolean;
-          data?: { country?: string };
-        };
-        const ipCountry = payload?.data?.country?.trim();
-        if (res.ok && payload?.success && ipCountry) {
-          const next = { country: ipCountry, source: "ip" as const, updatedAt: Date.now() };
-          setIfActive(next);
-          persist(next);
-          return;
-        }
-      } catch {
-        // continue to timezone/locale fallback
-      }
-
-      const timezoneCountry = deriveCountryFromTimezone();
-      if (timezoneCountry) {
-        const next = { country: timezoneCountry, source: "timezone" as const, updatedAt: Date.now() };
-        setIfActive(next);
-        persist(next);
-        return;
-      }
-
-      const localeCountry = deriveCountryFromLocale();
-      if (localeCountry) {
-        const next = { country: localeCountry, source: "locale" as const, updatedAt: Date.now() };
-        setIfActive(next);
-        persist(next);
-      }
-    };
-
-    // Resolve a country promptly even while a GPS permission prompt is pending.
-    void applyGeoFallback();
-    if (typeof navigator === "undefined" || !navigator.geolocation) {
-      return () => {
-        cancelled = true;
-      };
-    }
-
-    const askGeolocation = () =>
-      navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        try {
-          const params = new URLSearchParams({
-            lat: String(position.coords.latitude),
-            lng: String(position.coords.longitude),
-          });
-          const res = await fetch(`/api/location/reverse?${params.toString()}`, {
-            method: "GET",
-            cache: "no-store",
-          });
-          const payload = (await res.json()) as {
-            success?: boolean;
-            data?: { city?: string; country?: string };
-          };
-          const next: ViewerGeo = {
-            city: payload?.data?.city?.trim() || undefined,
-            country: payload?.data?.country?.trim() || undefined,
-            source: "gps",
-            updatedAt: Date.now(),
-          };
-          if (!res.ok || !payload?.success || !next.country) {
-            void applyGeoFallback();
-            return;
-          }
-          setIfActive(next);
-          persist(next);
-        } catch {
-          void applyGeoFallback();
-        }
-      },
-      () => {
-        void applyGeoFallback();
-      },
-      {
-        enableHighAccuracy: false,
-        timeout: 8000,
-        maximumAge: 10 * 60 * 1000,
-      }
-    );
-
-    const permissionsApi = (navigator as Navigator & {
-      permissions?: { query: (descriptor: { name: "geolocation" }) => Promise<{ state: PermissionState }> };
-    }).permissions;
-
-    if (permissionsApi?.query) {
-      void permissionsApi
-        .query({ name: "geolocation" })
-        .then((status) => {
-          if (status.state === "denied") {
-            void applyGeoFallback();
-            return;
-          }
-          askGeolocation();
-        })
-        .catch(() => {
-          askGeolocation();
-        });
-    } else {
-      askGeolocation();
-    }
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
+  const [geo,setGeo]=useState<ViewerGeo>({});
+  useEffect(()=>{
+    let cancelled=false;
+    void automaticLocation().then(value=>{if(!cancelled)setGeo(value);});
+    return()=>{cancelled=true;};
+  },[]);
   return geo;
 }

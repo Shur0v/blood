@@ -613,10 +613,10 @@ export default function UnifiedDashboard({
               </div>
               </div>
               </div>
-              {mode === "self" && profile?.id && <ProfileIdentityCard key={profile.id} userId={profile.id} initialCode={profile.profileCode} onSessionExpired={onSessionExpired} />}
+              {profile?.id && <ProfileIdentityCard key={profile.id} userId={profile.id} initialCode={profile.profileCode} nextChangeAt={profile.profileCodeNextChangeAt} readOnly={mode === 'admin'} onSessionExpired={onSessionExpired} />}
             </div>
             <div className="min-w-0 lg:order-2">
-              {mode === "self" && (
+              {profile && (
                 <div className="mb-8 rounded-2xl border border-border/10 bg-white p-4">
                   <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
                     <p className="text-xs font-semibold tracking-wide text-slate-600">Manage Service Cities</p>
@@ -630,6 +630,7 @@ export default function UnifiedDashboard({
                         {city.canRemove ? (
                           <button
                             type="button"
+                            disabled={mode === 'admin'}
                             onClick={() => void removeServiceCity(city.id, true)}
                             className="rounded-full bg-red-500/10 px-1.5 py-0.5 text-xs font-semibold text-red-600"
                           >
@@ -638,6 +639,7 @@ export default function UnifiedDashboard({
                         ) : (
                           <button
                             type="button"
+                            disabled={mode === 'admin'}
                             onClick={() => void removeServiceCity(city.id, false, city.remainingDays)}
                             className="rounded-full bg-amber-500/10 px-2 py-0.5 text-xs font-semibold text-amber-700"
                           >
@@ -651,6 +653,7 @@ export default function UnifiedDashboard({
                     <div className="relative">
                       <input
                         value={cityInput}
+                        disabled={mode === 'admin'}
                         onChange={(e) => setCityInput(e.target.value)}
                         placeholder="Add another city..."
                         className="w-full rounded-xl border border-border/10 bg-white px-3 py-2 text-sm text-text outline-none focus:border-primary/50"
@@ -710,12 +713,12 @@ export default function UnifiedDashboard({
               </div>
             </div>
           </div>
-          {mode === "self" && profile?.id && <div className="mb-8">
+          {profile?.id && <div className="mb-8">
             <button type="button" aria-expanded={medicalRecordsOpen} aria-controls="profile-medical-records" onClick={() => setMedicalRecordsOpen(value => !value)} className="flex min-h-14 w-full items-center justify-between gap-4 rounded-2xl border border-rose-200 bg-rose-50 px-5 py-4 text-left text-rose-800 shadow-sm transition-colors hover:bg-rose-100">
               <span className="flex items-center gap-3"><BookOpen className="h-6 w-6 shrink-0" /><span><span className="block text-base font-semibold">Medical records</span><span className="block text-xs leading-5">Add reports or view your prescriptions</span></span></span>
               <ChevronRight className={`h-5 w-5 shrink-0 transition-transform ${medicalRecordsOpen ? 'rotate-90' : ''}`} />
             </button>
-            {medicalRecordsOpen && <div id="profile-medical-records" className="mt-4"><MedicalRecordsPanel key={profile.id} userId={profile.id} onSessionExpired={onSessionExpired} openReports /></div>}
+            {medicalRecordsOpen && <div id="profile-medical-records" className="mt-4"><MedicalRecordsPanel key={profile.id} userId={profile.id} audit={mode === "admin"} onSessionExpired={onSessionExpired} openReports /></div>}
           </div>}
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
             {/* Left Column: Health Profile */}
