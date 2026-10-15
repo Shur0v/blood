@@ -1,11 +1,15 @@
 import { getPrisma } from '../config/db';
+import { randomInt, timingSafeEqual } from 'node:crypto';
+import { securityDigest } from '../utils/security';
+
+const protectedOtp=(email:string,otp:string)=>`hmac-sha256:${securityDigest(`otp:${email}:${otp}`)}`;
 
 export class AuthService {
   /**
    * Generates a secure numeric 6-digit OTP
    */
   public generateOTP(): string {
-    return Math.floor(100000 + Math.random() * 900000).toString();
+    return randomInt(100000,1000000).toString();
   }
 
   /**
@@ -18,8 +22,8 @@ export class AuthService {
 
     await getPrisma().otpVerification.upsert({
       where: { email },
-      update: { code: otp, expires_at: expiresAt },
-      create: { email, code: otp, expires_at: expiresAt },
+      update: { code: protectedOtp(email,otp), expires_at: expiresAt },
+      create: { email, code: protectedOtp(email,otp), expires_at: expiresAt },
     });
   }
 
@@ -39,7 +43,8 @@ export class AuthService {
       return false; // Expired
     }
 
-    if (record.code === otp) {
+    const candidate=record.code.startsWith('hmac-sha256:')?protectedOtp(email,otp):otp;
+    if (record.code.length === candidate.length && timingSafeEqual(Buffer.from(record.code),Buffer.from(candidate))) {
       return true;
     }
 
@@ -53,5 +58,10 @@ export class AuthService {
     await getPrisma().otpVerification.deleteMany({
       where: { email },
     });
+  }
+
+  public async consumeOTP(email:string,otp:string):Promise<boolean> {
+    const result=await getPrisma().otpVerification.deleteMany({where:{email,expires_at:{gt:new Date()},code:{in:[otp,protectedOtp(email,otp)]}}});
+    return result.count===1;
   }
 }

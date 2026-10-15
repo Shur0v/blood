@@ -462,6 +462,7 @@ export default function UnifiedDashboard({
       const uploadForm = new FormData();
       uploadForm.append("file", verificationFile);
       uploadForm.append("category", "VERIFICATION");
+      if(mode==='admin'&&targetUserId)uploadForm.append('targetUserId',targetUserId);
 
       const uploadRes = await fetch("/api/uploads/image", {
         method: "POST",

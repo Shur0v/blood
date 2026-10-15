@@ -1,3 +1,4 @@
+import { withActiveAdmin } from '@/src/backend/utils/activeAdmin';
 import { NextResponse } from 'next/server';
 import { Prisma } from '@prisma/client';
 import { z } from 'zod';
@@ -46,7 +47,7 @@ const ensureAdminSession = (req: Request) => {
   return { session };
 };
 
-export async function GET(req: Request) {
+async function handleGET(req: Request) {
   const auth = ensureAdminSession(req);
   if ('error' in auth) {
     return auth.error;
@@ -59,7 +60,7 @@ export async function GET(req: Request) {
   return NextResponse.json({ success: true, data: recent });
 }
 
-export async function POST(req: Request) {
+async function handlePOST(req: Request) {
   const auth = ensureAdminSession(req);
   if ('error' in auth) {
     return auth.error;
@@ -134,7 +135,7 @@ export async function POST(req: Request) {
   }
 }
 
-export async function DELETE(req: Request) {
+async function handleDELETE(req: Request) {
   const auth = ensureAdminSession(req);
   if ('error' in auth) {
     return auth.error;
@@ -159,3 +160,7 @@ export async function DELETE(req: Request) {
     return NextResponse.json({ success: false, message: 'Failed to delete organ donor.' }, { status: 500 });
   }
 }
+
+export const GET = withActiveAdmin(handleGET);
+export const POST = withActiveAdmin(handlePOST);
+export const DELETE = withActiveAdmin(handleDELETE);

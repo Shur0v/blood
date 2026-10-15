@@ -1,9 +1,10 @@
+import { withActiveAdmin } from '@/src/backend/utils/activeAdmin';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { Prisma } from '@prisma/client';
 import { getPrisma } from '@/src/backend/config/db';
 import { ADMIN_ROLES,getSessionFromRequest,hasRequiredRole } from '@/src/backend/utils/session';
-export async function GET(req:Request){
+async function handleGET(req:Request){
  const session=getSessionFromRequest(req);
  if(!session)return NextResponse.json({success:false,message:'Unauthorized'},{status:401});
  if(!hasRequiredRole(session,ADMIN_ROLES))return NextResponse.json({success:false,message:'Forbidden'},{status:403});
@@ -33,3 +34,5 @@ export async function GET(req:Request){
  return NextResponse.json({success:true,data:{selected:{page,device,days},zones,metrics:{totalClicks,totalPoints,mappedClicks,legacyPoints,siteTotal,recentPoints,sessionsProxy:sessionRows.length,topZone:top&&top[1]>0?labels[top[0] as keyof typeof labels]:'No Data',avgScrollDepth:depths.length?Math.round(depths.reduce((a,b)=>a+b,0)/depths.length):0},points,pageOptions:pages.map(row=>({page:row.page,count:row._count._all})).sort((a,b)=>b.count-a.count),deviceSplit:devices.map(row=>({device:row.device_type,clicks:row._count._all,percent:devices.reduce((n,p)=>n+p._count._all,0)?Math.round(row._count._all/devices.reduce((n,p)=>n+p._count._all,0)*1000)/10:0}))}},{headers:{'Cache-Control':'no-store'}});
  }catch{return NextResponse.json({success:false,message:'Heatmap unavailable. Verify the analytics migration and database connection.'},{status:500});}
 }
+
+export const GET = withActiveAdmin(handleGET);

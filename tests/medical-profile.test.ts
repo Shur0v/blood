@@ -66,6 +66,7 @@ process.env.GEOAPIFY_API_KEY = 'test-only';
 const testUrl = process.env.TEST_DATABASE_URL;
 const integration = { skip: !testUrl };
 let sql: Client;
+const testAdminId = randomUUID();
 let migratedUserId: string;
 let existingRows: Record<string, unknown> = {};
 let existingToken: string;
@@ -84,6 +85,7 @@ before(async () => {
   for (const entry of readdirSync('prisma/migrations', { withFileTypes: true }).filter(entry => entry.isDirectory() && entry.name < '20261011090000_private_medical_profile').sort((a,b) => a.name.localeCompare(b.name))) {
     await sql.query(readFileSync(path.join('prisma/migrations',entry.name,'migration.sql'),'utf8'));
   }
+  await sql.query('INSERT INTO "AdminUser" (id,admin_id,password,role) VALUES ($1,$2,$3,$4)', [testAdminId,'security-test-admin','test-only','ADMIN']);
   migratedUserId = randomUUID();
   await sql.query('INSERT INTO "User" (id,name,email,mobile,blood_group,location_city,location_country,location_lat,location_lng,updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,NOW())', [migratedUserId,'Migration Patient','migration@example.invalid','migration-mobile','A+','Dhaka','Bangladesh',23.81,90.41]);
   await sql.query(`UPDATE "User" SET profile_image_url = 'https://example.invalid/avatar.webp', date_of_birth = '1990-05-12', health_data = '{"weight":65,"allergies":["Dust"]}', verification_status = 'VERIFIED', last_donation_date = '2026-01-01' WHERE id=$1`, [migratedUserId]);
@@ -409,7 +411,7 @@ test('analytics document coordinates include scrolling and preview paths exclude
 });
 
 const analyticsPost=(events:unknown[])=>new Request('http://localhost/api/analytics/clicks',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({events})});
-const adminAnalyticsRequest=(path:string,role='ADMIN')=>new Request('http://localhost'+path,{headers:{authorization:'Bearer '+signToken({user_id:randomUUID(),role})}});
+const adminAnalyticsRequest=(path:string,role='ADMIN')=>new Request('http://localhost'+path,{headers:{authorization:'Bearer '+signToken({user_id:testAdminId,role})}});
 
 test('unified clicks count once with matching coordinates under concurrent retry',integration,async()=>{
  const event={page:'unified-test',component:'Register',deviceType:'mobile',eventId:randomUUID(),sessionId:randomUUID(),clickX:.25,clickY:.75,viewportW:390,viewportH:844,documentW:390,documentH:4000,targetPath:'body > main:nth-of-type(1)',targetX:.5,targetY:.5};
@@ -527,7 +529,7 @@ test('admin, public feed, and server statistics share active donor counts across
   await db.communityDonor.create({ data: { organization_name: randomUUID(), mobile: randomUUID(), ...location, is_active: false, source: 'TEST', added_by_admin: 'TEST' } });
   await db.userServiceCity.create({ data: { user_id: patient.id, city: 'Extra city', country: 'Bangladesh', formatted_location: 'Extra city', lat: 1, lng: 1, provider_place_id: randomUUID(), locked_until: new Date() } });
   const check = async (total: number) => {
-    const response = await dashboardOverview(new Request('http://localhost/api/admin/dashboard-overview', { headers: { authorization: `Bearer ${signToken({ user_id: randomUUID(), role: 'ADMIN' })}` } }));
+    const response = await dashboardOverview(new Request('http://localhost/api/admin/dashboard-overview', { headers: { authorization: `Bearer ${signToken({ user_id: testAdminId, role: 'ADMIN' })}` } }));
     assert.equal(response.status, 200);
     assert.match(response.headers.get('cache-control') || '', /no-store/);
     const kpis = (await response.json()).data.kpis;
@@ -623,7 +625,7 @@ test('profile audit matches the patient profile and reads encrypted uploads with
   const db=getPrisma(),owner=await newPatient(),other=await newPatient();
   await db.userServiceCity.create({data:{user_id:owner.id,city:'Mumbai',country:'India',formatted_location:'Mumbai, India',lat:19,lng:72,provider_place_id:randomUUID(),locked_until:new Date()}});
   await db.user.update({where:{id:owner.id},data:{profile_image_url:'https://example.invalid/current-avatar.webp',health_data:{weight:68},is_active_donor:true}});
-  const adminHeaders={authorization:`Bearer ${signToken({user_id:randomUUID(),role:'ADMIN'})}`};
+  const adminHeaders={authorization:`Bearer ${signToken({user_id:testAdminId,role:'ADMIN'})}`};
   const auditRequest=(path:string,method='GET',body?:string)=>new Request('http://localhost'+path,{method,headers:{...adminHeaders,...(body?{'Content-Type':'application/json'}:{})},...(body?{body}:{})});
   const context={params:Promise.resolve({userId:owner.id})};
   const admin=await auditProfile(auditRequest('/api/admin/users/'+owner.id),context);
@@ -697,4 +699,84 @@ test('automatic IP location uses the visitor address, deduplicates lookups, and 
     assert.equal(calls,1);assert.deepEqual(one,{country:'India',city:'Delhi',lat:28.61,lng:77.2});assert.deepEqual(one,two);
     assert.equal(await automaticIpLocation(new Request('http://localhost')),null);assert.equal(calls,1);
   }finally{globalThis.fetch=originalFetch;}
+});
+
+
+test('OTP storage is protected, legacy OTPs survive upgrade, and concurrent replay admits once', integration, async () => {
+  const auth=new AuthService(),email=randomUUID()+'@example.invalid',otp=auth.generateOTP();
+  assert.match(otp,/^[0-9]{6}$/);
+  await auth.storeOTP(email,otp);
+  const saved=await getPrisma().otpVerification.findUniqueOrThrow({where:{email}});
+  assert.notEqual(saved.code,otp);assert.match(saved.code,/^hmac-sha256:/);
+  assert.equal(await auth.verifyOTP(email,otp),true);
+  assert.equal(await auth.verifyOTP(email,'000000'),false);
+  const consumed=await Promise.all(Array.from({length:6},()=>auth.consumeOTP(email,otp)));
+  assert.equal(consumed.filter(Boolean).length,1);
+  await getPrisma().otpVerification.create({data:{email,code:otp,expires_at:new Date(Date.now()+60_000)}});
+  assert.equal(await auth.verifyOTP(email,otp),true);
+  assert.equal(await auth.consumeOTP(email,otp),true);
+  await getPrisma().otpVerification.create({data:{email,code:otp,expires_at:new Date(Date.now()-60_000)}});
+  assert.equal(await auth.consumeOTP(email,otp),false);
+  assert.equal(await auth.verifyOTP(email,otp),false);
+});
+
+test('database rate limiting is atomic across concurrent requests and expires correctly', integration, async () => {
+  const {securityRateLimit,securityDigest}=await import('../src/backend/utils/security');
+  const key=randomUUID(),scope='integration-security';
+  const results=await Promise.allSettled(Array.from({length:8},()=>securityRateLimit(scope,key,3,60_000)));
+  assert.equal(results.filter(x=>x.status==='fulfilled').length,3);
+  for(const result of results)if(result.status==='rejected')assert.equal(result.reason.status,429);
+  await getPrisma().authRiskEvent.updateMany({where:{fingerprint_hash:securityDigest(scope+':'+key)},data:{created_at:new Date(Date.now()-120_000)}});
+  await securityRateLimit(scope,key,3,60_000);
+});
+
+test('admin login upgrades legacy passwords and deleted or demoted admins lose API access immediately', integration, async () => {
+  const {POST:login}=await import('../src/app/api/auth/admin/login/route');
+  const bcrypt=await import('bcryptjs');
+  const admin=await getPrisma().adminUser.create({data:{admin_id:randomUUID(),password:'legacy-test-password',role:'ADMIN'}});
+  const response=await login(new Request('http://localhost/api/auth/admin/login',{method:'POST',headers:{'Content-Type':'application/json','X-Real-IP':'192.0.2.71'},body:JSON.stringify({adminId:admin.admin_id,password:'legacy-test-password'})}));
+  assert.equal(response.status,200);assert.match(response.headers.get('set-cookie')||'',/Max-Age=28800/);
+  const updated=await getPrisma().adminUser.findUniqueOrThrow({where:{id:admin.id}});
+  assert.match(updated.password,/^\$2/);assert.equal(await bcrypt.compare('legacy-test-password',updated.password),true);
+  const request=()=>new Request('http://localhost/api/admin/dashboard-overview',{headers:{authorization:'Bearer '+signToken({user_id:admin.id,role:'ADMIN'})}});
+  assert.equal((await dashboardOverview(request())).status,200);
+  await getPrisma().adminUser.update({where:{id:admin.id},data:{role:'MANAGER'}});
+  assert.equal((await dashboardOverview(request())).status,401);
+  await getPrisma().adminUser.delete({where:{id:admin.id}});
+  assert.equal((await dashboardOverview(request())).status,401);
+});
+
+test('verification uploads are encrypted, owner-bound and privately readable by owner or active admin', integration, async () => {
+  const {POST:upload}=await import('../src/app/api/uploads/image/route');
+  const {GET:view}=await import('../src/app/api/uploads/image/[assetId]/route');
+  const {POST:attach}=await import('../src/app/api/users/me/verification-documents/route');
+  const {readStoredMedia}=await import('../src/backend/services/mediaStorage');
+  const {unlink}=await import('node:fs/promises');
+  const owner=await newPatient(),other=await newPatient();
+  const image=await sharp({create:{width:40,height:30,channels:3,background:'white'}}).png().toBuffer();
+  const makeRequest=(category:string,userId?:string)=>{
+    const form=new FormData();form.append('category',category);form.append('file',new File([image],'test.png',{type:'image/png'}));
+    return new Request('http://localhost/api/uploads/image',{method:'POST',headers:userId?{authorization:'Bearer '+signToken({user_id:userId,role:'USER'})}:{},body:form});
+  };
+  assert.equal((await upload(makeRequest('PROFILE'))).status,401);
+  const response=await upload(makeRequest('VERIFICATION',owner.id));assert.equal(response.status,200);
+  const payload=await response.json(),asset=await getPrisma().mediaAsset.findUniqueOrThrow({where:{id:payload.data.id}});
+  try {
+    assert.equal(payload.data.mimeType,'image/webp');assert.match(asset.public_url,/\/api\/uploads\/image\//);
+    const encrypted=await readStoredMedia(asset.storage_key);assert.notEqual(encrypted.subarray(0,4).toString(),'RIFF');
+    const params=Promise.resolve({assetId:asset.id});
+    assert.equal((await view(new Request('http://localhost/image'),{params})).status,401);
+    assert.equal((await view(patientRequest('http://localhost/image',other.id),{params})).status,404);
+    const opened=await view(patientRequest('http://localhost/image',owner.id),{params});assert.equal(opened.status,200);
+    assert.match(opened.headers.get('cache-control')||'',/no-store/);
+    assert.equal((await sharp(Buffer.from(await opened.arrayBuffer())).metadata()).format,'webp');
+    assert.equal((await view(adminAnalyticsRequest('/image'),{params})).status,200);
+    const attachRequest=(userId:string)=>new Request('http://localhost/api/users/me/verification-documents',{method:'POST',headers:{authorization:'Bearer '+signToken({user_id:userId,role:'USER'}),'Content-Type':'application/json'},body:JSON.stringify({assetUrl:asset.public_url})});
+    assert.equal((await attach(attachRequest(other.id))).status,400);
+    assert.equal((await attach(attachRequest(owner.id))).status,200);
+    const oversized=new Request('http://localhost/api/uploads/image',{method:'POST',headers:{'content-length':String(11*1024*1024)},body:'x'});
+    assert.equal((await upload(oversized)).status,413);
+  } finally {
+    if(asset.storage_key.startsWith('local/'))await unlink(path.resolve('public/uploads',asset.storage_key.slice(6)));
+  }
 });

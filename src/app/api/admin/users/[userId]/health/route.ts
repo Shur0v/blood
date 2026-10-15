@@ -1,3 +1,4 @@
+import { withActiveAdmin } from '@/src/backend/utils/activeAdmin';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { Prisma } from '@prisma/client';
@@ -22,7 +23,7 @@ const HealthSchema = z.object({
   allergies: z.array(z.string()).optional(),
 });
 
-export async function PATCH(req: Request, context: { params: Promise<{ userId: string }> }) {
+async function handlePATCH(req: Request, context: { params: Promise<{ userId: string }> }) {
   const session = getSessionFromRequest(req);
   if (!session) {
     return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
@@ -64,3 +65,5 @@ export async function PATCH(req: Request, context: { params: Promise<{ userId: s
 
   return NextResponse.json({ success: true, data: mergedHealth });
 }
+
+export const PATCH = withActiveAdmin(handlePATCH);

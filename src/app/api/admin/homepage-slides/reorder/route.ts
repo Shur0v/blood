@@ -1,3 +1,4 @@
+import { withActiveAdmin } from '@/src/backend/utils/activeAdmin';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getPrisma } from '@/src/backend/config/db';
@@ -18,7 +19,7 @@ const ensureAdmin = (req: Request) => {
   return { ok: true as const };
 };
 
-export async function PUT(req: Request) {
+async function handlePUT(req: Request) {
   const auth = ensureAdmin(req);
   if (!auth.ok) return auth.response;
 
@@ -46,3 +47,5 @@ export async function PUT(req: Request) {
   }
 }
 
+
+export const PUT = withActiveAdmin(handlePUT);

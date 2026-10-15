@@ -20,6 +20,8 @@ export async function GET(req: Request) {
   }
 
   if (ADMIN_ROLES.includes(session.role as (typeof ADMIN_ROLES)[number])) {
+    const admin=await getPrisma().adminUser.findUnique({where:{id:session.user_id},select:{role:true}});
+    if(!admin||admin.role!==session.role)return NextResponse.json({authenticated:false},{status:401,headers:noStoreHeaders});
     const response = NextResponse.json({
       authenticated: true,
       user: {
@@ -36,7 +38,7 @@ export async function GET(req: Request) {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       domain: resolveSessionCookieDomain(),
-      maxAge: 365 * 24 * 60 * 60,
+      maxAge: 8 * 60 * 60,
     });
     return response;
   }

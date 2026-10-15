@@ -56,6 +56,7 @@ test('real deploy preserves every legacy table, matches Prisma, and survives rec
         if (column.data_type.includes('timestamp') || column.data_type === 'date') return '2026-01-02';
         if (column.data_type === 'jsonb' || column.data_type === 'json') return JSON.stringify({ preserved: true, sample: ['old-data'] });
         if (column.data_type === 'ARRAY') return [];
+        if (table === 'AdminUser' && name === 'role') return 'ADMIN';
         if (name === 'blood_group') return 'A+';
         if (name === 'organ_type') return 'Kidney';
         if (name === 'email') return `${table.toLowerCase()}@example.invalid`;

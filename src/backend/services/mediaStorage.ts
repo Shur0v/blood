@@ -1,5 +1,5 @@
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
-import { mkdir, writeFile } from 'fs/promises';
+import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
+import { mkdir, writeFile, readFile } from 'fs/promises';
 import path from 'path';
 import { randomUUID } from 'crypto';
 import { getAppEnv } from '@/src/backend/config/env';
@@ -53,9 +53,11 @@ export const getTransformConfig = (category: UploadCategory): TransformConfig =>
 export const saveOptimizedWebp = async ({
   category,
   optimizedBuffer,
+  encrypted = false,
 }: {
   category: UploadCategory;
   optimizedBuffer: Buffer;
+  encrypted?: boolean;
 }): Promise<{ storageKey: string; publicUrl: string }> => {
   const env = getAppEnv();
   const bucket = env.R2_BUCKET;
@@ -70,7 +72,7 @@ export const saveOptimizedWebp = async ({
         Bucket: bucket,
         Key: storageKey,
         Body: optimizedBuffer,
-        ContentType: 'image/webp',
+        ContentType: encrypted ? 'application/octet-stream' : 'image/webp',
       }),
     );
 
@@ -96,3 +98,16 @@ export const saveOptimizedWebp = async ({
     publicUrl: `/uploads/${category.toLowerCase()}/${datePrefix}/${fileName}`,
   };
 };
+
+export async function readStoredMedia(storageKey:string):Promise<Buffer> {
+  if(storageKey.startsWith('local/')) {
+    const root=path.resolve(process.cwd(),'public','uploads'),file=path.resolve(root,storageKey.slice(6));
+    if(!file.startsWith(root+path.sep))throw new Error('Invalid storage key.');
+    return readFile(file);
+  }
+  const client=getR2Client(),bucket=getAppEnv().R2_BUCKET;
+  if(!client||!bucket)throw new Error('Private media storage is unavailable.');
+  const response=await client.send(new GetObjectCommand({Bucket:bucket,Key:storageKey}));
+  if(!response.Body)throw new Error('Private media not found.');
+  return Buffer.from(await response.Body.transformToByteArray());
+}

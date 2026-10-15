@@ -1,3 +1,4 @@
+import { withActiveAdmin } from '@/src/backend/utils/activeAdmin';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getPrisma } from '@/src/backend/config/db';
@@ -72,7 +73,7 @@ const ensureUniqueSlug = async (requested: string, excludeId: string) => {
   }
 };
 
-export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
+async function handlePUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const authError = ensureAdminSession(req);
   if (authError) return authError;
 
@@ -127,3 +128,5 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 
   return NextResponse.json({ success: true, data: updated });
 }
+
+export const PUT = withActiveAdmin(handlePUT);

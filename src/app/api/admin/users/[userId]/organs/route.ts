@@ -1,3 +1,4 @@
+import { withActiveAdmin } from '@/src/backend/utils/activeAdmin';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getPrisma } from '@/src/backend/config/db';
@@ -8,7 +9,7 @@ const OrgansSchema = z.object({
   organs: z.array(z.string().min(1)).max(20),
 });
 
-export async function PATCH(req: Request, context: { params: Promise<{ userId: string }> }) {
+async function handlePATCH(req: Request, context: { params: Promise<{ userId: string }> }) {
   const session = getSessionFromRequest(req);
   if (!session) {
     return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
@@ -52,3 +53,5 @@ export async function PATCH(req: Request, context: { params: Promise<{ userId: s
     data: { organs: normalizedOrgans },
   });
 }
+
+export const PATCH = withActiveAdmin(handlePATCH);

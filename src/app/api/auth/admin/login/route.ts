@@ -4,17 +4,20 @@ import bcrypt from 'bcryptjs';
 import { getPrisma } from '@/src/backend/config/db';
 import { signToken } from '@/src/backend/utils/jwt';
 import { resolveSessionCookieDomain } from '@/src/backend/utils/cookieDomain';
+import { securityJson, securityRateLimit, securityFailure } from '@/src/backend/utils/security';
+import { getIpHash } from '@/src/backend/utils/risk';
+import { createHash, timingSafeEqual } from 'node:crypto';
 
 const LoginSchema = z.object({
-  adminId: z.string().min(2),
-  password: z.string().min(6),
+  adminId: z.string().min(2).max(120),
+  password: z.string().min(6).max(1024),
 });
 
 const looksHashed = (value: string): boolean => value.startsWith('$2a$') || value.startsWith('$2b$') || value.startsWith('$2y$');
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
+    const body = await securityJson(req,8192);
     const parsed = LoginSchema.safeParse(body);
 
     if (!parsed.success) {
@@ -22,6 +25,8 @@ export async function POST(req: Request) {
     }
 
     const { adminId, password } = parsed.data;
+    await securityRateLimit('admin-login-ip',getIpHash(req),50,15*60*1000);
+    await securityRateLimit('admin-login-id',adminId.toLowerCase(),8,15*60*1000);
     const prisma = getPrisma();
     const adminUser = await prisma.adminUser.findUnique({
       where: { admin_id: adminId },
@@ -33,7 +38,7 @@ export async function POST(req: Request) {
 
     const passwordMatch = looksHashed(adminUser.password)
       ? await bcrypt.compare(password, adminUser.password)
-      : adminUser.password === password;
+      : timingSafeEqual(createHash('sha256').update(adminUser.password).digest(),createHash('sha256').update(password).digest());
 
     if (!passwordMatch) {
       return NextResponse.json({ success: false, message: 'Invalid credentials.' }, { status: 401 });
@@ -41,7 +46,7 @@ export async function POST(req: Request) {
 
     await prisma.adminUser.update({
       where: { id: adminUser.id },
-      data: { last_login: new Date() },
+      data: { last_login: new Date(), ...(!looksHashed(adminUser.password)?{password:await bcrypt.hash(password,12)}:{}) },
     });
 
     const token = signToken({ user_id: adminUser.id, role: adminUser.role });
@@ -62,11 +67,11 @@ export async function POST(req: Request) {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       domain: resolveSessionCookieDomain(),
-      maxAge: 365 * 24 * 60 * 60,
+      maxAge: 8 * 60 * 60,
     });
 
     return response;
   } catch (error) {
-    return NextResponse.json({ success: false, message: 'Login failed.' }, { status: 500 });
+    return securityFailure(error);
   }
 }

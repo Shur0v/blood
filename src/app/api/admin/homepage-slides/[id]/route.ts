@@ -1,3 +1,4 @@
+import { withActiveAdmin } from '@/src/backend/utils/activeAdmin';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { Prisma } from '@prisma/client';
@@ -22,7 +23,7 @@ const ensureAdmin = (req: Request) => {
   return { ok: true as const };
 };
 
-export async function PUT(req: Request, context: { params: Promise<{ id: string }> }) {
+async function handlePUT(req: Request, context: { params: Promise<{ id: string }> }) {
   const auth = ensureAdmin(req);
   if (!auth.ok) return auth.response;
 
@@ -52,7 +53,7 @@ export async function PUT(req: Request, context: { params: Promise<{ id: string 
   }
 }
 
-export async function DELETE(req: Request, context: { params: Promise<{ id: string }> }) {
+async function handleDELETE(req: Request, context: { params: Promise<{ id: string }> }) {
   const auth = ensureAdmin(req);
   if (!auth.ok) return auth.response;
 
@@ -71,3 +72,6 @@ export async function DELETE(req: Request, context: { params: Promise<{ id: stri
   }
 }
 
+
+export const PUT = withActiveAdmin(handlePUT);
+export const DELETE = withActiveAdmin(handleDELETE);

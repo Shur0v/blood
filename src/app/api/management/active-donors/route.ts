@@ -1,3 +1,4 @@
+import { withActiveAdmin } from '@/src/backend/utils/activeAdmin';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getPrisma } from '@/src/backend/config/db';
@@ -23,7 +24,7 @@ const ensureManagerSession = (req: Request): NextResponse | null => {
   return null;
 };
 
-export async function GET(req: Request) {
+async function handleGET(req: Request) {
   const authError = ensureManagerSession(req);
   if (authError) return authError;
 
@@ -84,3 +85,5 @@ export async function GET(req: Request) {
     return NextResponse.json({ success: false, message: 'Failed to fetch active donors.' }, { status: 500 });
   }
 }
+
+export const GET = withActiveAdmin(handleGET);

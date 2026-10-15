@@ -1,3 +1,4 @@
+import { withActiveAdmin } from '@/src/backend/utils/activeAdmin';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getPrisma } from '@/src/backend/config/db';
@@ -8,7 +9,7 @@ const CreateSchema = z.object({
   documentType: z.enum(['PRESCRIPTION', 'MEDICAL_REPORT', 'OTHER']).default('MEDICAL_REPORT'),
 });
 
-export async function POST(req: Request, context: { params: Promise<{ userId: string }> }) {
+async function handlePOST(req: Request, context: { params: Promise<{ userId: string }> }) {
   const session = getSessionFromRequest(req);
   if (!session) {
     return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
@@ -29,6 +30,8 @@ export async function POST(req: Request, context: { params: Promise<{ userId: st
     if (!user) {
       return NextResponse.json({ success: false, message: 'User not found.' }, { status: 404 });
     }
+    const asset=await prisma.mediaAsset.findFirst({where:{public_url:parsed.data.assetUrl,category:'VERIFICATION',OR:[{owner_user_id:userId},{owner_user_id:null}]},select:{id:true}});
+    if(!asset)return NextResponse.json({success:false,message:'Select a verification image uploaded for this user.'},{status:400});
 
     const [document] = await prisma.$transaction([
       prisma.verificationDocument.create({
@@ -50,3 +53,5 @@ export async function POST(req: Request, context: { params: Promise<{ userId: st
     return NextResponse.json({ success: false, message: 'Failed to submit verification document.' }, { status: 500 });
   }
 }
+
+export const POST = withActiveAdmin(handlePOST);

@@ -1,3 +1,4 @@
+import { withActiveAdmin } from '@/src/backend/utils/activeAdmin';
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getPrisma } from "@/src/backend/config/db";
@@ -16,7 +17,7 @@ const getLatestSettings = async (prisma: ReturnType<typeof getPrisma>) =>
     orderBy: [{ updated_at: "desc" }, { id: "desc" }],
   });
 
-export async function GET(req: Request) {
+async function handleGET(req: Request) {
   const session = getSessionFromRequest(req);
   if (!session) {
     return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
@@ -48,7 +49,7 @@ export async function GET(req: Request) {
   }
 }
 
-export async function PUT(req: Request) {
+async function handlePUT(req: Request) {
   const session = getSessionFromRequest(req);
   if (!session) {
     return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
@@ -90,3 +91,6 @@ export async function PUT(req: Request) {
     return NextResponse.json({ success: false, message: "Failed to update theme." }, { status: 500 });
   }
 }
+
+export const GET = withActiveAdmin(handleGET);
+export const PUT = withActiveAdmin(handlePUT);

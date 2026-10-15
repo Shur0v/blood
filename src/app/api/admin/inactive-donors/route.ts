@@ -1,3 +1,4 @@
+import { withActiveAdmin } from '@/src/backend/utils/activeAdmin';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getPrisma } from '@/src/backend/config/db';
@@ -20,7 +21,7 @@ const deriveReason = (verificationStatus: string): InactiveReason => {
 const reasonLabel = (reason: InactiveReason): string =>
   reason === 'MISSING_VERIFICATION' ? 'Missing Verification' : 'User Turned Off Availability';
 
-export async function GET(req: Request) {
+async function handleGET(req: Request) {
   const session = getSessionFromRequest(req);
   if (!session) {
     return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
@@ -153,3 +154,5 @@ export async function GET(req: Request) {
     return NextResponse.json({ success: false, message: 'Failed to load inactive donors.' }, { status: 500 });
   }
 }
+
+export const GET = withActiveAdmin(handleGET);

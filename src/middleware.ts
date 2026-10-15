@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { isAllowedWriteRequest } from './lib/requestSecurity';
 
 const SUPPORTED_LOCALES = ['en', 'bn', 'ja', 'es', 'de'] as const;
 const DEFAULT_LOCALE = 'en';
@@ -59,12 +60,14 @@ const applySecurityHeaders = (response: NextResponse, isApiRoute: boolean, previ
     if (response.headers.get('X-Accel-Buffering')) return;
     if (response.headers.get('Content-Type')?.includes('text/event-stream')) return;
     if (response.headers.get('Content-Disposition')) return;
-    response.headers.set('Cache-Control', 'public, max-age=30, stale-while-revalidate=120');
+    response.headers.set('Cache-Control', 'no-store');
   }
 };
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const publicOrigin=process.env.NEXT_PUBLIC_BASE_URL||process.env.NEXT_PUBLIC_SITE_URL||(process.env.NODE_ENV==='production'?'https://bloodnet.live':undefined);
+  if(pathname.startsWith('/api/')&&!isAllowedWriteRequest(request,publicOrigin))return NextResponse.json({success:false,message:'Cross-origin request rejected.'},{status:403,headers:{'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
   const response = NextResponse.next();
 
   if (!isStaticAsset(pathname)) {

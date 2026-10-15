@@ -1,3 +1,4 @@
+import { withActiveAdmin } from '@/src/backend/utils/activeAdmin';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { Prisma } from '@prisma/client';
@@ -82,7 +83,7 @@ const stripUndefined = <T extends Record<string, unknown>>(obj: T): Record<strin
 
 const ALLOWED_BLOOD_GROUPS = new Set(['O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-']);
 
-export async function GET(req: Request) {
+async function handleGET(req: Request) {
   const auth = ensureAdminSession(req);
   if ('error' in auth) {
     return auth.error;
@@ -96,7 +97,7 @@ export async function GET(req: Request) {
   return NextResponse.json({ success: true, data: recent });
 }
 
-export async function POST(req: Request) {
+async function handlePOST(req: Request) {
   const auth = ensureAdminSession(req);
   if ('error' in auth) {
     return auth.error;
@@ -309,7 +310,7 @@ export async function POST(req: Request) {
   }
 }
 
-export async function DELETE(req: Request) {
+async function handleDELETE(req: Request) {
   const auth = ensureAdminSession(req);
   if ('error' in auth) {
     return auth.error;
@@ -334,3 +335,7 @@ export async function DELETE(req: Request) {
     return NextResponse.json({ success: false, message: 'Failed to delete donor.' }, { status: 500 });
   }
 }
+
+export const GET = withActiveAdmin(handleGET);
+export const POST = withActiveAdmin(handlePOST);
+export const DELETE = withActiveAdmin(handleDELETE);

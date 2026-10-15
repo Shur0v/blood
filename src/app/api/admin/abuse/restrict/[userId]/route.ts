@@ -1,3 +1,4 @@
+import { withActiveAdmin } from '@/src/backend/utils/activeAdmin';
 import { NextResponse } from 'next/server';
 import { getPrisma } from '@/src/backend/config/db';
 import { ADMIN_ROLES, getSessionFromRequest, hasRequiredRole } from '@/src/backend/utils/session';
@@ -13,7 +14,7 @@ const ensureAdminSession = (req: Request) => {
   return { session };
 };
 
-export async function POST(req: Request, { params }: { params: Promise<{ userId: string }> }) {
+async function handlePOST(req: Request, { params }: { params: Promise<{ userId: string }> }) {
   const auth = ensureAdminSession(req);
   if ('error' in auth) return auth.error;
 
@@ -47,3 +48,5 @@ export async function POST(req: Request, { params }: { params: Promise<{ userId:
 
   return NextResponse.json({ success: true, message: 'User restricted successfully.' });
 }
+
+export const POST = withActiveAdmin(handlePOST);

@@ -1,3 +1,4 @@
+import { withActiveAdmin } from '@/src/backend/utils/activeAdmin';
 import { NextResponse } from "next/server";
 import { gzipSync } from "zlib";
 import { getPrisma } from "@/src/backend/config/db";
@@ -13,12 +14,12 @@ const replacer = (_key: string, value: unknown) => {
   return value;
 };
 
-export async function GET(req: Request) {
+async function handleGET(req: Request) {
   const session = getSessionFromRequest(req);
   if (!session) {
     return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
   }
-  if (!hasRequiredRole(session, ADMIN_ROLES)) {
+  if (!hasRequiredRole(session, ['ADMIN'])) {
     return NextResponse.json({ success: false, message: "Forbidden" }, { status: 403 });
   }
 
@@ -67,3 +68,5 @@ export async function GET(req: Request) {
     return NextResponse.json({ success: false, message: "Failed to generate database backup." }, { status: 500 });
   }
 }
+
+export const GET = withActiveAdmin(handleGET);

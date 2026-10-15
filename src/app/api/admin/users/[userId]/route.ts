@@ -1,3 +1,4 @@
+import { withActiveAdmin } from '@/src/backend/utils/activeAdmin';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { Prisma } from '@prisma/client';
@@ -34,7 +35,7 @@ const unauthorized = (req: Request): NextResponse | null => {
   return null;
 };
 
-export async function GET(req: Request, context: { params: Promise<{ userId: string }> }) {
+async function handleGET(req: Request, context: { params: Promise<{ userId: string }> }) {
   const authError = unauthorized(req);
   if (authError) return authError;
 
@@ -80,7 +81,7 @@ export async function GET(req: Request, context: { params: Promise<{ userId: str
   });
 }
 
-export async function PATCH(req: Request, context: { params: Promise<{ userId: string }> }) {
+async function handlePATCH(req: Request, context: { params: Promise<{ userId: string }> }) {
   const authError = unauthorized(req);
   if (authError) return authError;
 
@@ -188,7 +189,7 @@ export async function PATCH(req: Request, context: { params: Promise<{ userId: s
   }
 }
 
-export async function DELETE(req: Request, context: { params: Promise<{ userId: string }> }) {
+async function handleDELETE(req: Request, context: { params: Promise<{ userId: string }> }) {
   const authError = unauthorized(req);
   if (authError) return authError;
 
@@ -217,3 +218,7 @@ export async function DELETE(req: Request, context: { params: Promise<{ userId: 
     return NextResponse.json({ success: false, message: 'Failed to delete user.' }, { status: 500 });
   }
 }
+
+export const GET = withActiveAdmin(handleGET);
+export const PATCH = withActiveAdmin(handlePATCH);
+export const DELETE = withActiveAdmin(handleDELETE);

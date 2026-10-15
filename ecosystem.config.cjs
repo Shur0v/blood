@@ -4,7 +4,7 @@ module.exports = {
       name: 'bloodnet',
       cwd: '/var/www/bloodnet',
       script: 'npm',
-      args: 'run start',
+      args: 'run start -- --hostname 127.0.0.1',
       exec_mode: 'fork',
       instances: 1,
       autorestart: true,

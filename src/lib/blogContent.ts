@@ -1,3 +1,5 @@
+import sanitizeHtml from 'sanitize-html';
+
 const HTML_TAG_REGEX = /<\/?[a-z][\s\S]*>/i;
 
 export const hasHtmlMarkup = (value: string): boolean => HTML_TAG_REGEX.test(value);
@@ -11,16 +13,12 @@ export const stripHtmlTags = (value: string): string =>
     .trim();
 
 export const sanitizeBlogHtml = (value: string): string => {
-  let html = value;
-
-  html = html.replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, "");
-  html = html.replace(/<style[\s\S]*?>[\s\S]*?<\/style>/gi, "");
-  html = html.replace(/<(iframe|object|embed|form|input|button|textarea|select)[\s\S]*?>[\s\S]*?<\/\1>/gi, "");
-  html = html.replace(/\son[a-z]+\s*=\s*(['"]).*?\1/gi, "");
-  html = html.replace(/\son[a-z]+\s*=\s*[^\s>]+/gi, "");
-  html = html.replace(/\s(href|src)\s*=\s*(['"])\s*javascript:[\s\S]*?\2/gi, " $1=\"#\"");
-  html = html.replace(/<table\b([^>]*)>/gi, "<div class=\"bn-table-wrap\"><table$1>");
-  html = html.replace(/<\/table>/gi, "</table></div>");
-
-  return html.trim();
+  const html=sanitizeHtml(value,{
+    allowedTags:sanitizeHtml.defaults.allowedTags.concat(['img','h1','h2','span']),
+    allowedAttributes:{a:['href','name','target','rel'],img:['src','alt','width','height','loading'],th:['colspan','rowspan','scope'],td:['colspan','rowspan'],'*':['class','style']},
+    allowedSchemes:['http','https','mailto','tel'],allowProtocolRelative:false,
+    allowedStyles:{'*':{'text-align':[/^(left|right|center|justify)$/],'color':[/^#[0-9a-fA-F]{3,8}$/,/^rgb\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*\)$/],'font-weight':[/^(normal|bold|[1-9]00)$/]}},
+    transformTags:{a:(tagName,attributes)=>({tagName,attribs:{...attributes,rel:'noopener noreferrer'}})},
+  });
+  return html.replace(/<table\b([^>]*)>/gi,'<div class="bn-table-wrap"><table$1>').replace(/<\/table>/gi,'</table></div>').trim();
 };

@@ -1,3 +1,4 @@
+import { withActiveAdmin } from '@/src/backend/utils/activeAdmin';
 import { NextResponse } from "next/server";
 import { z } from 'zod';
 import { getPrisma } from "@/src/backend/config/db";
@@ -22,7 +23,7 @@ const StatsSchema = z
     ui_theme: data.ui_theme ?? data.uiTheme,
   }));
 
-export async function PUT(req: Request) {
+async function handlePUT(req: Request) {
   const session = getSessionFromRequest(req);
   if (!session) {
     return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
@@ -81,3 +82,5 @@ export async function PUT(req: Request) {
     return NextResponse.json({ success: false, message: "Failed to update platform statistics." }, { status: 500 });
   }
 }
+
+export const PUT = withActiveAdmin(handlePUT);

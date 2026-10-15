@@ -3,6 +3,14 @@ import sharp from 'sharp';
 import { z } from 'zod';
 import { getPrisma } from '@/src/backend/config/db';
 import { getSessionFromRequest } from '@/src/backend/utils/session';
+import { requireActiveAdmin } from '@/src/backend/utils/activeAdmin';
+import { ADMIN_ROLES } from '@/src/backend/utils/session';
+import { boundedBody } from '@/src/backend/utils/boundedBody';
+import { MedicalError, encryptMedical } from '@/src/backend/utils/medicalPrivacy';
+import { randomUUID } from 'node:crypto';
+import { getPublicBaseUrl } from '@/src/backend/config/env';
+import { securityRateLimit, securityFailure } from '@/src/backend/utils/security';
+import { getIpHash } from '@/src/backend/utils/risk';
 import { getTransformConfig, saveOptimizedWebp, type UploadCategory } from '@/src/backend/services/mediaStorage';
 
 export const runtime = 'nodejs';
@@ -26,7 +34,10 @@ const isAllowedMimeType = (mimeType: string): boolean => {
 export async function POST(req: Request) {
   try {
     const session = getSessionFromRequest(req);
-    const formData = await req.formData();
+    if(session && ADMIN_ROLES.includes(session.role as typeof ADMIN_ROLES[number]))await requireActiveAdmin(req);
+    await securityRateLimit('image-upload-ip',getIpHash(req),60,60*60*1000);
+    const bytes=await boundedBody(req,MAX_BYTES+128*1024);
+    const formData = await new Response(bytes as BodyInit,{headers:{'Content-Type':req.headers.get('content-type')||''}}).formData();
     const rawFile = formData.get('file');
 
     if (!(rawFile instanceof File)) {
@@ -34,6 +45,16 @@ export async function POST(req: Request) {
     }
 
     const category = parseCategory(String(formData.get('category')));
+    if(!session&&category!=='MEDICAL_AID')throw new MedicalError('Authentication required for this upload.',401);
+    if(category==='SLIDER'&&(!session||!ADMIN_ROLES.includes(session.role as typeof ADMIN_ROLES[number])))throw new MedicalError('Administrator access required.',403);
+    if(!session)await securityRateLimit('guest-image-upload-ip',getIpHash(req),10,60*60*1000);
+    let ownerUserId=session?.role==='USER'?session.user_id:null;
+    const targetUserId=formData.get('targetUserId');
+    if(category==='VERIFICATION'&&typeof targetUserId==='string'&&targetUserId) {
+      if(!session||!ADMIN_ROLES.includes(session.role as typeof ADMIN_ROLES[number]))throw new MedicalError('Administrator access required.',403);
+      if(!await getPrisma().user.findUnique({where:{id:targetUserId},select:{id:true}}))throw new MedicalError('User not found.',404);
+      ownerUserId=targetUserId;
+    }
     const mimeType = rawFile.type;
 
     if (!isAllowedMimeType(mimeType)) {
@@ -46,7 +67,7 @@ export async function POST(req: Request) {
     const fileBuffer = Buffer.from(await rawFile.arrayBuffer());
     const transformConfig = getTransformConfig(category);
 
-    const pipeline = sharp(fileBuffer).rotate();
+    const pipeline = sharp(fileBuffer,{limitInputPixels:40_000_000,pages:1}).rotate();
     const metadata = await pipeline.metadata();
     const resized = pipeline.resize({
       width: transformConfig.maxWidth,
@@ -56,18 +77,22 @@ export async function POST(req: Request) {
     const optimizedBuffer = await resized.webp({ quality: transformConfig.quality }).toBuffer();
     const outputMeta = await sharp(optimizedBuffer).metadata();
 
+    const assetId=randomUUID(),privateVerification=category==='VERIFICATION';
+    const storedBytes=privateVerification?encryptMedical(optimizedBuffer,`verification-asset:${assetId}`):optimizedBuffer;
     const { storageKey, publicUrl } = await saveOptimizedWebp({
       category,
-      optimizedBuffer,
+      optimizedBuffer:storedBytes,
+      encrypted:privateVerification,
     });
 
     const asset = await getPrisma().mediaAsset.create({
       data: {
-        owner_user_id: session?.role === 'USER' ? session.user_id : null,
+        id:assetId,
+        owner_user_id: ownerUserId,
         category,
         storage_key: storageKey,
-        public_url: publicUrl,
-        mime_type: 'image/webp',
+        public_url: privateVerification?`${getPublicBaseUrl()}/api/uploads/image/${assetId}`:publicUrl,
+        mime_type: privateVerification?'application/x-bloodnet-encrypted-webp':'image/webp',
         width: outputMeta.width || metadata.width || null,
         height: outputMeta.height || metadata.height || null,
         size_bytes: optimizedBuffer.byteLength,
@@ -83,10 +108,10 @@ export async function POST(req: Request) {
         width: asset.width,
         height: asset.height,
         sizeBytes: asset.size_bytes,
-        mimeType: asset.mime_type,
+        mimeType: 'image/webp',
       },
     });
   } catch (error) {
-    return NextResponse.json({ success: false, message: 'Failed to process image upload.' }, { status: 500 });
+    return securityFailure(error);
   }
 }

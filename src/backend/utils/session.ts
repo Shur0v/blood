@@ -14,7 +14,7 @@ const extractCookies = (cookieHeader: string | null): Record<string, string> => 
     if (!rawKey) {
       return acc;
     }
-    acc[rawKey] = decodeURIComponent(rawValue.join('=') || '');
+    try { acc[rawKey] = decodeURIComponent(rawValue.join('=') || ''); } catch { /* Ignore malformed, unauthenticated cookies. */ }
     return acc;
   }, {});
 };

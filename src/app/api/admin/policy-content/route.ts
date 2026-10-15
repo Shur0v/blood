@@ -1,3 +1,4 @@
+import { withActiveAdmin } from '@/src/backend/utils/activeAdmin';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getPrisma } from '@/src/backend/config/db';
@@ -51,7 +52,7 @@ const ensureAdmin = (req: Request) => {
   return { ok: true as const };
 };
 
-export async function GET(req: Request) {
+async function handleGET(req: Request) {
   const auth = ensureAdmin(req);
   if (!auth.ok) return auth.response;
 
@@ -72,7 +73,7 @@ export async function GET(req: Request) {
   }
 }
 
-export async function PUT(req: Request) {
+async function handlePUT(req: Request) {
   const auth = ensureAdmin(req);
   if (!auth.ok) return auth.response;
 
@@ -104,3 +105,6 @@ export async function PUT(req: Request) {
     return NextResponse.json({ success: false, message: `Failed to save policy content: ${message}` }, { status: 500 });
   }
 }
+
+export const GET = withActiveAdmin(handleGET);
+export const PUT = withActiveAdmin(handlePUT);

@@ -1,3 +1,4 @@
+import { withActiveAdmin } from '@/src/backend/utils/activeAdmin';
 import { NextResponse } from "next/server";
 import { getPrisma } from "@/src/backend/config/db";
 import { ADMIN_ROLES, getSessionFromRequest, hasRequiredRole } from "@/src/backend/utils/session";
@@ -36,7 +37,7 @@ const mapFromGroups = (groups: Array<{ page: string; component: string; _count: 
   return map;
 };
 
-export async function GET(req: Request) {
+async function handleGET(req: Request) {
   const session = getSessionFromRequest(req);
   if (!session) {
     return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
@@ -209,3 +210,5 @@ export async function GET(req: Request) {
     return NextResponse.json({ success: false, message: "Failed to fetch click analytics." }, { status: 500 });
   }
 }
+
+export const GET = withActiveAdmin(handleGET);

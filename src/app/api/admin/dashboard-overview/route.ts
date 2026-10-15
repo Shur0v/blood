@@ -1,3 +1,4 @@
+import { withActiveAdmin } from '@/src/backend/utils/activeAdmin';
 import { NextResponse } from 'next/server';
 import { getPrisma } from '@/src/backend/config/db';
 import { getActiveBloodDonorCounts } from '@/src/backend/services/donorCounts';
@@ -17,7 +18,7 @@ const toNumber = (value: bigint | number | null | undefined): number => {
   return Number(value ?? 0);
 };
 
-export async function GET(req: Request) {
+async function handleGET(req: Request) {
   const session = getSessionFromRequest(req);
   if (!session) {
     return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
@@ -221,3 +222,5 @@ export async function GET(req: Request) {
     return NextResponse.json({ success: false, message: 'Failed to load dashboard overview.' }, { status: 500 });
   }
 }
+
+export const GET = withActiveAdmin(handleGET);

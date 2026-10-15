@@ -1,3 +1,4 @@
+import { withActiveAdmin } from '@/src/backend/utils/activeAdmin';
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getPrisma } from "@/src/backend/config/db";
@@ -25,7 +26,7 @@ const ensureAdmin = (req: Request) => {
   return { ok: true as const };
 };
 
-export async function GET(req: Request) {
+async function handleGET(req: Request) {
   const auth = ensureAdmin(req);
   if (!auth.ok) return auth.response;
 
@@ -37,7 +38,7 @@ export async function GET(req: Request) {
   }
 }
 
-export async function POST(req: Request) {
+async function handlePOST(req: Request) {
   const auth = ensureAdmin(req);
   if (!auth.ok) return auth.response;
 
@@ -66,3 +67,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: false, message: "Failed to create FAQ item." }, { status: 500 });
   }
 }
+
+export const GET = withActiveAdmin(handleGET);
+export const POST = withActiveAdmin(handlePOST);

@@ -1,3 +1,4 @@
+import { withActiveAdmin } from '@/src/backend/utils/activeAdmin';
 import { NextResponse } from 'next/server';
 import { getPrisma } from '@/src/backend/config/db';
 import { ADMIN_ROLES, getSessionFromRequest, hasRequiredRole } from '@/src/backend/utils/session';
@@ -13,7 +14,7 @@ const ensureAdminSession = (req: Request) => {
   return { session };
 };
 
-export async function GET(req: Request) {
+async function handleGET(req: Request) {
   const auth = ensureAdminSession(req);
   if ('error' in auth) return auth.error;
   const url = new URL(req.url);
@@ -61,7 +62,7 @@ export async function GET(req: Request) {
   });
 }
 
-export async function DELETE(req: Request) {
+async function handleDELETE(req: Request) {
   const auth = ensureAdminSession(req);
   if ('error' in auth) return auth.error;
 
@@ -90,3 +91,6 @@ export async function DELETE(req: Request) {
 
   return NextResponse.json({ success: true, message: 'Community donor removed.' });
 }
+
+export const GET = withActiveAdmin(handleGET);
+export const DELETE = withActiveAdmin(handleDELETE);

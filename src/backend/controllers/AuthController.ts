@@ -11,19 +11,20 @@ import { getPrisma } from '../config/db';
 import { resolveSessionCookieDomain } from '../utils/cookieDomain';
 import { z } from 'zod';
 import { reserveGeneratedProfileCode } from '../services/profileIdentifiers';
+import { securityJson, securityRateLimit, securityFailure } from '../utils/security';
 
 const authService = new AuthService();
 const userRepo = new UserRepository();
 
 // Zod schemas for strict request validation
 const RequestOtpSchema = z.object({
-  email: z.string().email(),
+  email: z.string().trim().email().max(254),
   deviceFingerprint: z.string().min(6).max(512).optional(),
 });
 
 const VerifyOtpSchema = z.object({
-  email: z.string().email(),
-  otp: z.string().length(6),
+  email: z.string().trim().email().max(254),
+  otp: z.string().regex(/^\d{6}$/),
   // Registration expansion fallback payload if the user doesn't already exist
   name: z.string().optional(),
   dateOfBirth: z.string().datetime().optional(),
@@ -65,7 +66,7 @@ export class AuthController {
    */
   static async requestOtp(req: Request) {
     try {
-      const body = await req.json();
+      const body = await securityJson(req);
       const parsed = RequestOtpSchema.safeParse(body);
       
       if (!parsed.success) {
@@ -75,6 +76,8 @@ export class AuthController {
       const { email, deviceFingerprint } = parsed.data;
       const fingerprintHash = getFingerprintHash(deviceFingerprint);
       const ipHash = getIpHash(req);
+      await securityRateLimit('otp-send-ip',ipHash,60,10*60*1000);
+      await securityRateLimit('otp-send-email',email.toLowerCase(),5,10*60*1000);
 
       const existingUser = await userRepo.findByEmail(email);
       const restricted = await ensureNotRestricted({
@@ -112,8 +115,7 @@ export class AuthController {
 
       return NextResponse.json({ message: 'OTP dispatched successfully' }, { status: 200 });
     } catch (err: any) {
-      console.error(err);
-      return NextResponse.json({ error: 'Internal server error while requesting OTP' }, { status: 500 });
+      return securityFailure(err);
     }
   }
 
@@ -123,7 +125,7 @@ export class AuthController {
    */
   static async verifyOtp(req: Request) {
     try {
-      const body = await req.json();
+      const body = await securityJson(req);
       const parsed = VerifyOtpSchema.safeParse(body);
 
       if (!parsed.success) {
@@ -133,6 +135,8 @@ export class AuthController {
       const { email, otp, name, dateOfBirth, mobile, phone, bloodGroup, location, locations, deviceFingerprint } = parsed.data;
       const fingerprintHash = getFingerprintHash(deviceFingerprint);
       const ipHash = getIpHash(req);
+      await securityRateLimit('otp-verify-ip',ipHash,100,15*60*1000);
+      await securityRateLimit('otp-verify-email',email.toLowerCase(),8,15*60*1000);
 
       const isValid = await authService.verifyOTP(email, otp);
       if (!isValid) {
@@ -326,6 +330,8 @@ export class AuthController {
         });
       }
 
+      // Atomically consume after payload validation, including the two-step signup.
+      if (!await authService.consumeOTP(email,otp)) return NextResponse.json({ error: 'Invalid or expired OTP code' }, { status: 401 });
       // Mint Custom JWT Token
       const token = signToken({ user_id: targetUser.id, role: 'USER' });
 
@@ -350,12 +356,10 @@ export class AuthController {
       });
 
       // OTP should be consumed only after full auth process succeeds
-      await authService.invalidateOTP(email);
 
       return response;
     } catch (err: any) {
-      console.error(err);
-      return NextResponse.json({ error: 'Internal server error while verifying OTP' }, { status: 500 });
+      return securityFailure(err);
     }
   }
 

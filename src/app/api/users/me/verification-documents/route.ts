@@ -24,6 +24,8 @@ export async function POST(req: Request) {
     }
 
     const prisma = getPrisma();
+    const asset=await prisma.mediaAsset.findFirst({where:{public_url:parsed.data.assetUrl,category:'VERIFICATION',owner_user_id:session.user_id},select:{id:true}});
+    if(!asset)return NextResponse.json({success:false,message:'Select a verification image uploaded to your account.'},{status:400});
     const [document] = await prisma.$transaction([
       prisma.verificationDocument.create({
         data: {

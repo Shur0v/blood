@@ -1,3 +1,6 @@
+import { SafeAssetUrl } from '@/src/lib/safeAssetUrl';
+import { securityJson, securityRateLimit, securityFailure } from '@/src/backend/utils/security';
+import { getIpHash } from '@/src/backend/utils/risk';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getPrisma } from '@/src/backend/config/db';
@@ -30,7 +33,7 @@ const CreateOrganRequestSchema = z.object({
   prescriptionImages: z
     .array(
       z.union([
-        z.string().url(),
+        SafeAssetUrl,
         z.string().regex(/^\/uploads\/.+/),
       ]),
     )
@@ -101,7 +104,8 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const parsed = CreateOrganRequestSchema.safeParse(await req.json());
+    await securityRateLimit('public-patient-request',getIpHash(req),10,60*60*1000);
+    const parsed = CreateOrganRequestSchema.safeParse(await securityJson(req));
     if (!parsed.success) {
       const issue = parsed.error.issues[0];
       const issuePath = issue?.path?.length ? issue.path.join('.') : 'payload';
@@ -174,6 +178,6 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true, data: created }, { status: 201 });
   } catch (error) {
-    return NextResponse.json({ success: false, message: 'Failed to submit organ request.' }, { status: 500 });
+    return securityFailure(error);
   }
 }

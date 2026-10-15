@@ -27,7 +27,7 @@ export interface JwtPayload {
  * @returns {string} Signed JWT token
  */
 export const signToken = (payload: JwtPayload): string => {
-  return jwt.sign(payload, getJwtSecret(), { expiresIn: '365d' });
+  return jwt.sign(payload, getJwtSecret(), { algorithm: 'HS256', expiresIn: payload.role === 'USER' ? '365d' : '8h' });
 };
 
 /**
@@ -37,7 +37,11 @@ export const signToken = (payload: JwtPayload): string => {
  */
 export const verifyToken = (token: string): JwtPayload | null => {
   try {
-    return jwt.verify(token, getJwtSecret()) as JwtPayload;
+    const decoded = jwt.verify(token, getJwtSecret(), { algorithms: ['HS256'] });
+    if (typeof decoded !== 'object' || typeof decoded.user_id !== 'string' || !decoded.user_id || !['USER','ADMIN','MANAGER'].includes(decoded.role) || typeof decoded.exp !== 'number' || typeof decoded.iat !== 'number') return null;
+    // Also bound old privileged cookies minted before the shorter lifetime.
+    if (decoded.role !== 'USER' && Date.now()/1000 - decoded.iat > 8*60*60) return null;
+    return { user_id: decoded.user_id, role: decoded.role };
   } catch (err) {
     return null;
   }

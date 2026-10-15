@@ -8,12 +8,14 @@ const sha256 = (value: string): string => {
 };
 
 export const getClientIp = (req: Request): string => {
+  // Nginx overwrites X-Real-IP; prefer it over a client-prepended XFF chain.
+  const realIp = req.headers.get('x-real-ip');
+  if (realIp) return realIp.trim();
   const forwarded = req.headers.get('x-forwarded-for');
   if (forwarded) {
     return forwarded.split(',')[0]?.trim() || 'unknown';
   }
-  const realIp = req.headers.get('x-real-ip');
-  return realIp?.trim() || 'unknown';
+  return 'unknown';
 };
 
 export const getFingerprintHash = (fingerprintRaw?: string | null): string | null => {

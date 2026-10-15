@@ -1,3 +1,4 @@
+import { withActiveAdmin } from '@/src/backend/utils/activeAdmin';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getPrisma } from '@/src/backend/config/db';
@@ -76,7 +77,7 @@ const ensureUniqueSlug = async (requested: string, excludeId?: string) => {
   }
 };
 
-export async function GET(req: Request) {
+async function handleGET(req: Request) {
   const authError = ensureAdminSession(req);
   if (authError) return authError;
 
@@ -119,7 +120,7 @@ export async function GET(req: Request) {
   });
 }
 
-export async function POST(req: Request) {
+async function handlePOST(req: Request) {
   const authError = ensureAdminSession(req);
   if (authError) return authError;
 
@@ -163,3 +164,6 @@ export async function POST(req: Request) {
 
   return NextResponse.json({ success: true, data: row }, { status: 201 });
 }
+
+export const GET = withActiveAdmin(handleGET);
+export const POST = withActiveAdmin(handlePOST);

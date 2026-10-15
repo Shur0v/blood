@@ -1,3 +1,4 @@
+import { withActiveAdmin } from '@/src/backend/utils/activeAdmin';
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getPrisma } from "@/src/backend/config/db";
@@ -25,7 +26,7 @@ const ensureAdmin = (req: Request) => {
   return { ok: true as const };
 };
 
-export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
+async function handlePUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const auth = ensureAdmin(req);
   if (!auth.ok) return auth.response;
 
@@ -57,7 +58,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
   }
 }
 
-export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
+async function handleDELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const auth = ensureAdmin(req);
   if (!auth.ok) return auth.response;
 
@@ -71,3 +72,6 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
     return NextResponse.json({ success: false, message: "Failed to delete FAQ item." }, { status: 500 });
   }
 }
+
+export const PUT = withActiveAdmin(handlePUT);
+export const DELETE = withActiveAdmin(handleDELETE);

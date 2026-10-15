@@ -1,3 +1,4 @@
+import { withActiveAdmin } from '@/src/backend/utils/activeAdmin';
 import { NextResponse } from 'next/server';
 import { Prisma } from '@prisma/client';
 import { getPrisma } from '@/src/backend/config/db';
@@ -40,7 +41,7 @@ interface ResolvedCity {
   place_id: string;
 }
 
-export async function POST(req: Request) {
+async function handlePOST(req: Request) {
   const auth = ensureAdminSession(req);
   if ('error' in auth) return auth.error;
 
@@ -201,3 +202,5 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 });
   }
 }
+
+export const POST = withActiveAdmin(handlePOST);

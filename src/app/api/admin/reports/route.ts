@@ -1,3 +1,4 @@
+import { withActiveAdmin } from '@/src/backend/utils/activeAdmin';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getPrisma } from '@/src/backend/config/db';
@@ -25,7 +26,7 @@ const toPriority = (message: string): 'High' | 'Medium' => {
 
 const startOfUtcDay = (date: Date) => new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
 
-export async function GET(req: Request) {
+async function handleGET(req: Request) {
   const session = getSessionFromRequest(req);
   if (!session) {
     return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
@@ -131,7 +132,7 @@ export async function GET(req: Request) {
   }
 }
 
-export async function PATCH(req: Request) {
+async function handlePATCH(req: Request) {
   const session = getSessionFromRequest(req);
   if (!session) {
     return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
@@ -156,3 +157,6 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ success: false, message: 'Failed to update report.' }, { status: 500 });
   }
 }
+
+export const GET = withActiveAdmin(handleGET);
+export const PATCH = withActiveAdmin(handlePATCH);
