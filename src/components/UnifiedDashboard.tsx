@@ -87,7 +87,7 @@ export default function UnifiedDashboard({
   const [glucoseTouched, setGlucoseTouched] = useState(false);
   const [glucoseUnknown, setGlucoseUnknown] = useState(false);
   const [selectedVaccines, setSelectedVaccines] = useState<string[]>([]);
-  const [selectedAllergies, setSelectedAllergies] = useState<string[]>(["Dust"]);
+  const [selectedAllergies, setSelectedAllergies] = useState<string[]>([]);
   const [registeredOrgans, setRegisteredOrgans] = useState<string[]>([]);
   const [blogStatus, setBlogStatus] = useState<"idle" | "submitting" | "success">("idle");
   const [isAnonymous, setIsAnonymous] = useState(false);
@@ -118,11 +118,31 @@ export default function UnifiedDashboard({
   const skipNextHealthAutosaveRef = useRef(false);
   const skipNextOrgansAutosaveRef = useRef(false);
   const sessionExpiredRef = useRef(false);
+  const savedHealthRef = useRef('');
+  const savedOrgansRef = useRef('');
   const healthEndpoint = mode === "admin" && targetUserId ? `/api/admin/users/${targetUserId}/health` : "/api/users/me/health";
   const organsEndpoint = mode === "admin" && targetUserId ? `/api/admin/users/${targetUserId}/organs` : "/api/users/me/organs";
   const verificationEndpoint = mode === "admin" && targetUserId ? `/api/admin/users/${targetUserId}/verification-documents` : "/api/users/me/verification-documents";
   const profileEndpoint = mode === "admin" && targetUserId ? `/api/admin/users/${targetUserId}` : "/api/users/me/profile";
 
+  const healthSignature = JSON.stringify({
+          weight: weightTouched && !weightUnknown ? weight : null,
+          weightTouched,
+          weightUnknown,
+          height: heightTouched && !heightUnknown ? height : null,
+          heightTouched,
+          heightUnknown,
+          hemoglobin: hemoglobinTouched && !hemoglobinUnknown ? hemoglobin : null,
+          hemoglobinTouched,
+          hemoglobinUnknown,
+          isDiabetic,
+          glucose: glucoseTouched && !glucoseUnknown ? glucose : null,
+          glucoseTouched,
+          glucoseUnknown,
+          vaccinations: selectedVaccines,
+          allergies: selectedAllergies,
+        });
+  const organsSignature = JSON.stringify(registeredOrgans);
   const profileId = profile?.id;
   const profileHealthData = profile?.healthData;
   const profileActiveOrgans = profile?.activeOrgans;
@@ -133,32 +153,30 @@ export default function UnifiedDashboard({
     if (!profile) return;
 
     const health = (profileHealthData ?? {}) as Record<string, unknown>;
-    const hasExplicitTouchedFlag = (key: string) => health[key] === true;
     const hasNumericValue = (key: string) => typeof health[key] === "number";
-    const resolveTouched = (key: string, fallbackValue: number, unknown: boolean) => {
+    const resolveTouched = (key: string, unknown: boolean) => {
       if (unknown) return true;
-      if (hasExplicitTouchedFlag(`${key}Touched`)) return true;
-      if (!hasNumericValue(key)) return false;
-      return Number(health[key]) !== fallbackValue;
+      if (typeof health[`${key}Touched`] === 'boolean') return health[`${key}Touched`] === true;
+      return hasNumericValue(key);
     };
 
     const nextWeightUnknown = Boolean(health.weightUnknown);
     const nextWeight = typeof health.weight === "number" ? health.weight : 70;
-    const nextWeightTouched = resolveTouched("weight", 70, nextWeightUnknown);
+    const nextWeightTouched = resolveTouched("weight", nextWeightUnknown);
     setWeight(nextWeight);
     setWeightUnknown(nextWeightUnknown);
     setWeightTouched(nextWeightTouched);
 
     const nextHeightUnknown = Boolean(health.heightUnknown);
     const nextHeight = typeof health.height === "number" ? health.height : 170;
-    const nextHeightTouched = resolveTouched("height", 170, nextHeightUnknown);
+    const nextHeightTouched = resolveTouched("height", nextHeightUnknown);
     setHeight(nextHeight);
     setHeightUnknown(nextHeightUnknown);
     setHeightTouched(nextHeightTouched);
 
     const nextHemoglobinUnknown = Boolean(health.hemoglobinUnknown);
     const nextHemoglobin = typeof health.hemoglobin === "number" ? health.hemoglobin : 14.5;
-    const nextHemoglobinTouched = resolveTouched("hemoglobin", 14.5, nextHemoglobinUnknown);
+    const nextHemoglobinTouched = resolveTouched("hemoglobin", nextHemoglobinUnknown);
     setHemoglobin(nextHemoglobin);
     setHemoglobinUnknown(nextHemoglobinUnknown);
     setHemoglobinTouched(nextHemoglobinTouched);
@@ -166,15 +184,33 @@ export default function UnifiedDashboard({
     setIsDiabetic(Boolean(health.isDiabetic));
     const nextGlucoseUnknown = Boolean(health.glucoseUnknown);
     const nextGlucose = typeof health.glucose === "number" ? health.glucose : 95;
-    const nextGlucoseTouched = resolveTouched("glucose", 95, nextGlucoseUnknown);
+    const nextGlucoseTouched = resolveTouched("glucose", nextGlucoseUnknown);
     setGlucose(nextGlucose);
     setGlucoseUnknown(nextGlucoseUnknown);
     setGlucoseTouched(nextGlucoseTouched);
     setSelectedVaccines(Array.isArray(health.vaccinations) ? health.vaccinations.filter((v): v is string => typeof v === "string") : []);
-    setSelectedAllergies(Array.isArray(health.allergies) ? health.allergies.filter((a): a is string => typeof a === "string") : ["Dust"]);
+    setSelectedAllergies(Array.isArray(health.allergies) ? health.allergies.filter((a): a is string => typeof a === "string") : []);
     setRegisteredOrgans(normalizeOrganList(profileActiveOrgans ?? []));
     setProfileImageUrl(profileImage ?? null);
     setServiceCities(profileServiceCities ?? []);
+    savedHealthRef.current = JSON.stringify({
+          weight: nextWeightTouched && !nextWeightUnknown ? nextWeight : null,
+          weightTouched: nextWeightTouched,
+          weightUnknown: nextWeightUnknown,
+          height: nextHeightTouched && !nextHeightUnknown ? nextHeight : null,
+          heightTouched: nextHeightTouched,
+          heightUnknown: nextHeightUnknown,
+          hemoglobin: nextHemoglobinTouched && !nextHemoglobinUnknown ? nextHemoglobin : null,
+          hemoglobinTouched: nextHemoglobinTouched,
+          hemoglobinUnknown: nextHemoglobinUnknown,
+          isDiabetic: Boolean(health.isDiabetic),
+          glucose: nextGlucoseTouched && !nextGlucoseUnknown ? nextGlucose : null,
+          glucoseTouched: nextGlucoseTouched,
+          glucoseUnknown: nextGlucoseUnknown,
+          vaccinations: Array.isArray(health.vaccinations) ? health.vaccinations.filter((v): v is string => typeof v === "string") : [],
+          allergies: Array.isArray(health.allergies) ? health.allergies.filter((a): a is string => typeof a === "string") : [],
+        });
+    savedOrgansRef.current = JSON.stringify(normalizeOrganList(profileActiveOrgans ?? []));
     hydratedRef.current = true;
     // Prevent first autosave pass from writing pre-hydration default state.
     skipNextHealthAutosaveRef.current = true;
@@ -276,23 +312,7 @@ export default function UnifiedDashboard({
         method: "PATCH",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          weight: weightTouched && !weightUnknown ? weight : null,
-          weightTouched,
-          weightUnknown,
-          height: heightTouched && !heightUnknown ? height : null,
-          heightTouched,
-          heightUnknown,
-          hemoglobin: hemoglobinTouched && !hemoglobinUnknown ? hemoglobin : null,
-          hemoglobinTouched,
-          hemoglobinUnknown,
-          isDiabetic,
-          glucose: glucoseTouched && !glucoseUnknown ? glucose : null,
-          glucoseTouched,
-          glucoseUnknown,
-          vaccinations: selectedVaccines,
-          allergies: selectedAllergies,
-        }),
+        body: healthSignature,
       });
 
       if (!res.ok) {
@@ -308,6 +328,7 @@ export default function UnifiedDashboard({
         onHealthDataSaved(payload.data as Record<string, unknown>);
       }
 
+      savedHealthRef.current = healthSignature;
       setSaveState("saved");
       setTimeout(() => setSaveState("idle"), 1200);
     } catch (error) {
@@ -323,6 +344,7 @@ export default function UnifiedDashboard({
       return;
     }
 
+    if (savedHealthRef.current === healthSignature) return;
     const timer = setTimeout(() => {
       void persistHealth();
     }, 700);
@@ -356,6 +378,7 @@ export default function UnifiedDashboard({
       return;
     }
 
+    if (savedOrgansRef.current === organsSignature) return;
     const timer = setTimeout(async () => {
       try {
         setSaveState("saving");
@@ -374,6 +397,7 @@ export default function UnifiedDashboard({
           throw new Error("Failed to save organs");
         }
 
+        savedOrgansRef.current = organsSignature;
         if (onOrgansSaved) {
           onOrgansSaved(registeredOrgans);
         }

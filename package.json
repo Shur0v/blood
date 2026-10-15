@@ -20,6 +20,7 @@
     "test:deployment": "tsx --test tests/database-deployment.test.ts",
     "test:ads": "tsx --test tests/ads-runtime.test.ts",
     "test:discovery": "tsx --test tests/donor-discovery.test.ts",
+    "test:profile-ui": "tsx tests/profile-ui-check.mjs",
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint"
