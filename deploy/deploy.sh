@@ -22,7 +22,19 @@ for tool in git node npm pm2 curl pg_dump pg_restore tar; do
     exit 1
   fi
 done
-node -e 'const [major,minor]=process.versions.node.split(".").map(Number); if (!(major >= 24 || major === 22 && minor >= 12 || major === 20 && minor >= 19)) { console.error("ERROR: Prisma requires Node 20.19+, 22.12+, or 24+."); process.exit(1); }'
+# The locked sanitizer also requires Node 22.12+. Keep upgrades private to
+# BloodNet instead of changing Node or PM2 for other applications on this VPS.
+supported_node='const [major,minor]=process.versions.node.split(".").map(Number); process.exit(major >= 24 || major === 22 && minor >= 12 ? 0 : 1);'
+if ! node -e "${supported_node}"; then
+  RUNTIME_DIR="${BLOODNET_RUNTIME_DIR:-/var/lib/bloodnet/node-runtime}"
+  echo "==> Prepare a supported Node 22 runtime for BloodNet only"
+  if ! [[ -x "${RUNTIME_DIR}/node_modules/node/bin/node" ]] || ! "${RUNTIME_DIR}/node_modules/node/bin/node" -e "${supported_node}"; then
+    npm install --prefix "${RUNTIME_DIR}" --no-save --package-lock=false --no-audit --no-fund node@22
+  fi
+  export PATH="${RUNTIME_DIR}/node_modules/node/bin:${PATH}"
+fi
+node -e "${supported_node}"
+export BLOODNET_NODE_EXECUTABLE="$(command -v node)"
 
 echo "==> Ensure core services are running"
 if command -v systemctl >/dev/null 2>&1; then
@@ -56,6 +68,9 @@ git reset --hard origin/main
 echo "==> Install dependencies"
 # Prisma migration/build tooling and the supervised tsx worker are required on VPS.
 npm ci --include=dev
+
+echo "==> Generate Prisma client before importing backend checks"
+npm run db:generate
 
 echo "==> Ensure private medical storage is configured safely"
 npm run medical:configure

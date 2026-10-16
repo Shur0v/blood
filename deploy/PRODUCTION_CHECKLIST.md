@@ -62,6 +62,10 @@ bash ./deploy-prod.sh
 
 The entry point fetches the current deployment implementation before executing it, so a deployment never continues with old in-memory steps after updating the checkout. Core Nginx/PostgreSQL service checks are retained on systemd servers.
 
+After `npm ci`, deployment explicitly generates Prisma before any backend configuration check imports `PrismaClient`. The build's own generation step is too late for those checks.
+
+The locked dependencies require Node 22.12+ (or Node 24+). If the shared VPS runtime is older, deployment installs and reuses a private Node 22 runtime in `/var/lib/bloodnet/node-runtime`. BloodNet's web process and prescription worker receive that interpreter and PATH explicitly. The system Node installation, global PM2 installation and other PM2 applications are unchanged. A runtime installation failure stops before pausing running BloodNet processes.
+
 ## 7) PM2 auto-start after VPS reboot
 ```bash
 pm2 startup systemd
