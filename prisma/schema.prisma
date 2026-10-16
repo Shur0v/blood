@@ -72,6 +72,9 @@ model PublicDonorProfile {
   consent_version    String?  @db.VarChar(32)
   consented_at       DateTime?
   phone_consented_at DateTime?
+  admin_approved_at   DateTime?
+  admin_approved_by   String?
+  article_template   Int      @default(0)
   withdrawn_at       DateTime?
   created_at         DateTime @default(now())
   updated_at         DateTime @updatedAt

@@ -1186,7 +1186,7 @@ export default function UnifiedDashboard({
               )}
             </div>
           </div>
-          {profile?.id && <div className="mt-8 pb-20 sm:pb-0"><PublicProfileSettings userId={profile.id} profile={profile} audit={mode === "admin"}/></div>}
+          {profile?.id && mode === "admin" && <div className="mt-8 pb-20 sm:pb-0"><PublicProfileSettings userId={profile.id} profile={profile}/></div>}
         </div>
       </motion.div>
     </section>

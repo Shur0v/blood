@@ -1,6 +1,20 @@
-import { getPrisma } from '@/src/backend/config/db';
 import { NextResponse } from 'next/server';
-import { withActiveAdmin } from '@/src/backend/utils/activeAdmin';
-import { privateHeaders } from '@/src/backend/utils/medicalPrivacy';
-import { getPublicProfileSettings } from '@/src/backend/services/publicDonorProfiles';
-export const GET = withActiveAdmin(async (_req: Request, {params}: {params: Promise<{userId:string}>}) => {const {userId}=await params;if(!await getPrisma().user.findUnique({where:{id:userId},select:{id:true}}))return NextResponse.json({success:false,message:'Account not found.'},{status:404,headers:privateHeaders});return NextResponse.json({ success: true, data: await getPublicProfileSettings(userId) }, { headers: privateHeaders });});
+import {z} from 'zod';
+import {withActiveAdmin,requireActiveAdmin} from '@/src/backend/utils/activeAdmin';
+import {medicalAuditUser,privateHeaders} from '@/src/backend/utils/medicalPrivacy';
+import {securityJson,securityRateLimit} from '@/src/backend/utils/security';
+import {getPublicProfileSettings,savePublicProfileSettings} from '@/src/backend/services/publicDonorProfiles';
+const Settings=z.object({isPublished:z.boolean(),showPhone:z.boolean(),bio:z.string().trim().max(1200),articleTemplate:z.number().int().min(0).max(9),authorizationConfirmed:z.boolean().optional()}).strict();
+type Context={params:Promise<{userId:string}>};
+export const GET=withActiveAdmin(async(req:Request,{params}:Context)=>{
+ const userId=await medicalAuditUser(req,(await params).userId);
+ return NextResponse.json({success:true,data:await getPublicProfileSettings(userId)},{headers:privateHeaders});
+});
+export const PATCH=withActiveAdmin(async(req:Request,{params}:Context)=>{
+ const admin=await requireActiveAdmin(req),userId=await medicalAuditUser(req,(await params).userId);
+ await securityRateLimit('admin-public-profile',admin.user_id,60,60*60*1000);
+ const parsed=Settings.safeParse(await securityJson(req,8192));
+ if(!parsed.success)return NextResponse.json({success:false,message:'Choose an article template and review the introduction (maximum 1,200 characters).'},{status:400,headers:privateHeaders});
+ await savePublicProfileSettings(userId,parsed.data,admin.user_id);
+ return NextResponse.json({success:true,data:await getPublicProfileSettings(userId)},{headers:privateHeaders});
+});

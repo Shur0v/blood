@@ -6,7 +6,7 @@ import { isDiscoveryPath } from '../lib/discoveryRoutes';
 
 export default function SeoPagePresentation({children}:{children:ReactNode}) {
   const pathname=usePathname();
-  return isDiscoveryPath(pathname)?<div className="donor-directory-page" onClickCapture={event=>{
+  return isDiscoveryPath(pathname)?<div className={pathname.startsWith('/donors/')?'donor-editorial-shell':'donor-directory-page'} onClickCapture={event=>{
     if(window.self===window.top||event.ctrlKey||event.metaKey||event.shiftKey)return;
     const link=(event.target as HTMLElement).closest('a');
     if(!link||link.target==='_blank'||link.hasAttribute('download'))return;

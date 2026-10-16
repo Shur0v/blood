@@ -108,6 +108,11 @@ before(async () => {
   await sql.query(readFileSync('prisma/migrations/20261016090000_opt_in_public_donor_profiles/migration.sql','utf8'));
   await sql.query(readFileSync('prisma/migrations/20261016120000_user_login_emails/migration.sql','utf8'));
   await sql.query(readFileSync('prisma/migrations/20261016140000_discovery_visibility/migration.sql','utf8'));
+  const legacyPublicationId=randomUUID(),legacyBio='Legacy text preserved for admin review, without automatically publishing an existing donor profile.';
+  await sql.query('INSERT INTO "PublicDonorProfile" (id,user_id,slug,is_published,bio,consent_version,consented_at,updated_at) VALUES ($1,$2,$3,true,$4,$5,NOW(),NOW())',[legacyPublicationId,migratedUserId,'migration-review-'+legacyPublicationId,legacyBio,'2026-10-16-v1']);
+  await sql.query(readFileSync('prisma/migrations/20261016210000_admin_donor_publication/migration.sql','utf8'));
+  const migratedPublication=(await sql.query('SELECT * FROM "PublicDonorProfile" WHERE id=$1',[legacyPublicationId])).rows[0];
+  assert.equal(migratedPublication.is_published,false);assert.equal(migratedPublication.bio,legacyBio);assert.equal(migratedPublication.admin_approved_at,null);assert.ok(migratedPublication.consented_at);
 });
 after(async () => { if (testUrl) { await getPrisma().$disconnect(); await sql?.end(); } });
 
@@ -893,49 +898,50 @@ test('a new account completes request, OTP verification and profile session with
 });
 
 
-test('public search profiles require separate consent, persist and withdraw without changing the account', integration, async()=>{
-  const {getPublicDonorProfile,listPublicDonorProfiles,getPublicProfileSettings,savePublicProfileSettings}=await import('../src/backend/services/publicDonorProfiles');
-  const user=await newPatient();
-  const original=await getPrisma().user.findUniqueOrThrow({where:{id:user.id}});
-  assert.deepEqual(await getPublicProfileSettings(user.id),{isPublished:false,showPhone:false,bio:'',publicPath:null,consentVersion:null});
-  assert.equal(await getPrisma().publicDonorProfile.count({where:{user_id:user.id}}),0);
-  const settings={isPublished:true,showPhone:false,bio:'I prefer to coordinate volunteering through an authorised hospital. Please confirm the collection arrangements and respect my availability.'};
-  await assert.rejects(savePublicProfileSettings(user.id,settings),/confirm.*name/);
-  await assert.rejects(savePublicProfileSettings(user.id,{...settings,bio:settings.bio+' Call +8801712345678.',consent:true}),/Keep phone numbers/);
-  await assert.rejects(savePublicProfileSettings(user.id,{...settings,showPhone:true,consent:true}),/separately confirm/);
-  await savePublicProfileSettings(user.id,{...settings,consent:true});
-  const row=await getPrisma().publicDonorProfile.findUniqueOrThrow({where:{user_id:user.id}});
-  const publicData=await getPublicDonorProfile(row.slug);assert.ok(publicData);assert.equal(publicData.phone,null);
-  for(const field of ['email','user_id','health_data','profile_code','date_of_birth','medicalReports'])assert.ok(!(field in publicData));
-  assert.ok((await listPublicDonorProfiles()).some(item=>item.slug===row.slug));
-  await savePublicProfileSettings(user.id,{...settings,showPhone:true,phoneConsent:true});
-  assert.equal((await getPublicDonorProfile(row.slug))?.phone,user.mobile);
-  await savePublicProfileSettings(user.id,{...settings,isPublished:false});
-  assert.equal(await getPublicDonorProfile(row.slug),null);
-  assert.ok(!(await listPublicDonorProfiles()).some(item=>item.slug===row.slug));
-  await assert.rejects(savePublicProfileSettings(user.id,settings),/confirm.*name/);
-  await savePublicProfileSettings(user.id,{...settings,consent:true});
-  await getPrisma().user.update({where:{id:user.id},data:{is_active_donor:false}});
-  assert.equal(await getPublicDonorProfile(row.slug),null);
-  await savePublicProfileSettings(user.id,{...settings,isPublished:false});
-  await getPrisma().user.update({where:{id:user.id},data:{is_active_donor:true,updated_at:original.updated_at}});
-  assert.deepEqual(await getPrisma().user.findUniqueOrThrow({where:{id:user.id}}),original);
+test('public profiles need active administrator approval, preserve consent history, and withdraw cleanly',integration,async()=>{
+ const {getPublicDonorProfile,listPublicDonorProfiles,getPublicProfileSettings,savePublicProfileSettings}=await import('../src/backend/services/publicDonorProfiles');
+ const {donorIntroductions}=await import('../src/lib/publicProfileIntroductions');
+ const user=await newPatient(),original=await getPrisma().user.findUniqueOrThrow({where:{id:user.id}});
+ const settings={isPublished:true,showPhone:false,articleTemplate:3,bio:donorIntroductions({name:original.name,city:original.location_city,country:original.location_country,bloodGroup:original.blood_group})[3]};
+ assert.equal((await getPublicProfileSettings(user.id)).approvedAt,null);
+ await assert.rejects(savePublicProfileSettings(user.id,{...settings,authorizationConfirmed:true},user.id),/active administrator/);
+ await assert.rejects(savePublicProfileSettings(user.id,settings,testAdminId),/permission to publish/);
+ await assert.rejects(savePublicProfileSettings(user.id,{...settings,bio:settings.bio+' Call +8801712345678.',authorizationConfirmed:true},testAdminId),/Keep phone numbers/);
+ await getPrisma().publicDonorProfile.create({data:{user_id:user.id,slug:'legacy-'+user.id,is_published:true,bio:'Unreviewed legacy sample text that must never appear in a public page without administrator approval.',consent_version:'2026-10-16-v1',consented_at:new Date()}});
+ const legacy=await getPrisma().publicDonorProfile.findUniqueOrThrow({where:{user_id:user.id}});
+ assert.equal(await getPublicDonorProfile(legacy.slug),null);assert.ok(!(await listPublicDonorProfiles()).some(item=>item.slug===legacy.slug));
+ await savePublicProfileSettings(user.id,{...settings,authorizationConfirmed:true},testAdminId);
+ const row=await getPrisma().publicDonorProfile.findUniqueOrThrow({where:{user_id:user.id}});
+ assert.equal(row.slug,legacy.slug);assert.equal(row.admin_approved_by,testAdminId);assert.ok(row.admin_approved_at);assert.deepEqual(row.consented_at,legacy.consented_at);assert.equal(row.phone_consented_at,null);
+ const published=await getPublicDonorProfile(row.slug);assert.ok(published);assert.equal(published.phone,null);assert.equal(published.articleTemplate,3);assert.equal(published.bio,settings.bio);
+ for(const field of ['email','user_id','health_data','profile_code','date_of_birth','medicalReports','admin_approved_by'])assert.ok(!(field in published));
+ await savePublicProfileSettings(user.id,{...settings,showPhone:true,authorizationConfirmed:true},testAdminId);assert.equal((await getPublicDonorProfile(row.slug))?.phone,user.mobile);
+ await savePublicProfileSettings(user.id,{...settings,isPublished:false},testAdminId);assert.equal(await getPublicDonorProfile(row.slug),null);
+ await assert.rejects(savePublicProfileSettings(user.id,settings,testAdminId),/permission to publish/);
+ await savePublicProfileSettings(user.id,{...settings,authorizationConfirmed:true},testAdminId);
+ await getPrisma().user.update({where:{id:user.id},data:{is_active_donor:false}});assert.equal(await getPublicDonorProfile(row.slug),null);
+ await getPrisma().user.update({where:{id:user.id},data:{is_active_donor:true,updated_at:original.updated_at}});assert.deepEqual(await getPrisma().user.findUniqueOrThrow({where:{id:user.id}}),original);
 });
 
-test('public profile endpoints keep donor consent owner-only and admin audits read-only',integration,async()=>{
-  const owner=await newPatient();const other=await newPatient();
-  const {GET,PATCH}=await import('../src/app/api/users/me/public-profile/route');
-  const {GET:audit}=await import('../src/app/api/admin/users/[userId]/public-profile/route');
-  assert.equal((await GET(new Request('https://bloodnet.test/api/users/me/public-profile'))).status,401);
-  const url='https://bloodnet.test/api/users/me/public-profile';
-  const bad=new Request(url,{method:'PATCH',headers:{authorization:'Bearer '+signToken({user_id:owner.id,role:'USER'}),'Content-Type':'application/json'},body:JSON.stringify({userId:other.id,isPublished:true,showPhone:false,bio:'Attempted target injection'})});
-  assert.equal((await PATCH(bad)).status,400);
-  const req=new Request('https://bloodnet.test/api/admin/users/'+owner.id+'/public-profile',{headers:{authorization:'Bearer '+signToken({user_id:testAdminId,role:'ADMIN'})}});
-  const result=await audit(req,{params:Promise.resolve({userId:owner.id})});assert.equal(result.status,200);assert.equal((await result.json()).data.isPublished,false);
-  assert.equal((await audit(patientRequest(req.url,other.id),{params:Promise.resolve({userId:owner.id})})).status,403);
-  assert.equal(await getPrisma().publicDonorProfile.count({where:{user_id:owner.id}}),0);
+test('only active administrators can manage publication; ordinary accounts and cross-site writes are rejected',integration,async()=>{
+ const owner=await newPatient(),other=await newPatient();
+ const {GET,PATCH}=await import('../src/app/api/users/me/public-profile/route');
+ const {GET:audit,PATCH:publish}=await import('../src/app/api/admin/users/[userId]/public-profile/route');
+ const url='https://bloodnet.test/api/users/me/public-profile',adminUrl='https://bloodnet.test/api/admin/users/'+owner.id+'/public-profile',context={params:Promise.resolve({userId:owner.id})};
+ assert.equal((await GET(new Request(url))).status,401);
+ assert.equal((await GET(patientRequest(url,owner.id))).status,403);
+ assert.equal((await PATCH(patientRequest(url,owner.id,'PATCH'))).status,403);
+ const headers={authorization:'Bearer '+signToken({user_id:testAdminId,role:'ADMIN'}),'Content-Type':'application/json'};
+ assert.equal((await audit(new Request(adminUrl,{headers}),context)).status,200);
+ assert.equal((await audit(patientRequest(adminUrl,other.id),context)).status,403);
+ assert.equal((await publish(patientRequest(adminUrl,owner.id,'PATCH'),context)).status,403);
+ assert.equal((await publish(new Request(adminUrl,{method:'PATCH',headers:{...headers,origin:'https://evil.invalid'},body:'{}'}),context)).status,403);
+ assert.equal((await publish(new Request(adminUrl,{method:'PATCH',headers,body:'{}'}),context)).status,400);
+ const body={isPublished:true,showPhone:false,bio:'A factual donor introduction for local blood service coordination through the receiving hospital and collection team.',articleTemplate:1,authorizationConfirmed:true};
+ const result=await publish(new Request(adminUrl,{method:'PATCH',headers,body:JSON.stringify(body)}),context);assert.equal(result.status,200);assert.equal((await result.json()).data.isPublished,true);
+ const fakeHeaders={authorization:'Bearer '+signToken({user_id:other.id,role:'ADMIN'}),'Content-Type':'application/json'};
+ assert.equal((await publish(new Request(adminUrl,{method:'PATCH',headers:fakeHeaders,body:JSON.stringify(body)}),context)).status,401);
 });
-
 test('blood-group location counts deduplicate service cities and metadata excludes empty groups',integration,async()=>{
   const {getLocationBloodGroupCounts}=await import('../src/backend/services/donorLocations');
   const user=await newPatient();const city='SEO '+randomUUID().slice(0,8);
