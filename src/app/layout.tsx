@@ -15,7 +15,7 @@ import { getPrisma } from "@/src/backend/config/db";
 import { getPublicBotStats } from "@/src/backend/services/seoData";
 import { DEFAULT_UI_THEME, normalizeUiTheme } from "@/src/lib/uiTheme";
 
-import { buildDatasetSchema, buildMedicalOrganizationSchema, buildServiceSchema, stringifyJsonLd } from "@/src/lib/aiSeo";
+import { buildMedicalOrganizationSchema, buildServiceSchema, stringifyJsonLd } from "@/src/lib/aiSeo";
 
 const baseUrl = getPublicBaseUrl();
 
@@ -41,6 +41,7 @@ export const metadata: Metadata = {
   ],
   icons: {
     icon: "/favicon.png",
+    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
   },
   alternates: {
     canonical: "/",
@@ -90,27 +91,6 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const [uiSettings, publicBotStats] = await Promise.all([resolveUiTheme(), resolvePublicBotStats()]);
-  const publicStatsSchema = publicBotStats
-    ? {
-        "@context": "https://schema.org",
-        "@type": "Dataset",
-        "@id": `${baseUrl.replace(/\/$/, "")}#public-network-stats`,
-        name: "BloodNet current public network statistics",
-        description:
-          "Server-rendered public totals for registered active BloodNet donors, active cities, active countries, organ donor entries, and verified organ requests.",
-        url: `${baseUrl.replace(/\/$/, "")}/statistics`,
-        dateModified: publicBotStats.lastUpdated,
-        variableMeasured: [
-          { "@type": "PropertyValue", name: "Registered active donors", value: publicBotStats.registeredDonors },
-          { "@type": "PropertyValue", name: "Active donor entries", value: publicBotStats.activeBloodDonors },
-          { "@type": "PropertyValue", name: "Active countries", value: publicBotStats.activeCountries },
-          { "@type": "PropertyValue", name: "Active cities", value: publicBotStats.activeCities },
-          { "@type": "PropertyValue", name: "Organ donor entries", value: publicBotStats.organDonorEntries },
-          { "@type": "PropertyValue", name: "Verified organ requests", value: publicBotStats.verifiedOrganRequests },
-        ],
-      }
-    : null;
-
   return (
     <html lang="en" data-theme={uiSettings.theme} data-discovery-visible={String(uiSettings.discoveryVisible)}>
 
@@ -122,20 +102,15 @@ export default async function RootLayout({
             __html: stringifyJsonLd([
               buildMedicalOrganizationSchema(),
               buildServiceSchema(),
-              buildDatasetSchema(),
+
               {
                 "@context": "https://schema.org",
                 "@type": "WebSite",
                 "@id": `${baseUrl}#website`,
                 name: "BloodNet",
                 url: baseUrl,
-                potentialAction: {
-                  "@type": "SearchAction",
-                  target: `${baseUrl.replace(/\/$/, "")}/blood/{search_term_string}`,
-                  "query-input": "required name=search_term_string",
-                },
               },
-              ...(publicStatsSchema ? [publicStatsSchema] : []),
+
             ]),
           }}
         />

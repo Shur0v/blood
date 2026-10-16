@@ -20,8 +20,8 @@ export async function GET() {
     { url: `${baseUrl}/network` },
     { url: `${baseUrl}/statistics` },
     { url: `${baseUrl}/privacy` },
-    { url: `${baseUrl}/privacy-policy` },
+
     { url: `${baseUrl}/terms` },
-    { url: `${baseUrl}/policy.txt` },
+
   ]);
 }

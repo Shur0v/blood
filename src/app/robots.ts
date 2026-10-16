@@ -1,33 +1,11 @@
 import { MetadataRoute } from 'next';
 import { getPublicBaseUrl } from '@/src/backend/config/env';
+import { PRIVATE_CRAWL_PATHS, SEARCH_CRAWLERS } from '@/src/lib/crawlerPolicy';
 
 export default function robots(): MetadataRoute.Robots {
   const baseUrl = getPublicBaseUrl();
   return {
-    rules: [
-      {
-        userAgent: '*',
-        allow: '/',
-        disallow: [
-          '/admin',
-          '/admin-dashboard',
-          '/dashboard',
-          '/api',
-          '/login',
-          '/register',
-          '/user',
-          '/account',
-          '/settings',
-          '/private',
-          '/checkout',
-          '/payment',
-          '/success',
-          '/failed',
-          '/trash',
-          '/backup',
-        ],
-      },
-    ],
+    rules: ['*', ...SEARCH_CRAWLERS].map(userAgent => ({ userAgent, allow: '/', disallow: PRIVATE_CRAWL_PATHS })),
     sitemap: [
       `${baseUrl}/sitemap.xml`,
       `${baseUrl}/sitemap-index.xml`,

@@ -3,7 +3,7 @@ import { getPrisma } from '@/src/backend/config/db';
 import { toLocationSlug } from '@/src/backend/utils/locationSlug';
 import { getPublicBaseUrl } from '@/src/backend/config/env';
 import { buildOrganRequestSlug, getBloodGroupCityCounts, getOrganDonors, getOrganTypesWithData, getVerifiedOrganRequests } from '@/src/backend/services/seoData';
-import { BLOOD_GROUPS, COUNTRY_SHORTCUTS, bloodGroupToSlug, cityToSlug, countryToShortcut, organToSlug } from '@/src/lib/seoRouting';
+import { bloodGroupToSlug, cityToSlug, countryToShortcut, organToSlug } from '@/src/lib/seoRouting';
 import { REGIONS } from '@/src/lib/regions';
 import { getDonorLocations, type DonorLocation } from '@/src/backend/services/donorLocations';
 
@@ -59,8 +59,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/contact`, changeFrequency: 'monthly', priority: 0.5 },
     { url: `${baseUrl}/terms`, changeFrequency: 'monthly', priority: 0.5 },
     { url: `${baseUrl}/privacy`, changeFrequency: 'monthly', priority: 0.5 },
-    { url: `${baseUrl}/privacy-policy`, changeFrequency: 'monthly', priority: 0.5 },
-    { url: `${baseUrl}/policy.txt`, changeFrequency: 'monthly', priority: 0.5 },
+
+
     { url: `${baseUrl}/safety-policy`, changeFrequency: 'monthly', priority: 0.6 },
     { url: `${baseUrl}/medical-disclaimer`, changeFrequency: 'monthly', priority: 0.6 },
     { url: `${baseUrl}/organ-donation-ethics`, changeFrequency: 'monthly', priority: 0.6 },
@@ -114,9 +114,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     };
     const programmaticRoutes: MetadataRoute.Sitemap = [];
 
-    for (const group of BLOOD_GROUPS) {
+    for (const group of new Set(bloodRows.map(row => row.blood_group))) {
       const slug = bloodGroupToSlug(group);
-      if (slug) addRoute(programmaticRoutes, `${baseUrl}/blood/${slug}`, new Date(), 0.75);
+      if (slug) addRoute(programmaticRoutes, `${baseUrl}/blood/${slug}`, undefined, 0.75);
     }
 
     for (const row of bloodRows) {
@@ -130,13 +130,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       if (shortcut) addRoute(programmaticRoutes, `${baseUrl}/${shortcut}`, row.updated_at, 0.9);
     }
 
-    for (const shortcut of Object.keys(COUNTRY_SHORTCUTS)) {
-      addRoute(programmaticRoutes, `${baseUrl}/${shortcut}`, new Date(), 0.65);
-    }
-
     for (const organSlug of organTypes) {
-      addRoute(programmaticRoutes, `${baseUrl}/organ/${organSlug}`, new Date(), 0.8);
-      addRoute(programmaticRoutes, `${baseUrl}/organ/request/${organSlug}`, new Date(), 0.8);
+      addRoute(programmaticRoutes, `${baseUrl}/organ/${organSlug}`, undefined, 0.8);
+
     }
 
     for (const donor of organDonors) {

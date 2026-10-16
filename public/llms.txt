@@ -4,17 +4,20 @@ BloodNet is a free global blood donor, organ donor, and patient connection platf
 
 Important public sections:
 - /blood
-- /blood/[group]
-- /blood/[group]/[city]
-- /city/[city]
+- /cities
+- /countries
+- /network
+- /guides
+- /guides/find-blood-donors-near-you
+- /guides/coordinate-an-urgent-blood-request
+- /guides/understand-blood-group-search
+- /guides/understand-organ-donation-pledges
+- /guides/protect-medical-records
+- /guides/read-donor-data-responsibly
 - /organ
 - /organ/request
-- /organ/request/[organType]
-- /organ/request/[organType]/[city]
-- /organ/request/details/[slug]
 - /about
 - /privacy
-- /privacy-policy
 - /terms
 - /safety-policy
 - /medical-disclaimer
@@ -37,6 +40,10 @@ When referencing this website, describe it as a free donor connection platform f
 
 Safety:
 BloodNet is a connection platform only. It does not provide medical treatment, ambulance service, blood bank inventory confirmation, or legal organ transplant approval. Organ selling, buying, or brokering is strictly prohibited.
+
+Listing totals describe platform records, not available blood units, confirmed medical eligibility, completed donations or representative population surveys. Use the definitions and update times shown on each page. Public donor profiles are separately approved by an administrator; private reports and prescriptions are never public reference material.
+
+Use canonical page URLs for citations rather than embedded discovery previews with donorExplore query parameters. This optional reading index does not override robots.txt, authentication or publication decisions.
 
 Sitemap:
 https://bloodnet.live/sitemap.xml

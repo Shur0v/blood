@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { isAllowedWriteRequest } from './lib/requestSecurity';
 import { isDiscoveryPath } from './lib/discoveryRoutes';
+import { canonicalAliasUrl } from './lib/canonicalOrigin';
 
 const SUPPORTED_LOCALES = ['en', 'bn', 'ja', 'es', 'de'] as const;
 const DEFAULT_LOCALE = 'en';
@@ -68,6 +69,8 @@ const applySecurityHeaders = (response: NextResponse, isApiRoute: boolean, previ
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const publicOrigin=process.env.NEXT_PUBLIC_BASE_URL||process.env.NEXT_PUBLIC_SITE_URL||(process.env.NODE_ENV==='production'?'https://bloodnet.live':undefined);
+  const canonical = canonicalAliasUrl(request.url, request.headers.get('host'), publicOrigin);
+  if (canonical && ['GET', 'HEAD'].includes(request.method)) return NextResponse.redirect(canonical, 301);
   if(pathname.startsWith('/api/')&&!isAllowedWriteRequest(request,publicOrigin))return NextResponse.json({success:false,message:'Cross-origin request rejected.'},{status:403,headers:{'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
   const response = NextResponse.next();
 
@@ -91,7 +94,7 @@ export function middleware(request: NextRequest) {
 
   if (/^\/donors(?:\/|$)/.test(pathname)) response.headers.set('Cache-Control','private, no-store');
   const isApiRoute = pathname.startsWith('/api/');
-  if (isApiRoute || /^\/(admin-dashboard|dashboard|account|profile|private)(\/|$)/.test(pathname) || request.nextUrl.searchParams.has('heatmapPreview') || request.nextUrl.searchParams.has('donorExplore')) {
+  if (isApiRoute || /^\/(admin|admin-dashboard|dashboard|account|profile|private|login|register|user|settings|checkout|payment|success|failed|backup|trash)(\/|$)/.test(pathname) || request.nextUrl.searchParams.has('profile') || request.nextUrl.searchParams.has('heatmapPreview') || request.nextUrl.searchParams.has('donorExplore')) {
     response.headers.set('X-Robots-Tag', 'noindex, nofollow');
   }
   if (

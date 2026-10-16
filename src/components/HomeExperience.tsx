@@ -9,7 +9,7 @@ import Navbar from "../components/Navbar";
 import { motion, useScroll, useSpring } from "motion/react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import dynamic from "next/dynamic";
-import LazyMount from "../components/LazyMount";
+
 import { usePathname, useRouter } from "next/navigation";
 import DonorDiscoveryPanel from './DonorDiscoveryPanel';
 import LocalizedSeoFooter from "../components/LocalizedSeoFooter";
@@ -25,71 +25,54 @@ const UnifiedDashboard = dynamic(() => import("../components/UnifiedDashboard"),
 const DonationToggleModal = dynamic(() => import("../components/DonationToggleModal"), { ssr: false });
 
 const ProcessSteps = dynamic(() => import("../components/ProcessSteps"), {
-  ssr: false,
   loading: () => <section className="mx-auto max-w-7xl px-4 py-16" />,
 });
 const DonorReminder = dynamic(() => import("../components/DonorReminder"), {
-  ssr: false,
   loading: () => <section className="mx-auto max-w-7xl px-4 pb-20" />,
 });
 const AboutBloodNet = dynamic(() => import("../components/AboutBloodNet"), {
-  ssr: false,
   loading: () => <section className="mx-auto max-w-7xl px-4 pb-24" />,
 });
 const ImageSlider = dynamic(() => import("../components/ImageSlider"), {
-  ssr: false,
   loading: () => <section className="mx-auto max-w-7xl px-4 py-16" />,
 });
 const MedicalAidFund = dynamic(() => import("../components/MedicalAidFund"), {
-  ssr: false,
   loading: () => <section className="mx-auto max-w-7xl px-4 py-16" />,
 });
 const FloatingDonorTags = dynamic(() => import("../components/FloatingDonorTags"), {
-  ssr: false,
   loading: () => <section className="mx-auto max-w-7xl px-4 py-16" />,
 });
 const ImpactData = dynamic(() => import("../components/ImpactData"), {
-  ssr: false,
   loading: () => <section className="mx-auto max-w-7xl px-4 py-16" />,
 });
 const RequestOrgan = dynamic(() => import("../components/RequestOrgan"), {
-  ssr: false,
   loading: () => <section className="mx-auto max-w-7xl px-4 py-16" />,
 });
 const Testimonials = dynamic(() => import("../components/Testimonials"), {
-  ssr: false,
   loading: () => <section className="mx-auto max-w-7xl px-4 py-16" />,
 });
 const UserReports = dynamic(() => import("../components/UserReports"), {
-  ssr: false,
   loading: () => <section className="mx-auto max-w-7xl px-4 py-16" />,
 });
 const MobilePreview = dynamic(() => import("../components/MobilePreview"), {
-  ssr: false,
   loading: () => <section className="mx-auto max-w-7xl px-4 py-16" />,
 });
 const FaqSection = dynamic(() => import("../components/FaqSection"), {
-  ssr: false,
   loading: () => <section className="mx-auto max-w-7xl px-4 py-12" />,
 });
 const CTA = dynamic(() => import("../components/CTA"), {
-  ssr: false,
   loading: () => <section className="mx-auto max-w-7xl px-4 py-12" />,
 });
 const SocialMedia = dynamic(() => import("../components/SocialMedia"), {
-  ssr: false,
   loading: () => <section className="mx-auto max-w-7xl px-4 py-12" />,
 });
 const ContactUsSection = dynamic(() => import("../components/ContactUsSection"), {
-  ssr: false,
   loading: () => <section className="mx-auto max-w-7xl px-4 py-12" />,
 });
 const Footer = dynamic(() => import("../components/SocialMedia").then((mod) => mod.Footer), {
-  ssr: false,
   loading: () => <footer className="py-8" />,
 });
 const ApprovedOrganRequests = dynamic(() => import("../components/ApprovedOrganRequests"), {
-  ssr: false,
   loading: () => <section className="mx-auto max-w-7xl px-4 py-16" />,
 });
 const FluidBackground = dynamic(() => import("../components/FluidBackground"), {
@@ -498,42 +481,42 @@ export function HomeExperience({ forcedCountry, locationDirectory }: { forcedCou
             <div className="mx-auto mt-2 w-full max-w-7xl px-4">
               <ManagedNativeAdSlot slotKey="native-ad-1" />
             </div>
-            <LazyMount><ProcessSteps /></LazyMount>
-            <LazyMount><DonorReminder onSignUpClick={() => setIsAuthModalOpen(true)} showSignUpButton={!sessionUser} /></LazyMount>
-            <LazyMount><ImageSlider /></LazyMount>
-            <LazyMount><MedicalAidFund /></LazyMount>
-            <LazyMount><AboutBloodNet onTermsClick={() => handlePageChange("terms-conditions")} /></LazyMount>
-            <LazyMount><FloatingDonorTags forcedCountry={forcedCountry}/></LazyMount>
-            <LazyMount><ImpactData /></LazyMount>
-            <LazyMount><RequestOrgan /></LazyMount>
-            <LazyMount><Testimonials /></LazyMount>
-            <LazyMount><UserReports /></LazyMount>
-            <LazyMount><MobilePreview /></LazyMount>
-            <LazyMount><FaqSection /></LazyMount>
-            <LazyMount><CTA onSignUpClick={() => setIsAuthModalOpen(true)} showSignUpButton={!sessionUser} /></LazyMount>
-            <LazyMount><SocialMedia /></LazyMount>
-            <LazyMount><ContactUsSection /></LazyMount>
+            <div><ProcessSteps /></div>
+            <div><DonorReminder onSignUpClick={() => setIsAuthModalOpen(true)} showSignUpButton={!sessionUser} /></div>
+            <div><ImageSlider /></div>
+            <div><MedicalAidFund /></div>
+            <div><AboutBloodNet onTermsClick={() => handlePageChange("terms-conditions")} /></div>
+            <div><FloatingDonorTags forcedCountry={forcedCountry}/></div>
+            <div><ImpactData /></div>
+            <div><RequestOrgan /></div>
+            <div><Testimonials /></div>
+            <div><UserReports /></div>
+            <div><MobilePreview /></div>
+            <div><FaqSection /></div>
+            <div><CTA onSignUpClick={() => setIsAuthModalOpen(true)} showSignUpButton={!sessionUser} /></div>
+            <div><SocialMedia /></div>
+            <div><ContactUsSection /></div>
           </>
         )}
 
         {!isProfileView && currentPage === "organ" && (
           <>
             <OrganHero forcedCountry={forcedCountry} />
-            <LazyMount><ApprovedOrganRequests forcedCountry={forcedCountry}/></LazyMount>
-            <LazyMount><ProcessSteps /></LazyMount>
-            <LazyMount><DonorReminder onSignUpClick={() => setIsAuthModalOpen(true)} showSignUpButton={!sessionUser} /></LazyMount>
-            <LazyMount><ImageSlider /></LazyMount>
-            <LazyMount><MedicalAidFund /></LazyMount>
-            <LazyMount><AboutBloodNet onTermsClick={() => handlePageChange("terms-conditions")} /></LazyMount>
-            <LazyMount><FloatingDonorTags forcedCountry={forcedCountry}/></LazyMount>
-            <LazyMount><ImpactData /></LazyMount>
-            <LazyMount><RequestOrgan /></LazyMount>
-            <LazyMount><Testimonials /></LazyMount>
-            <LazyMount><UserReports /></LazyMount>
-            <LazyMount><MobilePreview /></LazyMount>
-            <LazyMount><FaqSection /></LazyMount>
-            <LazyMount><SocialMedia /></LazyMount>
-            <LazyMount><ContactUsSection /></LazyMount>
+            <div><ApprovedOrganRequests forcedCountry={forcedCountry}/></div>
+            <div><ProcessSteps /></div>
+            <div><DonorReminder onSignUpClick={() => setIsAuthModalOpen(true)} showSignUpButton={!sessionUser} /></div>
+            <div><ImageSlider /></div>
+            <div><MedicalAidFund /></div>
+            <div><AboutBloodNet onTermsClick={() => handlePageChange("terms-conditions")} /></div>
+            <div><FloatingDonorTags forcedCountry={forcedCountry}/></div>
+            <div><ImpactData /></div>
+            <div><RequestOrgan /></div>
+            <div><Testimonials /></div>
+            <div><UserReports /></div>
+            <div><MobilePreview /></div>
+            <div><FaqSection /></div>
+            <div><SocialMedia /></div>
+            <div><ContactUsSection /></div>
           </>
         )}
 

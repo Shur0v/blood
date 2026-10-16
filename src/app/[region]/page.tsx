@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { HomeExperience } from "@/src/components/HomeExperience";
 import { getRegionBySlug } from "@/src/lib/regions";
-import { buildRegionalFaqSchema, stringifyJsonLd } from "@/src/lib/aiSeo";
+import { stringifyJsonLd } from "@/src/lib/aiSeo";
 import { getPublicBaseUrl } from "@/src/backend/config/env";
 
 type Params = { region: string };
@@ -19,8 +19,8 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
     title: `${country} Blood Donor List | Emergency Blood & Organ Donors`,
     description: `Blood donor list in major cities of ${country}. Find emergency blood donors by blood group and verified organ donor support in ${country}.`,
     keywords: [
-      `Blood donor list in Dhaka, ${country}`,
-      `Blood donor list in Karachi, ${country}`,
+
+
       `Emergency O+ donors in ${country}`,
       `Emergency AB- donors in ${country}`,
       `Emergency blood donors in ${country}`,
@@ -62,7 +62,7 @@ export default async function RegionalLandingPage({ params }: { params: Promise<
         dangerouslySetInnerHTML={{
           __html: stringifyJsonLd([
             collectionSchema,
-            buildRegionalFaqSchema(config.country, config.slug),
+
           ]),
         }}
       />

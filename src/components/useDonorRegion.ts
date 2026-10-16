@@ -4,8 +4,9 @@ import { getCountries } from 'libphonenumber-js';
 
 const KEY = 'bloodnet_donor_country_v1';
 const EVENT = 'bloodnet-donor-country';
-const names = new Intl.DisplayNames(['en'], { type: 'region' });
-export const DONOR_COUNTRIES = getCountries().map(code => names.of(code) || code).sort((a,b) => a.localeCompare(b));
+// Pin display names across Node/browser ICU versions to keep hydration stable.
+import countryNames from '../lib/countryNames.json';
+export const DONOR_COUNTRIES = getCountries().map(code => countryNames[code] || code).sort((a,b) => a < b ? -1 : a > b ? 1 : 0);
 
 export default function useDonorRegion(forcedCountry?: string) {
   const geo = useViewerGeo();

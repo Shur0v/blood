@@ -40,13 +40,6 @@ export async function generateMetadata(): Promise<Metadata> {
       "Emergency Blood Donor Finder, Urgent O-Negative Blood Request, and Global Organ Donor Registry with live global trust metrics for India, Pakistan, Nepal, and Bangladesh.",
     alternates: {
       canonical: "/global-search-entry",
-      languages: {
-        "en-IN": "/india",
-        "en-PK": "/pakistan",
-        "en-NP": "/nepal",
-        "bn-BD": "/bangladesh",
-        "x-default": "/global-search-entry",
-      },
     },
     openGraph: {
       type: "website",

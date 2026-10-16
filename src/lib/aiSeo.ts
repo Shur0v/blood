@@ -38,14 +38,14 @@ export const buildDatasetSchema = () => ({
   name: "BloodNet City And Blood Group Donor Dataset",
   description:
     "Live city and blood group level donor listing dataset used for urgent blood and organ donor discovery pages.",
-  url: `${baseUrl}/sitemap.xml`,
+  url: `${baseUrl}/network`,
   creator: {
     "@id": `${baseUrl}#medical-org`,
   },
   includedInDataCatalog: {
     "@type": "DataCatalog",
     name: "BloodNet Public Search Pages",
-    url: `${baseUrl}/global-search-entry`,
+    url: `${baseUrl}/network`,
   },
   license: `${baseUrl}/terms`,
 });

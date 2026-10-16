@@ -50,6 +50,26 @@
 .donor-directory-page li[class*="border"],.donor-directory-page a[class*="shadow-sm"]{border-color:#e8e4eb;border-radius:18px;box-shadow:0 3px 14px #17203303;transition:border-color .2s,box-shadow .2s}
 .donor-directory-page li[class*="border"]:hover,.donor-directory-page a[class*="shadow-sm"]:hover{border-color:#eac0cd;box-shadow:0 8px 24px #88133708}
 @keyframes discovery-backdrop-in{from{background:#10182700;backdrop-filter:blur(0)}to{background:#10182766;backdrop-filter:blur(9px)}}
+.discovery-reading{border-bottom:1px solid #ece8ed}
+.discovery-guide-search{display:flex;align-items:center;gap:10px;margin-top:20px;padding:12px 15px;border:1px solid #e8e5ec;border-radius:12px;background:white;color:#64748b}
+.discovery-guide-search:focus-within{outline:2px solid #be123c;outline-offset:2px}
+.discovery-guide-search input{width:100%;min-width:0;outline:none;background:transparent;font-size:13px;color:#172033}
+.discovery-result-count{margin-top:12px;font-size:11px;color:#64748b}
+.discovery-guide-grid{display:grid;list-style:none;padding:0}
+.discovery-guide-grid>li>a{display:block;padding:18px}
+.discovery-guide-grid h3{display:flex;align-items:start;justify-content:space-between;gap:12px;font-weight:600;line-height:1.5;color:#172033}
+.discovery-guide-grid h3 svg{flex-shrink:0;margin-top:3px;color:#be123c}
+.discovery-guide-grid p{margin-top:8px;font-size:12px;line-height:1.8;color:#64748b}
+.discovery-help{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:30px;padding-top:24px;border-top:1px solid #ece8ed}
+.discovery-help h3{font-size:15px;font-weight:600;margin-bottom:14px}
+.discovery-help ol{list-style:decimal;padding-left:18px;font-size:12px;line-height:1.9;color:#64748b}
+.discovery-help li{margin-bottom:8px}
+.discovery-help a,.discovery-source-note a{color:#be123c;text-decoration:underline;text-underline-offset:3px}
+.discovery-help>div>a{display:inline-flex;align-items:center;gap:6px;margin-top:10px;font-size:12px}
+.discovery-help details{padding:12px 0;border-bottom:1px solid #ece8ed;font-size:12px;line-height:1.8}
+.discovery-help summary{cursor:pointer;font-weight:500;color:#334155}
+.discovery-help details p{margin-top:8px;color:#64748b}
+.discovery-source-note{margin-top:24px;color:#64748b}
 @media(min-width:1024px){.donor-discovery-trigger{display:flex}}
 @media(max-width:1199px){.discovery-intro{gap:22px;padding:26px}.discovery-shortcuts{grid-template-columns:repeat(2,minmax(0,1fr))}.discovery-footer span:last-child{display:none}}
 @media(max-width:767px){.donor-directory-page main>section,.donor-directory-page main>header,.donor-directory-page main>div{padding-left:20px;padding-right:20px}.donor-directory-page main{padding-top:28px}}
