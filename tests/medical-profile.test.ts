@@ -25,6 +25,7 @@ import { POST as uploadMedicalReport } from '../src/app/api/users/me/medical-rep
 import { POST as collectClicks } from '../src/app/api/analytics/clicks/route';
 import { POST as collectLegacyHeatmap } from '../src/app/api/analytics/heatmap/route';
 import { GET as heatmapAnalytics } from '../src/app/api/admin/analytics/heatmap/route';
+import { GET as appHealth } from '../src/app/api/health/route';
 import { GET as medicalOperations } from '../src/app/api/admin/medical-operations/route';
 import { documentClick, analyticsPagePath, analyticsPageKey, ClickEventSchema } from '../src/lib/analytics';
 import { getSiteContent } from '../src/backend/services/policyContent';
@@ -385,11 +386,41 @@ test('patient prescriptions require doctor/date, share a dated timeline with doc
   const historyData=(await history.json()).data;
   assert.deepEqual(historyData.counts,{reports:0,prescriptions:2});
   assert.equal(historyData.items.find((item:{id:string})=>item.id===saved.id).kind,'uploaded-prescription');
+  const confirmed=await searchMedicalHistory(new Request('http://localhost/api/users/me/medical-records/history',{method:'POST',headers:{...headers,'Content-Type':'application/json','X-BloodNet-Profile':owner.id},body:JSON.stringify({mode:'prescriptions',verifyUpload:saved.id})}));
+  assert.equal(confirmed.status,200);assert.deepEqual((await confirmed.json()).data.verifiedUpload,saved);
   const params=Promise.resolve({reportId:saved.id,fileId:saved.files[0].id});
   const preview=await downloadFile(patientRequest('http://localhost/api/file?preview=1',owner.id),{params});
   assert.equal(preview.status,200);assert.match(preview.headers.get('content-disposition')! ,/^inline/);
   assert.equal(preview.headers.get('cache-control'),'private, no-store');
   assert.equal((await downloadFile(patientRequest('http://localhost/api/file?preview=1',(await newPatient()).id),{params})).status,404);
+});
+
+test('missing medical encryption configuration rejects uploads without writing and is visible in health checks',integration,async()=>{
+  const owner=await newPatient(),key=process.env.MEDICAL_RECORDS_ENCRYPTION_KEY;
+  // These integration fixtures apply SQL directly, without Prisma's history table.
+  await sql.query(`CREATE VIEW "_prisma_migrations" AS SELECT 'health-fixture'::text AS migration_name,CURRENT_TIMESTAMP AS finished_at,CURRENT_TIMESTAMP AS started_at`);
+  try {
+    for(const value of ['', 'not-a-valid-key']) {
+      process.env.MEDICAL_RECORDS_ENCRYPTION_KEY=value;
+      const response=await uploadPrescription(new Request('http://localhost/api/users/me/prescriptions',{method:'POST',headers:{authorization:`Bearer ${signToken({user_id:owner.id,role:'USER'})}`},body:await uploadForm()}));
+      assert.equal(response.status,503);assert.match((await response.json()).message,/Nothing was saved/);
+      assert.equal(await getPrisma().medicalReport.count({where:{user_id:owner.id}}),0);
+      const health=await appHealth(new Request('http://localhost/api/health')),result=await health.json();
+      assert.equal(result.data.checks.db,'ok');assert.equal(result.data.checks.storage,'ok');
+      assert.equal(health.status,503);assert.equal(result.data.checks.medicalStorage,'error');
+    }
+    process.env.MEDICAL_RECORDS_ENCRYPTION_KEY=key;
+    assert.equal((await appHealth(new Request('http://localhost/api/health'))).status,200);
+  } finally {process.env.MEDICAL_RECORDS_ENCRYPTION_KEY=key;await sql.query('DROP VIEW "_prisma_migrations"');}
+});
+
+test('upload confirmation is owner-bound and a stale displayed profile cannot write to another account',integration,async()=>{
+  const owner=await newPatient(),other=await newPatient();
+  const stale=await uploadPrescription(new Request('http://localhost/api/users/me/prescriptions',{method:'POST',headers:{authorization:`Bearer ${signToken({user_id:owner.id,role:'USER'})}`,'X-BloodNet-Profile':other.id},body:await uploadForm()}));
+  assert.equal(stale.status,409);assert.equal(await getPrisma().medicalReport.count({where:{user_id:{in:[owner.id,other.id]}}}),0);
+  const saved=await createMedicalReport(owner.id,await uploadForm(),'PRESCRIPTION');
+  const response=await searchMedicalHistory(new Request('http://localhost/api/users/me/medical-records/history',{method:'POST',headers:{authorization:`Bearer ${signToken({user_id:other.id,role:'USER'})}`,'Content-Type':'application/json'},body:JSON.stringify({mode:'prescriptions',verifyUpload:saved.id})}));
+  assert.equal(response.status,409);assert.equal((await response.json()).data,undefined);
 });
 
 test('private history filters authenticate before reading and search without medical terms in the URL',integration,async()=>{

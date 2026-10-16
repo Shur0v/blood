@@ -2,6 +2,7 @@ import { withActiveAdmin } from '@/src/backend/utils/activeAdmin';
 import { NextResponse } from 'next/server';
 import { getPrisma } from '@/src/backend/config/db';
 import { ADMIN_ROLES, getSessionFromRequest, hasRequiredRole } from '@/src/backend/utils/session';
+import { medicalStorageConfigured } from '@/src/backend/utils/medicalPrivacy';
 
 async function handleGET(req: Request) {
   const session = getSessionFromRequest(req);
@@ -17,7 +18,7 @@ async function handleGET(req: Request) {
       db.organPledge.count({where:{organ_type:'Bone Marrow'}}),
     ]);
     // Operational counts only. Never decrypt or return patient identities or clinical content.
-    return NextResponse.json({success:true,data:{users,identified,reports,uploadedPrescriptions,doctorPrescriptions,delivery:delivery.map(row=>({status:row.email_status,count:row._count._all})),storageBytes:storage._sum.size_bytes||0,files:storage._count._all,boneMarrowPledges:marrow,configuration:{encryptionConfigured:Boolean(process.env.MEDICAL_RECORDS_ENCRYPTION_KEY),providerConfigured:Boolean(process.env.DOCTOR_PRESCRIPTION_API_KEY)},updatedAt:new Date().toISOString()}},{headers:{'Cache-Control':'no-store'}});
+    return NextResponse.json({success:true,data:{users,identified,reports,uploadedPrescriptions,doctorPrescriptions,delivery:delivery.map(row=>({status:row.email_status,count:row._count._all})),storageBytes:storage._sum.size_bytes||0,files:storage._count._all,boneMarrowPledges:marrow,configuration:{encryptionConfigured:medicalStorageConfigured(),providerConfigured:Boolean(process.env.DOCTOR_PRESCRIPTION_API_KEY)},updatedAt:new Date().toISOString()}},{headers:{'Cache-Control':'no-store'}});
   } catch {
     return NextResponse.json({success:false,message:'Medical operations could not load. Check database migrations and configuration.'},{status:500});
   }

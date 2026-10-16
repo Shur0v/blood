@@ -10,15 +10,19 @@ type Draft = Omit<MedicalReportDetails,'files'> & {key:string;files:File[];error
 const fresh = (prescription:boolean):Draft => ({key:crypto.randomUUID(),title:'',category:prescription?'Prescription':'Lab result',reportDate:'',facility:'',clinician:'',notes:'',testName:'',referenceNumber:'',sampleType:'',sampleCollectedOn:'',bodySite:'',reason:'',findings:'',impression:'',followUpDate:'',doctorSpecialty:'',doctorRegistration:'',results:[],files:[],error:''});
 export const medicalBytes = (size:number) => size<1024*1024?`${Math.round(size/1024)} KB`:`${(size/1024/1024).toFixed(1)} MB`;
 
-export default function MedicalRecordUploader({mode,onSaved,onSessionExpired}:{mode:'reports'|'prescriptions';onSaved:(count:number,remaining:number,records:MedicalDocument[])=>void;onSessionExpired?:()=>void}) {
+export default function MedicalRecordUploader({mode,userId,onSaved,onSessionExpired}:{mode:'reports'|'prescriptions';userId:string;onSaved:(count:number,remaining:number,records:MedicalDocument[])=>void;onSessionExpired?:()=>void}) {
   const prescription=mode==='prescriptions';
   const [drafts,setDrafts]=useState<Draft[]>(()=>[fresh(prescription)]);
   const [uploading,setUploading]=useState(false);
   const [progress,setProgress]=useState('');
+  const [submissionError,setSubmissionError]=useState('');
+  const errorRef=useRef<HTMLParagraphElement>(null);
+  useEffect(()=>{if(submissionError)errorRef.current?.scrollIntoView?.({block:'center',behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});},[submissionError]);
   const update=(key:string,patch:Partial<Draft>)=>setDrafts(items=>items.map(item=>item.key===key?{...item,...patch,error:''}:item));
   const now=new Date(), today=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
   const submit=async(event:React.FormEvent<HTMLFormElement>)=>{
     event.preventDefault();
+    setSubmissionError('');
     if(drafts.some(item=>!item.files.length)) {setDrafts(items=>items.map(item=>({...item,error:item.files.length?'':'Add at least one file to this entry.'})));return;}
     setUploading(true);let saved=0;const savedRecords:MedicalDocument[]=[];
     // One request per record keeps the existing 20 MB limit and isolates failed entries.
@@ -32,12 +36,19 @@ export default function MedicalRecordUploader({mode,onSaved,onSessionExpired}:{m
       body.set('uploadKey',item.key);body.set('results',JSON.stringify(item.results||[]));
       item.files.forEach(file=>body.append('files',file));
       try {
-        const response=await fetch(`/api/users/me/${prescription?'prescriptions':'medical-reports'}`,{method:'POST',credentials:'include',body});
+        const response=await fetch(`/api/users/me/${prescription?'prescriptions':'medical-reports'}`,{method:'POST',credentials:'include',headers:{'X-BloodNet-Profile':userId},body});
         if(response.status===401)onSessionExpired?.();
         const payload=await response.json();
         if(!response.ok||!payload.success)throw new Error(payload.message||'This entry could not be saved.');
-        savedRecords.push(payload.data);saved++;setDrafts(items=>items.filter(draft=>draft.key!==item.key));
+        if(!payload.data?.id)throw new Error('The server did not return a saved record. Keep your files and retry.');
+        const confirmation=await fetch('/api/users/me/medical-records/history',{method:'POST',credentials:'include',cache:'no-store',headers:{'Content-Type':'application/json','X-BloodNet-Profile':userId},body:JSON.stringify({mode,verifyUpload:payload.data.id})});
+        if(confirmation.status===401)onSessionExpired?.();
+        const confirmed=await confirmation.json();
+        const record=confirmed.data?.verifiedUpload;
+        if(!confirmation.ok||!confirmed.success||record?.id!==payload.data.id||record?.kind!==(prescription?'uploaded-prescription':'report')||!record.files?.length)throw new Error(confirmed.message||'The upload was received, but could not be confirmed in your timeline. Keep your files and retry; the same entry will not be duplicated.');
+        savedRecords.push(record);saved++;setDrafts(items=>items.filter(draft=>draft.key!==item.key));
       } catch(error) {
+        setSubmissionError(error instanceof Error?error.message:'Upload failed. Your files are still selected; retry this entry.');
         setDrafts(items=>items.map(draft=>draft.key===item.key?{...draft,error:error instanceof Error?error.message:'Upload failed. Retry this entry.'}:draft));
         // Keep the unsaved draft, files and stable upload key for safe retries.
       }
@@ -46,8 +57,9 @@ export default function MedicalRecordUploader({mode,onSaved,onSessionExpired}:{m
     if(saved===drafts.length)setDrafts([fresh(prescription)]);
     if(saved)onSaved(saved,drafts.length-saved,savedRecords);
   };
-  return <form onSubmit={submit} onInvalidCapture={event=>{const details=(event.target as HTMLElement).closest('details');if(details)details.open=true;}} className="space-y-5">
+  return <form onSubmit={submit} onInvalidCapture={event=>{const field=event.target as HTMLInputElement;const details=field.closest('details');if(details)details.open=true;setSubmissionError(`${field.closest('label')?.textContent||'Required field'}: ${field.validationMessage}`);}} className="space-y-5">
     <p className="text-sm leading-6 text-slate-600">Add one entry per {prescription?'prescription':'report or test'}. Attach up to five pages to each entry, then save several entries together.</p>
+    {submissionError&&<p ref={errorRef} role="alert" className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm font-medium text-rose-800">{submissionError}</p>}
     <fieldset disabled={uploading} className="m-0 min-w-0 space-y-5 border-0 p-0">
       {drafts.map((item,index)=><article key={item.key} className="min-w-0 space-y-5 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 sm:p-6">
         <div className="flex flex-wrap items-center justify-between gap-3"><h3 className="font-semibold text-slate-900">{prescription?'Prescription':'Report'} {index+1}</h3><button type="button" onClick={()=>setDrafts(items=>items.filter(draft=>draft.key!==item.key))} className="inline-flex min-h-10 items-center gap-2 rounded-full px-3 text-sm text-slate-600 hover:bg-rose-50 hover:text-rose-700"><Trash2 className="h-4 w-4"/>Remove entry</button></div>
@@ -61,6 +73,7 @@ export default function MedicalRecordUploader({mode,onSaved,onSessionExpired}:{m
           {!prescription&&<Field label="Test / examination name (optional)" maxLength={200} value={item.testName} onChange={e=>update(item.key,{testName:e.target.value})} placeholder="e.g. CBC, HbA1c, chest X-ray"/>}
         </div>
         <MedicalFilePicker files={item.files} onChange={files=>update(item.key,{files})}/>
+        {!!item.files.length&&<p className="text-xs leading-5 text-slate-600">These files are selected on your device. Tap <strong>Save {prescription?'prescription':'report'}</strong> below to store them in your account.</p>}
         <details className="rounded-xl border border-slate-200 bg-white p-4"><summary className="cursor-pointer text-sm font-semibold text-slate-800">Additional {prescription?'prescription':'medical'} details (optional)</summary><div className="mt-5 space-y-5">
           <div className="grid gap-5 sm:grid-cols-2">
             <Field label="Record / accession number" maxLength={120} value={item.referenceNumber} onChange={e=>update(item.key,{referenceNumber:e.target.value})}/>

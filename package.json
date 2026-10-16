@@ -25,7 +25,8 @@
     "test:seo": "tsx --test tests/seo-content.test.ts",
     "build": "prisma generate && next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "medical:configure": "tsx src/backend/scripts/configureMedicalStorage.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1034.0",

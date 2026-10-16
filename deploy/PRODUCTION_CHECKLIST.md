@@ -47,7 +47,7 @@ sudo certbot --nginx -d bloodnet.live -d www.bloodnet.live
 ```bash
 cd /var/www/bloodnet
 chmod +x deploy/deploy.sh
-./deploy/deploy.sh
+bash deploy/deploy.sh
 ```
 
 ## 7) PM2 auto-start after VPS reboot
@@ -58,9 +58,28 @@ pm2 save
 Run the command printed by `pm2 startup` (it usually starts with `sudo env PATH=...`).
 
 ## 8) Daily operations
+
+If medical uploads return HTTP 503 with a missing/invalid private-storage key:
+
+```bash
+cd /var/www/bloodnet
+git pull --ff-only origin main
+npm run medical:configure
+bash deploy/deploy.sh
+```
+
+`medical:configure` keeps an existing valid key unchanged. It creates an initial key
+in `.env.production.local` only when the database has no encrypted medical records
+or verification assets. It preserves other settings, privately backs up an existing
+file, and never prints the key. If encrypted data exists, restore its original key
+from a secure backup; do not generate a replacement. Back up `.env.production.local`
+securely too. The deploy restarts both the web app and prescription worker so they
+load that file. Health checks now fail when the running medical-storage key is
+missing or invalid, even if ordinary public-page database reads work.
+
 - Deploy latest main:
 ```bash
-cd /var/www/bloodnet && ./deploy/deploy.sh
+cd /var/www/bloodnet && bash deploy/deploy.sh
 ```
 - Check process:
 ```bash

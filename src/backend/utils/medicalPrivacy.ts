@@ -8,9 +8,13 @@ export class MedicalError extends Error {
   constructor(message: string, public status = 400) { super(message); }
 }
 
+export function medicalStorageConfigured(): boolean {
+  return /^[a-f0-9]{64}$/i.test(process.env.MEDICAL_RECORDS_ENCRYPTION_KEY || '');
+}
+
 export function medicalKey(): Buffer {
   const key = process.env.MEDICAL_RECORDS_ENCRYPTION_KEY || '';
-  if (!/^[a-f0-9]{64}$/i.test(key)) throw new MedicalError('Private medical storage is not configured.', 503);
+  if (!medicalStorageConfigured()) throw new MedicalError('Private medical storage is not configured on the server. Nothing was saved. Please contact support.', 503);
   return Buffer.from(key, 'hex');
 }
 
@@ -36,6 +40,8 @@ export function medicalUser(req: Request): string {
   if (!session) throw new MedicalError('Unauthorized.', 401);
   if (session.role !== USER_ROLE) throw new MedicalError('Only the patient can access these records.', 403);
   medicalOrigin(req);
+  const displayedUser = req.headers.get('x-bloodnet-profile');
+  if (displayedUser && displayedUser !== session.user_id) throw new MedicalError('Your signed-in account changed. Reload your profile before accessing or uploading medical records.', 409);
   return session.user_id;
 }
 

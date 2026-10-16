@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getPrisma } from '@/src/backend/config/db';
 import { getRedactedRuntimeDiagnostics } from '@/src/backend/config/env';
+import { medicalStorageConfigured } from '@/src/backend/utils/medicalPrivacy';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -15,6 +16,7 @@ export async function GET(req: Request) {
   let db: Status = 'ok';
   let smtp: Status = 'ok';
   let storage: Status = 'ok';
+  const medicalStorage:Status=medicalStorageConfigured()?'ok':'error';
   let migrationVersion: string | null = null;
   let errorMessage: string | null = null;
   let diagnostics: ReturnType<typeof getRedactedRuntimeDiagnostics> | null = null;
@@ -55,7 +57,8 @@ export async function GET(req: Request) {
     }
   }
 
-  const overall: Status = db === 'error' || storage === 'error' ? 'error' : smtp === 'degraded' ? 'degraded' : 'ok';
+  if(medicalStorage==='error'&&!errorMessage)errorMessage='Private medical storage configuration is missing or invalid.';
+  const overall: Status = db === 'error' || storage === 'error' || medicalStorage==='error' ? 'error' : smtp === 'degraded' ? 'degraded' : 'ok';
 
   return NextResponse.json(
     {
@@ -65,6 +68,7 @@ export async function GET(req: Request) {
         checks: {
           db,
           storage,
+          medicalStorage,
           smtp,
         },
         migrationVersion,

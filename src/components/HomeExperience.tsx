@@ -157,12 +157,15 @@ export function HomeExperience({ forcedCountry, locationDirectory }: { forcedCou
   const [currentPage, setCurrentPage] = useState("home");
   const [isProfileView, setIsProfileView] = useState(false);
   const [sessionUser, setSessionUser] = useState<SessionUser | null>(() => readCachedJson<SessionUser>(USER_SESSION_CACHE_KEY));
-  const [isSessionLoading, setIsSessionLoading] = useState(() => !Boolean(readCachedJson<SessionUser>(USER_SESSION_CACHE_KEY)));
+  const [isSessionLoading, setIsSessionLoading] = useState(true);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isDonationModalOpen, setIsDonationModalOpen] = useState(false);
   const [isReadyToDonate, setIsReadyToDonate] = useState(true);
   const [enableFluidBackground, setEnableFluidBackground] = useState(false);
-  const [profileData, setProfileData] = useState<ProfileData | null>(() => readCachedJson<ProfileData>(USER_PROFILE_CACHE_KEY));
+  const [profileData, setProfileData] = useState<ProfileData | null>(() => {
+    const profile=readCachedJson<ProfileData>(USER_PROFILE_CACHE_KEY),session=readCachedJson<SessionUser>(USER_SESSION_CACHE_KEY);
+    return profile?.id===session?.id?profile:null;
+  });
   const [isProfileLoading, setIsProfileLoading] = useState(false);
   const [profileLoadError, setProfileLoadError] = useState("");
   const [policyModal, setPolicyModal] = useState<{ isOpen: boolean; type: 'terms' | 'privacy' }>({
@@ -192,6 +195,7 @@ export function HomeExperience({ forcedCountry, locationDirectory }: { forcedCou
   }, [sessionUser]);
 
   const clearClientSession = useCallback(() => {
+    sessionUserRef.current=null;
     setSessionUser(null);
     setProfileData(null);
     setIsProfileView(false);
@@ -237,6 +241,7 @@ export function HomeExperience({ forcedCountry, locationDirectory }: { forcedCou
 
       const data = await res.json();
       const nextUser = (data.user || null) as SessionUser | null;
+      sessionUserRef.current=nextUser;
       setSessionUser((prev) => {
         if (!prev && !nextUser) return prev;
         if (prev && nextUser && prev.id === nextUser.id && prev.role === nextUser.role && prev.email === nextUser.email && prev.name === nextUser.name) {
@@ -265,13 +270,14 @@ export function HomeExperience({ forcedCountry, locationDirectory }: { forcedCou
         cache: "no-store",
       });
 
+      if (sessionUserRef.current?.id !== currentSession.id) return;
       if (!res.ok) {
         if (res.status === 401 || res.status === 403) {
           clearClientSession();
           return;
         }
         const cachedProfile = readCachedJson<ProfileData>(USER_PROFILE_CACHE_KEY);
-        if (cachedProfile) {
+        if (cachedProfile?.id === currentSession.id && sessionUserRef.current?.id === currentSession.id) {
           setProfileData(cachedProfile);
           setIsReadyToDonate(Boolean(cachedProfile.isActiveDonor));
           setProfileLoadError("");
@@ -284,7 +290,7 @@ export function HomeExperience({ forcedCountry, locationDirectory }: { forcedCou
       const payload = await res.json();
       if (!payload.success) {
         const cachedProfile = readCachedJson<ProfileData>(USER_PROFILE_CACHE_KEY);
-        if (cachedProfile) {
+        if (cachedProfile?.id === currentSession.id && sessionUserRef.current?.id === currentSession.id) {
           setProfileData(cachedProfile);
           setIsReadyToDonate(Boolean(cachedProfile.isActiveDonor));
           setProfileLoadError("");
@@ -294,11 +300,18 @@ export function HomeExperience({ forcedCountry, locationDirectory }: { forcedCou
         return;
       }
 
+      if (sessionUserRef.current?.id !== currentSession.id) return;
+      if (payload.data?.id !== currentSession.id) {
+        setProfileData(null);
+        setProfileLoadError('Your account changed. Refresh this page to load the correct profile.');
+        return;
+      }
       setProfileData(payload.data);
       setIsReadyToDonate(Boolean(payload.data.isActiveDonor));
     } catch (error) {
+      if (sessionUserRef.current?.id !== currentSession.id) return;
       const cachedProfile = readCachedJson<ProfileData>(USER_PROFILE_CACHE_KEY);
-      if (cachedProfile) {
+      if (cachedProfile?.id === currentSession.id && sessionUserRef.current?.id === currentSession.id) {
         setProfileData(cachedProfile);
         setIsReadyToDonate(Boolean(cachedProfile.isActiveDonor));
         setProfileLoadError("");
@@ -315,14 +328,16 @@ export function HomeExperience({ forcedCountry, locationDirectory }: { forcedCou
   }, [loadSession]);
 
   useEffect(() => {
-    if (!sessionUser || !isProfileView) return;
+    if (isSessionLoading || !sessionUser || !isProfileView) return;
     void loadProfile();
-  }, [isProfileView, sessionUser?.id, loadProfile]);
+  }, [isProfileView, isSessionLoading, sessionUser?.id, loadProfile]);
 
   useEffect(() => {
     if (!sessionUser) {
       setProfileData(null);
       setProfileLoadError("");
+    } else {
+      setProfileData(previous=>previous?.id===sessionUser.id?previous:null);
     }
   }, [sessionUser]);
 
@@ -441,7 +456,7 @@ export function HomeExperience({ forcedCountry, locationDirectory }: { forcedCou
       <main>
         {isProfileView && sessionUser && (
           <div className="profile-page-shell mx-auto w-full max-w-7xl px-0 py-4 sm:px-4 sm:py-24">
-            {(isSessionLoading || isProfileLoading) && !profileData ? (
+            {(isSessionLoading || (isProfileLoading && !profileData) || (profileData && profileData.id !== sessionUser.id)) ? (
               <div className="rounded-3xl border border-border/20 bg-glass p-8 text-center text-sm font-semibold text-text/70">
                 Loading your profile...
               </div>
