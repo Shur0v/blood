@@ -66,6 +66,8 @@ After `npm ci`, deployment explicitly generates Prisma before any backend config
 
 The locked dependencies require Node 22.12+ (or Node 24+). If the shared VPS runtime is older, deployment installs and reuses a private Node 22 runtime in `/var/lib/bloodnet/node-runtime`. BloodNet's web process and prescription worker receive that interpreter and PATH explicitly. The system Node installation, global PM2 installation and other PM2 applications are unchanged. A runtime installation failure stops before pausing running BloodNet processes.
 
+Backups derive separate `PGHOST`, `PGPORT`, `PGDATABASE`, `PGUSER` and `PGPASSWORD` variables from the application connection URL. Putting the complete URL in `PGDATABASE` can cause libpq to fall back to the shell user and local socket. Credentials remain out of command arguments, and backup failures print a redacted diagnostic. A nonempty archive must still pass `pg_restore --list` before deployment proceeds.
+
 ## 7) PM2 auto-start after VPS reboot
 ```bash
 pm2 startup systemd
