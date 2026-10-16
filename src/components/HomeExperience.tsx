@@ -440,7 +440,7 @@ export function HomeExperience({ forcedCountry, locationDirectory }: { forcedCou
 
       <main>
         {isProfileView && sessionUser && (
-          <div className="mx-auto max-w-7xl px-4 py-24">
+          <div className="profile-page-shell mx-auto w-full max-w-7xl px-0 py-4 sm:px-4 sm:py-24">
             {(isSessionLoading || isProfileLoading) && !profileData ? (
               <div className="rounded-3xl border border-border/20 bg-glass p-8 text-center text-sm font-semibold text-text/70">
                 Loading your profile...

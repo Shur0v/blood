@@ -1,0 +1,40 @@
+import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';
+import path from 'node:path';
+const load=createRequire(path.resolve(process.env.BLOODNET_UI_TEST_PACKAGE||'package.json'));
+const {JSDOM}=load('jsdom');
+import {pathToFileURL} from 'node:url';
+const dom=new JSDOM('<!doctype html><html><body><div id="root"></div></body></html>',{url:'http://localhost',pretendToBeVisual:true});
+for(const key of ['window','document','HTMLElement','Element','SVGElement','Node','Event','MouseEvent','MutationObserver'])globalThis[key]=dom.window[key];
+Object.defineProperty(globalThis,'navigator',{value:dom.window.navigator,configurable:true});
+globalThis.getComputedStyle=dom.window.getComputedStyle.bind(dom.window);globalThis.requestAnimationFrame=dom.window.requestAnimationFrame.bind(dom.window);globalThis.cancelAnimationFrame=dom.window.cancelAnimationFrame.bind(dom.window);
+window.matchMedia=()=>({matches:false,addListener(){},removeListener(){},addEventListener(){},removeEventListener(){}});globalThis.IS_REACT_ACT_ENVIRONMENT=true;
+const {default:React,act}=await import(pathToFileURL(process.cwd()+'/node_modules/react/index.js'));
+globalThis.React=React;
+const {createRoot}=await import(pathToFileURL(process.cwd()+'/node_modules/react-dom/client.js'));
+
+
+
+const {default:Panel}=await import(pathToFileURL(process.cwd()+'/src/components/MedicalRecordsPanel.tsx'));
+const root=createRoot(document.getElementById('root'));
+let records=[],requests=[];
+const saved={id:'saved-older',kind:'uploaded-prescription',title:'Older prescription saved now',category:'Prescription',reportDate:'2020-01-01',clinician:'Example Clinician',facility:'Clinic',notes:'Synthetic only',createdAt:'2026-10-16T10:00:00Z',files:[{id:'saved-file',name:'prescription.pdf',mimeType:'application/pdf',sizeBytes:100}]};
+const newer=Array.from({length:20},(_,i)=>({...saved,id:'existing-'+i,title:'Existing prescription '+i,reportDate:'2026-10-01',files:[]}));
+globalThis.fetch=async(url,init={})=>{requests.push(String(url));if(String(url).endsWith('/prescriptions')&&init.body instanceof FormData){records=[...newer,saved];return Response.json({success:true,data:saved},{status:201});}const query=JSON.parse(init.body);return Response.json({success:true,data:{items:query.mode==='prescriptions'?records.slice(0,20):[],counts:{reports:0,prescriptions:records.length},nextCursor:null}});};
+const click=async el=>{assert.ok(el);await act(async()=>el.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true})));};
+const fill=async(el,value)=>{assert.ok(el);await act(async()=>{Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype,'value').set.call(el,value);el.dispatchEvent(new Event('input',{bubbles:true}));});};
+await act(async()=>root.render(React.createElement(Panel,{userId:'test-user'})));
+assert.equal(document.querySelector('[aria-label="Search medical records"]'),null,'No filters for an empty account');
+await click(Array.from(document.querySelectorAll('button')).find(el=>el.textContent==='Upload prescriptions'));
+const form=Array.from(document.querySelectorAll('form')).find(el=>el.textContent.includes('Prescription 1'));
+const input=label=>Array.from(form.querySelectorAll('label')).find(el=>el.textContent.startsWith(label)).querySelector('input');
+await fill(input('Prescription title'),saved.title);await fill(input('Date prescribed'),saved.reportDate);await fill(input('Doctor name'),saved.clinician);
+const file=form.querySelector('input[type=file][multiple]');Object.defineProperty(file,'files',{value:[new File(['%PDF-1.4\nsynthetic'],'prescription.pdf',{type:'application/pdf'})],configurable:true});await act(async()=>file.dispatchEvent(new Event('change',{bubbles:true})));
+await act(async()=>form.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true})));
+assert.ok(document.body.textContent.includes(saved.title),'A confirmed old-dated upload must remain visible beyond the first timeline page');assert.ok(document.querySelector('[aria-label="Search medical records"]'),'Filters appear after first stored record');assert.ok(document.body.textContent.includes(saved.clinician));assert.ok(document.querySelector('a[href*="saved-file"]'));assert.equal(document.querySelector('[role=tab][aria-selected=true]').textContent.replace(/\d/g,'').trim(),'Prescriptions');
+console.log('PASS empty-state filters and immediate visibility for saved historical prescriptions with attachment metadata');
+await act(async()=>root.unmount());
+const nextRoot=createRoot(document.getElementById('root'));await act(async()=>nextRoot.render(React.createElement(Panel,{userId:'test-user',openReports:true})));
+assert.equal(document.querySelector('[role=tab][aria-selected=true]').textContent.replace(/\d/g,'').trim(),'Prescriptions','Opening an empty Reports tab should discover existing prescriptions');
+console.log('PASS initial timeline selects the category containing actual account records');
+await act(async()=>nextRoot.unmount());dom.window.close();

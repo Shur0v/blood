@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useRef, useState } from 'react';
 import { Camera, FileText, ImagePlus, Plus, Trash2, X, ZoomIn } from 'lucide-react';
-import { MAX_MEDICAL_FILES, MAX_MEDICAL_FILE_BYTES, MAX_MEDICAL_TOTAL_BYTES, REPORT_CATEGORIES, type MedicalReportDetails } from '@/src/lib/medicalRecords';
+import { MAX_MEDICAL_FILES, MAX_MEDICAL_FILE_BYTES, MAX_MEDICAL_TOTAL_BYTES, REPORT_CATEGORIES, type MedicalReportDetails, type MedicalDocument } from '@/src/lib/medicalRecords';
 
 export const medicalFieldClass = 'mt-2 min-h-12 w-full min-w-0 rounded-xl border border-slate-200 bg-white px-3 py-3 text-base font-normal text-slate-900 placeholder:text-slate-400 outline-none focus:border-rose-700 focus:ring-2 focus:ring-rose-700/10';
 type Result = NonNullable<MedicalReportDetails['results']>[number];
@@ -10,7 +10,7 @@ type Draft = Omit<MedicalReportDetails,'files'> & {key:string;files:File[];error
 const fresh = (prescription:boolean):Draft => ({key:crypto.randomUUID(),title:'',category:prescription?'Prescription':'Lab result',reportDate:'',facility:'',clinician:'',notes:'',testName:'',referenceNumber:'',sampleType:'',sampleCollectedOn:'',bodySite:'',reason:'',findings:'',impression:'',followUpDate:'',doctorSpecialty:'',doctorRegistration:'',results:[],files:[],error:''});
 export const medicalBytes = (size:number) => size<1024*1024?`${Math.round(size/1024)} KB`:`${(size/1024/1024).toFixed(1)} MB`;
 
-export default function MedicalRecordUploader({mode,onSaved,onSessionExpired}:{mode:'reports'|'prescriptions';onSaved:(count:number,remaining:number)=>void;onSessionExpired?:()=>void}) {
+export default function MedicalRecordUploader({mode,onSaved,onSessionExpired}:{mode:'reports'|'prescriptions';onSaved:(count:number,remaining:number,records:MedicalDocument[])=>void;onSessionExpired?:()=>void}) {
   const prescription=mode==='prescriptions';
   const [drafts,setDrafts]=useState<Draft[]>(()=>[fresh(prescription)]);
   const [uploading,setUploading]=useState(false);
@@ -20,7 +20,7 @@ export default function MedicalRecordUploader({mode,onSaved,onSessionExpired}:{m
   const submit=async(event:React.FormEvent<HTMLFormElement>)=>{
     event.preventDefault();
     if(drafts.some(item=>!item.files.length)) {setDrafts(items=>items.map(item=>({...item,error:item.files.length?'':'Add at least one file to this entry.'})));return;}
-    setUploading(true);let saved=0;
+    setUploading(true);let saved=0;const savedRecords:MedicalDocument[]=[];
     // One request per record keeps the existing 20 MB limit and isolates failed entries.
     for(let index=0;index<drafts.length;index++) {
       const item=drafts[index];setProgress(`Saving ${index+1} of ${drafts.length}…`);
@@ -36,7 +36,7 @@ export default function MedicalRecordUploader({mode,onSaved,onSessionExpired}:{m
         if(response.status===401)onSessionExpired?.();
         const payload=await response.json();
         if(!response.ok||!payload.success)throw new Error(payload.message||'This entry could not be saved.');
-        saved++;setDrafts(items=>items.filter(draft=>draft.key!==item.key));
+        savedRecords.push(payload.data);saved++;setDrafts(items=>items.filter(draft=>draft.key!==item.key));
       } catch(error) {
         setDrafts(items=>items.map(draft=>draft.key===item.key?{...draft,error:error instanceof Error?error.message:'Upload failed. Retry this entry.'}:draft));
         // Keep the unsaved draft, files and stable upload key for safe retries.
@@ -44,7 +44,7 @@ export default function MedicalRecordUploader({mode,onSaved,onSessionExpired}:{m
     }
     setUploading(false);setProgress('');
     if(saved===drafts.length)setDrafts([fresh(prescription)]);
-    if(saved)onSaved(saved,drafts.length-saved);
+    if(saved)onSaved(saved,drafts.length-saved,savedRecords);
   };
   return <form onSubmit={submit} onInvalidCapture={event=>{const details=(event.target as HTMLElement).closest('details');if(details)details.open=true;}} className="space-y-5">
     <p className="text-sm leading-6 text-slate-600">Add one entry per {prescription?'prescription':'report or test'}. Attach up to five pages to each entry, then save several entries together.</p>

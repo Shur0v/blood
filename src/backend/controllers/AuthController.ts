@@ -139,7 +139,7 @@ export class AuthController {
         return NextResponse.json({ error: 'Failed to dispatch email. Please check server configuration.' }, { status: 500 });
       }
 
-      return NextResponse.json({ message: existingUser ? 'This email already has an account. Enter the code sent to this email to access your existing account.' : 'OTP dispatched successfully', existingAccount: Boolean(existingUser), mode:existingUser?'login':'register' }, { status: 200 });
+      return NextResponse.json({ message: existingUser && mode==='register' ? 'This email already has an account. Enter the code sent to this email to access your existing account.' : 'OTP dispatched successfully', existingAccount: Boolean(existingUser), mode:existingUser?'login':'register' }, { status: 200 });
     } catch (err: any) {
       return authFailure(err);
     }

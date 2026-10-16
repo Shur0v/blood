@@ -17,7 +17,12 @@ export async function medicalHistoryResponse(req: Request, userId: string) {
   if(!parsed.success)throw new MedicalError('Invalid history filters.');
   const {mode,...filters}=parsed.data;
   const params=new URLSearchParams(Object.entries(filters).filter((entry):entry is [string,string]=>typeof entry[1]==='string'));
-  return NextResponse.json({success:true,data:await listMedicalTimeline(userId,mode,params)},{headers:privateHeaders});
+  const [timeline,rows]=await Promise.all([listMedicalTimeline(userId,mode,params),getPrisma().$queryRaw<Array<{reports:bigint;prescriptions:bigint}>>`
+    SELECT (SELECT COUNT(*) FROM "MedicalReport" WHERE user_id=${userId} AND record_kind='REPORT') AS reports,
+      ((SELECT COUNT(*) FROM "MedicalReport" WHERE user_id=${userId} AND record_kind='PRESCRIPTION')+
+       (SELECT COUNT(*) FROM "Prescription" WHERE user_id=${userId})) AS prescriptions
+  `]);
+  return NextResponse.json({success:true,data:{...timeline,counts:{reports:Number(rows[0].reports),prescriptions:Number(rows[0].prescriptions)}}},{headers:privateHeaders});
 }
 
 export async function medicalFileResponse(req: Request, userId: string, reportId: string, fileId: string) {

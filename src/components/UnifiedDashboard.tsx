@@ -568,11 +568,11 @@ export default function UnifiedDashboard({
   };
 
   return (
-    <section className="profile-dashboard public-light-panel mx-auto max-w-7xl px-4 py-8 sm:py-12">
+    <section className="profile-dashboard public-light-panel mx-auto w-full max-w-7xl px-0 py-0 sm:px-4 sm:py-12">
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative overflow-hidden rounded-[28px] border border-slate-200 profile-animated-surface bg-[#fafbfc] text-slate-900 shadow-[0_16px_60px_-32px_rgba(15,23,42,0.18)] sm:rounded-[36px]"
+        className="relative overflow-hidden rounded-none border-y border-slate-200 profile-animated-surface bg-[#fafbfc] text-slate-900 shadow-[0_16px_60px_-32px_rgba(15,23,42,0.18)] sm:rounded-[36px] sm:border"
       >
         <div className="p-4 sm:p-8 lg:p-10">
           {/* Header: identity on the left, cities on the right on desktop. */}
@@ -744,7 +744,7 @@ export default function UnifiedDashboard({
               <span className="flex items-center gap-3"><BookOpen className="h-6 w-6 shrink-0" /><span><span className="block text-base font-semibold">Medical records</span><span className="block text-xs leading-5">Add reports or view your prescriptions</span></span></span>
               <ChevronRight className={`h-5 w-5 shrink-0 transition-transform ${medicalRecordsOpen ? 'rotate-90' : ''}`} />
             </button>
-            {medicalRecordsOpen && <div id="profile-medical-records" className="mt-4"><MedicalRecordsPanel key={profile.id} userId={profile.id} audit={mode === "admin"} onSessionExpired={onSessionExpired} openReports /></div>}
+            {medicalRecordsOpen && <div id="profile-medical-records" className="mt-4"><MedicalRecordsPanel key={profile.id} userId={profile.id} audit={mode === "admin"} onSessionExpired={onSessionExpired} /></div>}
           </div>}
           {profile?.id && <PublicProfileSettings userId={profile.id} audit={mode === 'admin'}/>}
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">

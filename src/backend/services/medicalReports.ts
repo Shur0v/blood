@@ -86,7 +86,7 @@ export async function createMedicalReport(userId: string, form: FormData, kind: 
     const previous = await prisma.medicalReport.findUnique({where:{user_id_upload_key:{user_id:userId,upload_key:uploadKey}}});
     if (!previous) return null;
     if (previous.request_hash !== requestHash) throw new MedicalError('This upload was already saved with different content. Start a new entry.',409);
-    return {id:previous.id,...JSON.parse(decryptMedical(previous.payload,`report:${userId}:${previous.id}`).toString()) as MedicalReportDetails};
+    return {id:previous.id,kind:previous.record_kind==='PRESCRIPTION'?'uploaded-prescription' as const:'report' as const,createdAt:previous.created_at.toISOString(),...JSON.parse(decryptMedical(previous.payload,`report:${userId}:${previous.id}`).toString()) as MedicalReportDetails};
   };
   const previous = await retry(); if (previous) return previous;
   const id = randomUUID(), attachments = [], fileNames: MedicalReportDetails['files'] = [];
@@ -103,9 +103,10 @@ export async function createMedicalReport(userId: string, form: FormData, kind: 
     attachments.push({id:fileId,mime_type:mime,size_bytes:buffer.length,payload:encryptMedical(buffer,`report-file:${userId}:${fileId}`)});
   }
   const details: MedicalReportDetails = {...parsed.data,files:fileNames};
-  try {await prisma.medicalReport.create({data:{id,user_id:userId,record_kind:kind,record_date:new Date(`${details.reportDate}T00:00:00Z`),upload_key:uploadKey||null,request_hash:requestHash,payload:encryptMedical(Buffer.from(JSON.stringify(details)),`report:${userId}:${id}`),Files:{create:attachments}}});}
+  let createdAt:Date;
+  try {const stored=await prisma.medicalReport.create({data:{id,user_id:userId,record_kind:kind,record_date:new Date(`${details.reportDate}T00:00:00Z`),upload_key:uploadKey||null,request_hash:requestHash,payload:encryptMedical(Buffer.from(JSON.stringify(details)),`report:${userId}:${id}`),Files:{create:attachments}}});createdAt=stored.created_at;}
   catch(error) {if ((error as {code?:string}).code==='P2002') {const duplicate=await retry();if(duplicate)return duplicate;}throw error;}
-  return {id,...details};
+  return {id,...details,createdAt:createdAt.toISOString(),kind:kind==='PRESCRIPTION'?'uploaded-prescription' as const:'report' as const};
 }
 
 async function backfillDates(userId: string) {

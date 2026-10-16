@@ -374,11 +374,17 @@ test('patient prescriptions require doctor/date, share a dated timeline with doc
   const headers={authorization:`Bearer ${signToken({user_id:owner.id,role:'USER'})}`};
   const result=await uploadPrescription(new Request('http://localhost/api/users/me/prescriptions',{method:'POST',headers,body:form}));
   assert.equal(result.status,201);const saved=(await result.json()).data;
+  assert.equal(saved.kind,'uploaded-prescription');
+  assert.equal(saved.createdAt,(await getPrisma().medicalReport.findUniqueOrThrow({where:{id:saved.id}})).created_at.toISOString());
   assert.equal(await getPrisma().prescription.count({where:{user_id:owner.id}}),0,'Uploads must not enter the doctor email queue.');
   await acceptPrescription('doctor-portal',samplePrescription(owner.profile_code));
   const timeline=await listMedicalTimeline(owner.id,'prescriptions');assert.equal(timeline.items.length,2);
   assert.equal(timeline.items[0].kind,'doctor-prescription');assert.equal(timeline.items[1].kind,'uploaded-prescription');
   assert.equal((await listMedicalTimeline(owner.id,'reports')).items.length,0);
+  const history=await searchMedicalHistory(new Request('http://localhost/api/users/me/medical-records/history',{method:'POST',headers:{...headers,'Content-Type':'application/json'},body:JSON.stringify({mode:'prescriptions'})}));
+  const historyData=(await history.json()).data;
+  assert.deepEqual(historyData.counts,{reports:0,prescriptions:2});
+  assert.equal(historyData.items.find((item:{id:string})=>item.id===saved.id).kind,'uploaded-prescription');
   const params=Promise.resolve({reportId:saved.id,fileId:saved.files[0].id});
   const preview=await downloadFile(patientRequest('http://localhost/api/file?preview=1',owner.id),{params});
   assert.equal(preview.status,200);assert.match(preview.headers.get('content-disposition')! ,/^inline/);
@@ -818,7 +824,7 @@ test('registration email reuse opens the original account while duplicate phones
 test('existing users still receive login OTPs and log in case-insensitively without changing profile data',integration,async()=>{
  const {AuthController}=await import('../src/backend/controllers/AuthController');const {transporter}=await import('../src/backend/utils/mailer');const owner=await newPatient();const send=mock.method(transporter,'sendMail',async()=>({messageId:'test-only'}));
  try{
- const email=owner.email.toUpperCase();const requested=await AuthController.requestOtp(authRequest('request',{mode:'login',email}));assert.equal(requested.status,200);assert.equal(send.mock.callCount(),1);
+ const email=owner.email.toUpperCase();const requested=await AuthController.requestOtp(authRequest('request',{mode:'login',email}));assert.equal(requested.status,200);assert.equal(send.mock.callCount(),1);assert.equal((await requested.json()).message,'OTP dispatched successfully');
  await new AuthService().storeOTP(email,'123456');const response=await AuthController.verifyOtp(authRequest('verify',{mode:'login',email,otp:'123456'}));assert.equal(response.status,200);assert.equal((await response.json()).user.id,owner.id);assert.match(response.headers.get('set-cookie')||'',/bloodnet_session=/);
  assert.deepEqual(await getPrisma().user.findUniqueOrThrow({where:{id:owner.id}}),owner);
  }finally{send.mock.restore();}

@@ -40,4 +40,17 @@ for(const [code,late] of [['EMAIL_ALREADY_REGISTERED',false],['PHONE_ALREADY_REG
  if(code!=='RATE_LIMIT'){await click(button('Log in instead'));assert.equal(document.getElementById('auth-name'),null);assert.ok(document.getElementById('auth-email'));}
  console.log('PASS auth form',code,late?'after OTP verification':'before OTP sending');
 }
-assert.equal(successes,1,'Only the verified existing-account scenario opens a profile');await act(async()=>root.unmount());dom.window.close();
+resultCode='EXISTING_ACCOUNT';requests=[];
+await act(async()=>root.render(React.createElement(AuthModal,{key:'normal-login',isOpen:true,onClose(){},onSuccess(){successes++;}})));
+await click(button('Already have an account? Login'));await fill(document.getElementById('auth-email'),'existing@example.invalid');
+await act(async()=>document.querySelector('form').dispatchEvent(new Event('submit',{bubbles:true,cancelable:true})));
+assert.equal(requests[0].body.mode,'login');assert.equal(document.querySelector('[role=status]'),null,'Normal login must omit the existing-account notice');
+assert.equal(document.querySelectorAll('[id^="otp-"]').length,6);for(let i=0;i<6;i++)await fill(document.getElementById('otp-'+i),'1');await click(button('Verify & Login'));
+assert.equal(successes,2);console.log('PASS normal login opens OTP without an existing-account notice');
+await act(async()=>root.render(React.createElement(AuthModal,{key:'unknown-login',isOpen:true,onClose(){},onSuccess(){successes++;}})));
+globalThis.fetch=async()=>Response.json({error:'No account was found with this email address. Please register first.',code:'ACCOUNT_NOT_FOUND'},{status:404});
+await click(button('Already have an account? Login'));await fill(document.getElementById('auth-email'),'unknown@example.invalid');
+await act(async()=>document.querySelector('form').dispatchEvent(new Event('submit',{bubbles:true,cancelable:true})));
+assert.match(document.querySelector('[role=alert]').textContent,/No account was found/);assert.equal(document.querySelectorAll('[id^="otp-"]').length,0);await click(button('Create an account'));assert.ok(document.getElementById('auth-name'));
+console.log('PASS unknown login email explains registration and stays out of OTP');
+await act(async()=>root.unmount());dom.window.close();

@@ -246,7 +246,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
         return;
       }
 
-      setAccountNotice(data.existingAccount?data.message:"");
+      setAccountNotice(authMode==='register'&&data.existingAccount?data.message:"");
       if(data.existingAccount)setAuthMode("login");
       setOtp(["", "", "", "", "", ""]);
       setStep("otp");
