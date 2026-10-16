@@ -1,4 +1,4 @@
-import { before, after, test } from 'node:test';
+import { before, after, test, mock } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
@@ -104,6 +104,9 @@ before(async () => {
   await sql.query('INSERT INTO "MedicalReport" (id,user_id,payload) VALUES ($1,$2,$3)',[legacyReportId,migratedUserId,legacyReportPayload]);
   await sql.query(readFileSync('prisma/migrations/20261014090000_medical_record_timelines/migration.sql','utf8'));
   await sql.query(readFileSync('prisma/migrations/20261014120000_analytics_coordinates/migration.sql','utf8'));
+  await sql.query(readFileSync('prisma/migrations/20261016090000_opt_in_public_donor_profiles/migration.sql','utf8'));
+  await sql.query(readFileSync('prisma/migrations/20261016120000_user_login_emails/migration.sql','utf8'));
+  await sql.query(readFileSync('prisma/migrations/20261016140000_discovery_visibility/migration.sql','utf8'));
 });
 after(async () => { if (testUrl) { await getPrisma().$disconnect(); await sql?.end(); } });
 
@@ -779,4 +782,194 @@ test('verification uploads are encrypted, owner-bound and privately readable by 
   } finally {
     if(asset.storage_key.startsWith('local/'))await unlink(path.resolve('public/uploads',asset.storage_key.slice(6)));
   }
+});
+
+
+const authRequest=(path:string,payload:unknown)=>new Request('http://localhost/api/auth/otp/'+path,{method:'POST',headers:{'content-type':'application/json','x-real-ip':'192.0.2.119'},body:JSON.stringify(payload)});
+const registrationPayload=(email:string,mobile:string)=>{const city={city:'Dhaka',country:'Bangladesh',formatted_location:'Dhaka, Bangladesh',latitude:23.81,longitude:90.41,provider_place_id:'registration-conflict-test'};return {mode:'register',email,mobile,otp:'123456',name:'Registration Test',dateOfBirth:'2000-01-01T00:00:00Z',bloodGroup:'O-',locations:[{...city,token:signLocationProof(city)}]};};
+
+test('duplicate registration identities stop before OTP sending without changing accounts or pending codes',integration,async()=>{
+ const {AuthController}=await import('../src/backend/controllers/AuthController');
+ const {transporter}=await import('../src/backend/utils/mailer');
+ const send=mock.method(transporter,'sendMail',async()=>({messageId:'test-only'}));
+ try{
+ const owner=await newPatient();await getPrisma().user.update({where:{id:owner.id},data:{mobile:'+8801712345678'}});
+ const snapshot=await getPrisma().user.findUniqueOrThrow({where:{id:owner.id}});
+ await new AuthService().storeOTP(owner.email,'123456');const pending=await getPrisma().otpVerification.findUniqueOrThrow({where:{email:owner.email}});
+ for(const payload of [
+  {email:randomUUID()+'@example.invalid',mobile:'+8801712345678',expected:'PHONE_ALREADY_REGISTERED'},
+  {email:randomUUID()+'@example.invalid',mobile:'00880 1712-345678',expected:'PHONE_ALREADY_REGISTERED'},
+ ]){const response=await AuthController.requestOtp(authRequest('request',{mode:'register',email:payload.email,mobile:payload.mobile}));assert.equal(response.status,409);const data=await response.json();assert.equal(data.code,payload.expected);assert.match(data.error,/already/);assert.equal(response.headers.get('set-cookie'),null);}
+ assert.equal(send.mock.callCount(),0);
+ assert.deepEqual(await getPrisma().user.findUniqueOrThrow({where:{id:owner.id}}),snapshot);
+ assert.deepEqual(await getPrisma().otpVerification.findUniqueOrThrow({where:{email:owner.email}}),pending);
+ }finally{send.mock.restore();}
+});
+
+test('registration email reuse opens the original account while duplicate phones remain a clear conflict',integration,async()=>{
+ const {AuthController}=await import('../src/backend/controllers/AuthController');const owner=await newPatient();
+ for(const field of ['email','phone']){
+ const email=field==='email'?owner.email.toUpperCase():randomUUID()+'@example.invalid';
+ await new AuthService().storeOTP(email,'123456');const response=await AuthController.verifyOtp(authRequest('verify',registrationPayload(email,owner.mobile)));
+ if(field==='email'){assert.equal(response.status,200);assert.equal((await response.json()).user.id,owner.id);assert.equal(await new AuthService().verifyOTP(email,'123456'),false);}else{assert.equal(response.status,409);const body=await response.json();assert.equal(body.field,field);assert.match(body.error,/already/);assert.equal(response.headers.get('set-cookie'),null);assert.equal(await new AuthService().verifyOTP(email,'123456'),true);}
+ }
+});
+
+test('existing users still receive login OTPs and log in case-insensitively without changing profile data',integration,async()=>{
+ const {AuthController}=await import('../src/backend/controllers/AuthController');const {transporter}=await import('../src/backend/utils/mailer');const owner=await newPatient();const send=mock.method(transporter,'sendMail',async()=>({messageId:'test-only'}));
+ try{
+ const email=owner.email.toUpperCase();const requested=await AuthController.requestOtp(authRequest('request',{mode:'login',email}));assert.equal(requested.status,200);assert.equal(send.mock.callCount(),1);
+ await new AuthService().storeOTP(email,'123456');const response=await AuthController.verifyOtp(authRequest('verify',{mode:'login',email,otp:'123456'}));assert.equal(response.status,200);assert.equal((await response.json()).user.id,owner.id);assert.match(response.headers.get('set-cookie')||'',/bloodnet_session=/);
+ assert.deepEqual(await getPrisma().user.findUniqueOrThrow({where:{id:owner.id}}),owner);
+ }finally{send.mock.restore();}
+});
+
+test('unknown login emails are directed to registration without sending OTP',integration,async()=>{
+ const {AuthController}=await import('../src/backend/controllers/AuthController');const email=randomUUID()+'@example.invalid';
+ const response=await AuthController.requestOtp(authRequest('request',{mode:'login',email}));assert.equal(response.status,404);assert.equal((await response.json()).code,'ACCOUNT_NOT_FOUND');assert.equal(await getPrisma().otpVerification.findUnique({where:{email}}),null);
+});
+
+test('simultaneous registrations with one phone create one account and return one clear conflict',integration,async()=>{
+ const {AuthController}=await import('../src/backend/controllers/AuthController');const emails=[randomUUID()+'@example.invalid',randomUUID()+'@example.invalid'],mobile='+8801812345678';
+ for(const email of emails)await new AuthService().storeOTP(email,'123456');
+ const responses=await Promise.all(emails.map(email=>AuthController.verifyOtp(authRequest('verify',registrationPayload(email,mobile)))));
+ assert.deepEqual(responses.map(r=>r.status).sort(),[200,409]);assert.equal((await responses.find(r=>r.status===409)!.json()).code,'PHONE_ALREADY_REGISTERED');assert.equal(await getPrisma().user.count({where:{mobile}}),1);
+});
+
+test('case-variant registrations are serialized without rewriting existing email addresses',integration,async()=>{
+ const {AuthController}=await import('../src/backend/controllers/AuthController');const email=randomUUID()+'@example.invalid';const emails=[email,email.toUpperCase()];for(const value of emails)await new AuthService().storeOTP(value,'123456');
+ const responses=await Promise.all(emails.map((value,i)=>AuthController.verifyOtp(authRequest('verify',registrationPayload(value,'+880191234567'+i)))));
+ assert.deepEqual(responses.map(r=>r.status).sort(),[200,409]);assert.equal((await responses.find(r=>r.status===409)!.json()).code,'EMAIL_ALREADY_REGISTERED');assert.equal(await getPrisma().user.count({where:{email:{equals:email,mode:'insensitive'}}}),1);
+});
+
+
+test('a new account completes request, OTP verification and profile session with the current registration contract',integration,async()=>{
+ const {AuthController}=await import('../src/backend/controllers/AuthController');const {transporter}=await import('../src/backend/utils/mailer');const send=mock.method(transporter,'sendMail',async()=>({messageId:'test-only'}));
+ try{
+ const email=randomUUID()+'@example.invalid',mobile='+8801993456789';const requested=await AuthController.requestOtp(authRequest('request',{mode:'register',email,mobile}));assert.equal(requested.status,200);assert.equal(send.mock.callCount(),1);
+ const args=send.mock.calls[0].arguments as unknown as Array<{html:string}>;const otp=args[0].html.match(/>\s*(\d{6})\s*</)?.[1];assert.ok(otp);
+ const response=await AuthController.verifyOtp(authRequest('verify',{...registrationPayload(email,mobile),otp,phone:{country_name:'Bangladesh',country_code:'BD',dial_code:'+880',local_phone_number:'1993456789',full_phone_number:mobile}}));
+ assert.equal(response.status,200);const data=await response.json();assert.match(response.headers.get('set-cookie')||'',/bloodnet_session=/);
+ const stored=await getPrisma().user.findUniqueOrThrow({where:{email}});assert.equal(stored.id,data.user.id);assert.equal(stored.mobile,mobile);assert.equal(stored.phone_country_code,'BD');assert.equal(await getPrisma().userServiceCity.count({where:{user_id:stored.id}}),1);
+ assert.equal(await getPrisma().otpVerification.findUnique({where:{email}}),null);
+ }finally{send.mock.restore();}
+});
+
+
+test('public search profiles require separate consent, persist and withdraw without changing the account', integration, async()=>{
+  const {getPublicDonorProfile,listPublicDonorProfiles,getPublicProfileSettings,savePublicProfileSettings}=await import('../src/backend/services/publicDonorProfiles');
+  const user=await newPatient();
+  const original=await getPrisma().user.findUniqueOrThrow({where:{id:user.id}});
+  assert.deepEqual(await getPublicProfileSettings(user.id),{isPublished:false,showPhone:false,bio:'',publicPath:null,consentVersion:null});
+  assert.equal(await getPrisma().publicDonorProfile.count({where:{user_id:user.id}}),0);
+  const settings={isPublished:true,showPhone:false,bio:'I prefer to coordinate volunteering through an authorised hospital. Please confirm the collection arrangements and respect my availability.'};
+  await assert.rejects(savePublicProfileSettings(user.id,settings),/confirm.*name/);
+  await assert.rejects(savePublicProfileSettings(user.id,{...settings,bio:settings.bio+' Call +8801712345678.',consent:true}),/Keep phone numbers/);
+  await assert.rejects(savePublicProfileSettings(user.id,{...settings,showPhone:true,consent:true}),/separately confirm/);
+  await savePublicProfileSettings(user.id,{...settings,consent:true});
+  const row=await getPrisma().publicDonorProfile.findUniqueOrThrow({where:{user_id:user.id}});
+  const publicData=await getPublicDonorProfile(row.slug);assert.ok(publicData);assert.equal(publicData.phone,null);
+  for(const field of ['email','user_id','health_data','profile_code','date_of_birth','medicalReports'])assert.ok(!(field in publicData));
+  assert.ok((await listPublicDonorProfiles()).some(item=>item.slug===row.slug));
+  await savePublicProfileSettings(user.id,{...settings,showPhone:true,phoneConsent:true});
+  assert.equal((await getPublicDonorProfile(row.slug))?.phone,user.mobile);
+  await savePublicProfileSettings(user.id,{...settings,isPublished:false});
+  assert.equal(await getPublicDonorProfile(row.slug),null);
+  assert.ok(!(await listPublicDonorProfiles()).some(item=>item.slug===row.slug));
+  await assert.rejects(savePublicProfileSettings(user.id,settings),/confirm.*name/);
+  await savePublicProfileSettings(user.id,{...settings,consent:true});
+  await getPrisma().user.update({where:{id:user.id},data:{is_active_donor:false}});
+  assert.equal(await getPublicDonorProfile(row.slug),null);
+  await savePublicProfileSettings(user.id,{...settings,isPublished:false});
+  await getPrisma().user.update({where:{id:user.id},data:{is_active_donor:true,updated_at:original.updated_at}});
+  assert.deepEqual(await getPrisma().user.findUniqueOrThrow({where:{id:user.id}}),original);
+});
+
+test('public profile endpoints keep donor consent owner-only and admin audits read-only',integration,async()=>{
+  const owner=await newPatient();const other=await newPatient();
+  const {GET,PATCH}=await import('../src/app/api/users/me/public-profile/route');
+  const {GET:audit}=await import('../src/app/api/admin/users/[userId]/public-profile/route');
+  assert.equal((await GET(new Request('https://bloodnet.test/api/users/me/public-profile'))).status,401);
+  const url='https://bloodnet.test/api/users/me/public-profile';
+  const bad=new Request(url,{method:'PATCH',headers:{authorization:'Bearer '+signToken({user_id:owner.id,role:'USER'}),'Content-Type':'application/json'},body:JSON.stringify({userId:other.id,isPublished:true,showPhone:false,bio:'Attempted target injection'})});
+  assert.equal((await PATCH(bad)).status,400);
+  const req=new Request('https://bloodnet.test/api/admin/users/'+owner.id+'/public-profile',{headers:{authorization:'Bearer '+signToken({user_id:testAdminId,role:'ADMIN'})}});
+  const result=await audit(req,{params:Promise.resolve({userId:owner.id})});assert.equal(result.status,200);assert.equal((await result.json()).data.isPublished,false);
+  assert.equal((await audit(patientRequest(req.url,other.id),{params:Promise.resolve({userId:owner.id})})).status,403);
+  assert.equal(await getPrisma().publicDonorProfile.count({where:{user_id:owner.id}}),0);
+});
+
+test('blood-group location counts deduplicate service cities and metadata excludes empty groups',integration,async()=>{
+  const {getLocationBloodGroupCounts}=await import('../src/backend/services/donorLocations');
+  const user=await newPatient();const city='SEO '+randomUUID().slice(0,8);
+  await getPrisma().user.update({where:{id:user.id},data:{location_city:city,blood_group:'O-'}});
+  await sql.query('INSERT INTO "UserServiceCity" (id,user_id,city,country,formatted_location,lat,lng,provider_place_id,locked_until) VALUES ($1,$2,$3,$4,$5,23.81,90.41,$6,NOW())',[randomUUID(),user.id,city,'Bangladesh',city+', Bangladesh',randomUUID()]);
+  assert.equal((await getLocationBloodGroupCounts('Bangladesh',city))['O-'],1);
+  assert.equal((await getLocationBloodGroupCounts('India',city))['O-'],undefined);
+  const params={country:'bangladesh',city:toLocationSlug(city)};
+  assert.match(String((await donorLocationMetadata(params,'blood','O-')).title),/O- Blood donors/);
+  assert.deepEqual((await donorLocationMetadata(params,'blood','AB-')).robots,{index:false,follow:true});
+});
+
+
+test('admin-added emails log into the original account and removed addresses lose pending OTP access',integration,async()=>{
+ const {changeLoginEmails,listLoginEmails}=await import('../src/backend/services/loginEmails');
+ const {AuthController}=await import('../src/backend/controllers/AuthController');const {transporter}=await import('../src/backend/utils/mailer');const send=mock.method(transporter,'sendMail',async()=>({messageId:'synthetic-only'}));
+ try{
+ const owner=await newPatient(),other=await newPatient(),alias=randomUUID()+'@example.invalid';const before=await getPrisma().user.findUniqueOrThrow({where:{id:owner.id}});
+ await changeLoginEmails(owner.id,{action:'add',email:' '+alias.toUpperCase()+' '},testAdminId);
+ assert.equal((await listLoginEmails(owner.id)).emails.length,2);
+ await assert.rejects(changeLoginEmails(other.id,{action:'add',email:alias},testAdminId),/another account/);
+ const requested=await AuthController.requestOtp(authRequest('request',{mode:'register',email:alias,mobile:other.mobile}));assert.equal(requested.status,200);const notice=await requested.json();assert.equal(notice.existingAccount,true);assert.match(notice.message,/already has an account/);
+ const args=send.mock.calls.at(-1)!.arguments as unknown as [{to:string;html:string}];assert.equal(args[0].to,alias);const otp=args[0].html.match(/>\s*(\d{6})\s*</)?.[1];assert.ok(otp);
+ const response=await AuthController.verifyOtp(authRequest('verify',{...registrationPayload(alias,other.mobile),otp}));assert.equal(response.status,200);assert.equal((await response.json()).user.id,owner.id);
+ assert.deepEqual(await getPrisma().user.findUniqueOrThrow({where:{id:owner.id}}),before);
+ await new AuthService().storeOTP(alias,'123456');await changeLoginEmails(owner.id,{action:'remove',email:alias},testAdminId);
+ assert.equal((await AuthController.verifyOtp(authRequest('verify',{email:alias,mode:'login',otp:'123456'}))).status,401);
+ assert.equal((await AuthController.requestOtp(authRequest('request',{email:alias,mode:'login'}))).status,404);
+ await assert.rejects(changeLoginEmails(owner.id,{action:'remove',email:owner.email},testAdminId),/at least one/);
+ assert.ok(await getPrisma().authRiskEvent.findFirst({where:{user_id:owner.id,event_type:'ADMIN_LOGIN_EMAIL_CHANGED'}}));
+ }finally{send.mock.restore();}
+});
+
+test('support can promote and remove a primary email while retaining account records and permissions',integration,async()=>{
+ const {changeLoginEmails,listLoginEmails}=await import('../src/backend/services/loginEmails');
+ const {GET,PATCH}=await import('../src/app/api/admin/users/[userId]/emails/route');
+ const {PATCH:legacyPatch}=await import('../src/app/api/admin/users/[userId]/route');
+ const owner=await newPatient(),other=await newPatient(),alias=randomUUID()+'@example.invalid',next=randomUUID()+'@example.invalid';
+ const url='https://bloodnet.test/api/admin/users/'+owner.id+'/emails',ctx={params:Promise.resolve({userId:owner.id})};
+ assert.equal((await GET(patientRequest(url,other.id),ctx)).status,403);
+ const adminReq=(body:unknown)=>new Request(url,{method:'PATCH',headers:{'Content-Type':'application/json',authorization:'Bearer '+signToken({user_id:testAdminId,role:'ADMIN'})},body:JSON.stringify(body)});
+ assert.equal((await PATCH(adminReq({action:'add',email:alias}),ctx)).status,200);
+ assert.equal((await PATCH(adminReq({action:'primary',email:alias}),ctx)).status,200);
+ assert.equal((await listLoginEmails(owner.id)).primaryEmail,alias);
+ await changeLoginEmails(owner.id,{action:'remove',email:alias},testAdminId);
+ assert.equal((await listLoginEmails(owner.id)).primaryEmail,owner.email);
+ const collision=await legacyPatch(adminReq({email:other.email}),ctx);assert.equal(collision.status,409);
+ assert.equal((await legacyPatch(adminReq({email:next}),ctx)).status,200);
+ assert.equal((await listLoginEmails(owner.id)).primaryEmail,next);
+ assert.equal(await new UserRepository().findByEmail(owner.email),null);
+ assert.equal((await new UserRepository().findByEmail(next))?.id,owner.id);
+ assert.equal((await getPrisma().user.findUniqueOrThrow({where:{id:owner.id}})).profile_code,owner.profile_code);
+});
+
+
+test('discovery visibility saves independently of ads and streams committed changes without polling',integration,async()=>{
+ const {GET,PATCH}=await import('../src/app/api/admin/site-controls/route');const {GET:events}=await import('../src/app/api/public/ui-events/route');
+ const {getUiControls}=await import('../src/backend/services/uiControls');const before=await getPrisma().platformSettings.findFirst({orderBy:[{updated_at:'desc'},{id:'desc'}]});
+ const admin=(value:unknown)=>new Request('https://bloodnet.test/api/admin/site-controls',{method:'PATCH',headers:{authorization:'Bearer '+signToken({user_id:testAdminId,role:'ADMIN'}),'Content-Type':'application/json'},body:JSON.stringify(value)});
+ assert.equal((await GET(patientRequest('https://bloodnet.test/api/admin/site-controls',migratedUserId))).status,403);
+ assert.equal((await PATCH(admin({discoveryVisible:'false'}))).status,400);
+ const signal=new AbortController();const stream=await events(new Request('https://bloodnet.test/api/public/ui-events',{signal:signal.signal}));assert.equal(stream.headers.get('X-Accel-Buffering'),'no');
+ const reader=stream.body!.getReader(),decoder=new TextDecoder();let buffer='';
+ const nextValue=async()=>{for(let i=0;i<15;i++){const read=await reader.read();buffer+=decoder.decode(read.value);const values=[...buffer.matchAll(/data: (.+)\n/g)].map(match=>JSON.parse(match[1]));if(values.length){buffer='';return values.at(-1);}}throw Error('Missing stream event');};
+ try{
+ await nextValue();assert.equal((await PATCH(admin({discoveryVisible:false}))).status,200);
+ for(let i=0;i<3;i++){if((await nextValue()).discoveryVisible===false)break;if(i===2)assert.fail('Visibility did not stream');}
+ assert.equal((await getUiControls()).discoveryVisible,false);
+ assert.equal((await PATCH(admin({discoveryVisible:true}))).status,200);
+ for(let i=0;i<3;i++){if((await nextValue()).discoveryVisible===true)break;if(i===2)assert.fail('Visibility did not return');}
+ const after=await getPrisma().platformSettings.findFirst({orderBy:[{updated_at:'desc'},{id:'desc'}]});
+ if(before){assert.equal(after?.ads_runtime_enabled,before.ads_runtime_enabled);assert.deepEqual(after?.ad_units_json,before.ad_units_json);assert.equal(after?.ui_theme,before.ui_theme);}
+ }finally{signal.abort();await reader.cancel();}
 });

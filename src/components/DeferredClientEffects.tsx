@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import ClickTracker from "@/src/components/ClickTracker";
+import PublicUiControlsSync from './PublicUiControlsSync';
 import ThemeRuntimeSync from "@/src/components/ThemeRuntimeSync";
 
 export default function DeferredClientEffects() {
@@ -20,7 +21,7 @@ export default function DeferredClientEffects() {
 
   return (
     <>
-      {ready && <ThemeRuntimeSync />}
+      {ready && <><ThemeRuntimeSync /><PublicUiControlsSync /></>}
       {/* Start recording with hydration; idle scheduling can miss early clicks. */}
       <ClickTracker />
     </>

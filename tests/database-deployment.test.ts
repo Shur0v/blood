@@ -115,6 +115,7 @@ test('real deploy preserves every legacy table, matches Prisma, and survives rec
         const admin = route.startsWith('/api/admin/') || route.startsWith('/api/management/');
         const request = new Request(`https://example.invalid${route}`, { headers: { authorization: `Bearer ${signToken({ user_id: admin ? ids.AdminUser : ids.User, role: admin ? 'ADMIN' : 'USER' })}` } });
         const response = await GET(request);
+        if(response.headers.get('Content-Type')?.includes('text/event-stream'))await response.body?.cancel();
         if (response.status !== 200) failures.push(`${route}: ${response.status} ${await response.text()}`);
         checked++;
       }

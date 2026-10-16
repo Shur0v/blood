@@ -46,6 +46,8 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
   const [authMode, setAuthMode] = useState<"register" | "login">("register");
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [accountNotice,setAccountNotice]=useState("");
+  const [accountIssue, setAccountIssue] = useState("");
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -227,21 +229,26 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
 
     setIsLoading(true);
     setErrorMsg("");
+    setAccountIssue("");
 
     try {
       const res = await fetch("/api/auth/otp/request", {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: formData.email, deviceFingerprint: getDeviceFingerprint() })
+        body: JSON.stringify({ email: formData.email, mode: authMode, ...(authMode === 'register' && { mobile: phoneData.fullPhoneNumber }), deviceFingerprint: getDeviceFingerprint() })
       });
       const data = await res.json();
 
       if (!res.ok) {
-        setErrorMsg(data.error || "Failed to send OTP email.");
+        setErrorMsg(data.error || data.message || "Failed to send OTP email.");
+        setAccountIssue(data.code || "");
         return;
       }
 
+      setAccountNotice(data.existingAccount?data.message:"");
+      if(data.existingAccount)setAuthMode("login");
+      setOtp(["", "", "", "", "", ""]);
       setStep("otp");
     } catch (err) {
       setErrorMsg("System connection error. Please verify status.");
@@ -287,10 +294,12 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
 
     setIsLoading(true);
     setErrorMsg("");
+    setAccountIssue("");
 
     try {
       const payload = {
         email: formData.email,
+        mode: authMode,
         otp: fullOtp,
         deviceFingerprint: getDeviceFingerprint(),
         ...(authMode === "register" && selectedLocations.length > 0 && {
@@ -319,7 +328,12 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
       const data = await res.json();
 
       if (!res.ok) {
-        setErrorMsg(data.error || "Invalid or expired OTP code.");
+        setErrorMsg(data.error || data.message || "Invalid or expired OTP code.");
+        setAccountIssue(data.code || "");
+        if (['EMAIL_ALREADY_REGISTERED', 'PHONE_ALREADY_REGISTERED', 'ACCOUNT_NOT_FOUND'].includes(data.code)) {
+          setStep('register');
+          setOtp(["", "", "", "", "", ""]);
+        }
         return;
       }
 
@@ -379,9 +393,17 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
                 {errorMsg && (
                   <motion.div
                     initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                    role="alert"
                     className="mt-4 p-3 rounded-xl bg-red-50 border border-red-500/30 text-red-700 text-sm font-medium"
                   >
                     {errorMsg}
+                    {['EMAIL_ALREADY_REGISTERED', 'PHONE_ALREADY_REGISTERED', 'ACCOUNT_NOT_FOUND'].includes(accountIssue) && <button type="button" className="mt-2 block font-semibold underline underline-offset-4" onClick={() => {
+                      setAuthMode(accountIssue === 'ACCOUNT_NOT_FOUND' ? 'register' : 'login');
+                      setStep('register');
+                      setOtp(["", "", "", "", "", ""]);
+                      setErrorMsg('');
+                      setAccountIssue('');
+                    }}>{accountIssue === 'ACCOUNT_NOT_FOUND' ? 'Create an account' : 'Log in instead'}</button>}
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -721,6 +743,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
                   onClick={() => {
                     setAuthMode(authMode === "register" ? "login" : "register");
                     setErrorMsg("");
+                    setAccountIssue("");
                     setSelectedLocations([]);
                     setLocationInput("");
                     setLocationSuggestions([]);
@@ -743,6 +766,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
                 </form>
               ) : (
                 <div className="space-y-8 pb-4">
+                {accountNotice&&<p role="status" className="rounded-xl border border-blue-100 bg-blue-50 p-4 text-sm leading-6 text-blue-900">{accountNotice}</p>}
                 <div className="grid grid-cols-6 gap-2 sm:gap-3">
                   {otp.map((digit, index) => (
                     <input

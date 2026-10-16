@@ -119,7 +119,7 @@ export default function RequestOrgan() {
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="glass soft-moving-bg relative overflow-hidden rounded-[28px] p-6 sm:p-8 shadow-card transition-all"
+        className="recipient-paper relative overflow-hidden p-6 sm:p-8"
       >
         <div className="mb-7 flex flex-col gap-4 border-b border-border pb-5 sm:mb-8 sm:flex-row sm:items-center sm:justify-between sm:pb-6">
           <div className="flex items-center gap-3 sm:gap-4">

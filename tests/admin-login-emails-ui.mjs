@@ -1,0 +1,31 @@
+import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';
+import path from 'node:path';
+const load=createRequire(path.resolve(process.env.BLOODNET_UI_TEST_PACKAGE||'package.json'));
+const {JSDOM}=load('jsdom');
+import {pathToFileURL} from 'node:url';
+const dom=new JSDOM('<!doctype html><html><body><div id="root"></div></body></html>',{url:'http://localhost',pretendToBeVisual:true});
+for(const key of ['window','document','HTMLElement','Element','SVGElement','Node','Event','MouseEvent','MutationObserver'])globalThis[key]=dom.window[key];
+Object.defineProperty(globalThis,'navigator',{value:dom.window.navigator,configurable:true});
+globalThis.getComputedStyle=dom.window.getComputedStyle.bind(dom.window);globalThis.requestAnimationFrame=dom.window.requestAnimationFrame.bind(dom.window);globalThis.cancelAnimationFrame=dom.window.cancelAnimationFrame.bind(dom.window);
+window.matchMedia=()=>({matches:false,addListener(){},removeListener(){},addEventListener(){},removeEventListener(){}});globalThis.IS_REACT_ACT_ENVIRONMENT=true;
+const {default:React,act}=await import(pathToFileURL(process.cwd()+'/node_modules/react/index.js'));
+globalThis.React=React;
+const {createRoot}=await import(pathToFileURL(process.cwd()+'/node_modules/react-dom/client.js'));
+
+
+const {default:AdminLoginEmails}=await import(pathToFileURL(process.cwd()+'/src/components/AdminLoginEmails.tsx'));
+const root=createRoot(document.getElementById('root'));let requests=[],state={primaryEmail:'original@example.invalid',emails:[{email:'original@example.invalid',primary:true}]};
+globalThis.fetch=async(url,init={})=>{requests.push({url:String(url),method:init.method||'GET'});if(init.body){const b=JSON.parse(init.body);if(b.action==='add')state.emails.push({email:b.email,primary:false});if(b.action==='primary'){state.primaryEmail=b.email;state.emails=state.emails.map(r=>({...r,primary:r.email===b.email}));}if(b.action==='remove'){state.emails=state.emails.filter(r=>r.email!==b.email);if(state.primaryEmail===b.email){state.primaryEmail=state.emails[0].email;state.emails[0].primary=true;}}}return Response.json({success:true,data:structuredClone(state)});};
+const click=async el=>{assert.ok(el);await act(async()=>el.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true})));};
+await act(async()=>root.render(React.createElement(AdminLoginEmails,{userId:'fixture-user'})));
+assert.equal(requests.length,1);assert.equal(document.querySelector('button').disabled,true);
+const input=document.querySelector('input');await act(async()=>{Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype,'value').set.call(input,'added@example.invalid');input.dispatchEvent(new Event('input',{bubbles:true}));});
+await act(async()=>document.querySelector('form').dispatchEvent(new Event('submit',{bubbles:true,cancelable:true})));
+assert.equal(requests.length,2);assert.ok(document.body.textContent.includes('added@example.invalid'));assert.match(document.querySelector('[role=status]').textContent,/updated/);
+await click(Array.from(document.querySelectorAll('button')).find(el=>el.textContent==='Make primary'));
+assert.equal(state.primaryEmail,'added@example.invalid');
+await click(Array.from(document.querySelectorAll('li')).find(el=>el.textContent.includes('added@example.invalid')).querySelector('button:last-of-type'));
+assert.equal(state.primaryEmail,'original@example.invalid');assert.equal(state.emails.length,1);assert.equal(document.querySelector('li button').disabled,true);
+console.log('PASS admin email list: read-only opening, last-email guard, add, primary and removal controls');
+await act(async()=>root.unmount());dom.window.close();

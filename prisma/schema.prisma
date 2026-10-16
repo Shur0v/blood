@@ -47,8 +47,37 @@ model User {
   ProfileIdentifiers  ProfileIdentifier[]
   MedicalReports      MedicalReport[]
   Prescriptions       Prescription[]
+  PublicDonorProfile  PublicDonorProfile?
+  LoginEmails         UserLoginEmail[]
 
   @@index([is_active_donor, blood_group, location_country, location_city, updated_at])
+}
+
+model UserLoginEmail {
+  id String @id @default(uuid())
+  user_id String
+  email String @unique @db.VarChar(254)
+  created_at DateTime @default(now())
+  User User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  @@index([user_id])
+}
+
+model PublicDonorProfile {
+  id                 String   @id @default(uuid())
+  user_id            String   @unique
+  slug               String   @unique @db.VarChar(160)
+  is_published       Boolean  @default(false)
+  phone_visible      Boolean  @default(false)
+  bio                String   @default("") @db.VarChar(1200)
+  consent_version    String?  @db.VarChar(32)
+  consented_at       DateTime?
+  phone_consented_at DateTime?
+  withdrawn_at       DateTime?
+  created_at         DateTime @default(now())
+  updated_at         DateTime @updatedAt
+  User               User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([is_published, updated_at(sort: Desc)])
 }
 
 model AdminUser {
@@ -341,6 +370,7 @@ model MedicalAidRequest {
 }
 
 model PlatformSettings {
+  discovery_visible Boolean @default(true)
   id                String   @id @default(uuid())
   total_raised      Float    @default(0)
   total_spent       Float    @default(0)

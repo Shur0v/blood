@@ -1,5 +1,9 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "./fonts.css";
+import "./discovery.css";
+import "./research.css";
+import SeoPagePresentation from '@/src/components/SeoPagePresentation';
 import DeferredClientEffects from "@/src/components/DeferredClientEffects";
 import GlobalAdSenseSlot from "@/src/components/GlobalAdSenseSlot";
 import GlobalHomepageContinuation from "@/src/components/GlobalHomepageContinuation";
@@ -9,17 +13,11 @@ import { getPublicBaseUrl } from "@/src/backend/config/env";
 import { getPrisma } from "@/src/backend/config/db";
 import { getPublicBotStats } from "@/src/backend/services/seoData";
 import { DEFAULT_UI_THEME, normalizeUiTheme } from "@/src/lib/uiTheme";
-import { Inter } from "next/font/google";
+
 import { buildDatasetSchema, buildMedicalOrganizationSchema, buildServiceSchema, stringifyJsonLd } from "@/src/lib/aiSeo";
 
 const baseUrl = getPublicBaseUrl();
-const inter = Inter({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  style: ["normal"],
-  display: "swap",
-  variable: "--font-inter",
-});
+
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
@@ -69,11 +67,11 @@ async function resolveUiTheme() {
     const prisma = getPrisma();
     const settings = await prisma.platformSettings.findFirst({
       orderBy: [{ updated_at: "desc" }, { id: "desc" }],
-      select: { ui_theme: true },
+      select: { ui_theme: true, discovery_visible:true },
     });
-    return normalizeUiTheme(settings?.ui_theme);
+    return {theme:normalizeUiTheme(settings?.ui_theme),discoveryVisible:settings?.discovery_visible??true};
   } catch {
-    return DEFAULT_UI_THEME;
+    return {theme:DEFAULT_UI_THEME,discoveryVisible:true};
   }
 }
 
@@ -90,7 +88,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [uiTheme, publicBotStats] = await Promise.all([resolveUiTheme(), resolvePublicBotStats()]);
+  const [uiSettings, publicBotStats] = await Promise.all([resolveUiTheme(), resolvePublicBotStats()]);
   const publicStatsSchema = publicBotStats
     ? {
         "@context": "https://schema.org",
@@ -113,9 +111,10 @@ export default async function RootLayout({
     : null;
 
   return (
-    <html lang="en" data-theme={uiTheme}>
+    <html lang="en" data-theme={uiSettings.theme} data-discovery-visible={String(uiSettings.discoveryVisible)}>
 
-      <body className={`${inter.variable} antialiased`}>
+      <head><link rel="preload" href="/fonts/inter/latin.woff2" as="font" type="font/woff2" crossOrigin="anonymous"/></head>
+      <body className="antialiased">
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -172,7 +171,7 @@ export default async function RootLayout({
         )}
         <DeferredClientEffects />
         <GlobalManagedAdsRuntime />
-        {children}
+        <SeoPagePresentation>{children}</SeoPagePresentation>
         <GlobalHomepageContinuation />
         <GlobalManagedSmartLinks />
         <GlobalAdSenseSlot />

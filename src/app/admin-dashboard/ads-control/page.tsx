@@ -1,5 +1,6 @@
 "use client";
 
+import DiscoveryVisibilityControl from '@/src/components/DiscoveryVisibilityControl';
 import { publishAdsRuntime } from "@/src/components/usePublicAds";
 
 import { useEffect, useMemo, useState } from "react";
@@ -223,6 +224,7 @@ export default function AdsControlPage() {
         </div>
       </div>
 
+      <DiscoveryVisibilityControl />
       <div className="grid gap-4 md:grid-cols-2">
         {adUnits.map((unit, index) => (
           <div key={unit.id} className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-[#1a1b23]">

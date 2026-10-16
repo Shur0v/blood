@@ -1,0 +1,35 @@
+import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';
+import path from 'node:path';
+const load=createRequire(path.resolve(process.env.BLOODNET_UI_TEST_PACKAGE||'package.json'));
+const {JSDOM}=load('jsdom');
+import {pathToFileURL} from 'node:url';
+const dom=new JSDOM('<!doctype html><html><body><div id="root"></div></body></html>',{url:'http://localhost',pretendToBeVisual:true});
+for(const key of ['window','document','HTMLElement','Element','SVGElement','Node','Event','MouseEvent','MutationObserver'])globalThis[key]=dom.window[key];
+Object.defineProperty(globalThis,'navigator',{value:dom.window.navigator,configurable:true});
+globalThis.getComputedStyle=dom.window.getComputedStyle.bind(dom.window);globalThis.requestAnimationFrame=dom.window.requestAnimationFrame.bind(dom.window);globalThis.cancelAnimationFrame=dom.window.cancelAnimationFrame.bind(dom.window);
+window.matchMedia=()=>({matches:false,addListener(){},removeListener(){},addEventListener(){},removeEventListener(){}});globalThis.IS_REACT_ACT_ENVIRONMENT=true;
+const {default:React,act}=await import(pathToFileURL(process.cwd()+'/node_modules/react/index.js'));
+globalThis.React=React;
+const {createRoot}=await import(pathToFileURL(process.cwd()+'/node_modules/react-dom/client.js'));
+
+
+const {default:PublicProfileSettings}=await import(pathToFileURL(process.cwd()+'/src/components/PublicProfileSettings.tsx'));
+const root=createRoot(document.getElementById('root'));let requests=[];
+globalThis.fetch=async(url,init={})=>{requests.push({url:String(url),method:init.method||'GET',body:init.body?JSON.parse(init.body):null});return Response.json({success:true,data:init.body?{...JSON.parse(init.body),publicPath:'/donors/synthetic-test'}:{isPublished:false,showPhone:false,bio:'',publicPath:null,consentVersion:null}});};
+const click=async el=>{assert.ok(el);await act(async()=>el.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true})));};
+await act(async()=>root.render(React.createElement(PublicProfileSettings,{userId:'fixture-user'})));
+assert.equal(requests.length,0);await click(document.querySelector('button'));
+assert.equal(requests.length,1);assert.equal(requests[0].method,'GET');
+assert.equal(document.querySelectorAll('input:checked').length,0);
+await click(document.querySelector('input'));
+const textarea=document.querySelector('textarea');await act(async()=>{Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype,'value').set.call(textarea,'I coordinate all donations through a hospital and prefer respectful contact to confirm my availability and travel arrangements.');textarea.dispatchEvent(new Event('input',{bubbles:true}));});
+let checkboxes=document.querySelectorAll('input');assert.equal(checkboxes.length,3);await click(checkboxes[1]);await click(checkboxes[2]);
+checkboxes=document.querySelectorAll('input');assert.equal(checkboxes.length,4);await click(checkboxes[3]);
+await click(Array.from(document.querySelectorAll('button')).find(el=>el.textContent==='Save publishing preferences'));
+assert.equal(requests.length,2);assert.deepEqual(Object.keys(requests[1].body).sort(),['bio','consent','isPublished','phoneConsent','showPhone']);assert.equal(requests[1].body.consent,true);assert.equal(requests[1].body.phoneConsent,true);
+console.log('PASS public profile defaults off, explicit consent and separate phone consent');
+requests=[];await act(async()=>root.render(React.createElement(PublicProfileSettings,{key:'audit',userId:'fixture-user',audit:true})));
+await click(document.querySelector('button'));assert.match(requests[0].url,/\/api\/admin\/users\/fixture-user\/public-profile/);assert.equal(document.querySelectorAll('input,textarea').length,0);assert.ok(!document.body.textContent.includes('Save publishing preferences'));assert.equal(requests.length,1);
+console.log('PASS admin audit reads preferences without consent controls or writes');
+await act(async()=>root.unmount());dom.window.close();

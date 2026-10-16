@@ -353,6 +353,22 @@ body::-webkit-scrollbar,
 }
 
 @layer components {
+/* Opaque, fibrous paper surface. Input behaviour and the surrounding page stay unchanged. */
+.recipient-paper {
+  isolation:isolate;
+  --color-text:#272a30; --color-muted:#71717a; --color-glass:rgba(255,255,255,.86); --color-border:rgba(105,105,112,.18);
+  background-color:#fdfcf9;
+  background-image:radial-gradient(ellipse at 22% 12%,#ffffffb3,transparent 65%),linear-gradient(105deg,#fdfcf9,#fffefa 52%,#fbfaf7);
+  border:1px solid #e2e0da;
+  border-radius:8px 11px 9px 7px;
+  box-shadow:inset 0 1px 0 #ffffff,inset 1px 0 1px #ffffffb3,0 2px 0 #f8f7f3,0 3px 0 #dedcd5,0 6px 0 -2px #fcfbf8,0 7px 0 -2px #e5e3dd,0 16px 35px -20px #30343b24;
+}
+.recipient-paper::before,.recipient-paper::after { content:""; position:absolute; inset:0; z-index:0; pointer-events:none; border-radius:inherit; }
+.recipient-paper::before { opacity:.4; mix-blend-mode:multiply; background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22192%22%20height%3D%22192%22%20viewBox%3D%220%200%20192%20192%22%3E%3Cfilter%20id%3D%22grain%22%3E%3CfeTurbulence%20type%3D%22fractalNoise%22%20baseFrequency%3D%22.62%22%20numOctaves%3D%223%22%20seed%3D%2212%22%20stitchTiles%3D%22stitch%22%2F%3E%3CfeDiffuseLighting%20lighting-color%3D%22%23ffffff%22%20surfaceScale%3D%221.5%22%3E%3CfeDistantLight%20azimuth%3D%22225%22%20elevation%3D%2268%22%2F%3E%3C%2FfeDiffuseLighting%3E%3C%2Ffilter%3E%3Cpath%20fill%3D%22%23ffffff%22%20filter%3D%22url(%23grain)%22%20d%3D%22M0%200h192v192H0z%22%2F%3E%3C%2Fsvg%3E"); background-size:144px 144px; }
+.recipient-paper::after { opacity:.025; mix-blend-mode:multiply; background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22320%22%20height%3D%22240%22%20viewBox%3D%220%200%20320%20240%22%3E%3Cfilter%20id%3D%22fibres%22%3E%3CfeTurbulence%20type%3D%22fractalNoise%22%20baseFrequency%3D%22.025%20.36%22%20numOctaves%3D%222%22%20seed%3D%227%22%20stitchTiles%3D%22stitch%22%2F%3E%3CfeColorMatrix%20type%3D%22saturate%22%20values%3D%220%22%2F%3E%3C%2Ffilter%3E%3Cpath%20filter%3D%22url(%23fibres)%22%20opacity%3D%22.7%22%20d%3D%22M0%200h320v240H0z%22%2F%3E%3C%2Fsvg%3E"); background-size:320px 240px; }
+.recipient-paper > * { position:relative; z-index:1; }
+@media (forced-colors:active) { .recipient-paper::before,.recipient-paper::after { display:none; } }
+[data-discovery-visible="false"] .donor-discovery-trigger { display:none !important; }
 .admin-shell { color-scheme: light; }
 .admin-shell[data-admin-theme="dark"] { color-scheme: dark; }
 .admin-action { display: inline-flex; min-height: 40px; align-items:center; justify-content:center; gap:8px; padding:8px 12px; border:1px solid #e2e8f0; border-radius:12px; background:transparent; font-size:12px; font-weight:500; transition:background .2s; }

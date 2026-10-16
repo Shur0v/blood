@@ -11,6 +11,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import dynamic from "next/dynamic";
 import LazyMount from "../components/LazyMount";
 import { usePathname, useRouter } from "next/navigation";
+import DonorDiscoveryPanel from './DonorDiscoveryPanel';
 import LocalizedSeoFooter from "../components/LocalizedSeoFooter";
 import ManagedNativeAdSlot from "../components/ManagedNativeAdSlot";
 
@@ -479,7 +480,6 @@ export function HomeExperience({ forcedCountry, locationDirectory }: { forcedCou
         {!isProfileView && currentPage === "home" && (
           <>
             <Hero forcedCountry={forcedCountry} />
-            {locationDirectory}
             <div className="mx-auto mt-2 w-full max-w-7xl px-4">
               <ManagedNativeAdSlot slotKey="native-ad-1" />
             </div>
@@ -547,6 +547,8 @@ export function HomeExperience({ forcedCountry, locationDirectory }: { forcedCou
           onPageChange={handlePageChange}
         />
       )}
+
+      {!isProfileView && (currentPage === 'home' || currentPage === 'organ') && <DonorDiscoveryPanel forcedCountry={forcedCountry}>{locationDirectory}</DonorDiscoveryPanel>}
 
       <PolicyModal
         isOpen={policyModal.isOpen}

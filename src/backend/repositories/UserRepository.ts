@@ -1,3 +1,4 @@
+import { findLoginUser } from '../services/loginEmails';
 import { getPrisma } from '../config/db';
 import { Prisma } from '@prisma/client';
 import { reserveGeneratedProfileCode } from '../services/profileIdentifiers';
@@ -9,9 +10,7 @@ import { reserveGeneratedProfileCode } from '../services/profileIdentifiers';
  */
 export class UserRepository {
   async findByEmail(email: string) {
-    return await getPrisma().user.findUnique({
-      where: { email },
-    });
+    return findLoginUser(email);
   }
 
   async findByMobile(mobile: string) {

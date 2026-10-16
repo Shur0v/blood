@@ -5,7 +5,6 @@ import { getPublicBaseUrl } from '@/src/backend/config/env';
 import { buildOrganRequestSlug, getBloodGroupCityCounts, getOrganDonors, getOrganTypesWithData, getVerifiedOrganRequests } from '@/src/backend/services/seoData';
 import { BLOOD_GROUPS, COUNTRY_SHORTCUTS, bloodGroupToSlug, cityToSlug, countryToShortcut, organToSlug } from '@/src/lib/seoRouting';
 import { REGIONS } from '@/src/lib/regions';
-import { KEYWORD_LANDINGS } from '@/src/lib/keywordLandings';
 import { getDonorLocations, type DonorLocation } from '@/src/backend/services/donorLocations';
 
 export const dynamic = 'force-dynamic';
@@ -48,45 +47,38 @@ const buildCityRoutes = (baseUrl: string, rows: DonorLocation[]) => {
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = getPublicBaseUrl();
   const staticRoutes: MetadataRoute.Sitemap = [
-    { url: `${baseUrl}/`, lastModified: new Date(), changeFrequency: 'daily', priority: 1 },
-    { url: `${baseUrl}/blood`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.9 },
-    { url: `${baseUrl}/organ`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.9 },
-    { url: `${baseUrl}/organ/donor`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.8 },
-    { url: `${baseUrl}/organ/request`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.9 },
-    { url: `${baseUrl}/organ/registry`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.8 },
-    { url: `${baseUrl}/blog`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.7 },
-    { url: `${baseUrl}/about`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.6 },
-    { url: `${baseUrl}/faq`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.7 },
-    { url: `${baseUrl}/contact`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.5 },
-    { url: `${baseUrl}/terms`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.5 },
-    { url: `${baseUrl}/privacy`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.5 },
-    { url: `${baseUrl}/privacy-policy`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.5 },
-    { url: `${baseUrl}/policy.txt`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.5 },
-    { url: `${baseUrl}/safety-policy`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.6 },
-    { url: `${baseUrl}/medical-disclaimer`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.6 },
-    { url: `${baseUrl}/organ-donation-ethics`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.6 },
-    { url: `${baseUrl}/how-it-works`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.6 },
-    { url: `${baseUrl}/register-donor`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.6 },
-    { url: `${baseUrl}/request-blood`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.6 },
-    { url: `${baseUrl}/request-organ`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.6 },
-    { url: `${baseUrl}/blood-donation-guide`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
-    { url: `${baseUrl}/organ-donation-guide`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
-    { url: `${baseUrl}/emergency-blood-help`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
-    { url: `${baseUrl}/statistics`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.7 },
-    { url: `${baseUrl}/countries`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.7 },
-    { url: `${baseUrl}/cities`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.7 },
-    { url: `${baseUrl}/common-blood-searches`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.8 },
-    { url: `${baseUrl}/common-organ-searches`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.8 },
-    { url: `${baseUrl}/global-search-entry`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.9 },
-    ...KEYWORD_LANDINGS.map((entry) => ({
-      url: `${baseUrl}/keywords/${entry.slug}`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly' as const,
-      priority: 0.7,
-    })),
+    { url: `${baseUrl}/`, changeFrequency: 'daily', priority: 1 },
+    { url: `${baseUrl}/blood`, changeFrequency: 'daily', priority: 0.9 },
+    { url: `${baseUrl}/organ`, changeFrequency: 'daily', priority: 0.9 },
+    { url: `${baseUrl}/organ/donor`, changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${baseUrl}/organ/request`, changeFrequency: 'daily', priority: 0.9 },
+    { url: `${baseUrl}/organ/registry`, changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${baseUrl}/blog`, changeFrequency: 'weekly', priority: 0.7 },
+    { url: `${baseUrl}/about`, changeFrequency: 'monthly', priority: 0.6 },
+    { url: `${baseUrl}/faq`, changeFrequency: 'weekly', priority: 0.7 },
+    { url: `${baseUrl}/contact`, changeFrequency: 'monthly', priority: 0.5 },
+    { url: `${baseUrl}/terms`, changeFrequency: 'monthly', priority: 0.5 },
+    { url: `${baseUrl}/privacy`, changeFrequency: 'monthly', priority: 0.5 },
+    { url: `${baseUrl}/privacy-policy`, changeFrequency: 'monthly', priority: 0.5 },
+    { url: `${baseUrl}/policy.txt`, changeFrequency: 'monthly', priority: 0.5 },
+    { url: `${baseUrl}/safety-policy`, changeFrequency: 'monthly', priority: 0.6 },
+    { url: `${baseUrl}/medical-disclaimer`, changeFrequency: 'monthly', priority: 0.6 },
+    { url: `${baseUrl}/organ-donation-ethics`, changeFrequency: 'monthly', priority: 0.6 },
+    { url: `${baseUrl}/how-it-works`, changeFrequency: 'monthly', priority: 0.6 },
+    { url: `${baseUrl}/register-donor`, changeFrequency: 'monthly', priority: 0.6 },
+    { url: `${baseUrl}/request-blood`, changeFrequency: 'monthly', priority: 0.6 },
+    { url: `${baseUrl}/request-organ`, changeFrequency: 'monthly', priority: 0.6 },
+    { url: `${baseUrl}/emergency-blood-help`, changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${baseUrl}/statistics`, changeFrequency: 'daily', priority: 0.7 },
+    { url: `${baseUrl}/countries`, changeFrequency: 'daily', priority: 0.7 },
+    { url: `${baseUrl}/guides`, changeFrequency: 'monthly', priority: 0.8 },
+    { url: `${baseUrl}/network`, changeFrequency: 'daily', priority: 0.8 },
+    { url: `${baseUrl}/cities`, changeFrequency: 'daily', priority: 0.7 },
+    { url: `${baseUrl}/common-blood-searches`, changeFrequency: 'daily', priority: 0.8 },
+    { url: `${baseUrl}/common-organ-searches`, changeFrequency: 'daily', priority: 0.8 },
+    { url: `${baseUrl}/global-search-entry`, changeFrequency: 'daily', priority: 0.9 },
     ...REGIONS.map((region) => ({
       url: `${baseUrl}/${region.slug}`,
-      lastModified: new Date(),
       changeFrequency: 'daily' as const,
       priority: 0.85,
     })),
@@ -118,7 +110,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const addRoute = (routes: MetadataRoute.Sitemap, url: string, lastModified: Date | null | undefined, priority = 0.8) => {
       if (seenRoutes.has(url)) return;
       seenRoutes.add(url);
-      routes.push({ url, lastModified: lastModified || new Date(), changeFrequency: 'daily', priority });
+      routes.push({ url, ...(lastModified ? {lastModified} : {}), changeFrequency: 'daily', priority });
     };
     const programmaticRoutes: MetadataRoute.Sitemap = [];
 

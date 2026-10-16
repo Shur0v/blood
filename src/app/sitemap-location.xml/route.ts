@@ -1,6 +1,7 @@
 import { getPublicBaseUrl } from '@/src/backend/config/env';
 import { getDonorLocations, donorLocationPath } from '@/src/backend/services/donorLocations';
 import { renderUrlSetXml } from '@/src/lib/sitemapXml';
+import { bloodGroupToSlug } from '@/src/lib/seoRouting';
 export const dynamic = 'force-dynamic';
 export async function GET() {
   try {
@@ -8,6 +9,7 @@ export async function GET() {
     const urls = rows.flatMap(row => [
       ...(row.bloodCount > 0 ? [{ url: base + donorLocationPath(row,'blood'), lastModified: row.updatedAt }] : []),
       ...(row.organCount > 0 ? [{ url: base + donorLocationPath(row,'organ'), lastModified: row.updatedAt }] : []),
+      ...row.bloodGroups.filter(group=>bloodGroupToSlug(group)).map(group=>({url:base+donorLocationPath(row,'blood')+'/'+bloodGroupToSlug(group),lastModified:row.updatedAt})),
     ]);
     return renderUrlSetXml(urls, 'public, max-age=0, s-maxage=300, stale-while-revalidate=300');
   } catch {

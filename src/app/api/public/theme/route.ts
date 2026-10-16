@@ -12,6 +12,7 @@ export async function GET() {
       orderBy: [{ updated_at: "desc" }, { id: "desc" }],
       select: {
         ui_theme: true,
+        discovery_visible:true,
         updated_at: true,
       },
     });
@@ -20,6 +21,7 @@ export async function GET() {
       success: true,
       data: {
         uiTheme: settings?.ui_theme || DEFAULT_UI_THEME,
+        discoveryVisible:settings?.discovery_visible??true,
         updatedAt: settings?.updated_at || null,
       },
     }, { headers: { "Cache-Control": "no-store, max-age=0" } });

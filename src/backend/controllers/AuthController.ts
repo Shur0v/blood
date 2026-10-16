@@ -1,3 +1,4 @@
+import { findLoginUser, normalizeLoginEmail } from '../services/loginEmails';
 import { NextResponse } from 'next/server';
 import { AuthService } from '../services/AuthService';
 import { UserRepository } from '../repositories/UserRepository';
@@ -12,6 +13,9 @@ import { resolveSessionCookieDomain } from '../utils/cookieDomain';
 import { z } from 'zod';
 import { reserveGeneratedProfileCode } from '../services/profileIdentifiers';
 import { securityJson, securityRateLimit, securityFailure } from '../utils/security';
+import { assertRegistrationAvailable, lockRegistrationIdentity, RegistrationConflict } from '../services/registrationIdentity';
+import { Prisma } from '@prisma/client';
+import { MedicalError } from '../utils/medicalPrivacy';
 
 const authService = new AuthService();
 const userRepo = new UserRepository();
@@ -19,11 +23,14 @@ const userRepo = new UserRepository();
 // Zod schemas for strict request validation
 const RequestOtpSchema = z.object({
   email: z.string().trim().email().max(254),
+  mode: z.enum(['register', 'login']).optional(),
+  mobile: z.string().trim().min(1).max(64).optional(),
   deviceFingerprint: z.string().min(6).max(512).optional(),
 });
 
 const VerifyOtpSchema = z.object({
   email: z.string().trim().email().max(254),
+  mode: z.enum(['register', 'login']).optional(),
   otp: z.string().regex(/^\d{6}$/),
   // Registration expansion fallback payload if the user doesn't already exist
   name: z.string().optional(),
@@ -58,6 +65,19 @@ const VerifyOtpSchema = z.object({
   deviceFingerprint: z.string().min(6).max(512).optional(),
 });
 
+function authFailure(error: unknown) {
+  if (error instanceof RegistrationConflict) {
+    return NextResponse.json({ error: error.message, message: error.message, code: error.code, field: error.field }, { status: 409, headers: { 'Cache-Control': 'private, no-store' } });
+  }
+  if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+    const target = JSON.stringify(error.meta?.target || '');
+    if (target.includes('email')) return authFailure(new RegistrationConflict('email'));
+    if (target.includes('mobile')) return authFailure(new RegistrationConflict('phone'));
+  }
+  if (error instanceof MedicalError) return securityFailure(error);
+  return NextResponse.json({ error: 'We could not complete authentication right now. Please try again shortly.' }, { status: 500, headers: { 'Cache-Control': 'private, no-store' } });
+}
+
 export class AuthController {
   
   /**
@@ -73,13 +93,19 @@ export class AuthController {
         return NextResponse.json({ error: 'Invalid email format provided' }, { status: 400 });
       }
 
-      const { email, deviceFingerprint } = parsed.data;
+      const { email, deviceFingerprint, mode, mobile } = parsed.data;
       const fingerprintHash = getFingerprintHash(deviceFingerprint);
       const ipHash = getIpHash(req);
       await securityRateLimit('otp-send-ip',ipHash,60,10*60*1000);
       await securityRateLimit('otp-send-email',email.toLowerCase(),5,10*60*1000);
 
       const existingUser = await userRepo.findByEmail(email);
+      if (mode === 'register' && !existingUser) {
+        await assertRegistrationAvailable(email, mobile);
+        if (!mobile) return NextResponse.json({ error: 'Please provide your phone number to register.' }, { status: 400 });
+      } else if (mode === 'login' && !existingUser) {
+        return NextResponse.json({ error: 'No account was found with this email address. Please register first.', code: 'ACCOUNT_NOT_FOUND' }, { status: 404 });
+      }
       const restricted = await ensureNotRestricted({
         userId: existingUser?.id,
         fingerprintHash,
@@ -113,9 +139,9 @@ export class AuthController {
         return NextResponse.json({ error: 'Failed to dispatch email. Please check server configuration.' }, { status: 500 });
       }
 
-      return NextResponse.json({ message: 'OTP dispatched successfully' }, { status: 200 });
+      return NextResponse.json({ message: existingUser ? 'This email already has an account. Enter the code sent to this email to access your existing account.' : 'OTP dispatched successfully', existingAccount: Boolean(existingUser), mode:existingUser?'login':'register' }, { status: 200 });
     } catch (err: any) {
-      return securityFailure(err);
+      return authFailure(err);
     }
   }
 
@@ -132,7 +158,7 @@ export class AuthController {
         return NextResponse.json({ error: 'Invalid payload format' }, { status: 400 });
       }
 
-      const { email, otp, name, dateOfBirth, mobile, phone, bloodGroup, location, locations, deviceFingerprint } = parsed.data;
+      const { email, otp, name, dateOfBirth, mobile, phone, bloodGroup, location, locations, deviceFingerprint, mode } = parsed.data;
       const fingerprintHash = getFingerprintHash(deviceFingerprint);
       const ipHash = getIpHash(req);
       await securityRateLimit('otp-verify-ip',ipHash,100,15*60*1000);
@@ -152,6 +178,8 @@ export class AuthController {
 
       // Check if user exists to fetch ID, otherwise create gracefully if full data is provided
       let targetUser = await userRepo.findByEmail(email);
+
+      if (mode === 'login' && !targetUser) return NextResponse.json({ error: 'No account was found with this email address. Please register first.', code: 'ACCOUNT_NOT_FOUND' }, { status: 404 });
 
       const identityBlocked = await ensureNotRestricted({
         userId: targetUser?.id,
@@ -178,6 +206,7 @@ export class AuthController {
         const normalizedMobile = phoneValidation?.ok
           ? phoneValidation.normalized.full_phone_number
           : mobile;
+        await assertRegistrationAvailable(email, normalizedMobile);
 
         // Complete registration if payload contains everything
         const submittedLocations = locations?.length ? locations : (location ? [location] : []);
@@ -238,6 +267,7 @@ export class AuthController {
 
         const firstLocation = readyLocations[0];
         targetUser = await getPrisma().$transaction(async (tx) => {
+          await lockRegistrationIdentity(tx, email, normalizedMobile);
           const profileCode = await reserveGeneratedProfileCode(tx);
           const created = await tx.user.create({
             data: {
@@ -331,7 +361,7 @@ export class AuthController {
       }
 
       // Atomically consume after payload validation, including the two-step signup.
-      if (!await authService.consumeOTP(email,otp)) return NextResponse.json({ error: 'Invalid or expired OTP code' }, { status: 401 });
+      if (!await getPrisma().$transaction(async tx=>{await tx.$queryRaw`SELECT 1 FROM pg_advisory_xact_lock(hashtextextended(${`registration-email:${normalizeLoginEmail(email)}`},0))`;const current=await findLoginUser(email,tx);return current?.id===targetUser!.id&&await authService.consumeOTP(email,otp,tx);})) return NextResponse.json({ error: 'Invalid or expired OTP code' }, { status: 401 });
       // Mint Custom JWT Token
       const token = signToken({ user_id: targetUser.id, role: 'USER' });
 
@@ -359,7 +389,7 @@ export class AuthController {
 
       return response;
     } catch (err: any) {
-      return securityFailure(err);
+      return authFailure(err);
     }
   }
 

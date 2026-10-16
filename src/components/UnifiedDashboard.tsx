@@ -23,6 +23,7 @@ import OrganIcon from "./OrganIcon";
 import { ORGAN_CATALOG, normalizeOrganList } from "../lib/organCatalog";
 import ProfileIdentityCard from "./ProfileIdentityCard";
 import MedicalRecordsPanel from "./MedicalRecordsPanel";
+import PublicProfileSettings from './PublicProfileSettings';
 
 const VACCINES = ["COVID-19", "HBV", "BCG", "Influenza", "MMR", "Polio", "Tetanus"];
 const ALLERGIES = ["Peanuts", "Penicillin", "Latex", "Pollen", "Dust", "None"];
@@ -745,6 +746,7 @@ export default function UnifiedDashboard({
             </button>
             {medicalRecordsOpen && <div id="profile-medical-records" className="mt-4"><MedicalRecordsPanel key={profile.id} userId={profile.id} audit={mode === "admin"} onSessionExpired={onSessionExpired} openReports /></div>}
           </div>}
+          {profile?.id && <PublicProfileSettings userId={profile.id} audit={mode === 'admin'}/>}
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
             {/* Left Column: Health Profile */}
             <div className="min-w-0 lg:col-span-7 space-y-8">

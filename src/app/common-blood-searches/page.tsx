@@ -1,3 +1,4 @@
+import {toLocationSlug} from '@/src/backend/utils/locationSlug';
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getBloodGroupCityCounts } from "@/src/backend/services/seoData";
@@ -8,9 +9,9 @@ export const dynamic = "force-dynamic";
 export const revalidate = 1800;
 
 export const metadata: Metadata = {
-  title: "Most Common Blood Searches | Global Donor Discovery",
+  title: "Explore blood donor locations | Global Donor Discovery",
   description:
-    "Browse the most common blood donor searches by blood group and high-demand cities, then continue with the full BloodNet landing experience.",
+    "Browse recorded blood groups and participating cities, with practical donor coordination guides.",
   alternates: { canonical: "/common-blood-searches" },
 };
 
@@ -23,12 +24,12 @@ export default async function CommonBloodSearchesPage() {
       <ManagedNativeAdSlot slotKey="native-ad-2" />
       <main className="mx-auto max-w-7xl px-4 pt-20 pb-14">
         <section className="rounded-[8px] border border-border/20 bg-white/80 p-6 shadow-card">
-          <h1 className="text-3xl font-semibold tracking-tight text-gray-900 md:text-4xl">Most Common Blood Searches</h1>
+          <h1 className="text-3xl font-semibold tracking-tight text-gray-900 md:text-4xl">Explore blood donor locations</h1>
           <p className="mt-3 max-w-3xl text-sm font-medium text-gray-600 md:text-base">
-            Quick access to the highest-demand blood group and city searches. Open any target page, then continue with the full landing view below.
+            Browse recorded blood groups and cities. These links describe directory coverage, not measured search demand.
           </p>
 
-          <h2 className="mt-8 text-xl font-semibold text-gray-900">Top Blood Group Searches</h2>
+          <h2 className="mt-8 text-xl font-semibold text-gray-900">Browse blood groups</h2>
           <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-8">
             {BLOOD_GROUPS.map((group) => {
               const slug = bloodGroupToSlug(group);
@@ -45,12 +46,12 @@ export default async function CommonBloodSearchesPage() {
             })}
           </div>
 
-          <h2 className="mt-8 text-xl font-semibold text-gray-900">Top City Searches</h2>
+          <h2 className="mt-8 text-xl font-semibold text-gray-900">Cities represented in the directory</h2>
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {topCityRows.map((row) => (
               <Link
                 key={`${row.country}-${row.city}`}
-                href={`/blood/${cityToSlug(row.city)}`}
+                href={`/blood-donors/${toLocationSlug(row.country)}/${toLocationSlug(row.city)}`}
                 className="rounded-[8px] border border-border/20 bg-white px-4 py-3 text-sm font-bold text-gray-900 shadow-sm"
               >
                 {row.city}, {row.country}
@@ -58,15 +59,9 @@ export default async function CommonBloodSearchesPage() {
             ))}
           </div>
 
-          <h2 className="mt-8 text-xl font-semibold text-gray-900">Country Keyword Hubs</h2>
+          <h2 className="mt-8 text-xl font-semibold text-gray-900">Guides and real network coverage</h2>
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            <Link href="/country-keyword-hubs/usa" className="rounded-[8px] border border-border/20 bg-white px-4 py-3 text-sm font-bold text-gray-900 shadow-sm">USA Keyword Hub</Link>
-            <Link href="/country-keyword-hubs/uk" className="rounded-[8px] border border-border/20 bg-white px-4 py-3 text-sm font-bold text-gray-900 shadow-sm">UK Keyword Hub</Link>
-            <Link href="/country-keyword-hubs/spain" className="rounded-[8px] border border-border/20 bg-white px-4 py-3 text-sm font-bold text-gray-900 shadow-sm">Spain Keyword Hub</Link>
-            <Link href="/country-keyword-hubs/netherlands" className="rounded-[8px] border border-border/20 bg-white px-4 py-3 text-sm font-bold text-gray-900 shadow-sm">Netherlands Keyword Hub</Link>
-            <Link href="/country-keyword-hubs/italy" className="rounded-[8px] border border-border/20 bg-white px-4 py-3 text-sm font-bold text-gray-900 shadow-sm">Italy Keyword Hub</Link>
-            <Link href="/country-keyword-hubs/poland" className="rounded-[8px] border border-border/20 bg-white px-4 py-3 text-sm font-bold text-gray-900 shadow-sm">Poland Keyword Hub</Link>
-            <Link href="/country-keyword-hubs/australia" className="rounded-[8px] border border-border/20 bg-white px-4 py-3 text-sm font-bold text-gray-900 shadow-sm">Australia Keyword Hub</Link>
+            <Link href="/guides" className="research-text-link">Read the guide library →</Link><Link href="/network" className="research-text-link">Explore real country coverage →</Link><Link href="/donors" className="research-text-link">Meet opt-in public volunteers →</Link>
           </div>
         </section>
       </main>

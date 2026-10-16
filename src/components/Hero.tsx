@@ -7,7 +7,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Star } from "lucide-react";
 import DonorModal from "./DonorModal";
 import useDonorRegion from "./useDonorRegion";
-import DonorCountryFilter from './DonorCountryFilter';
 import { maskPhoneTail } from "../lib/phoneMask";
 import FooterBottomBannerAd from "./FooterBottomBannerAd";
 import DonorBloodFilters from "./DonorBloodFilters";
@@ -388,7 +387,7 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
               </div>
               <div className="px-4 py-2">
                 <span className="text-base font-bold lowercase tracking-[2px] text-white">
-                  active donors worldwide
+                  active donor
                 </span>
               </div>
             </motion.div>
@@ -401,7 +400,7 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
               Join our premium community of life-savers. Connect with donors instantly and manage blood stocks with our futuristic medical dashboard.
             </p>
 
-            <div className="mx-auto w-full max-w-5xl"><DonorCountryFilter country={viewerGeo.country} onChange={viewerGeo.chooseCountry} locked={Boolean(forcedCountry)} onLocate={()=>void viewerGeo.confirmLocation()} locating={viewerGeo.locating} locationMessage={viewerGeo.locationMessage}/>{discoveryNotice&&<p role="status" className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-left text-sm leading-6 text-amber-900">{discoveryNotice}</p>}<DonorBloodFilters activeGroup={activeGroup} onGroupChange={setActiveGroup} searchQuery={searchQuery} onSearchChange={setSearchQuery} placeholder="Search city or donor name…" analyticsPrefix="Blood" /></div>
+            <div className="mx-auto w-full max-w-5xl">{discoveryNotice&&<p role="status" className="sr-only">{discoveryNotice}</p>}<DonorBloodFilters activeGroup={activeGroup} onGroupChange={setActiveGroup} searchQuery={searchQuery} onSearchChange={setSearchQuery} placeholder="Search city or donor name…" analyticsPrefix="Blood" /></div>
           </div>
 
           <div className="absolute inset-0 -z-10 opacity-[0.03]">

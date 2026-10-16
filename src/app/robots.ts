@@ -36,10 +36,9 @@ export default function robots(): MetadataRoute.Robots {
       `${baseUrl}/sitemap-regions.xml`,
       `${baseUrl}/sitemap-blog.xml`,
       `${baseUrl}/sitemap-location.xml`,
-      `${baseUrl}/sitemap-keywords-1.xml`,
-      `${baseUrl}/sitemap-keywords-2.xml`,
-      `${baseUrl}/sitemap-keywords-3.xml`,
-      `${baseUrl}/sitemap-keywords-4.xml`,
+      `${baseUrl}/sitemap-guides.xml`,
+      `${baseUrl}/sitemap-network.xml`,
+      `${baseUrl}/sitemap-donors.xml`,
     ],
   };
 }

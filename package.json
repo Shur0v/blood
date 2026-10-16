@@ -22,6 +22,7 @@
     "test:discovery": "tsx --test tests/donor-discovery.test.ts",
     "test:profile-ui": "tsx tests/profile-ui-check.mjs",
     "test:security": "tsx --test tests/security.test.ts",
+    "test:seo": "tsx --test tests/seo-content.test.ts",
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint"

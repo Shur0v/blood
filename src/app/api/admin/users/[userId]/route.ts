@@ -1,3 +1,5 @@
+import { changeLoginEmailsInTransaction } from '@/src/backend/services/loginEmails';
+import { MedicalError } from '@/src/backend/utils/medicalPrivacy';
 import { withActiveAdmin } from '@/src/backend/utils/activeAdmin';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
@@ -10,7 +12,7 @@ import { listServiceCities } from '@/src/backend/services/ServiceCityService';
 
 const UserPatchSchema = z.object({
   name: z.string().min(1).max(120).optional(),
-  email: z.string().email().optional(),
+  email: z.string().trim().email().max(254).optional(),
   mobile: z.string().min(3).max(30).optional(),
   bloodGroup: z.string().min(1).max(10).optional(),
   dateOfBirth: z.string().datetime().nullable().optional(),
@@ -118,7 +120,7 @@ async function handlePATCH(req: Request, context: { params: Promise<{ userId: st
   } = {};
 
   if (payload.name !== undefined) updateData.name = payload.name;
-  if (payload.email !== undefined) updateData.email = payload.email;
+
   if (payload.mobile !== undefined) updateData.mobile = payload.mobile;
   if (payload.bloodGroup !== undefined) updateData.blood_group = payload.bloodGroup;
   if (payload.dateOfBirth !== undefined) updateData.date_of_birth = payload.dateOfBirth ? new Date(payload.dateOfBirth) : null;
@@ -132,6 +134,7 @@ async function handlePATCH(req: Request, context: { params: Promise<{ userId: st
 
   try {
     const updated = await prisma.$transaction(async (tx) => {
+      if(payload.email!==undefined)await changeLoginEmailsInTransaction(tx,userId,{action:'replacePrimary',email:payload.email},getSessionFromRequest(req)!.user_id);
       const nextUser = await tx.user.update({
         where: { id: userId },
         data: updateData,
@@ -185,6 +188,7 @@ async function handlePATCH(req: Request, context: { params: Promise<{ userId: st
       },
     });
   } catch (error) {
+    if(error instanceof MedicalError)return NextResponse.json({success:false,message:error.message},{status:error.status});
     return NextResponse.json({ success: false, message: 'Failed to update user.' }, { status: 500 });
   }
 }

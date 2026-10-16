@@ -6,15 +6,13 @@ const EXTRA_SITEMAPS = [
   "sitemap-regions.xml",
   "sitemap-blog.xml",
   "sitemap-location.xml",
-  "sitemap-keywords-1.xml",
-  "sitemap-keywords-2.xml",
-  "sitemap-keywords-3.xml",
-  "sitemap-keywords-4.xml",
+  "sitemap-guides.xml",
+  "sitemap-network.xml",
+  "sitemap-donors.xml",
 ];
 
 export async function GET() {
   const baseUrl = getPublicBaseUrl();
-  const now = new Date().toISOString();
   const all = ["sitemap.xml", ...EXTRA_SITEMAPS];
 
   const body = `<?xml version="1.0" encoding="UTF-8"?>
@@ -23,7 +21,6 @@ ${all
   .map(
     (name) => `  <sitemap>
     <loc>${baseUrl}/${name}</loc>
-    <lastmod>${now}</lastmod>
   </sitemap>`
   )
   .join("\n")}

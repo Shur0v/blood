@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client';
 import { getPrisma } from '../config/db';
 import { randomInt, timingSafeEqual } from 'node:crypto';
 import { securityDigest } from '../utils/security';
@@ -60,8 +61,8 @@ export class AuthService {
     });
   }
 
-  public async consumeOTP(email:string,otp:string):Promise<boolean> {
-    const result=await getPrisma().otpVerification.deleteMany({where:{email,expires_at:{gt:new Date()},code:{in:[otp,protectedOtp(email,otp)]}}});
+  public async consumeOTP(email:string,otp:string,db:Pick<Prisma.TransactionClient,'otpVerification'>=getPrisma()):Promise<boolean> {
+    const result=await db.otpVerification.deleteMany({where:{email,expires_at:{gt:new Date()},code:{in:[otp,protectedOtp(email,otp)]}}});
     return result.count===1;
   }
 }

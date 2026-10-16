@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { isAllowedWriteRequest } from './lib/requestSecurity';
+import { isDiscoveryPath } from './lib/discoveryRoutes';
 
 const SUPPORTED_LOCALES = ['en', 'bn', 'ja', 'es', 'de'] as const;
 const DEFAULT_LOCALE = 'en';
@@ -88,8 +89,9 @@ export function middleware(request: NextRequest) {
     response.headers.set('X-BloodNet-Locale', locale);
   }
 
+  if (/^\/donors(?:\/|$)/.test(pathname)) response.headers.set('Cache-Control','private, no-store');
   const isApiRoute = pathname.startsWith('/api/');
-  if (isApiRoute || /^\/(admin-dashboard|dashboard|account|profile|private)(\/|$)/.test(pathname) || request.nextUrl.searchParams.has('heatmapPreview')) {
+  if (isApiRoute || /^\/(admin-dashboard|dashboard|account|profile|private)(\/|$)/.test(pathname) || request.nextUrl.searchParams.has('heatmapPreview') || request.nextUrl.searchParams.has('donorExplore')) {
     response.headers.set('X-Robots-Tag', 'noindex, nofollow');
   }
   if (
@@ -105,7 +107,7 @@ export function middleware(request: NextRequest) {
   ) {
     response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
   }
-  const preview = request.nextUrl.searchParams.get('heatmapPreview') === '1' && !/^\/(api|admin-dashboard|dashboard|profile)(\/|$)/.test(pathname);
+  const preview = (request.nextUrl.searchParams.get('heatmapPreview') === '1' && !/^\/(api|admin-dashboard|dashboard|profile)(\/|$)/.test(pathname)) || (request.nextUrl.searchParams.get('donorExplore') === '1' && isDiscoveryPath(pathname));
   if (preview) response.headers.set('Cache-Control', 'no-store');
   applySecurityHeaders(response, isApiRoute, preview);
 

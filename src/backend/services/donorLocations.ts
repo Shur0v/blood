@@ -49,14 +49,27 @@ export const getDonorLocations = cache(async (): Promise<DonorLocation[]> => {
 export const donorLocationPath = (row: Pick<DonorLocation,'country'|'city'>, mode: 'blood'|'organ') => `/${mode}-donors/${toLocationSlug(row.country)}/${toLocationSlug(row.city)}`;
 export const findDonorLocation = async (country: string, city: string) => (await getDonorLocations()).find(row => toLocationSlug(row.country) === country && toLocationSlug(row.city) === city);
 
-export const getLocationDonorPreview = cache(async (country:string,city:string,mode:'blood'|'organ') => {
+export const getLocationDonorPreview = cache(async (country:string,city:string,mode:'blood'|'organ',bloodGroup?:string) => {
   const { Prisma } = await import('@prisma/client');
   const location = Prisma.sql`((LOWER(u.location_country)=LOWER(${country}) AND LOWER(u.location_city)=LOWER(${city})) OR EXISTS (SELECT 1 FROM "UserServiceCity" sc WHERE sc.user_id=u.id AND LOWER(sc.country)=LOWER(${country}) AND LOWER(sc.city)=LOWER(${city})))`;
   const registered = mode==='blood'
-    ? Prisma.sql`SELECT u.name,u.blood_group AS category,u.created_at FROM "User" u WHERE u.is_active_donor=true AND ${location}`
+    ? Prisma.sql`SELECT u.name,u.blood_group AS category,u.created_at FROM "User" u WHERE u.is_active_donor=true AND ${location} ${bloodGroup?Prisma.sql`AND u.blood_group=${bloodGroup}`:Prisma.empty}`
     : Prisma.sql`SELECT u.name,op.organ_type AS category,op.created_at FROM "User" u JOIN "OrganPledge" op ON op.user_id=u.id WHERE u.is_active_donor=true AND op.is_active=true AND ${location}`;
   const manual = mode==='blood'
-    ? Prisma.sql`SELECT name,blood_group AS category,created_at FROM "ManualBloodDonor" WHERE is_active_donor=true AND LOWER(location_country)=LOWER(${country}) AND LOWER(location_city)=LOWER(${city})`
+    ? Prisma.sql`SELECT name,blood_group AS category,created_at FROM "ManualBloodDonor" WHERE is_active_donor=true AND LOWER(location_country)=LOWER(${country}) AND LOWER(location_city)=LOWER(${city}) ${bloodGroup?Prisma.sql`AND blood_group=${bloodGroup}`:Prisma.empty}`
     : Prisma.sql`SELECT name,organ_type AS category,created_at FROM "ManualOrganDonor" WHERE LOWER(location_country)=LOWER(${country}) AND LOWER(location_city)=LOWER(${city})`;
   return getPrisma().$queryRaw<Array<{name:string;category:string;created_at:Date}>>(Prisma.sql`SELECT name,category,created_at FROM (${registered} UNION ALL ${manual}) entries ORDER BY created_at DESC,name ASC LIMIT 8`);
+});
+
+export const getLocationBloodGroupCounts = cache(async (country:string,city:string) => {
+  const rows=await getPrisma().$queryRaw<Array<{blood_group:string;total:bigint}>>`
+    SELECT blood_group,COUNT(*) AS total FROM (
+      SELECT u.blood_group FROM "User" u WHERE u.is_active_donor=true
+      AND ((LOWER(u.location_country)=LOWER(${country}) AND LOWER(u.location_city)=LOWER(${city}))
+        OR EXISTS(SELECT 1 FROM "UserServiceCity" sc WHERE sc.user_id=u.id AND LOWER(sc.country)=LOWER(${country}) AND LOWER(sc.city)=LOWER(${city})))
+      UNION ALL
+      SELECT blood_group FROM "ManualBloodDonor" WHERE is_active_donor=true AND LOWER(location_country)=LOWER(${country}) AND LOWER(location_city)=LOWER(${city})
+    ) entries GROUP BY blood_group
+  `;
+  return Object.fromEntries(rows.map(row=>[row.blood_group,Number(row.total)]));
 });

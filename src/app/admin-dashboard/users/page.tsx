@@ -5,6 +5,7 @@ import { Table, TableRow, TableCell } from '@/src/admin-dashboard/components/com
 import { Badge } from '@/src/admin-dashboard/components/common/Badge';
 import { Modal } from '@/src/admin-dashboard/components/common/Modal';
 import { Pagination } from '@/src/admin-dashboard/components/common/Pagination';
+import AdminLoginEmails from '@/src/components/AdminLoginEmails';
 import UnifiedDashboard from '@/src/components/UnifiedDashboard';
 import { Search, Filter, Eye, Trash2, Shield, ShieldAlert, HeartPulse } from 'lucide-react';
 
@@ -360,6 +361,7 @@ export default function AllUserList() {
         {profileError && <div role="alert" className="py-8 text-sm text-rose-700">{profileError} <button type="button" className="underline" onClick={()=>selectedUserId&&void openUserProfile(selectedUserId)}>Retry</button></div>}
         {!isProfileLoading && selectedProfile && selectedUserId && (
           <div className="rounded-3xl bg-white p-2">
+            <AdminLoginEmails key={'emails-'+selectedUserId} userId={selectedUserId} onChanged={email=>{setUsers(previous=>previous.map(user=>user.id===selectedUserId?{...user,email}:user));}}/>
             <UnifiedDashboard
               key={selectedUserId}
               isReady={selectedProfile.isActiveDonor}

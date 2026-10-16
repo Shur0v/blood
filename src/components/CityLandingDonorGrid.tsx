@@ -13,6 +13,7 @@ interface CityLandingDonorGridProps {
   mode: LandingMode;
   city: string;
   country: string;
+  bloodGroup?: string;
 }
 
 interface DonorCard {
@@ -28,7 +29,7 @@ interface DonorCard {
   lastDonationDate?: string | null;
 }
 
-export default function CityLandingDonorGrid({ mode, city, country }: CityLandingDonorGridProps) {
+export default function CityLandingDonorGrid({ mode, city, country, bloodGroup }: CityLandingDonorGridProps) {
   const [cards, setCards] = useState<DonorCard[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -49,6 +50,7 @@ export default function CityLandingDonorGrid({ mode, city, country }: CityLandin
       if (cursor) {
         params.set("cursor", cursor);
       }
+      if(bloodGroup)params.set('bloodGroup',bloodGroup);
       const res = await fetch(`${endpoint}?${params.toString()}`, {
         method: "GET",
         cache: "no-store",
@@ -86,13 +88,13 @@ export default function CityLandingDonorGrid({ mode, city, country }: CityLandin
     setCards([]);
     setNextCursor(null);
     void fetchCards();
-  }, [mode, city, country]);
+  }, [mode, city, country, bloodGroup]);
 
   return (
     <section className="mx-auto w-full max-w-7xl px-4 pb-24">
       <div className="mb-8 rounded-xl border border-border/20 bg-white/70 p-6 backdrop-blur">
         <h2 className="text-3xl font-semibold tracking-tight text-gray-900">
-          {mode === "blood" ? "Urgent Blood Donation" : "Emergency Organ Donation"} in {city}
+          {mode === "blood" ? `${bloodGroup ? bloodGroup+' ' : ''}Blood donor discovery` : "Organ pledge discovery"} in {city}
         </h2>
         <p className="mt-2 text-sm font-medium text-gray-600">
           Active donor entries matching {city}, {country}. Confirm availability and medical requirements with the donor and your hospital.
