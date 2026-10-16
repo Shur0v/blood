@@ -3,7 +3,7 @@ set -euo pipefail
 
 APP_NAME="bloodnet"
 export NODE_ENV=production
-APP_DIR="/var/www/bloodnet"
+APP_DIR="${BLOODNET_APP_DIR:-/var/www/bloodnet}"
 ECOSYSTEM_FILE="${APP_DIR}/ecosystem.config.cjs"
 ENV_FILE="${APP_DIR}/.env"
 
@@ -23,6 +23,12 @@ for tool in git node npm pm2 curl pg_dump pg_restore tar; do
   fi
 done
 node -e 'const [major,minor]=process.versions.node.split(".").map(Number); if (!(major >= 24 || major === 22 && minor >= 12 || major === 20 && minor >= 19)) { console.error("ERROR: Prisma requires Node 20.19+, 22.12+, or 24+."); process.exit(1); }'
+
+echo "==> Ensure core services are running"
+if command -v systemctl >/dev/null 2>&1; then
+  systemctl is-active --quiet nginx || systemctl restart nginx
+  systemctl is-active --quiet postgresql || systemctl restart postgresql
+fi
 
 # Never replace .next or node_modules underneath running HTTP/queue processes.
 # Pause other VPS replicas and scheduled writers in the same maintenance window.
@@ -51,6 +57,9 @@ echo "==> Install dependencies"
 # Prisma migration/build tooling and the supervised tsx worker are required on VPS.
 npm ci --include=dev
 
+echo "==> Ensure private medical storage is configured safely"
+npm run medical:configure
+
 echo "==> Validate production configuration and database access"
 npm run deploy:check -- --database --existing --smtp
 
@@ -67,7 +76,7 @@ echo "==> Validate schema and existing user IDs"
 npm run deploy:check -- --schema
 
 echo "==> Ensure log directory"
-mkdir -p /var/www/bloodnet/logs
+mkdir -p "${APP_DIR}/logs"
 
 echo "==> Restart app with PM2"
 # Recreate stopped entries so stale PM2 DATABASE_URL/secrets cannot override .env.

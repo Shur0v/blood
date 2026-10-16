@@ -1,0 +1,38 @@
+import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';
+import path from 'node:path';
+const load=createRequire(path.resolve(process.env.BLOODNET_UI_TEST_PACKAGE||'package.json'));
+const {JSDOM}=load('jsdom');
+import {pathToFileURL} from 'node:url';
+const dom=new JSDOM('<!doctype html><html><body><div id="root"></div></body></html>',{url:'http://localhost',pretendToBeVisual:true});
+for(const key of ['window','document','HTMLElement','Element','SVGElement','Node','Event','MouseEvent','MutationObserver'])globalThis[key]=dom.window[key];
+Object.defineProperty(globalThis,'navigator',{value:dom.window.navigator,configurable:true});
+globalThis.getComputedStyle=dom.window.getComputedStyle.bind(dom.window);globalThis.requestAnimationFrame=dom.window.requestAnimationFrame.bind(dom.window);globalThis.cancelAnimationFrame=dom.window.cancelAnimationFrame.bind(dom.window);
+window.matchMedia=()=>({matches:false,addListener(){},removeListener(){},addEventListener(){},removeEventListener(){}});globalThis.IS_REACT_ACT_ENVIRONMENT=true;
+const {default:React,act}=await import(pathToFileURL(process.cwd()+'/node_modules/react/index.js'));
+globalThis.React=React;
+const {createRoot}=await import(pathToFileURL(process.cwd()+'/node_modules/react-dom/client.js'));
+
+
+const {default:Settings}=await import(pathToFileURL(process.cwd()+'/src/components/PublicProfileSettings.tsx'));
+const root=createRoot(document.getElementById('root')),profile={name:'Demo Donor',bloodGroup:'O-',city:'Dhaka',country:'Bangladesh'};let stored={isPublished:false,showPhone:false,bio:'',publicPath:null},fail=false,calls=[];
+globalThis.fetch=async(url,init={})=>{calls.push({url:String(url),...init});if(init.method==='PATCH'){if(fail)return Response.json({success:false,message:'A genuine server validation error.'},{status:400});const input=JSON.parse(init.body);stored={...input,publicPath:'/donors/demo'};}return Response.json({success:true,data:stored});};
+const click=async el=>{assert.ok(el);await act(async()=>el.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true})));};
+const button=text=>Array.from(document.querySelectorAll('button')).find(el=>el.textContent.trim()===text);
+const heading=()=>button('Public donor profileAn optional introduction for your public donor page.');
+await act(async()=>root.render(React.createElement(Settings,{userId:'owner-a',profile})));
+await click(heading());assert.equal(document.querySelectorAll('input[type=checkbox]').length,1);assert.equal(document.querySelector('input[type=checkbox]').checked,false);assert.equal(document.querySelectorAll('select option').length,10);
+const initial=document.querySelector('textarea').value;for(const field of Object.values(profile))assert.ok(initial.includes(field));assert.equal(button('Publish profile').disabled,true);
+await act(async()=>{const select=document.querySelector('select');select.value=String((Number(select.value)+1)%10);select.dispatchEvent(new Event('change',{bubbles:true}));});assert.notEqual(document.querySelector('textarea').value,initial);
+await click(document.querySelector('input[type=checkbox]'));await click(button('Publish profile'));
+assert.equal(heading().getAttribute('aria-expanded'),'false');assert.equal(document.querySelector('textarea'),null);assert.ok(document.querySelector('[role=status]').className.includes('emerald'));assert.equal(document.querySelector('[role=alert]'),null);assert.equal(stored.consent,true);assert.equal(stored.showPhone,false);assert.equal(stored.phoneConsent,false);
+console.log('PASS ten personalized drafts, one explicit consent, private phone default and green success outside collapsed editor');
+await click(heading());await click(button('Include my phone number'));assert.equal(document.querySelectorAll('input[type=checkbox]').length,1);assert.equal(document.querySelector('input[type=checkbox]').checked,false);assert.match(document.body.textContent,/including my full phone number/);
+await click(document.querySelector('input[type=checkbox]'));fail=true;await click(button('Save profile'));assert.equal(heading().getAttribute('aria-expanded'),'true');assert.match(document.querySelector('[role=alert]').textContent,/validation error/);assert.equal(document.querySelector('[role=status]'),null);
+fail=false;await click(button('Save profile'));assert.equal(stored.showPhone,true);assert.equal(stored.phoneConsent,true);assert.equal(heading().getAttribute('aria-expanded'),'false');
+await click(heading());await click(button('Withdraw public profile'));assert.equal(stored.isPublished,false);assert.equal(stored.showPhone,false);assert.equal(heading().getAttribute('aria-expanded'),'false');assert.match(document.querySelector('[role=status]').textContent,/withdrawn/);
+console.log('PASS optional phone publication needs explicit consent; genuine errors stay open, successful updates and withdrawal close');
+stored={isPublished:true,showPhone:false,bio:'An existing, donor-written introduction must be preserved.',publicPath:'/donors/demo'};await act(async()=>root.render(React.createElement(Settings,{key:'existing',userId:'owner-b',profile})));await click(heading());assert.equal(document.querySelector('textarea').value,stored.bio);
+await act(async()=>root.render(React.createElement(Settings,{key:'audit',userId:'owner-b',profile,audit:true})));await click(heading());assert.equal(document.querySelectorAll('input,select,textarea').length,0);assert.ok(document.body.textContent.includes(stored.bio));assert.equal(calls.at(-1).url,'/api/admin/users/owner-b/public-profile');
+console.log('PASS existing donor biography is preserved and admin audit stays read-only');
+await act(async()=>root.unmount());dom.window.close();

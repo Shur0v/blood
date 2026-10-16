@@ -47,8 +47,20 @@ sudo certbot --nginx -d bloodnet.live -d www.bloodnet.live
 ```bash
 cd /var/www/bloodnet
 chmod +x deploy/deploy.sh
-bash deploy/deploy.sh
+bash ./deploy-prod.sh
 ```
+
+For a VPS with the older locally created `deploy-prod.sh`, install the tracked entry point once. This preserves the old script in root's home directory before replacing it:
+
+```bash
+cd /var/www/bloodnet
+cp ./deploy-prod.sh "/root/bloodnet-deploy-prod-$(date -u +%Y%m%dT%H%M%SZ).sh"
+git fetch origin main
+git show origin/main:deploy-prod.sh > ./deploy-prod.sh
+bash ./deploy-prod.sh
+```
+
+The entry point fetches the current deployment implementation before executing it, so a deployment never continues with old in-memory steps after updating the checkout. Core Nginx/PostgreSQL service checks are retained on systemd servers.
 
 ## 7) PM2 auto-start after VPS reboot
 ```bash
@@ -59,16 +71,14 @@ Run the command printed by `pm2 startup` (it usually starts with `sudo env PATH=
 
 ## 8) Daily operations
 
-If medical uploads return HTTP 503 with a missing/invalid private-storage key:
+Use the same entry point for normal deployments and missing medical-storage configuration:
 
 ```bash
 cd /var/www/bloodnet
-git pull --ff-only origin main
-npm run medical:configure
-bash deploy/deploy.sh
+bash ./deploy-prod.sh
 ```
 
-`medical:configure` keeps an existing valid key unchanged. It creates an initial key
+The deployment runs `medical:configure` automatically after dependency installation and before production checks. It keeps an existing valid key unchanged. It creates an initial key
 in `.env.production.local` only when the database has no encrypted medical records
 or verification assets. It preserves other settings, privately backs up an existing
 file, and never prints the key. If encrypted data exists, restore its original key
@@ -79,7 +89,7 @@ missing or invalid, even if ordinary public-page database reads work.
 
 - Deploy latest main:
 ```bash
-cd /var/www/bloodnet && bash deploy/deploy.sh
+cd /var/www/bloodnet && bash ./deploy-prod.sh
 ```
 - Check process:
 ```bash
@@ -91,3 +101,5 @@ pm2 logs bloodnet
 curl -I https://bloodnet.live
 ```
 
+
+The doctor integration API key is optional for patient-upload features. If provided, it must meet the existing minimum length; without it, the doctor integration endpoint continues to reject submissions.

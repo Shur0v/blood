@@ -53,3 +53,10 @@ test('JSON readers reject oversized bodies and malformed JSON',async()=>{
   await assert.rejects(securityJson(new Request('https://example.invalid',{method:'POST',body:'{'})),{status:400});
   assert.deepEqual(await securityJson(new Request('https://example.invalid',{method:'POST',body:'{"ok":true}'})),{ok:true});
 });
+
+
+test('optional doctor integration remains closed when its provider key is absent',async()=>{
+ const {authorizePrescriptionProvider}=await import('../src/backend/services/prescriptions');const previous=process.env.DOCTOR_PRESCRIPTION_API_KEY;
+ try {delete process.env.DOCTOR_PRESCRIPTION_API_KEY;assert.throws(()=>authorizePrescriptionProvider(new Request('http://localhost/api/integrations/prescriptions')),error=>(error as {status?:number}).status===503);}
+ finally {if(previous===undefined)delete process.env.DOCTOR_PRESCRIPTION_API_KEY;else process.env.DOCTOR_PRESCRIPTION_API_KEY=previous;}
+});

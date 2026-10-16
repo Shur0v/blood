@@ -746,7 +746,6 @@ export default function UnifiedDashboard({
             </button>
             {medicalRecordsOpen && <div id="profile-medical-records" className="mt-4"><MedicalRecordsPanel key={profile.id} userId={profile.id} audit={mode === "admin"} onSessionExpired={onSessionExpired} /></div>}
           </div>}
-          {profile?.id && <PublicProfileSettings userId={profile.id} audit={mode === 'admin'}/>}
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
             {/* Left Column: Health Profile */}
             <div className="min-w-0 lg:col-span-7 space-y-8">
@@ -1187,6 +1186,7 @@ export default function UnifiedDashboard({
               )}
             </div>
           </div>
+          {profile?.id && <div className="mt-8 pb-20 sm:pb-0"><PublicProfileSettings userId={profile.id} profile={profile} audit={mode === "admin"}/></div>}
         </div>
       </motion.div>
     </section>

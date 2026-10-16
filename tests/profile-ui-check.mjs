@@ -22,6 +22,7 @@ for(const mode of ['self','admin'])for(const profile of profiles){
  await act(async()=>root.render(React.createElement(Dashboard,{key:mode+profile.id,mode,targetUserId:profile.id,profile,isReady:true,onToggleReady(){}})));
  await act(async()=>wait(1000));
  assert.equal(calls.filter(call=>call.method==='PATCH').length,0,'Opening '+mode+'/'+profile.id+' must not write health or organ defaults');
+ const publicCard=document.querySelector('[data-public-profile-settings]'),story=document.querySelector('textarea[placeholder="Share your full experience..."]');assert.ok(publicCard&&story);assert.ok(story.compareDocumentPosition(publicCard)&Node.DOCUMENT_POSITION_FOLLOWING,'Public donor settings must follow the story section');
  const vaccine=Array.from(document.querySelectorAll('button')).find(button=>button.textContent.trim()==='COVID-19');assert.ok(vaccine);
  await act(async()=>vaccine.dispatchEvent(new MouseEvent('click',{bubbles:true})));
  await act(async()=>wait(900));

@@ -14,7 +14,7 @@ nextEnv.loadEnvConfig(process.cwd(), false);
 async function check() {
   const env = getAppEnv();
   medicalKey();
-  if ((process.env.DOCTOR_PRESCRIPTION_API_KEY || '').length < 32) throw new Error('DOCTOR_PRESCRIPTION_API_KEY must contain at least 32 characters.');
+  if (process.env.DOCTOR_PRESCRIPTION_API_KEY && process.env.DOCTOR_PRESCRIPTION_API_KEY.length < 32) throw new Error('DOCTOR_PRESCRIPTION_API_KEY must contain at least 32 characters when the optional doctor integration is configured.');
   const base = env.NEXT_PUBLIC_BASE_URL || env.NEXT_PUBLIC_SITE_URL;
   if (!base || new URL(base).protocol !== 'https:') throw new Error('Set an HTTPS public website URL for production.');
   if (process.argv.includes('--smtp')) {

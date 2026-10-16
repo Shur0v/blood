@@ -63,7 +63,7 @@ export default function MedicalRecordUploader({mode,userId,onSaved,onSessionExpi
     <fieldset disabled={uploading} className="m-0 min-w-0 space-y-5 border-0 p-0">
       {drafts.map((item,index)=><article key={item.key} className="min-w-0 space-y-5 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 sm:p-6">
         <div className="flex flex-wrap items-center justify-between gap-3"><h3 className="font-semibold text-slate-900">{prescription?'Prescription':'Report'} {index+1}</h3><button type="button" onClick={()=>setDrafts(items=>items.filter(draft=>draft.key!==item.key))} className="inline-flex min-h-10 items-center gap-2 rounded-full px-3 text-sm text-slate-600 hover:bg-rose-50 hover:text-rose-700"><Trash2 className="h-4 w-4"/>Remove entry</button></div>
-        {item.error&&<p role="alert" className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800">{item.error}</p>}
+        {item.error&&(drafts.length>1||item.error!==submissionError)&&<p role="alert" className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800">{item.error}</p>}
         <div className="grid min-w-0 gap-5 sm:grid-cols-2">
           <Field label={prescription?'Prescription title':'Report title'} required maxLength={160} value={item.title} onChange={e=>update(item.key,{title:e.target.value})} placeholder={prescription?'e.g. Cardiology follow-up':'e.g. Complete blood count'}/>
           {!prescription&&<label className="min-w-0 text-sm font-semibold text-slate-700">Category<select value={item.category} onChange={e=>update(item.key,{category:e.target.value})} className={medicalFieldClass}>{REPORT_CATEGORIES.map(category=><option key={category}>{category}</option>)}</select></label>}
