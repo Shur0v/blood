@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { get as httpGet } from 'node:http';
 
 const base = process.env.SEO_TEST_BASE_URL;
 if (!base || !['127.0.0.1', 'localhost'].includes(new URL(base).hostname)) throw new Error('Set SEO_TEST_BASE_URL to an isolated local production server.');
@@ -19,8 +20,15 @@ for (const bot of ['OAI-SearchBot', 'Claude-SearchBot', 'PerplexityBot']) assert
 const icon = await fetch(base+'/apple-touch-icon.png'); assert.equal(icon.status,200); assert.match(icon.headers.get('content-type'), /image\/png/);
 const preview = await read('/guides/find-blood-donors-near-you?donorExplore=1'); assert.match(preview.response.headers.get('x-robots-tag'), /noindex/);
 const denied = await fetch(base+'/api/users/me/profile'); assert.equal(denied.status,401); assert.match(denied.headers.get('x-robots-tag'), /noindex/);
-const alias = await fetch(base+'/guides/find-blood-donors-near-you?ref=qa', { headers:{host:'www.bloodnet.live'}, redirect:'manual' });
-assert.equal(alias.status,301); assert.equal(alias.headers.get('location'),'https://bloodnet.live/guides/find-blood-donors-near-you?ref=qa');
+// Raw HTTP retains the proxy Host header; fetch may replace it with the URL host.
+const alias = await new Promise((resolve,reject) => {
+  const request = httpGet(base+'/guides/find-blood-donors-near-you?ref=qa', {headers:{Host:'www.bloodnet.live'}}, response => {
+    resolve({status:response.statusCode, location:response.headers.location}); response.resume();
+  });
+  request.setTimeout(15000, () => request.destroy(new Error('Canonical redirect check timed out.')));
+  request.on('error',reject);
+});
+assert.equal(alias.status,301); assert.equal(alias.location,'https://bloodnet.live/guides/find-blood-donors-near-you?ref=qa');
 for (const map of ['/sitemap.xml', '/sitemap-main.xml', '/sitemap-categories.xml', '/sitemap-guides.xml']) {
   const {text} = await read(map);
   for (const unwanted of ['/privacy-policy<', '/blood-donation-guide<', '/organ-donation-guide<', '/policy.txt<']) assert.ok(!text.includes(unwanted), map+': '+unwanted);

@@ -7,7 +7,10 @@ export function canonicalAliasUrl(requestUrl: string, host: string | null, publi
     if (host.toLowerCase() !== `www.${canonical.hostname}`) return null;
     const target = new URL(requestUrl);
     target.protocol = canonical.protocol;
-    target.host = canonical.host;
+    target.hostname = canonical.hostname;
+    // Next's request URL can contain the reverse proxy's internal listen port.
+    // Assigning URL.host without a port does not clear an existing port.
+    target.port = canonical.port;
     return target;
   } catch { return null; }
 }

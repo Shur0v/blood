@@ -10,6 +10,7 @@ import { indexNowUrls } from '../src/lib/indexNow';
 test('www redirects preserve path, escaped data and query without trusting arbitrary hosts', () => {
   const destination = canonicalAliasUrl('http://www.bloodnet.live/guides/find-blood-donors-near-you?ref=a%26b', 'www.bloodnet.live', 'https://bloodnet.live');
   assert.equal(destination?.href, 'https://bloodnet.live/guides/find-blood-donors-near-you?ref=a%26b');
+  assert.equal(canonicalAliasUrl('http://localhost:3000/guides?ref=a%26b', 'www.bloodnet.live', 'https://bloodnet.live')?.href, 'https://bloodnet.live/guides?ref=a%26b');
   for (const host of ['bloodnet.live', 'bloodnet.live.evil.test', 'localhost:3224', 'www.bloodnet.live.evil.test']) {
     assert.equal(canonicalAliasUrl('http://'+host+'/blood', host, 'https://bloodnet.live'), null);
   }
