@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { getPrisma } from '@/src/backend/config/db';
 import { DEFAULT_LOCALE, resolveLocaleFromRequest } from '@/src/lib/locale';
 import { translateTextCached } from '@/src/backend/services/translationService';
+import {blogDescription} from '@/src/lib/blogSeo';
 
 const QuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
@@ -27,12 +28,13 @@ export async function GET(req: Request) {
 
   const where = {
     status: 'PUBLISHED',
+    slug:{not:null},
     ...(authorType !== 'ALL' ? { author_type: authorType } : {}),
   };
   const [rows, total] = await Promise.all([
     prisma.blog.findMany({
       where,
-      orderBy: { published_at: 'desc' },
+      orderBy: [{ published_at: 'desc' },{id:'desc'}],
       skip: (page - 1) * limit,
       take: limit,
       select: {
@@ -72,7 +74,7 @@ export async function GET(req: Request) {
             contentVersion: row.id,
           })
         : row.title;
-    const baseExcerpt = row.meta_description || row.content.slice(0, 180);
+    const baseExcerpt = blogDescription(row.content,row.meta_description);
     const translatedExcerpt =
       resolvedLocale !== DEFAULT_LOCALE
         ? await translateTextCached({
@@ -84,8 +86,9 @@ export async function GET(req: Request) {
           })
         : baseExcerpt;
 
+    const {author_id,content,...publicRow}=row;
     return ({
-    ...row,
+    ...publicRow,
     title: translatedTitle,
     excerpt: translatedExcerpt,
     is_user_story: row.author_type === 'USER' || userMap.has(row.author_id),
@@ -96,7 +99,7 @@ export async function GET(req: Request) {
           ? 'Anonymous'
           : userMap.get(row.author_id)?.name || 'BloodNet User'
         : 'BloodNet Editorial',
-    author_city: row.author_type === 'USER' || userMap.has(row.author_id) ? userMap.get(row.author_id)?.location_city || null : null,
+    author_city: !row.is_anonymous && (row.author_type === 'USER' || userMap.has(row.author_id)) ? userMap.get(row.author_id)?.location_city || null : null,
     author_profile_image:
       row.author_type === 'USER' || userMap.has(row.author_id)
         ? row.is_anonymous

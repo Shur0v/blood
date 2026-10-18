@@ -12,8 +12,8 @@ export async function generateMetadata({params}:Props):Promise<Metadata> {
   const profile=await getPublicDonorProfile((await params).slug);
   if(!profile)return {title:'Donor profile unavailable',robots:{index:false,follow:false}};
   const title=`${profile.name} — ${profile.bloodGroup} blood donor in ${profile.city}`;
-  const description=`${profile.name} is listed in the BloodNet donor directory in ${profile.city}, ${profile.country}.${profile.phone?` Public contact: ${profile.phone}.`:''} Coordinate through your hospital and confirm current availability.`;
-  return {title,description,alternates:{canonical:`/donors/${profile.slug}`},openGraph:{title,description,type:'profile',url:`/donors/${profile.slug}`,images:['/opengraph-image']},twitter:{card:'summary_large_image',title,description}};
+  const description=`Find ${profile.name}, a registered ${profile.bloodGroup} blood donor in ${profile.city}, ${profile.country}. Read local coordination guidance and confirm availability with the donor and hospital.`;
+  return {title,description,alternates:{canonical:`/donors/${profile.slug}`},openGraph:{title,description,type:'profile',url:`/donors/${profile.slug}`,images:['/opengraph-image']},twitter:{card:'summary_large_image',title,description},robots:{index:true,follow:true,googleBot:{index:true,follow:true,'max-snippet':-1,'max-image-preview':'large'}}};
 }
 export default async function Page({params}:Props) {
   const profile=await getPublicDonorProfile((await params).slug);if(!profile)notFound();

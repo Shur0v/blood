@@ -80,9 +80,15 @@ async function handleGET(req: Request) {
 
     const pledgedUserIds = new Set(activePledges.map((pledge) => pledge.user_id));
 
+    const [profiles,restrictions]=await Promise.all([
+      prisma.publicDonorProfile.findMany({where:{user_id:{in:userIds}},select:{user_id:true,slug:true,is_published:true,admin_approved_at:true,admin_approved_by:true}}),
+      prisma.restrictedIdentity.findMany({where:{user_id:{in:userIds},is_active:true},select:{user_id:true}}),
+    ]);
+    const profileMap=new Map(profiles.map(profile=>[profile.user_id,profile])),restrictedIds=new Set(restrictions.map(row=>row.user_id));
     const usersWithFlags = users.map((user) => ({
       ...user,
       hasActiveOrganPledge: pledgedUserIds.has(user.id),
+      publicProfile:{publicPath:profileMap.has(user.id)?`/donors/${profileMap.get(user.id)!.slug}`:null,isPublished:!!(user.is_active_donor&&!restrictedIds.has(user.id)&&profileMap.get(user.id)?.is_published&&profileMap.get(user.id)?.admin_approved_at&&profileMap.get(user.id)?.admin_approved_by)},
     }));
 
     return NextResponse.json({

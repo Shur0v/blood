@@ -4,7 +4,6 @@ import { renderUrlSetXml } from "@/src/lib/sitemapXml";
 
 export async function GET() {
   const baseUrl = getPublicBaseUrl();
-  const now = new Date();
   try {
     const prisma = getPrisma();
     const blogs = await prisma.blog.findMany({
@@ -14,15 +13,16 @@ export async function GET() {
       take: 5000,
     });
     return renderUrlSetXml([
-      { url: `${baseUrl}/blog`, lastModified: now },
+      { url: `${baseUrl}/blog`, ...(blogs[0]?{lastModified:blogs[0].updated_at}:{}) },
+      ...Array.from({length:Math.max(0,Math.ceil(blogs.length/20)-1)},(_,index)=>({url:`${baseUrl}/blog?page=${index+2}`})),
       ...blogs
         .filter((blog) => blog.slug)
         .map((blog) => ({
           url: `${baseUrl}/blog/${blog.slug}`,
-          lastModified: blog.updated_at || now,
+          lastModified: blog.updated_at,
         })),
     ]);
   } catch {
-    return renderUrlSetXml([{ url: `${baseUrl}/blog`, lastModified: now }]);
+    return new Response('Blog sitemap temporarily unavailable.',{status:503,headers:{'Cache-Control':'no-store','Retry-After':'60'}});
   }
 }

@@ -954,6 +954,33 @@ test('blood-group location counts deduplicate service cities and metadata exclud
   assert.deepEqual((await donorLocationMetadata(params,'blood','AB-')).robots,{index:false,follow:true});
 });
 
+test('admin globe publication always hides phone and keeps the existing public URL',integration,async()=>{
+ const owner=await newPatient();
+ const {PATCH}=await import('../src/app/api/admin/users/[userId]/public-profile/route');
+ const {getPublicProfileSettings,getPublicDonorProfile}=await import('../src/backend/services/publicDonorProfiles');
+ const endpoint='https://bloodnet.test/api/admin/users/'+owner.id+'/public-profile',context={params:Promise.resolve({userId:owner.id})};
+ const headers={authorization:'Bearer '+signToken({user_id:testAdminId,role:'ADMIN'}),'Content-Type':'application/json'};
+ const send=(data:unknown)=>PATCH(new Request(endpoint,{method:'PATCH',headers,body:JSON.stringify(data)}),context);
+ assert.equal((await send({quickPublish:true,isPublished:true})).status,200);
+ const first=await getPublicProfileSettings(owner.id);assert.equal(first.isPublished,true);assert.equal(first.showPhone,false);assert.ok(first.publicPath);
+ const slug=first.publicPath!.split('/').at(-1)!;assert.equal((await getPublicDonorProfile(slug))?.phone,null);
+ assert.equal((await send({isPublished:true,showPhone:true,bio:first.bio,articleTemplate:first.articleTemplate,authorizationConfirmed:true})).status,200);
+ assert.equal((await getPublicProfileSettings(owner.id)).showPhone,true);
+ assert.equal((await send({quickPublish:true,isPublished:false})).status,200);assert.equal(await getPublicDonorProfile(slug),null);
+ assert.equal((await send({quickPublish:true,isPublished:true})).status,200);
+ const again=await getPublicProfileSettings(owner.id);assert.equal(again.publicPath,first.publicPath);assert.equal(again.showPhone,false);
+ assert.equal(JSON.stringify(await getPublicDonorProfile(slug)).includes(owner.mobile),false);
+ await getPrisma().user.update({where:{id:owner.id},data:{is_active_donor:false}});
+ assert.equal((await send({quickPublish:true,isPublished:true})).status,400);
+});
+
+test('blog archive API paginates published URLs without exposing anonymous author identities',integration,async()=>{
+ const {GET}=await import('../src/app/api/public/blogs/route');const owner=await newPatient();
+ const id=randomUUID();await getPrisma().blog.create({data:{id,slug:'anonymous-qa-'+id,title:'A public anonymous contribution',content:'<p>A public paragraph with <strong>clear text</strong>.</p>',author_id:owner.id,author_type:'USER',is_anonymous:true,status:'PUBLISHED',published_at:new Date()}});
+ const response=await GET(new Request('http://localhost/api/public/blogs?limit=20&authorType=USER'));assert.equal(response.status,200);
+ const post=(await response.json()).data.find((post:{id:string})=>post.id===id);assert.ok(post);assert.equal(post.author_name,'Anonymous');assert.equal(post.author_city,null);assert.equal(post.author_profile_image,null);assert.equal(post.author_id,undefined);assert.equal(post.content,undefined);assert.equal(post.excerpt,'A public paragraph with clear text.');
+});
+
 
 test('admin-added emails log into the original account and removed addresses lose pending OTP access',integration,async()=>{
  const {changeLoginEmails,listLoginEmails}=await import('../src/backend/services/loginEmails');

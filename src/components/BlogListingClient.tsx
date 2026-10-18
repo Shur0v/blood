@@ -24,16 +24,18 @@ const PAGE_LIMIT = 20;
 export default function BlogListingClient({
   initialRows,
   initialTotal,
+  initialPage=1,
 }: {
   initialRows: BlogListItem[];
   initialTotal: number;
+  initialPage?:number;
 }) {
   const [rows, setRows] = useState<BlogListItem[]>(initialRows);
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(initialPage);
   const [total, setTotal] = useState(initialTotal);
   const [loadingMore, setLoadingMore] = useState(false);
 
-  const hasMore = useMemo(() => rows.length < total, [rows.length, total]);
+  const hasMore = useMemo(() => (initialPage-1)*PAGE_LIMIT+rows.length < total, [rows.length, total,initialPage]);
 
   const loadMore = async () => {
     if (loadingMore || !hasMore) return;

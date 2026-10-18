@@ -6,6 +6,7 @@ import { Badge } from '@/src/admin-dashboard/components/common/Badge';
 import { Modal } from '@/src/admin-dashboard/components/common/Modal';
 import { Pagination } from '@/src/admin-dashboard/components/common/Pagination';
 import AdminLoginEmails from '@/src/components/AdminLoginEmails';
+import AdminPublicProfileAction,{PUBLIC_PROFILE_UPDATED} from '@/src/components/AdminPublicProfileAction';
 import UnifiedDashboard from '@/src/components/UnifiedDashboard';
 import { Search, Filter, Eye, Trash2, Shield, ShieldAlert, HeartPulse } from 'lucide-react';
 
@@ -24,6 +25,7 @@ interface DashboardUser {
   lastDon: string;
   organYes: boolean;
   created: string;
+  publicProfile:{isPublished:boolean;publicPath:string|null};
 }
 
 interface AdminProfileData {
@@ -65,6 +67,7 @@ export default function AllUserList() {
   const [selectedProfile, setSelectedProfile] = useState<AdminProfileData | null>(null);
   const [isProfileLoading, setIsProfileLoading] = useState(false);
   const [profileError, setProfileError] = useState('');
+  const [publicationError,setPublicationError]=useState('');
   const profileRequest = React.useRef<AbortController | null>(null);
   useEffect(() => () => profileRequest.current?.abort(), []);
 
@@ -116,6 +119,7 @@ export default function AllUserList() {
           lastDon: user.last_donation_date ? new Date(user.last_donation_date).toLocaleDateString() : '',
           organYes: Boolean(user.hasActiveOrganPledge),
           created: new Date(user.created_at).toLocaleDateString(),
+          publicProfile:user.publicProfile||{isPublished:false,publicPath:null},
         }))
         .filter((user: DashboardUser) => bloodFilter === 'All Blood Groups' || user.bg === bloodFilter);
 
@@ -130,6 +134,7 @@ export default function AllUserList() {
       setIsLoading(false);
     }
   }, [bloodFilter, countryFilter, currentPage, searchQuery]);
+  useEffect(()=>{const sync=()=>void fetchUsers();window.addEventListener(PUBLIC_PROFILE_UPDATED,sync);return()=>window.removeEventListener(PUBLIC_PROFILE_UPDATED,sync);},[fetchUsers]);
 
   useEffect(() => {
     void fetchUsers();
@@ -265,6 +270,7 @@ export default function AllUserList() {
       </div>
 
       <div className="border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.04)] bg-white dark:bg-[#1a1b23]">
+        {publicationError&&<p role="alert" className="mb-4 rounded-xl bg-rose-50 p-4 text-sm text-rose-800">{publicationError}</p>}
         <Table headers={['User', 'Location', 'Contact Details', 'Status / Verification', 'Last Donated', 'Created', 'Actions']}>
           {users.map((user) => (
             <TableRow key={user.id}>
@@ -304,7 +310,8 @@ export default function AllUserList() {
               </TableCell>
               <TableCell className="text-gray-500 text-xs">{user.created}</TableCell>
               <TableCell>
-                <div className="flex items-center gap-1">
+                <div className="flex min-w-max items-center gap-1">
+                  <AdminPublicProfileAction userId={user.id} name={user.name} active={user.active} isPublished={user.publicProfile.isPublished} publicPath={user.publicProfile.publicPath} onChanged={()=>{setPublicationError('');void fetchUsers();}} onError={setPublicationError}/>
                   <button
                     onClick={() => void openUserProfile(user.id)}
                     className="p-2 rounded-lg text-blue-500 hover:bg-blue-500/10 transition"

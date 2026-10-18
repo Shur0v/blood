@@ -5,7 +5,7 @@ import { toLocationSlug } from '../utils/locationSlug';
 import { ADMIN_ROLES } from '../utils/session';
 
 // Explicit field selection keeps email, patient IDs, DOB and medical records out of public pages.
-const donorSelection = { name: true, mobile: true, blood_group: true, location_city: true, location_country: true } as const;
+const donorSelection = { name: true, mobile: true, blood_group: true, location_city: true, location_country: true,updated_at:true,ServiceCities:{select:{city:true,country:true,created_at:true}} } as const;
 
 export async function getPublicDonorProfile(slug: string) {
   const row = await getPrisma().publicDonorProfile.findFirst({
@@ -14,7 +14,7 @@ export async function getPublicDonorProfile(slug: string) {
   });
   if (!row || await getPrisma().restrictedIdentity.findFirst({ where: { user_id: row.user_id, is_active: true }, select: { id: true } })) return null;
   return { slug: row.slug, bio: row.bio, name: row.User.name, bloodGroup: row.User.blood_group, city: row.User.location_city, country: row.User.location_country,
-    phone: row.phone_visible ? row.User.mobile : null, articleTemplate: row.article_template, updatedAt: row.updated_at };
+    phone: row.phone_visible ? row.User.mobile : null, articleTemplate: row.article_template,serviceCities:row.User.ServiceCities.map(({city,country})=>({city,country})),updatedAt:new Date(Math.max(row.updated_at.getTime(),row.User.updated_at.getTime(),...row.User.ServiceCities.map(city=>city.created_at.getTime()))) };
 }
 
 export async function listPublicDonorProfiles(take = 60, cursor?: string) {

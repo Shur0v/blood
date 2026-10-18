@@ -5,6 +5,12 @@ import { translateTextCached } from "@/src/backend/services/translationService";
 import { stripHtmlTags } from "@/src/lib/blogContent";
 import BlogListingClient from "@/src/components/BlogListingClient";
 import BlogUnavailable from "@/src/components/BlogUnavailable";
+import type {Metadata} from 'next';
+import Link from 'next/link';
+import {notFound} from 'next/navigation';
+import {archivePage} from '@/src/lib/blogSeo';
+type ArchiveProps={searchParams:Promise<{page?:string}>};
+export async function generateMetadata({searchParams}:ArchiveProps):Promise<Metadata>{const page=archivePage((await searchParams).page);return {title:`BloodNet Journal — Blood Donation & Health Articles${page>1?` — Page ${page}`:''}`,description:'Read BloodNet articles about blood donation, donor coordination, organ support and health. Browse the complete published article archive.',alternates:{canonical:page>1?`/blog?page=${page}`:'/blog'},openGraph:{type:'website',url:page>1?`/blog?page=${page}`:'/blog'}};}
 
 export const dynamic = "force-dynamic";
 
@@ -23,22 +29,24 @@ type BlogClientRow = {
   author_profile_image: string | null;
 };
 
-export default async function BlogListingPage() {
-  try { return await loadBlogListing(); }
-  catch {
+export default async function BlogListingPage(props:ArchiveProps) {
+  try { return await loadBlogListing(archivePage((await props.searchParams).page)); }
+  catch(error) {
+    if(error instanceof Error&&'digest' in error&&String(error.digest).startsWith('NEXT_'))throw error;
     console.error('Blog listing unavailable. Check server configuration and database connectivity.');
     return <BlogUnavailable />;
   }
 }
 
-async function loadBlogListing() {
+async function loadBlogListing(page:number) {
   const prisma = getPrisma();
   const locale = await getRequestLocale();
 
   const [rows, total] = await Promise.all([
     prisma.blog.findMany({
-      where: { status: "PUBLISHED" },
-      orderBy: { published_at: "desc" },
+      where: { status: "PUBLISHED",slug:{not:null} },
+      orderBy: [{ published_at: "desc" },{id:'desc'}],
+      skip:(page-1)*20,
       take: 20,
       select: {
         id: true,
@@ -54,8 +62,9 @@ async function loadBlogListing() {
         is_anonymous: true,
       },
     }),
-    prisma.blog.count({ where: { status: "PUBLISHED" } }),
+    prisma.blog.count({ where: { status: "PUBLISHED",slug:{not:null} } }),
   ]);
+  const pages=Math.max(1,Math.ceil(total/20));if(page>pages)notFound();
 
   const userIds = [...new Set(rows.filter((row) => row.author_type === "USER").map((row) => row.author_id))];
   const users = userIds.length
@@ -132,7 +141,7 @@ async function loadBlogListing() {
           ? "Anonymous"
           : userMap.get(post.author_id)?.name || "BloodNet User"
         : "BloodNet Editorial",
-    author_city: post.author_type === "USER" ? userMap.get(post.author_id)?.location_city || null : null,
+    author_city: post.author_type === "USER" && !post.is_anonymous ? userMap.get(post.author_id)?.location_city || null : null,
     author_profile_image:
       post.author_type === "USER" && !post.is_anonymous ? userMap.get(post.author_id)?.profile_image_url || null : null,
   }));
@@ -150,7 +159,8 @@ async function loadBlogListing() {
           <p className="mt-4 max-w-3xl text-base font-medium leading-relaxed text-slate-600 md:text-lg">{heroDesc}</p>
         </section>
 
-        <BlogListingClient initialRows={initialClientRows} initialTotal={total} />
+        <BlogListingClient key={page} initialRows={initialClientRows} initialTotal={total} initialPage={page}/>
+        <nav aria-label="Article archive pages" className="mt-10 flex flex-wrap items-center justify-center gap-2 text-sm">{page>1&&<Link rel="prev" href={page===2?'/blog':`/blog?page=${page-1}`} className="rounded-xl border bg-white px-4 py-3">Previous</Link>}{Array.from({length:pages},(_,i)=>i+1).filter(p=>p===1||p===pages||Math.abs(p-page)<=2).map(p=><Link key={p} href={p===1?'/blog':`/blog?page=${p}`} aria-current={page===p?'page':undefined} className={`rounded-xl border px-4 py-3 ${p===page?'bg-rose-700 text-white':'bg-white text-slate-700'}`}>{p}</Link>)}{page<pages&&<Link rel="next" href={`/blog?page=${page+1}`} className="rounded-xl border bg-white px-4 py-3">Next</Link>}</nav>
       </main>
     </div>
   );
