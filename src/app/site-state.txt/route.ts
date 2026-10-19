@@ -8,7 +8,9 @@ export async function GET() {
       "BloodNet public site state",
       `URL: ${getPublicBaseUrl()}`,
       "Purpose: Free global blood donor, organ donor, and patient connection platform.",
-      `Registered active donors: ${stats.registeredDonors}`,
+      `Active registered donor accounts: ${stats.registeredAccounts}`,
+      `Manual donor entries: ${stats.manualDonorEntries}`,
+      `Community organisation listings: ${stats.communityListings}`,
       `Active donor entries: ${stats.activeBloodDonors}`,
       `Active countries: ${stats.activeCountries}`,
       `Active cities: ${stats.activeCities}`,
@@ -22,7 +24,7 @@ export async function GET() {
     return new Response(body, {
       headers: {
         "Content-Type": "text/plain; charset=utf-8",
-        "Cache-Control": "public, s-maxage=300, stale-while-revalidate=1800",
+        "Cache-Control": "no-store",
       },
     });
   } catch {

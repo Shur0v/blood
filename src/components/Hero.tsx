@@ -149,7 +149,7 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
   const effectiveQuery=useRef<URLSearchParams|null>(null);
   const regionKey=viewerGeo.country||'global';
   const localReady = Boolean(viewerGeo.resolved) && loadedCountry === regionKey;
-  const donorCacheKey = `bloodnet_public_donors_cache:v3:${viewerGeo.country}:${activeGroup || 'all'}:${normalizedSearch}`;
+  const donorCacheKey = `bloodnet_public_donors_cache:v4:${viewerGeo.country}:${activeGroup || 'all'}:${normalizedSearch}`;
   const donorRequests = useRef<AbortController | null>(null);
   const buildBaseParams = () => {
     const params = new URLSearchParams({ limit: "16", sort: 'NEWEST' });

@@ -135,7 +135,9 @@ export default async function RootLayout({
             data-last-updated={publicBotStats.lastUpdated}
           >
             <h2>Current public BloodNet network statistics</h2>
-            <p>Registered active donors: {publicBotStats.registeredDonors}</p>
+            <p>Active registered donor accounts: {publicBotStats.registeredAccounts}</p>
+            <p>Manual donor entries: {publicBotStats.manualDonorEntries}</p>
+            <p>Community organisation listings: {publicBotStats.communityListings}</p>
             <p>Active donor entries: {publicBotStats.activeBloodDonors}</p>
             <p>Active countries: {publicBotStats.activeCountries}</p>
             <p>Active cities: {publicBotStats.activeCities}</p>

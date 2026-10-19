@@ -42,6 +42,7 @@ import { toLocationSlug } from '../src/backend/utils/locationSlug';
 import { getActiveBloodDonorCounts } from '../src/backend/services/donorCounts';
 import { getPublicBotStats } from '../src/backend/services/seoData';
 import { GET as dashboardOverview } from '../src/app/api/admin/dashboard-overview/route';
+import mainSitemap from '../src/app/sitemap';
 import { GET as siteState } from '../src/app/site-state.json/route';
 import { GET as platformStats } from '../src/app/api/public/platform-stats/route';
 import { GET as publicOrganRequests } from '../src/app/api/public/organ-requests/route';
@@ -532,11 +533,11 @@ test('new registrations lead All groups and every blood filter regardless of loc
   const first = await query(undefined, undefined, 2), second = await query(undefined, first.pagination.nextCursor, 2);
   assert.equal(new Set([...first.data, ...second.data].map(row => row.id)).size, 4);
   // The ORM fallback must preserve the same registration order, too.
-  await sql.query('ALTER TABLE "UserServiceCity" RENAME COLUMN created_at TO created_at_test_unavailable');
+  const unavailable=(()=>{const original=db.$queryRaw;db.$queryRaw=()=>{throw new Error('Synthetic SQL failure');};return {mock:{restore:()=>{db.$queryRaw=original;}}};})();
   try {
     const fallback = await query('O-'); assert.equal(fallback.meta.fallback, true);
     assert.deepEqual(fallback.data.slice(0, 2).map((row: { id: string }) => row.id), [next.id, expected[0]]);
-  } finally { await sql.query('ALTER TABLE "UserServiceCity" RENAME COLUMN created_at_test_unavailable TO created_at'); }
+  } finally { unavailable.mock.restore(); }
 });
 
 test('SEO locations include active primary/service cities, correct country canonicals and marrow without private data', integration, async () => {
@@ -650,11 +651,11 @@ test('local donor lists isolate countries, preserve newest-first filters and use
     const local=await read(route,{country:'India',search:marker+'-service'});
     assert.equal(local.data.length,1);assert.equal(local.data[0].location_country,'India');assert.equal(local.data[0].location_city,'Delhi');
   }
-  await sql.query('ALTER TABLE "UserServiceCity" RENAME COLUMN created_at TO created_at_test_unavailable');
+  const unavailable=(()=>{const original=db.$queryRaw;db.$queryRaw=()=>{throw new Error('Synthetic SQL failure');};return {mock:{restore:()=>{db.$queryRaw=original;}}};})();
   try {
     const fallback=await read(publicBloodDonors,{country:'India',search:marker+'-service'});
     assert.equal(fallback.meta.fallback,true);assert.equal(fallback.data.length,1);assert.equal(fallback.data[0].location_country,'India');
-  } finally {await sql.query('ALTER TABLE "UserServiceCity" RENAME COLUMN created_at_test_unavailable TO created_at');}
+  } finally {unavailable.mock.restore();}
 });
 
 test('visitor country lookup is uncached and never supplies a default country', async () => {
@@ -715,7 +716,7 @@ test('profile audit matches the patient profile and reads encrypted uploads with
   assert.equal((await auditHistory(auditRequest('/api/admin/history','POST',JSON.stringify({mode:'reports'})),{params:Promise.resolve({userId:randomUUID()})})).status,404);
 });
 
-test('discovery falls back to real nearby donors without exposing coordinates or disturbing newest local order',integration,async()=>{
+test('discovery keeps region filters and nearby donors remain private without disturbing newest order',integration,async()=>{
   const db=getPrisma(),near=await newPatient(),far=await newPatient();
   await db.user.update({where:{id:near.id},data:{name:'Nearest fixture',blood_group:'AB-',location_country:'India',location_lat:89.124,location_lng:170.123,created_at:new Date('2020-01-01')}});
   await db.user.update({where:{id:far.id},data:{name:'Far fixture',blood_group:'AB-',location_country:'India',location_lat:-80,location_lng:-100,created_at:new Date(Date.now()+10000)}});
@@ -724,8 +725,10 @@ test('discovery falls back to real nearby donors without exposing coordinates or
     const query=new URLSearchParams({country:'NoDonorsHere',bloodGroup:'AB-',viewerLat:'89.123',viewerLng:'170.123'});
     const fetcher=(async(input)=>route(new Request(new URL(String(input),'http://localhost')))) as typeof fetch;
     const result=await discoverDonors(endpoint,query,undefined,fetcher);
-    assert.equal(result.payload.data[0].id,near.id);assert.equal(result.params.has('country'),false);
-    assert.match(result.notice,/other locations/);assert.equal(result.payload.meta.fallback,undefined,'Normal SQL path must succeed');
+    assert.equal(result.payload.data.length,0);assert.equal(result.params.get('country'),'NoDonorsHere');assert.equal(result.params.get('bloodGroup'),'AB-');
+    assert.match(result.notice,/have not been removed/);assert.equal(result.payload.meta.fallback,undefined,'Normal SQL path must succeed');
+    const nearby=await route(new Request('http://localhost'+endpoint+'?country=India&bloodGroup=AB-&sort=NEARBY&viewerLat=89.123&viewerLng=170.123'));
+    assert.equal((await nearby.json()).data[0].id,near.id);
     assert.ok(!JSON.stringify(result.payload.data).includes('internal_lat'));assert.ok(!JSON.stringify(result.payload.data).includes('internal_lng'));
   }
   const newest=await publicBloodDonors(new Request('http://localhost/api/public/donors?country=India&bloodGroup=AB-&sort=NEWEST&viewerLat=89.123&viewerLng=170.123'));
@@ -1043,3 +1046,29 @@ test('discovery visibility saves independently of ads and streams committed chan
  if(before){assert.equal(after?.ads_runtime_enabled,before.ads_runtime_enabled);assert.deepEqual(after?.ad_units_json,before.ad_units_json);assert.equal(after?.ui_theme,before.ui_theme);}
  }finally{signal.abort();await reader.cancel();}
 });
+
+
+test('public statistics use registered, manual and community definitions with shared geographic coverage',integration,async()=>{
+ const db=getPrisma(),counts=await getActiveBloodDonorCounts(),locations=await getDonorLocations(),stats=await getPublicBotStats();
+ assert.equal(stats.registeredAccounts,counts.registered);assert.equal(stats.registeredUsers,counts.registered);assert.equal(stats.registeredDonors,counts.registered);
+ assert.equal(stats.manualDonorEntries,counts.manual);assert.equal(stats.communityListings,counts.community);assert.equal(stats.totalListingCount,counts.total);assert.equal(stats.activeBloodDonors,counts.total);
+ assert.equal(stats.activeCities,locations.length);assert.equal(stats.activeCountries,new Set(locations.map(r=>r.country.toLowerCase())).size);
+ assert.equal(stats.organDonorEntries,await db.manualOrganDonor.count()+await db.organPledge.count({where:{is_active:true,User:{is_active_donor:true}}}));
+ const state=await(await siteState()).json();for(const key of ['registeredAccounts','manualDonorEntries','communityListings','totalListingCount','activeCountries','activeCities'])assert.equal(state.publicNetwork[key],stats[key as keyof typeof stats]);
+});
+
+test('nearby SQL and recovery ordering agree beyond the first candidate window and never expose coordinates',integration,async()=>{
+ const db=getPrisma(),country='Ordering-'+randomUUID(),near=await newPatient(),far=await newPatient();
+ await db.user.update({where:{id:near.id},data:{location_city:'Near',location_country:country,location_lat:28.6,location_lng:77.2,created_at:new Date('2000-01-01')}});
+ await db.user.update({where:{id:far.id},data:{location_city:'Far',location_country:country,location_lat:80,location_lng:30}});
+ for(let i=0;i<24;i++)await db.manualBloodDonor.create({data:{name:'Ordering fixture',mobile:randomUUID(),blood_group:'A+',location_city:'Manual',location_country:country,location_lat:30+i,location_lng:77.2,source:'TEST',added_by_admin:'TEST'}});
+ await db.communityDonor.create({data:{organization_name:'Unspecified blood group',mobile:randomUUID(),location_city:'Near',location_country:country,location_lat:28.6,location_lng:77.2,source:'TEST',added_by_admin:'TEST'}});
+ const query=new URLSearchParams({country,bloodGroup:'A+',sort:'NEARBY',viewerLat:'28.6',viewerLng:'77.2',limit:'16'});
+ const read=async()=>{const response=await publicBloodDonors(new Request('http://localhost/api/public/donors?'+query));assert.equal(response.status,200);return response.json();};
+ const normal=await read();assert.equal(normal.data[0].id,near.id);assert.equal(normal.pagination.total,26);assert.ok(normal.data.every((row:any)=>row.blood_group==='A+'));
+ const failing=(()=>{const original=db.$queryRaw;db.$queryRaw=()=>{throw new Error('Synthetic SQL failure');};return {mock:{restore:()=>{db.$queryRaw=original;}}};})();
+ try{const recovered=await read();assert.equal(recovered.meta.fallback,true);assert.deepEqual(recovered.data.map((row:any)=>row.id),normal.data.map((row:any)=>row.id));assert.ok(!JSON.stringify(recovered).includes('internal_lat'));assert.ok(!JSON.stringify(recovered).includes('internal_lng'));}finally{failing.mock.restore();}
+ query.set('cursor','16');const next=await read();const failingNext=(()=>{const original=db.$queryRaw;db.$queryRaw=()=>{throw new Error('Synthetic SQL failure');};return {mock:{restore:()=>{db.$queryRaw=original;}}};})();try{assert.deepEqual((await read()).data.map((row:any)=>row.id),next.data.map((row:any)=>row.id));}finally{failingNext.mock.restore();}
+});
+
+test('main sitemap contains unique canonical URLs when static and data-driven country routes overlap',integration,async()=>{const routes=await mainSitemap();assert.equal(new Set(routes.map(row=>row.url)).size,routes.length);assert.ok(routes.some(row=>new URL(row.url).pathname==='/us'));assert.ok(!routes.some(row=>['/usa','/united-states'].includes(new URL(row.url).pathname)));});

@@ -1,8 +1,10 @@
 "use client";
+import {DISCOVERY_RESULT_EVENT,type DiscoverySnapshot} from '../lib/discoveryState';
+
 
 import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
-import { documentClick, analyticsTargetPath, analyticsPageKey } from "@/src/lib/analytics";
+import {analyticsComponentLabel, documentClick, analyticsTargetPath, analyticsPageKey } from "@/src/lib/analytics";
 
 type DeviceType = "mobile" | "tablet" | "desktop";
 
@@ -14,7 +16,7 @@ const HEATMAP_SESSION_STORAGE_KEY = "bn_heatmap_session_id";
 const SCROLL_EVENT_STEP_PERCENT = 5;
 const SCROLL_THROTTLE_MS = 1200;
 
-const sanitizeLabel = (value: string): string => value.replace(/\s+/g, " ").trim().slice(0, MAX_COMPONENT_LENGTH);
+const sanitizeLabel = (value: string): string => analyticsComponentLabel(value.replace(/\s+/g, " ").trim()).slice(0, MAX_COMPONENT_LENGTH);
 const isLikelyUtilityClassText = (value: string): boolean => {
   const lower = value.toLowerCase();
   if (!lower.includes(" ")) return false;
@@ -161,7 +163,7 @@ export default function ClickTracker() {
     const click = (event: MouseEvent) => {
       const target = event.target instanceof Element ? event.target : null;
       const privateArea = target?.closest('[data-analytics-private], [role="dialog"], dialog');
-      const component = privateArea ? 'Private form interaction' : extractComponentName(target as HTMLElement) || 'Page background';
+      const component = target?.closest('a[href^="tel:"]') ? 'Donor contact initiated' : privateArea ? 'Private form interaction' : extractComponentName(target as HTMLElement) || 'Page background';
       const width = Math.max(document.documentElement.scrollWidth,window.innerWidth);
       const height = Math.max(document.documentElement.scrollHeight,document.body.scrollHeight,window.innerHeight);
       const anchor = target?.closest('button,a,input,select,textarea,[data-analytics-component]') || target;
@@ -172,6 +174,14 @@ export default function ClickTracker() {
         clickX:point.x,clickY:point.y,targetPath,targetX:rect?Math.max(0,Math.min(1,(event.clientX-rect.left)/Math.max(1,rect.width))):undefined,targetY:rect?Math.max(0,Math.min(1,(event.clientY-rect.top)/Math.max(1,rect.height))):undefined,surface:privateArea?'overlay':'document',viewportW:window.innerWidth,viewportH:window.innerHeight,documentW:width,documentH:height});
       if(pending.current.length>=FLUSH_SIZE) void flush();
       if(pending.current.length>MAX_QUEUE_SIZE) pending.current=pending.current.slice(-MAX_QUEUE_SIZE);
+    };
+    const discovery = (event:Event) => {
+      if(page()==='profile')return;
+      const state=(event as CustomEvent<DiscoverySnapshot>).detail;
+      if(!state||!['blood','organ','request'].includes(state.kind)||typeof state.empty!=='boolean')return;
+      // Aggregate outcome only: never send queries, categories, coordinates or contacts.
+      pending.current.push({page:page(),component:'Discovery '+state.kind+(state.empty?' no matching results':' results available'),deviceType:detectDeviceType(),timestamp:new Date().toISOString()});
+      if(pending.current.length>MAX_QUEUE_SIZE)pending.current=pending.current.slice(-MAX_QUEUE_SIZE);
     };
     const scroll = () => {
       if(Date.now()-lastScroll<SCROLL_THROTTLE_MS) return;
@@ -187,9 +197,9 @@ export default function ClickTracker() {
       else void flush();
     };
     const visibility=()=>{if(document.visibilityState==='hidden')beacon();else void flush();};
-    document.addEventListener('click',click,true);window.addEventListener('scroll',scroll,{passive:true});window.addEventListener('pagehide',beacon);document.addEventListener('visibilitychange',visibility);
+    window.addEventListener(DISCOVERY_RESULT_EVENT,discovery);document.addEventListener('click',click,true);window.addEventListener('scroll',scroll,{passive:true});window.addEventListener('pagehide',beacon);document.addEventListener('visibilitychange',visibility);
     const timer=window.setInterval(()=>void flush(),FLUSH_INTERVAL_MS);
-    return()=>{document.removeEventListener('click',click,true);window.removeEventListener('scroll',scroll);window.removeEventListener('pagehide',beacon);document.removeEventListener('visibilitychange',visibility);clearInterval(timer);beacon();};
+    return()=>{window.removeEventListener(DISCOVERY_RESULT_EVENT,discovery);document.removeEventListener('click',click,true);window.removeEventListener('scroll',scroll);window.removeEventListener('pagehide',beacon);document.removeEventListener('visibilitychange',visibility);clearInterval(timer);beacon();};
   },[pathname]);
   return null;
 }

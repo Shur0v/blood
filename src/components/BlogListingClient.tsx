@@ -116,12 +116,6 @@ export default function BlogListingClient({
                 </p>
               )}
 
-              {post.primary_keyword && (
-                <p className="mt-3 text-xs font-bold uppercase tracking-wide text-red-600">
-                  Focus keyword: {post.primary_keyword}
-                </p>
-              )}
-
               <p className="mt-4 flex-1 text-base leading-relaxed text-slate-700">
                 {post.excerpt}
               </p>

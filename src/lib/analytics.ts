@@ -1,8 +1,11 @@
 import { z } from 'zod';
 
+// Keep the interaction name, never the selected health-related category.
+export function analyticsComponentLabel(value:string){return value.replace(/^(Blood|Organ(?: Blood)?) Filter (?!All$).+/,'$1 Filter change');}
+
 export const ClickEventSchema = z.object({
   page: z.string().min(1).max(2048),
-  component: z.string().min(1).max(120),
+  component: z.string().min(1).max(120).transform(analyticsComponentLabel),
   deviceType: z.enum(['mobile', 'tablet', 'desktop']),
   timestamp: z.string().datetime().optional(),
   eventId: z.string().uuid().optional(),

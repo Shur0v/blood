@@ -6,6 +6,7 @@ import DonorCountryFilter from './DonorCountryFilter';
 import useDonorRegion from './useDonorRegion';
 import { UI_CONTROLS_EVENT } from '../lib/publicUiControls';
 import { isDiscoveryPath } from '../lib/discoveryRoutes';
+import DiscoveryResultSummary from './DiscoveryResultSummary';
 import DiscoveryReadingRoom from './DiscoveryReadingRoom';
 
 export default function DonorDiscoveryPanel({children,forcedCountry}:{children?:ReactNode;forcedCountry?:string}) {
@@ -64,6 +65,7 @@ export default function DonorDiscoveryPanel({children,forcedCountry}:{children?:
         {page ? <div className="discovery-frame-wrap">{loading&&<p role="status" className="discovery-loading">Loading donor directory…</p>}<iframe key={page} src={page} title="BloodNet donor directory" className="discovery-frame" onLoad={event=>{setLoading(false);try{event.currentTarget.contentDocument?.addEventListener('keydown',event=>{if(event.key==='Escape'){event.preventDefault();close();}});}catch{/* A destination outside the same-origin directory cannot be inspected. */}}}/></div> : <div className="discovery-scroll" onClick={event=>{const link=(event.target as HTMLElement).closest('a');if(link&&!event.ctrlKey&&!event.metaKey&&!event.shiftKey&&link.target!=='_blank'&&navigate(link.href))event.preventDefault();}}>
           <div className="discovery-intro"><div><p className="discovery-eyebrow">Your local network</p><h3>Find a connection.<br/><span>Make a difference.</span></h3><p>Explore active donor communities and personalise the listings you see. The same BloodNet network, with a more local view.</p></div><div className="discovery-preferences"><div className="mb-5 flex items-center gap-2 text-sm font-semibold text-slate-900"><Globe2 size={17}/> Location preferences</div><DonorCountryFilter country={region.country} onChange={region.chooseCountry} locked={Boolean(forcedCountry)} onLocate={()=>void region.confirmLocation()} locating={region.locating} locationMessage={region.locationMessage}/></div></div>
           <nav className="discovery-shortcuts" aria-label="Explore donor directories">{[['/cities','Browse cities'],['/countries','Explore countries'],['/common-blood-searches','Find blood donors'],['/common-organ-searches','Find organ donors'],['/guides','Read the guides'],['/network','Network & data']].map(([href,label])=><a key={href} href={href}>{label}<ArrowUpRight size={16}/></a>)}</nav>
+          <DiscoveryResultSummary country={region.country}/>
           <DiscoveryReadingRoom />
           {children || <div className="px-8 pb-8"><a href="/cities" className="font-semibold text-rose-700">View active donor locations →</a></div>}
         </div>}

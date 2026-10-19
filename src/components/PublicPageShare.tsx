@@ -1,5 +1,5 @@
 "use client";
-import {useState} from 'react';
+import React,{useState} from 'react';
 import {Share2,Check} from 'lucide-react';
 export default function PublicPageShare({title}:{title:string}){
  const [copied,setCopied]=useState(false),[error,setError]=useState('');

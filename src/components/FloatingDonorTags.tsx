@@ -145,7 +145,7 @@ export default function FloatingDonorTags({forcedCountry}:{forcedCountry?:string
           }
 
           if(viewerGeo.lat!==undefined&&viewerGeo.lng!==undefined){params.set('viewerLat',String(viewerGeo.lat));params.set('viewerLng',String(viewerGeo.lng));}
-          const discovery=await discoverDonors('/api/public/donors',params);
+          const discovery=await discoverDonors('/api/public/donors',params,undefined,fetch,{report:false});
           const payload=discovery.payload;effectiveQuery=discovery.params;
           if(!cancelled&&discovery.notice)setDiscoveryNotice(discovery.notice);
           const rows = payload.data || [];

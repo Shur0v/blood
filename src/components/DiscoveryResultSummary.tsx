@@ -1,0 +1,9 @@
+"use client";
+import React,{useEffect,useState} from 'react';
+import {DISCOVERY_RESULT_EVENT,readDiscoverySnapshots,type DiscoverySnapshot} from '../lib/discoveryState';
+export default function DiscoveryResultSummary({country}:{country:string}){
+ const [snapshots,setSnapshots]=useState<DiscoverySnapshot[]>([]);
+ useEffect(()=>{const sync=()=>setSnapshots(readDiscoverySnapshots());sync();window.addEventListener(DISCOVERY_RESULT_EVENT,sync);return()=>window.removeEventListener(DISCOVERY_RESULT_EVENT,sync);},[]);
+ const current=snapshots.filter(row=>row.country===country&&row.kind!=='request');
+ return <section className="px-8 py-6 text-sm leading-7 text-slate-600" aria-label="Your discovery results"><h3 className="font-semibold text-slate-900">Understand your results</h3><p>Country pages stay in their selected country. Your donation-category filters stay selected. Location estimates can be approximate; availability and medical suitability need direct confirmation.</p>{current.map(row=><p key={row.kind} role="status">{row.kind==='blood'?'Blood donor search':'Organ pledge search'}: {row.empty?'no matching entries for the current location and filters.':row.scope==='country'?'showing matching entries across '+(country||'the selected country')+'.':row.scope==='global'?'showing matching entries without a selected country.':'showing entries matching your search.'} {row.empty?'Try another recorded city or change your filters yourself.':''}</p>)}<p className="mt-3">Other locations are browsing suggestions, not a match for your current request. <a href="/cities" className="font-semibold text-rose-700 underline">Browse cities</a> · <a href="/countries" className="font-semibold text-rose-700 underline">Explore other countries</a></p><p className="mt-3"><a href="/india" className="font-semibold text-rose-700 underline">India directory</a> · <a href="/pakistan" className="font-semibold text-rose-700 underline">Pakistan directory</a></p></section>;
+}

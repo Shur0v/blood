@@ -1,0 +1,14 @@
+import {NEARBY_COUNTRY_MAP,normalizeCountryToken} from './geoCountry';
+export type OrderingContext={sort:'NEWEST'|'NEARBY';viewerCity?:string;viewerCountry?:string;viewerLat?:number;viewerLng?:number;search?:string};
+type Located={location_city:string;location_country:string;internal_lat?:number;internal_lng?:number};
+export function distanceScore(lat:number|undefined,lng:number|undefined,otherLat:number|undefined,otherLng:number|undefined){if([lat,lng,otherLat,otherLng].some(value=>value===undefined||!Number.isFinite(value)))return Infinity;const rad=(n:number)=>n*Math.PI/180;return Math.acos(Math.min(1,Math.max(-1,Math.sin(rad(lat!))*Math.sin(rad(otherLat!))+Math.cos(rad(lat!))*Math.cos(rad(otherLat!))*Math.cos(rad(otherLng!-lng!)))));}
+export function compareDonors(a:Located&{id:string;source_type:string;created_at:Date;sort_at:Date},b:typeof a,ctx:OrderingContext){
+ if(ctx.sort==='NEARBY'&&ctx.viewerLat!==undefined&&ctx.viewerLng!==undefined){const difference=distanceScore(ctx.viewerLat,ctx.viewerLng,a.internal_lat,a.internal_lng)-distanceScore(ctx.viewerLat,ctx.viewerLng,b.internal_lat,b.internal_lng);if(difference)return difference;}
+ if(ctx.search?.toLowerCase().includes('community')&&(a.source_type==='COMMUNITY')!==(b.source_type==='COMMUNITY'))return a.source_type==='COMMUNITY'?-1:1;
+ if(ctx.sort==='NEWEST'){const rank=(source:string)=>source==='REGISTERED'?0:source==='MANUAL'?1:2;return rank(a.source_type)-rank(b.source_type)||b.created_at.getTime()-a.created_at.getTime()||b.id.localeCompare(a.id);}
+ const cityRank=(row:Located)=>ctx.viewerCity&&row.location_city.toLowerCase()===ctx.viewerCity.toLowerCase()?0:1;
+ const country=normalizeCountryToken(ctx.viewerCountry),nearby=NEARBY_COUNTRY_MAP[country]||[];
+ const countryRank=(row:Located)=>country&&normalizeCountryToken(row.location_country)===country?0:nearby.includes(normalizeCountryToken(row.location_country))?1:2;
+ return cityRank(a)-cityRank(b)||countryRank(a)-countryRank(b)||a.location_country.localeCompare(b.location_country)||b.sort_at.getTime()-a.sort_at.getTime()||b.id.localeCompare(a.id);
+}
+export function selectServiceCity<T extends {city:string;country:string;lat:number;lng:number;created_at:Date;id:string}>(cities:T[],ctx:OrderingContext){const lower=(value:string)=>value.toLowerCase();const search=lower(ctx.search||'');const rank=(city:T)=>[search&&(lower(city.city).includes(search)||lower(city.country).includes(search))?0:1,ctx.viewerCity&&lower(city.city)===lower(ctx.viewerCity)?0:1,ctx.viewerCountry&&lower(city.country)===lower(ctx.viewerCountry)?0:1];return [...cities].sort((a,b)=>{const ar=rank(a),br=rank(b);for(let i=0;i<ar.length;i++)if(ar[i]!==br[i])return ar[i]-br[i];return a.created_at.getTime()-b.created_at.getTime()||a.id.localeCompare(b.id);})[0];}

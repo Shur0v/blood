@@ -48,6 +48,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = getPublicBaseUrl();
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: `${baseUrl}/`, changeFrequency: 'daily', priority: 1 },
+    { url: `${baseUrl}/us`, changeFrequency: 'daily', priority: 0.85 },
     { url: `${baseUrl}/blood`, changeFrequency: 'daily', priority: 0.9 },
     { url: `${baseUrl}/organ`, changeFrequency: 'daily', priority: 0.9 },
     { url: `${baseUrl}/organ/donor`, changeFrequency: 'weekly', priority: 0.8 },
@@ -148,7 +149,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       addRoute(programmaticRoutes, `${baseUrl}/organ/request/details/${buildOrganRequestSlug(request)}`, request.created_at, 0.8);
     }
 
-    return [...staticRoutes, ...blogRoutes, ...cityRoutes, ...programmaticRoutes];
+    return [...new Map([...staticRoutes, ...blogRoutes, ...cityRoutes, ...programmaticRoutes].map(route=>[route.url,route])).values()];
   } catch (error) {
     console.error('[sitemap] Falling back to static routes:', error);
     return staticRoutes;

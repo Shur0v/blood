@@ -131,7 +131,7 @@ const readCachedJson = <T,>(key: string): T | null => {
   }
 };
 
-export function HomeExperience({ forcedCountry, locationDirectory }: { forcedCountry?: string; locationDirectory?: React.ReactNode } = {}) {
+export function HomeExperience({ forcedCountry, locationDirectory, regionalFooter }: { forcedCountry?: string; locationDirectory?: React.ReactNode; regionalFooter?:React.ReactNode } = {}) {
   const pathname = usePathname();
   const router = useRouter();
   const profileIntentHandledRef = useRef(false);
@@ -537,7 +537,7 @@ export function HomeExperience({ forcedCountry, locationDirectory }: { forcedCou
         {!isProfileView && currentPage === "terms-conditions" && <FullTermsPage />}
       </main>
 
-      {!isProfileView && <LocalizedSeoFooter forcedCountry={forcedCountry} />}
+      {!isProfileView && (regionalFooter!==undefined ? regionalFooter : <LocalizedSeoFooter forcedCountry={forcedCountry} />)}
 
       {!isProfileView && (
         <Footer

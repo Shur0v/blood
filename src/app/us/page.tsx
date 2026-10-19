@@ -1,14 +1,16 @@
 import type { Metadata } from "next";
+import RegionalSeoFooter from '@/src/components/RegionalSeoFooter';
+import DonorLocationDirectory from '@/src/components/DonorLocationDirectory';
 import { HomeExperience } from "@/src/components/HomeExperience";
 
 export const revalidate = 1800;
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
-  title: "United States Blood Donor Network | Find Urgent Donor Support",
-  description: "Find active blood donors and verified organ donation support in the United States through BloodNet.",
+  title: "United States blood donor directory",
+  description: "Find blood donor listings and organ donation coordination in the United States through BloodNet.",
   alternates: { canonical: "/us" },
 };
 
 export default function UnitedStatesPage() {
-  return <HomeExperience forcedCountry="United States" />;
+  return <HomeExperience forcedCountry="United States" regionalFooter={<RegionalSeoFooter country="United States"/>} locationDirectory={<DonorLocationDirectory country="United States" limit={24}/>}/>;
 }

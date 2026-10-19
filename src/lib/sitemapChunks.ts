@@ -11,4 +11,4 @@ export const getKeywordLandingChunk = (partIndex: number, totalParts = KEYWORD_S
   return KEYWORD_LANDINGS.slice(start, end);
 };
 
-export const REGION_SLUGS = REGIONS.map((region) => region.slug);
+export const REGION_SLUGS = [...REGIONS.map((region) => region.slug), "us"];

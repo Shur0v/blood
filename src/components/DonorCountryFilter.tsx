@@ -13,6 +13,6 @@ export default function DonorCountryFilter({country,onChange,locked=false,onLoca
     </select>
     {!locked&&onLocate&&<button type="button" onClick={onLocate} disabled={locating} className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-full border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 hover:border-rose-300 hover:bg-rose-50 disabled:opacity-60"><LocateFixed className={`h-4 w-4 ${locating?'animate-pulse':''}`}/>{locating?'Confirming location…':'Use precise location'}</button>}
     {locationMessage&&<p role="status" className="mt-2 text-xs leading-5 text-slate-600">{locationMessage}</p>}
-    <p className="mt-2 text-xs leading-5 text-slate-500">{country ? `Prioritising ${country}. If local matches are unavailable, other nearby listings appear below.` : 'Detecting your country automatically. You can also choose it here.'}</p>
+    <p className="mt-2 text-xs leading-5 text-slate-500">{country ? `Prioritising ${country}. Your country and donation-category filters stay selected. Browse other recorded locations here when needed.` : 'Detecting your country automatically. You can also choose it here.'}</p>
   </div>;
 }

@@ -11,16 +11,11 @@ test('discovery keeps local matches and existing blood filters without extra req
   assert.equal(calls.length,1);assert.equal(result.notice,'');assert.equal(result.params.get('bloodGroup'),'O-');assert.equal(result.params.get('country'),'India');
 });
 
-test('empty city and country progressively broaden with truthful category labels and stable pagination',async()=>{
-  const calls:URLSearchParams[]=[];
-  const fetcher=(async(input)=>{calls.push(new URL(String(input),'http://localhost').searchParams);return Response.json({success:true,data:calls.length===4?[{id:'alternative',blood_group:'A+'}]:[],pagination:{nextCursor:'16'}});}) as typeof fetch;
-  const result=await discoverDonors('/api/public/donors',new URLSearchParams({country:'Nepal',search:'Empty city',bloodGroup:'O-'}),undefined,fetcher);
-  assert.equal(calls.length,4);assert.equal(calls[1].get('country'),'Nepal');assert.equal(calls[1].get('bloodGroup'),'O-');
-  assert.equal(calls[2].has('country'),false);assert.equal(calls[2].get('bloodGroup'),'O-');assert.equal(calls[3].has('bloodGroup'),false);
-  assert.match(result.notice,/do not match the selected filters/);assert.equal(result.params.get('sort'),'NEARBY');
-  result.params.set('cursor','16');const count=calls.length;
-  await discoverDonors('/api/public/donors',result.params,undefined,fetcher);
-  assert.equal(calls.length,count+1,'Pagination must not restart broader searches');
+test('explicit empty searches keep country and category filters without silent alternatives',async()=>{
+ const calls:URLSearchParams[]=[];const fetcher=(async(input)=>{calls.push(new URL(String(input),'http://localhost').searchParams);return Response.json({success:true,data:[],pagination:{nextCursor:null}});}) as typeof fetch;
+ const result=await discoverDonors('/api/public/donors',new URLSearchParams({country:'Nepal',search:'Empty city',bloodGroup:'O-'}),undefined,fetcher);
+ assert.equal(calls.length,1);assert.equal(result.params.get('country'),'Nepal');assert.equal(result.params.get('bloodGroup'),'O-');assert.equal(result.params.get('search'),'Empty city');assert.match(result.notice,/have not been removed/);
+ result.params.set('cursor','16');await discoverDonors('/api/public/donors',result.params,undefined,fetcher);assert.equal(calls.length,2);
 });
 
 test('network errors never silently broaden filters or fabricate donor data',async()=>{

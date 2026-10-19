@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { Prisma } from '@prisma/client';
 import { getPrisma } from '@/src/backend/config/db';
 import { getActiveBloodDonorCounts } from '@/src/backend/services/donorCounts';
+import {compareDonors,selectServiceCity} from '@/src/lib/donorOrdering';
 import { NEARBY_COUNTRY_MAP, normalizeCountryToken } from '@/src/lib/geoCountry';
 
 export const dynamic = 'force-dynamic';
@@ -143,16 +144,16 @@ export async function GET(req: Request) {
       : Prisma.empty;
     const serviceCitySearchRank = searchLike
       ? Prisma.sql`CASE WHEN usc.city ILIKE ${searchLike} OR usc.country ILIKE ${searchLike} THEN 0 ELSE 1 END`
-      : Prisma.sql`1`;
+      : Prisma.sql`1::integer`;
     const serviceCityViewerCityRank = normalizedViewerCity
       ? Prisma.sql`CASE WHEN LOWER(usc.city) = LOWER(${normalizedViewerCity}) THEN 0 ELSE 1 END`
-      : Prisma.sql`1`;
+      : Prisma.sql`1::integer`;
     const serviceCityViewerCountryRank = normalizedViewerCountry
       ? Prisma.sql`CASE WHEN LOWER(usc.country) = LOWER(${normalizedViewerCountry}) THEN 0 ELSE 1 END`
-      : Prisma.sql`1`;
+      : Prisma.sql`1::integer`;
     const donorViewerCityRank = normalizedViewerCity
       ? Prisma.sql`CASE WHEN LOWER(donors.location_city) = LOWER(${normalizedViewerCity}) THEN 0 ELSE 1 END`
-      : Prisma.sql`1`;
+      : Prisma.sql`1::integer`;
     const donorViewerCountryRank = normalizedViewerCountry
       ? Prisma.sql`CASE
           WHEN LOWER(donors.location_country) = LOWER(${normalizedViewerCountry}) THEN 0
@@ -196,7 +197,7 @@ export async function GET(req: Request) {
             ${serviceCitySearchRank} ASC,
             ${serviceCityViewerCityRank} ASC,
             ${serviceCityViewerCountryRank} ASC,
-            usc.created_at ASC
+            usc.created_at ASC, usc.id ASC
           LIMIT 1
         ) sc ON TRUE
         WHERE u.is_active_donor = true
@@ -268,12 +269,14 @@ export async function GET(req: Request) {
           GROUP BY location_country
         ) dc ON LOWER(dc.location_country) = LOWER(cd.location_country)
         WHERE cd.is_active = true
+         ${bloodGroup ? Prisma.sql`AND FALSE` : Prisma.empty}
         
         ${communityFilterByCountry}
         ${communityFilterBySearch}
       ) AS donors
       ORDER BY
         ${sort === 'NEARBY' && viewerLat !== undefined && viewerLng !== undefined ? Prisma.sql`acos(LEAST(1.0, GREATEST(-1.0, sin(radians(${viewerLat}::float8))*sin(radians(donors.internal_lat)) + cos(radians(${viewerLat}::float8))*cos(radians(donors.internal_lat))*cos(radians(donors.internal_lng-${viewerLng}::float8)))))` : Prisma.sql`NULL::float8`} ASC NULLS LAST,
+        ${hasCommunityKeyword ? Prisma.sql`CASE WHEN donors.is_community THEN 0 ELSE 1 END` : Prisma.sql`1::integer`} ASC,
         CASE WHEN ${sort === 'NEWEST'} THEN
           CASE WHEN ${hasCommunityKeyword} AND donors.is_community THEN -1
             WHEN donors.source_type = 'REGISTERED' THEN 0
@@ -281,13 +284,6 @@ export async function GET(req: Request) {
           ELSE 0 END ASC,
         CASE WHEN ${sort === 'NEWEST'} THEN donors.created_at ELSE NULL END DESC,
         CASE WHEN ${sort === 'NEWEST'} THEN donors.id ELSE NULL END DESC,
-        CASE
-          WHEN ${hasCommunityKeyword} AND donors.is_community THEN 0
-          WHEN donors.is_community AND donors.community_rank = 0 THEN 0
-          WHEN donors.is_community AND donors.community_rank = 2 THEN 2
-          WHEN donors.is_community THEN 1
-          ELSE 1
-        END ASC,
         ${donorViewerCityRank} ASC,
         ${donorViewerCountryRank} ASC,
         donors.location_country ASC,
@@ -322,6 +318,7 @@ export async function GET(req: Request) {
         (SELECT COUNT(*)
          FROM "CommunityDonor" cd
          WHERE cd.is_active = true
+         ${bloodGroup ? Prisma.sql`AND FALSE` : Prisma.empty}
          
          ${communityFilterByCountry}
          ${communityFilterBySearch}
@@ -420,6 +417,7 @@ export async function GET(req: Request) {
           : {}),
       };
       const communityWhere = {
+        ...(bloodGroup ? {id:{in:[] as string[]}} : {}),
         is_active: true,
         ...(normalizedCountry ? { location_country: { equals: normalizedCountry, mode: 'insensitive' as const } } : {}),
         ...(isCommunitySearchOnly
@@ -448,23 +446,26 @@ export async function GET(req: Request) {
       };
 
       const [users, manualRows, communityRows, userCount, manualCount, communityCount, globalCounts] = await Promise.all([
-        prisma.user.findMany({ where: userWhere, orderBy: [{ created_at: 'desc' }, { id: 'desc' }], take: limit + safeOffset + 1,
-          include: { ServiceCities: { where: normalizedCountry ? { country: { equals: normalizedCountry, mode: 'insensitive' } } : undefined, select: { city: true, country: true }, orderBy: { id: 'asc' }, take: 1 } } }),
-        prisma.manualBloodDonor.findMany({ where: manualWhere, orderBy: { created_at: 'desc' }, take: limit + safeOffset + 1 }),
-        prisma.communityDonor.findMany({ where: communityWhere, orderBy: { created_at: 'desc' }, take: limit + safeOffset + 8 }),
+        prisma.user.findMany({ where: userWhere, orderBy: [{ created_at: 'desc' }, { id: 'desc' }], take: sort==='NEARBY'?undefined:limit + safeOffset + 1,
+          include: { ServiceCities: { where: normalizedCountry ? { country: { equals: normalizedCountry, mode: 'insensitive' } } : undefined, select: { id:true,city:true,country:true,lat:true,lng:true,created_at:true } } } }),
+        prisma.manualBloodDonor.findMany({ where: manualWhere, orderBy: [{ created_at: 'desc' },{id:'desc'}], take: sort==='NEARBY'?undefined:limit + safeOffset + 1 }),
+        prisma.communityDonor.findMany({ where: communityWhere, orderBy: { created_at: 'desc' }, take: sort==='NEARBY'?undefined:limit + safeOffset + 8 }),
         prisma.user.count({ where: userWhere }),
         prisma.manualBloodDonor.count({ where: manualWhere }),
         prisma.communityDonor.count({ where: communityWhere }),
         getActiveBloodDonorCounts(),
       ]);
 
+      const orderContext={sort,viewerCity,viewerCountry,viewerLat,viewerLng,search:q};
+      const locatedUsers=users.map(user=>({...user,discoveryCity:selectServiceCity(user.ServiceCities,orderContext)}));
       const merged = [
-        ...users.map((u) => ({
+        ...locatedUsers.map((u) => ({
           id: u.id,
           name: u.name,
           blood_group: u.blood_group,
-          location_city: normalizedCountry ? u.ServiceCities[0]?.city || u.location_city : u.location_city,
-          location_country: normalizedCountry ? u.ServiceCities[0]?.country || u.location_country : u.location_country,
+          location_city:u.discoveryCity?.city||u.location_city,
+          internal_lat:u.discoveryCity?.lat??u.location_lat, internal_lng:u.discoveryCity?.lng??u.location_lng,
+          location_country:u.discoveryCity?.country||u.location_country,
           mobile: u.mobile,
           verification_status: u.verification_status,
           hemoglobin:
@@ -482,6 +483,7 @@ export async function GET(req: Request) {
           id: m.id,
           name: m.name || 'BloodNet Donor',
           blood_group: m.blood_group,
+          internal_lat:m.location_lat,internal_lng:m.location_lng,
           location_city: m.location_city,
           location_country: m.location_country,
           mobile: m.mobile,
@@ -501,6 +503,7 @@ export async function GET(req: Request) {
           id: c.id,
           name: c.organization_name,
           blood_group: null,
+          internal_lat:c.location_lat,internal_lng:c.location_lng,
           location_city: c.location_city,
           location_country: c.location_country,
           mobile: c.mobile,
@@ -513,46 +516,12 @@ export async function GET(req: Request) {
           is_community: true,
           community_rank: 1,
         })),
-      ].sort((a, b) => {
-        if (hasCommunityKeyword) {
-          if (a.source_type === 'COMMUNITY' && b.source_type !== 'COMMUNITY') return -1;
-          if (a.source_type !== 'COMMUNITY' && b.source_type === 'COMMUNITY') return 1;
-        }
-        if (sort === 'NEWEST') {
-          const rank = (source: string) => source === 'REGISTERED' ? 0 : source === 'MANUAL' ? 1 : 2;
-          return rank(a.source_type) - rank(b.source_type) || b.created_at.getTime() - a.created_at.getTime() || b.id.localeCompare(a.id);
-        }
-        let aCityRank = 1, bCityRank = 1;
-        let aCountryRank = 1, bCountryRank = 1;
-
-        if (normalizedViewerCity) {
-          if (a.location_city?.toLowerCase() === normalizedViewerCity) aCityRank = 0;
-          if (b.location_city?.toLowerCase() === normalizedViewerCity) bCityRank = 0;
-        }
-
-        if (normalizedViewerCountry) {
-          const aCountry = normalizeCountryToken(a.location_country);
-          const bCountry = normalizeCountryToken(b.location_country);
-          if (aCountry === normalizeCountryToken(normalizedViewerCountry)) aCountryRank = 0;
-          else if (nearbyCountries.includes(aCountry)) aCountryRank = 1;
-
-          if (bCountry === normalizeCountryToken(normalizedViewerCountry)) bCountryRank = 0;
-          else if (nearbyCountries.includes(bCountry)) bCountryRank = 1;
-        }
-
-        if (aCityRank !== bCityRank) return aCityRank - bCityRank;
-        if (aCountryRank !== bCountryRank) return aCountryRank - bCountryRank;
-        
-        const countryCompare = (a.location_country || '').localeCompare(b.location_country || '');
-        if (countryCompare !== 0) return countryCompare;
-
-        return b.sort_at.getTime() - a.sort_at.getTime() || b.id.localeCompare(a.id);
-      });
+      ].sort((a,b)=>compareDonors(a,b,orderContext));
 
       const slice = merged.slice(safeOffset, safeOffset + limit + 1);
       const hasMore = slice.length > limit;
       const data = slice.slice(0, limit);
-      const publicData = data;
+      const publicData = data.map(({internal_lat,internal_lng,...row})=>row);
       const total = userCount + manualCount + communityCount;
       const globalTotal = globalCounts.total;
 

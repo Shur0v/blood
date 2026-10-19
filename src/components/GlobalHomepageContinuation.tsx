@@ -6,6 +6,8 @@ import { HomeExperience } from "@/src/components/HomeExperience";
 import { useEffect, useState } from 'react';
 import { isDiscoveryPath } from '@/src/lib/discoveryRoutes';
 
+import {getRegionBySlug} from '@/src/lib/regions';
+
 const EXCLUDED_PREFIXES = ["/api", "/admin-dashboard", "/dashboard"];
 const EXCLUDED_EXACT = new Set([
   "/",
@@ -34,7 +36,7 @@ export default function GlobalHomepageContinuation() {
   useEffect(()=>{setEmbedded(window.self!==window.top);},[]);
 
   const shouldRender = useMemo(() => {
-    if (isDiscoveryPath(pathname)) return false;
+    if (isDiscoveryPath(pathname)||getRegionBySlug(pathname.slice(1))) return false;
     if (EXCLUDED_EXACT.has(pathname)) return false;
     if (EXCLUDED_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`))) return false;
     return true;

@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import RegionalSeoFooter from '@/src/components/RegionalSeoFooter';
+import DonorLocationDirectory from '@/src/components/DonorLocationDirectory';
+import {getDonorLocations} from '@/src/backend/services/donorLocations';
 import { HomeExperience } from "@/src/components/HomeExperience";
 import { getRegionBySlug } from "@/src/lib/regions";
 import { stringifyJsonLd } from "@/src/lib/aiSeo";
@@ -15,21 +18,16 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   }
 
   const country = config.country;
+  let cities:number|null=null;try{cities=(await getDonorLocations()).filter(row=>row.country.toLowerCase()===country.toLowerCase()).length;}catch{}
+  const description=cities===null?'Explore BloodNet donor listings and local coordination in '+country+'. Check current directory coverage.':cities?'Browse BloodNet listings serving '+cities+' recorded cities in '+country+'. Find local blood donor entries and confirm availability with the collecting service.':'Explore BloodNet coverage in '+country+'. No participating city listings are currently recorded.';
   return {
-    title: `${country} Blood Donor List | Emergency Blood & Organ Donors`,
-    description: `Blood donor list in major cities of ${country}. Find emergency blood donors by blood group and verified organ donor support in ${country}.`,
-    keywords: [
-
-
-      `Emergency O+ donors in ${country}`,
-      `Emergency AB- donors in ${country}`,
-      `Emergency blood donors in ${country}`,
-    ],
+    title: `${country} blood donor directory`,
+    description,
     alternates: { canonical: `/${config.slug}` },
     openGraph: {
       title: `${country} Blood Donor List | BloodNet`,
-      description: `Emergency blood donor list in ${country} with city-level search and verified donor support.`,
-      url: `https://bloodnet.live/${config.slug}`,
+      description,
+      url: `${getPublicBaseUrl()}/${config.slug}`,
     },
   };
 }
@@ -45,7 +43,7 @@ export default async function RegionalLandingPage({ params }: { params: Promise<
   const collectionSchema = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
-    name: `${config.country} Emergency Blood Donor Pages`,
+    name: `${config.country} donor directory`,
     url: `${baseUrl}/${config.slug}`,
     about: [
       { "@type": "Thing", name: "Blood donation" },
@@ -66,7 +64,7 @@ export default async function RegionalLandingPage({ params }: { params: Promise<
           ]),
         }}
       />
-      <HomeExperience forcedCountry={config.country} />
+      <HomeExperience forcedCountry={config.country} regionalFooter={<RegionalSeoFooter country={config.country}/>} locationDirectory={<DonorLocationDirectory country={config.country} limit={24}/>}/>
     </>
   );
 }

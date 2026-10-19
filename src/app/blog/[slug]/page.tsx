@@ -167,12 +167,6 @@ async function loadBlogDetail({ params }: BlogPageProps) {
           <h1 className="text-3xl font-semibold tracking-tight text-[#0F172A] md:text-5xl">{localizedTitle}</h1>
           <p className="mt-4 text-sm leading-7 text-slate-500">{post.author_type==='USER'?'A community contribution':'Published by BloodNet editorial'}. Publication is not an individual medical assessment. Use the original sources and consult an appropriate qualified professional for personal medical decisions.</p>
 
-          {post.primary_keyword && (
-            <p className="mt-4 text-xs font-bold uppercase tracking-wide text-red-600">
-              Primary keyword: {post.primary_keyword}
-            </p>
-          )}
-
           {post.author_type === "USER" && !post.is_anonymous && author && (
             <div className="mt-6 flex items-center gap-3 rounded-2xl border border-gray-200 bg-gray-50 p-3">
               <img

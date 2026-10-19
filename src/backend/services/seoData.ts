@@ -253,43 +253,24 @@ export const getOrganTypesWithData = async () => {
 
 export const getRelatedBloodGroups = (current: BloodGroup) => BLOOD_GROUPS.filter((group) => group !== current);
 
+// All public surfaces use the same listing sources and geographic definitions.
 export const getPublicBotStats = async () => {
   const prisma = getPrisma();
-  const [
-    activeDonorCounts,
-    manualOrganDonors,
-    verifiedOrganRequests,
-    cityRows,
-  ] = await Promise.all([
-    getActiveBloodDonorCounts(),
-    prisma.manualOrganDonor.count(),
-    prisma.organRequest.count({ where: { status: "VERIFIED" } }),
-    prisma.$queryRaw<Array<{ city: string; country: string }>>`
-      SELECT city, country FROM (
-        SELECT u.location_city AS city, u.location_country AS country FROM "User" u WHERE u.is_active_donor = true
-        UNION
-        SELECT usc.city, usc.country FROM "UserServiceCity" usc
-        JOIN "User" u ON u.id = usc.user_id
-        WHERE u.is_active_donor = true
-        UNION
-        SELECT mbd.location_city AS city, mbd.location_country AS country FROM "ManualBloodDonor" mbd WHERE mbd.is_active_donor = true
-        UNION
-        SELECT mod.location_city AS city, mod.location_country AS country FROM "ManualOrganDonor" mod
-      ) regions
-    `,
+  const [counts, locations, manualOrganDonors, activePledges, verifiedOrganRequests] = await Promise.all([
+    getActiveBloodDonorCounts(), getDonorLocations(), prisma.manualOrganDonor.count(),
+    prisma.organPledge.count({where:{is_active:true,User:{is_active_donor:true}}}),
+    prisma.organRequest.count({where:{status:'VERIFIED'}}),
   ]);
-  const activeBloodDonors = activeDonorCounts.total;
-
   return {
-    registeredUsers: activeBloodDonors,
-    registeredDonors: activeBloodDonors,
-    activeBloodDonors,
-    organDonorEntries: manualOrganDonors,
-    verifiedOrganRequests,
-    activeCountries: new Set(cityRows.map((row) => row.country)).size,
-    activeCities: new Set(cityRows.map((row) => `${row.country}::${row.city}`)).size,
-    publicCountingPolicy:
-      "Public statistics count active registered, manual, and community donor entries once per listing, regardless of service-city count.",
-    lastUpdated: new Date().toISOString(),
+    schemaVersion:2,
+    // Retain established fields, with their literal registered-account meaning.
+    registeredUsers:counts.registered, registeredDonors:counts.registered,
+    registeredAccounts:counts.registered, manualDonorEntries:counts.manual, communityListings:counts.community,
+    activeBloodDonors:counts.total, totalListingCount:counts.total,
+    organDonorEntries:manualOrganDonors+activePledges, verifiedOrganRequests,
+    activeCountries:new Set(locations.map(row=>row.country.toLowerCase())).size, activeCities:locations.length,
+    publicCountingPolicy:'Active registered accounts, manual donor entries and community organisation listings are counted once per source listing, not once per service city. Community listings are not a headcount of individuals. Geographic coverage includes participating blood and organ entries. Counts are not completed donations or available blood units.',
+    lastUpdated:locations.length?new Date(Math.max(...locations.map(row=>row.updatedAt.getTime()))).toISOString():null,
+    generatedAt:new Date().toISOString(),
   };
 };
