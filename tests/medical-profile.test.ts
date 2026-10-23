@@ -1152,10 +1152,16 @@ test('donor-country coverage updates from real active individuals and new regist
  const db=getPrisma(),suffix=randomUUID(),country='Coverage '+suffix,inactive='Inactive '+suffix,community='Organisation '+suffix,service='Service '+suffix;
  const user=await newPatient();await db.user.update({where:{id:user.id},data:{location_country:country}});
  await db.userServiceCity.create({data:{user_id:user.id,city:'Service city',country:service,formatted_location:'Synthetic',lat:10,lng:10,provider_place_id:randomUUID(),locked_until:new Date()}});
+ for(const city of ['Home service one','Home service two'])await db.userServiceCity.create({data:{user_id:user.id,city,country,formatted_location:'Synthetic',lat:10,lng:10,provider_place_id:randomUUID(),locked_until:new Date()}});
+ await db.manualBloodDonor.create({data:{name:'Active manual',mobile:randomUUID(),blood_group:'B-',location_city:'City',location_country:country,location_lat:10,location_lng:10,source:'TEST',added_by_admin:'TEST'}});
+ await db.manualOrganDonor.create({data:{name:'Manual organ',mobile:randomUUID(),organ_type:'Kidney',location_city:'City',location_country:country,location_lat:10,location_lng:10,source:'TEST',added_by_admin:'TEST'}});
  await db.manualBloodDonor.create({data:{name:'Inactive',mobile:randomUUID(),blood_group:'B-',location_city:'City',location_country:inactive,location_lat:10,location_lng:10,is_active_donor:false,source:'TEST',added_by_admin:'TEST'}});
  await db.communityDonor.create({data:{organization_name:'Community only',mobile:randomUUID(),location_city:'City',location_country:community,location_lat:10,location_lng:10,source:'TEST',added_by_admin:'TEST'}});
  let response=await donorCountries(),body=await response.json();assert.equal(response.status,200);assert.ok(body.data.includes(country));assert.ok(body.data.includes(service));assert.ok(!body.data.includes(inactive));assert.ok(!body.data.includes(community));assert.ok(body.data.every((value:any)=>typeof value==='string'));
+ assert.equal(body.counts[country],3,'Count each registered account once per country, plus individual manual entries');assert.equal(body.counts[service],1);assert.ok(!JSON.stringify(body).includes('latitude'));assert.ok(!JSON.stringify(body).includes('longitude'));
  const newCountry='New registration '+suffix,newUser=await newPatient();await db.user.update({where:{id:newUser.id},data:{location_country:newCountry}});body=await(await donorCountries()).json();assert.ok(body.data.includes(newCountry));assert.equal(new Set(body.data.map((value:string)=>value.toLowerCase())).size,body.data.length);
+ assert.equal(body.counts[newCountry],1);
+ await db.user.update({where:{id:user.id},data:{is_active_donor:false}});body=await(await donorCountries()).json();assert.equal(body.counts[country],2);assert.ok(!body.data.includes(service));
 });
 
 test('expanded blood discovery fills pages local-first, retains categories and matches SQL recovery without duplicate cards',integration,async()=>{

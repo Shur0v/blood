@@ -2,15 +2,18 @@ import { Prisma } from '@prisma/client';
 import { getPrisma } from '../config/db';
 
 // Individual donor coverage; organisations alone do not create country options.
-export async function getDonorCountries() {
-  const rows=await getPrisma().$queryRaw<{country:string}[]>(Prisma.sql`
-    SELECT MIN(TRIM(country)) AS country FROM (
-      SELECT location_country AS country FROM "User" WHERE is_active_donor=true
-      UNION ALL SELECT sc.country FROM "UserServiceCity" sc JOIN "User" u ON u.id=sc.user_id WHERE u.is_active_donor=true
-      UNION ALL SELECT location_country FROM "ManualBloodDonor" WHERE is_active_donor=true
-      UNION ALL SELECT location_country FROM "ManualOrganDonor"
+export async function getDonorCountryCoverage() {
+  return getPrisma().$queryRaw<{country:string;count:number}[]>(Prisma.sql`
+    SELECT MIN(TRIM(country)) AS country, COUNT(DISTINCT donor_key)::int AS count FROM (
+      SELECT location_country AS country, 'registered:' || id AS donor_key FROM "User" WHERE is_active_donor=true
+      UNION ALL SELECT sc.country, 'registered:' || u.id FROM "UserServiceCity" sc JOIN "User" u ON u.id=sc.user_id WHERE u.is_active_donor=true
+      UNION ALL SELECT location_country, 'manual-blood:' || id FROM "ManualBloodDonor" WHERE is_active_donor=true
+      UNION ALL SELECT location_country, 'manual-organ:' || id FROM "ManualOrganDonor"
     ) coverage WHERE TRIM(country)<>'' GROUP BY LOWER(TRIM(country)) ORDER BY LOWER(TRIM(country))
-  `);return rows.map(row=>row.country);
+  `);
+}
+export async function getDonorCountries() {
+  return (await getDonorCountryCoverage()).map(row=>row.country);
 }
 
 // Server-only approximate origin. A one-donor country must not expose that
