@@ -15,6 +15,7 @@ const { createRoot } = await import('react-dom/client');
 const { PathnameContext } = await import('next/dist/shared/lib/hooks-client-context.shared-runtime.js');
 const { default: Hero } = await import('../src/components/Hero.tsx');
 let fail = false;
+let paginate=false;
 const calls = [];
 globalThis.fetch = async input => {
   const url = new URL(String(input), 'http://localhost');
@@ -25,7 +26,8 @@ globalThis.fetch = async input => {
     calls.push(url.searchParams);
     if (fail) throw new Error('Synthetic network outage');
     const country=url.searchParams.get('country');
-    return Response.json({success:true,data:country==='Anguilla'?[]:[{id:'donor-1',name:country==='India'?'Odisha volunteer':'Bangladesh volunteer',mobile:'+8801000000000',blood_group:'O+',location_city:country==='India'?'Odisha':'Dhaka',location_country:country}],pagination:{nextCursor:null,total:1},meta:{globalTotal:11463}});
+    const city=url.searchParams.get('search')||url.searchParams.get('viewerCity')||'Odisha';
+    return Response.json({success:true,data:country==='Anguilla'?[]:[{id:url.searchParams.has('cursor')?'donor-2':'donor-1',name:country==='India'?`${city} volunteer`:'Bangladesh volunteer',mobile:'+8801000000000',blood_group:url.searchParams.get('bloodGroup')||'O+',location_city:country==='India'?city:'Dhaka',location_country:country}],pagination:{nextCursor:paginate&&!url.searchParams.has('cursor')?'next-page':null,total:paginate?2:1},meta:{globalTotal:11463}});
   }
   return Response.json({success:true,data:{adsRuntimeEnabled:false,adUnits:[]}});
 };
@@ -41,17 +43,30 @@ assert.match(document.body.textContent,/Bangladesh volunteer/);
 await render({key:'odisha',forcedCountry:'India',initialCity:'Odisha',initialGroup:'O+',headingLevel:2});
 await act(async()=>{await new Promise(resolve=>setTimeout(resolve,30));});
 const params=calls.at(-1);
-assert.equal(params.get('country'),'India');assert.equal(params.get('viewerCity'),'Odisha');assert.equal(params.has('search'),false);assert.equal(params.get('expand'),'nearby');assert.equal(params.get('bloodGroup'),'O+');assert.equal(params.get('sort'),'NEARBY');
+assert.equal(params.get('country'),'India');assert.equal(params.get('viewerCity'),'Odisha');assert.equal(params.get('search'),'Odisha');assert.equal(params.get('preferSearch'),'true');assert.equal(params.get('expand'),'nearby');assert.equal(params.get('bloodGroup'),'O+');assert.equal(params.get('sort'),'NEARBY');
 assert.equal(params.has('viewerLat'),false,'A Mumbai visitor cannot move Odisha matches below their current city');
 assert.match(document.body.textContent,/Odisha volunteer/);
 assert.equal(document.querySelector('button[data-analytics-component="Blood Filter O+"]').getAttribute('aria-pressed'),'true');
 assert.equal(document.querySelectorAll('h1').length,0,'Directory integration keeps the server page H1 unique');
+for(const city of ['Chennai','Chandigarh'])for(const group of ['A+','A-','B+','B-','AB+','AB-','O+','O-']){
+ await render({key:city+group,forcedCountry:'India',initialCity:city,initialGroup:group,headingLevel:2});
+ const query=calls.at(-1);assert.equal(query.get('search'),city);assert.equal(query.get('viewerCity'),city);assert.equal(query.get('bloodGroup'),group);assert.equal(query.get('country'),'India');assert.equal(query.get('preferSearch'),'true');assert.equal(query.has('viewerLat'),false);
+ assert.equal(document.querySelector('input[type="search"]').value,city);assert.equal(document.querySelector(`button[data-analytics-component="Blood Filter ${group}"]`).getAttribute('aria-pressed'),'true');
+}
+await act(async()=>{document.querySelector('button[data-analytics-component="Blood Filter All"]').click();await new Promise(resolve=>setTimeout(resolve,30));});
+assert.equal(calls.at(-1).get('search'),'Chandigarh');assert.equal(calls.at(-1).has('bloodGroup'),false,'Switching to All groups preserves the route city search');
+paginate=true;
+await render({key:'all-dhaka',forcedCountry:'Bangladesh',initialCity:'Dhaka',headingLevel:2});
+assert.equal(calls.at(-1).get('search'),'Dhaka');assert.equal(calls.at(-1).has('bloodGroup'),false,'All-groups city pages keep the city search without adding a group');
+await act(async()=>{document.querySelector('button[data-analytics-component="Blood Donor Show More"]').click();await new Promise(resolve=>setTimeout(resolve,30));});
+assert.equal(calls.at(-1).get('cursor'),'next-page');assert.equal(calls.at(-1).get('search'),'Dhaka');assert.equal(calls.at(-1).get('preferSearch'),'true');assert.equal(calls.at(-1).has('bloodGroup'),false);
+paginate=false;
 fail=true;
 await render({key:'outage'});
 await act(async()=>{await new Promise(resolve=>setTimeout(resolve,30));});
 assert.match(document.body.textContent,/Bangladesh volunteer/,'A successful statistics response must not prevent cached donor cards from rendering');
 assert.match(document.body.textContent,/Showing saved results/);
-localStorage.removeItem('bloodnet_public_donors_cache:v7:Bangladesh::all:');
+localStorage.removeItem('bloodnet_public_donors_cache:v8:Bangladesh::all:');
 await render({key:'uncached-outage'});
 await act(async()=>{await new Promise(resolve=>setTimeout(resolve,30));});
 assert.match(document.body.textContent,/Donor cards could not be loaded/);
@@ -60,4 +75,4 @@ fail=false;
 await act(async()=>{[...document.querySelectorAll('button')].find(button=>button.textContent.includes('Retry donor search')).click();await new Promise(resolve=>setTimeout(resolve,30));});
 assert.match(document.body.textContent,/Bangladesh volunteer/);
 await act(async()=>root.unmount());dom.window.close();
-console.log('Donor feed passed: selected-country diagnosis, country change, route-scoped Odisha O+ filters, shared cards, cached recovery, honest errors and retry.');
+console.log('Donor feed passed: all eight Chennai/Chandigarh groups use the route city search; All groups and pagination retain it; country selection, shared cards, cached recovery and retry remain intact.');
