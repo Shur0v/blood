@@ -20,18 +20,18 @@ await act(async()=>{await new Promise(resolve=>setTimeout(resolve,30));});
 const options=()=>[...document.querySelectorAll('option')].filter(option=>option.value).map(option=>option.value);
 assert.deepEqual(options(),countries);assert.equal(document.querySelector('[data-country]').dataset.country,'Bangladesh');assert.equal(localStorage.getItem('bloodnet_donor_country_v1'),null);assert.equal(reads,1,'Multiple consumers share one coverage fetch');
 const labels=()=>[...document.querySelectorAll('option')].filter(option=>option.value).map(option=>option.textContent);
-assert.deepEqual(labels(),['Bangladesh (1,234)','India (56)']);
+assert.deepEqual(labels(),['Bangladesh','India'],'Counts remain available in the response but are not displayed');
 await act(async()=>{const select=document.querySelector('select');select.value='India';select.dispatchEvent(new Event('change',{bubbles:true}));});
 assert.equal(document.querySelector('[data-country]').dataset.country,'India');assert.equal(localStorage.getItem('bloodnet_donor_country_v1'),'India','Selection stores the country name without the displayed count');
 const now=Date.now;try{
  countries=['Bangladesh','India','Nepal'];counts={Bangladesh:1235,India:56,Nepal:1};Date.now=()=>now()+16000;
  await act(async()=>{window.dispatchEvent(new Event('focus'));await new Promise(resolve=>setTimeout(resolve,30));});
  assert.deepEqual(options(),countries,'New registrations refresh the dropdown without a deployment');
- assert.deepEqual(labels(),['Bangladesh (1,235)','India (56)','Nepal (1)']);
+ assert.deepEqual(labels(),['Bangladesh','India','Nepal']);
  fail=true;Date.now=()=>now()+32000;
  await act(async()=>{window.dispatchEvent(new Event('focus'));await new Promise(resolve=>setTimeout(resolve,30));});
  assert.deepEqual(options(),countries,'A refresh failure retains known coverage instead of inventing countries');
- assert.deepEqual(labels(),['Bangladesh (1,235)','India (56)','Nepal (1)'],'A refresh failure preserves previously confirmed counts');
+ assert.deepEqual(labels(),['Bangladesh','India','Nepal'],'A refresh failure preserves country-only labels');
 }finally{Date.now=now;}
 await act(async()=>root.unmount());dom.window.close();
 console.log('Donor country UI passed: database-only options, invalid preference recovery, shared fetch, new-country refresh and outage preservation.');
