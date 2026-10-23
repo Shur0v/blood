@@ -71,11 +71,11 @@ async function resolveUiTheme() {
     const prisma = getPrisma();
     const settings = await prisma.platformSettings.findFirst({
       orderBy: [{ updated_at: "desc" }, { id: "desc" }],
-      select: { ui_theme: true, discovery_visible:true },
+      select: { ui_theme: true, discovery_visible:true,patient_id_visible:true },
     });
-    return {theme:normalizeUiTheme(settings?.ui_theme),discoveryVisible:settings?.discovery_visible??true};
+    return {theme:normalizeUiTheme(settings?.ui_theme),discoveryVisible:settings?.discovery_visible??true,patientIdVisible:settings?.patient_id_visible??false};
   } catch {
-    return {theme:DEFAULT_UI_THEME,discoveryVisible:true};
+    return {theme:DEFAULT_UI_THEME,discoveryVisible:true,patientIdVisible:false};
   }
 }
 
@@ -94,7 +94,7 @@ export default async function RootLayout({
 }>) {
   const [uiSettings, publicBotStats] = await Promise.all([resolveUiTheme(), resolvePublicBotStats()]);
   return (
-    <html lang="en" data-theme={uiSettings.theme} data-discovery-visible={String(uiSettings.discoveryVisible)}>
+    <html lang="en" data-theme={uiSettings.theme} data-discovery-visible={String(uiSettings.discoveryVisible)} data-patient-id-visible={String(uiSettings.patientIdVisible)}>
 
       <head><link rel="preload" href="/fonts/inter/latin.woff2" as="font" type="font/woff2" crossOrigin="anonymous"/></head>
       <body className="antialiased">

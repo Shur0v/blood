@@ -381,3 +381,7 @@ body::-webkit-scrollbar,
 .admin-shell input,.admin-shell textarea,.admin-shell select { min-width:0; }
 
 }
+
+/* Patient IDs remain functional while their user-facing card is optionally hidden. */
+.patient-id-user-card { display: none; }
+html[data-patient-id-visible='true'] .patient-id-user-card { display: block; }

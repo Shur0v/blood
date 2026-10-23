@@ -374,6 +374,7 @@ model MedicalAidRequest {
 
 model PlatformSettings {
   discovery_visible Boolean @default(true)
+  patient_id_visible Boolean @default(false)
   id                String   @id @default(uuid())
   total_raised      Float    @default(0)
   total_spent       Float    @default(0)

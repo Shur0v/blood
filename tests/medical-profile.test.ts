@@ -116,6 +116,7 @@ before(async () => {
   const legacyPublicationId=randomUUID(),legacyBio='Legacy text preserved for admin review, without automatically publishing an existing donor profile.';
   await sql.query('INSERT INTO "PublicDonorProfile" (id,user_id,slug,is_published,bio,consent_version,consented_at,updated_at) VALUES ($1,$2,$3,true,$4,$5,NOW(),NOW())',[legacyPublicationId,migratedUserId,'migration-review-'+legacyPublicationId,legacyBio,'2026-10-16-v1']);
   await sql.query(readFileSync('prisma/migrations/20261016210000_admin_donor_publication/migration.sql','utf8'));
+  await sql.query(readFileSync('prisma/migrations/20261024090000_patient_id_visibility/migration.sql','utf8'));
   const migratedPublication=(await sql.query('SELECT * FROM "PublicDonorProfile" WHERE id=$1',[legacyPublicationId])).rows[0];
   assert.equal(migratedPublication.is_published,false);assert.equal(migratedPublication.bio,legacyBio);assert.equal(migratedPublication.admin_approved_at,null);assert.ok(migratedPublication.consented_at);
 });
@@ -1120,6 +1121,29 @@ test('discovery visibility saves independently of ads and streams committed chan
  const after=await getPrisma().platformSettings.findFirst({orderBy:[{updated_at:'desc'},{id:'desc'}]});
  if(before){assert.equal(after?.ads_runtime_enabled,before.ads_runtime_enabled);assert.deepEqual(after?.ad_units_json,before.ad_units_json);assert.equal(after?.ui_theme,before.ui_theme);}
  }finally{signal.abort();await reader.cancel();}
+});
+
+test('patient ID visibility defaults hidden, is admin-only and streams without changing identifiers or other settings',integration,async()=>{
+ const {GET,PATCH}=await import('../src/app/api/admin/site-controls/route');const {GET:events}=await import('../src/app/api/public/ui-events/route');const {getUiControls}=await import('../src/backend/services/uiControls');
+ const db=getPrisma(),before=await db.platformSettings.findFirst({orderBy:[{updated_at:'desc'},{id:'desc'}]});
+ const ownerBefore=await db.user.findUniqueOrThrow({where:{id:migratedUserId},select:{profile_code:true,profile_code_changed_at:true}}),prescriptions=await db.prescription.count();
+ assert.equal((await getUiControls()).patientIdVisible,false);
+ const request=(value:unknown,role='ADMIN')=>new Request('https://bloodnet.test/api/admin/site-controls',{method:'PATCH',headers:{authorization:'Bearer '+signToken({user_id:role==='USER'?migratedUserId:testAdminId,role}),'Content-Type':'application/json'},body:JSON.stringify(value)});
+ assert.equal((await PATCH(request({patientIdVisible:true},'USER'))).status,403);
+ for(const value of [{},{patientIdVisible:'true'},{patientIdVisible:true,profileCode:'TEST'}])assert.equal((await PATCH(request(value))).status,400);
+ const signal=new AbortController(),stream=await events(new Request('https://bloodnet.test/api/public/ui-events',{signal:signal.signal})),reader=stream.body!.getReader(),decoder=new TextDecoder();let buffer='';
+ const next=async()=>{for(let i=0;i<15;i++){const read=await reader.read();buffer+=decoder.decode(read.value);const values=[...buffer.matchAll(/data: (.+)\n/g)].map(match=>JSON.parse(match[1]));if(values.length){buffer='';return values.at(-1);}}throw Error('Missing visibility update');};
+ try{
+   assert.equal((await next()).patientIdVisible,false);
+   const enabled=await PATCH(request({patientIdVisible:true}));assert.equal(enabled.status,200);assert.equal((await enabled.json()).data.discoveryVisible,before?.discovery_visible??true);
+   for(let i=0;i<3;i++){if((await next()).patientIdVisible===true)break;if(i===2)assert.fail('Patient card did not appear in the live stream');}
+   assert.equal((await(await GET(request({}))).json()).data.patientIdVisible,true);
+   const changed=await PATCH(request({discoveryVisible:false}));assert.equal((await changed.json()).data.patientIdVisible,true,'The discovery switch must not reset patient ID visibility');
+   await next();assert.equal((await PATCH(request({patientIdVisible:false}))).status,200);
+   for(let i=0;i<3;i++){if((await next()).patientIdVisible===false)break;if(i===2)assert.fail('Patient card did not hide in the live stream');}
+   assert.deepEqual(await db.user.findUniqueOrThrow({where:{id:migratedUserId},select:{profile_code:true,profile_code_changed_at:true}}),ownerBefore);assert.equal(await db.prescription.count(),prescriptions);
+   const after=await db.platformSettings.findFirst({orderBy:[{updated_at:'desc'},{id:'desc'}]});if(before){assert.equal(after?.ui_theme,before.ui_theme);assert.deepEqual(after?.ad_units_json,before.ad_units_json);assert.equal(after?.ads_runtime_enabled,before.ads_runtime_enabled);}
+ }finally{signal.abort();await reader.cancel();await PATCH(request({patientIdVisible:false,discoveryVisible:before?.discovery_visible??true}));}
 });
 
 

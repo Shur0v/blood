@@ -7,14 +7,16 @@ import {getPrisma} from '@/src/backend/config/db';
 import {getUiControls} from '@/src/backend/services/uiControls';
 export const GET=withActiveAdmin(async()=>NextResponse.json({success:true,data:await getUiControls()},{headers:privateHeaders}));
 export const PATCH=withActiveAdmin(async(req:Request)=>{
-  const parsed=z.object({discoveryVisible:z.boolean()}).strict().safeParse(await securityJson(req,1024));
-  if(!parsed.success)return NextResponse.json({success:false,message:'Choose whether to show the discovery button.'},{status:400,headers:privateHeaders});
-  await getPrisma().$transaction(async tx=>{
+  const parsed=z.object({discoveryVisible:z.boolean().optional(),patientIdVisible:z.boolean().optional()}).strict().refine(value=>Object.keys(value).length>0).safeParse(await securityJson(req,1024));
+  if(!parsed.success)return NextResponse.json({success:false,message:'Choose a valid visibility setting.'},{status:400,headers:privateHeaders});
+  const controls=await getPrisma().$transaction(async tx=>{
     await tx.$queryRaw`SELECT 1 FROM pg_advisory_xact_lock(hashtextextended('bloodnet-site-controls',0))`;
     const current=await tx.platformSettings.findFirst({orderBy:[{updated_at:'desc'},{id:'desc'}],select:{id:true}});
-    if(current)await tx.platformSettings.update({where:{id:current.id},data:{discovery_visible:parsed.data.discoveryVisible}});
-    else await tx.platformSettings.create({data:{discovery_visible:parsed.data.discoveryVisible}});
-    await tx.$queryRaw`SELECT 1 FROM pg_notify('bloodnet_ui_controls',${JSON.stringify(parsed.data)})`;
+    const data={...(parsed.data.discoveryVisible!==undefined?{discovery_visible:parsed.data.discoveryVisible}:{}),...(parsed.data.patientIdVisible!==undefined?{patient_id_visible:parsed.data.patientIdVisible}:{})};
+    const row=current?await tx.platformSettings.update({where:{id:current.id},data}):await tx.platformSettings.create({data});
+    const value={discoveryVisible:row.discovery_visible,patientIdVisible:row.patient_id_visible};
+    await tx.$queryRaw`SELECT 1 FROM pg_notify('bloodnet_ui_controls',${JSON.stringify(value)})`;
+    return value;
   });
-  return NextResponse.json({success:true,data:parsed.data},{headers:privateHeaders});
+  return NextResponse.json({success:true,data:controls},{headers:privateHeaders});
 });

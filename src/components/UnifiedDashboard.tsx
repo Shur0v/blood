@@ -639,7 +639,7 @@ export default function UnifiedDashboard({
               </div>
               </div>
               </div>
-              {profile?.id && <ProfileIdentityCard key={profile.id} userId={profile.id} initialCode={profile.profileCode} nextChangeAt={profile.profileCodeNextChangeAt} readOnly={mode === 'admin'} onSessionExpired={onSessionExpired} />}
+              {profile?.id && <ProfileIdentityCard key={profile.id} userId={profile.id} initialCode={profile.profileCode} nextChangeAt={profile.profileCodeNextChangeAt} readOnly={mode === 'admin'} visibilityControlled={mode !== 'admin'} onSessionExpired={onSessionExpired} />}
             </div>
             <div className="min-w-0 lg:order-2">
               {profile && (

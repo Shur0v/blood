@@ -1,0 +1,36 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {createRequire} from 'node:module';
+import path from 'node:path';
+const {JSDOM}=createRequire(path.resolve(process.env.BLOODNET_UI_TEST_PACKAGE||'package.json'))('jsdom');
+const dom=new JSDOM('<!doctype html><html><body><div id="root"></div></body></html>',{url:'http://localhost',pretendToBeVisual:true});
+for(const key of ['window','document','HTMLElement','Element','Node','Event','CustomEvent','MouseEvent','StorageEvent','localStorage'])globalThis[key]=dom.window[key];
+let copied='';Object.defineProperty(globalThis,'navigator',{value:{userAgent:'jsdom',clipboard:{writeText:async value=>{copied=value;}}},configurable:true});
+globalThis.IS_REACT_ACT_ENVIRONMENT=true;
+const css=readFileSync('src/app/globals.css','utf8'),style=document.createElement('style');style.textContent=css.slice(css.indexOf('/* Patient IDs remain functional'));document.head.append(style);
+const {default:React,act}=await import('react');globalThis.React=React;const {createRoot}=await import('react-dom/client');
+const {default:Control}=await import('../src/components/PatientIdVisibilityControl');const {default:Card}=await import('../src/components/ProfileIdentityCard');const {default:Sync}=await import('../src/components/PublicUiControlsSync');
+const {UI_CONTROLS_STORAGE}=await import('../src/lib/publicUiControls');
+let stream;globalThis.EventSource=class{constructor(){stream=this;}close(){this.closed=true;}};
+let visible=false,fail=false;const requests=[];
+globalThis.fetch=async(url,init={})=>{
+ requests.push({url:String(url),method:init.method||'GET',body:init.body});
+ if(String(url).includes('/profile-id'))return Response.json({success:true,data:{profileCode:'AB12',nextChangeAt:null}});
+ if(init.method==='PATCH'){if(fail)return Response.json({success:false,message:'Visibility could not be saved.'},{status:503});const data=JSON.parse(init.body);assert.deepEqual(Object.keys(data),['patientIdVisible']);visible=data.patientIdVisible;}
+ return Response.json({success:true,data:{discoveryVisible:true,patientIdVisible:visible}});
+};
+const root=createRoot(document.getElementById('root'));
+await act(async()=>{root.render(React.createElement(React.Fragment,null,React.createElement(Control),React.createElement(Sync),React.createElement('div',{id:'self'},React.createElement(Card,{userId:'self',initialCode:'AB12',visibilityControlled:true})),React.createElement('div',{id:'audit'},React.createElement(Card,{userId:'self',initialCode:'AB12',readOnly:true}))));});
+const card=()=>document.querySelector('#self .patient-id-user-card'),button=()=>document.querySelector('[role="switch"]');
+assert.equal(window.getComputedStyle(card()).display,'none','User card is hidden by default');assert.notEqual(window.getComputedStyle(document.querySelector('#audit>div')).display,'none','Admin audit retains the ID card');
+assert.equal(button().getAttribute('aria-checked'),'false');
+await act(async()=>button().click());assert.equal(window.getComputedStyle(card()).display,'block');assert.equal(button().getAttribute('aria-checked'),'true');
+await act(async()=>document.querySelector('#self [aria-label="Copy patient ID"]').click());assert.equal(copied,'AB12','Copy remains functional after revealing the existing card');
+assert.equal(document.querySelector('#self [aria-label="Edit patient ID"]').disabled,false);
+await act(async()=>button().click());assert.equal(window.getComputedStyle(card()).display,'none');
+await act(async()=>stream.onmessage({data:JSON.stringify({patientIdVisible:true})}));assert.equal(window.getComputedStyle(card()).display,'block');assert.equal(button().getAttribute('aria-checked'),'true','A remote admin update changes an already-open profile');
+await act(async()=>window.dispatchEvent(new StorageEvent('storage',{key:UI_CONTROLS_STORAGE,newValue:JSON.stringify({patientIdVisible:false})})));assert.equal(window.getComputedStyle(card()).display,'none');assert.equal(document.documentElement.getAttribute('data-discovery-visible'),'true','Partial settings do not reset the discovery toggle');
+fail=true;await act(async()=>button().click());assert.equal(window.getComputedStyle(card()).display,'none');assert.match(document.body.textContent,/Visibility could not be saved/);
+assert.equal(requests.filter(r=>r.url.includes('/profile-id')&&r.method!=='GET').length,0,'Visibility never mutates a patient ID');
+await act(async()=>root.unmount());assert.equal(stream.closed,true);dom.window.close();
+console.log('Patient ID visibility passed: hidden default, admin switch, live/cross-tab updates, unchanged copy/edit controls, admin audit and save-failure preservation.');

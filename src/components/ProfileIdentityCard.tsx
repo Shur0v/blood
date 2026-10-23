@@ -5,8 +5,8 @@ import { Check, Copy, Fingerprint, Pencil, X } from 'lucide-react';
 import { normalizeProfileCode, PROFILE_CODE_PATTERN } from '@/src/lib/profileIdentifier';
 
 type Identity = { profileCode: string; nextChangeAt: string | null; available?: boolean };
-export default function ProfileIdentityCard({ userId, initialCode, onSessionExpired, readOnly=false, nextChangeAt=null }: {
-  userId: string; initialCode?: string; onSessionExpired?: () => void; readOnly?: boolean; nextChangeAt?: string | null;
+export default function ProfileIdentityCard({ userId, initialCode, onSessionExpired, readOnly=false, nextChangeAt=null,visibilityControlled=false }: {
+  userId: string; initialCode?: string; onSessionExpired?: () => void; readOnly?: boolean; nextChangeAt?: string | null; visibilityControlled?:boolean;
 }) {
   const [identity, setIdentity] = useState<Identity>({ profileCode: initialCode || '', nextChangeAt: null });
   const [editing, setEditing] = useState(false);
@@ -61,7 +61,7 @@ export default function ProfileIdentityCard({ userId, initialCode, onSessionExpi
   };
 
   return (
-    <div className="mb-6 rounded-2xl border border-slate-200 bg-white p-4 text-left sm:p-5">
+    <div className={`${visibilityControlled?'patient-id-user-card ':''}mb-6 rounded-2xl border border-slate-200 bg-white p-4 text-left sm:p-5`}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-rose-50 text-rose-700"><Fingerprint className="h-5 w-5" /></span>
