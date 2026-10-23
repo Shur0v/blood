@@ -54,6 +54,7 @@ import { GET as auditFile } from '../src/app/api/admin/users/[userId]/medical-re
 import { GET as auditPrescription } from '../src/app/api/admin/users/[userId]/prescriptions/[prescriptionId]/route';
 import { discoverDonors } from '../src/lib/donorDiscovery';
 import { automaticIpLocation, publicClientIp } from '../src/backend/services/automaticLocation';
+import {GET as donorCountries} from '../src/app/api/public/donor-countries/route';
 
 // Always use process-local test secrets, never production credentials.
 process.env.MEDICAL_RECORDS_ENCRYPTION_KEY = randomBytes(32).toString('hex');
@@ -1072,3 +1073,38 @@ test('nearby SQL and recovery ordering agree beyond the first candidate window a
 });
 
 test('main sitemap contains unique canonical URLs when static and data-driven country routes overlap',integration,async()=>{const routes=await mainSitemap();assert.equal(new Set(routes.map(row=>row.url)).size,routes.length);assert.ok(routes.some(row=>new URL(row.url).pathname==='/us'));assert.ok(!routes.some(row=>['/usa','/united-states'].includes(new URL(row.url).pathname)));});
+
+test('donor-country coverage updates from real active individuals and new registrations without exposing coordinates',integration,async()=>{
+ const db=getPrisma(),suffix=randomUUID(),country='Coverage '+suffix,inactive='Inactive '+suffix,community='Organisation '+suffix,service='Service '+suffix;
+ const user=await newPatient();await db.user.update({where:{id:user.id},data:{location_country:country}});
+ await db.userServiceCity.create({data:{user_id:user.id,city:'Service city',country:service,formatted_location:'Synthetic',lat:10,lng:10,provider_place_id:randomUUID(),locked_until:new Date()}});
+ await db.manualBloodDonor.create({data:{name:'Inactive',mobile:randomUUID(),blood_group:'B-',location_city:'City',location_country:inactive,location_lat:10,location_lng:10,is_active_donor:false,source:'TEST',added_by_admin:'TEST'}});
+ await db.communityDonor.create({data:{organization_name:'Community only',mobile:randomUUID(),location_city:'City',location_country:community,location_lat:10,location_lng:10,source:'TEST',added_by_admin:'TEST'}});
+ let response=await donorCountries(),body=await response.json();assert.equal(response.status,200);assert.ok(body.data.includes(country));assert.ok(body.data.includes(service));assert.ok(!body.data.includes(inactive));assert.ok(!body.data.includes(community));assert.ok(body.data.every((value:any)=>typeof value==='string'));
+ const newCountry='New registration '+suffix,newUser=await newPatient();await db.user.update({where:{id:newUser.id},data:{location_country:newCountry}});body=await(await donorCountries()).json();assert.ok(body.data.includes(newCountry));assert.equal(new Set(body.data.map((value:string)=>value.toLowerCase())).size,body.data.length);
+});
+
+test('expanded blood discovery fills pages local-first, retains categories and matches SQL recovery without duplicate cards',integration,async()=>{
+ const db=getPrisma(),country='Priority '+randomUUID(),marker='Browse'+randomUUID(),user=await newPatient();
+ await db.user.update({where:{id:user.id},data:{name:marker+' local',blood_group:'B-',location_country:country,location_city:'Local',location_lat:10,location_lng:10}});
+ await db.userServiceCity.create({data:{user_id:user.id,city:'Other',country:'Foreign',formatted_location:'Synthetic',lat:70,lng:70,provider_place_id:randomUUID(),locked_until:new Date()}});
+ for(let i=0;i<24;i++)await db.manualBloodDonor.create({data:{name:marker+' '+i,mobile:randomUUID(),blood_group:'B-',location_city:i<5?'National':'Foreign',location_country:i<5?country:'Foreign',location_lat:10,location_lng:i<5?50+i:11+(i-5),source:'TEST',added_by_admin:'TEST'}});
+ await db.manualBloodDonor.create({data:{name:marker+' wrong category',mobile:randomUUID(),blood_group:'A+',location_city:'Local',location_country:country,location_lat:10,location_lng:10,source:'TEST',added_by_admin:'TEST'}});
+ const params=new URLSearchParams({country,viewerCountry:country,viewerCity:'Local',bloodGroup:'B-',search:marker,expand:'nearby',limit:'16'});
+ const read=async()=>{const response=await publicBloodDonors(new Request('http://localhost/api/public/donors?'+params));assert.equal(response.status,200);return response.json();};
+ const first=await read();assert.equal(first.data.length,16);assert.equal(first.pagination.total,25);assert.equal(first.data[0].id,user.id);assert.equal(first.data[0].location_city,'Local');assert.ok(first.data.slice(0,6).every((row:any)=>row.location_country===country));assert.ok(first.data.slice(6).every((row:any)=>row.location_country==='Foreign'));assert.ok(first.data.every((row:any)=>row.blood_group==='B-'));assert.ok(!JSON.stringify(first).includes('internal_lat'));assert.ok(!JSON.stringify(first).includes('internal_lng'));
+ const raw=db.$queryRaw;db.$queryRaw=()=>{throw Error('Synthetic SQL failure');};try{const recovery=await read();assert.equal(recovery.meta.fallback,true);assert.deepEqual(recovery.data.map((row:any)=>row.id),first.data.map((row:any)=>row.id));}finally{db.$queryRaw=raw;}
+ params.set('cursor',first.pagination.nextCursor);const second=await read();assert.equal(second.data.length,9);assert.equal(second.pagination.nextCursor,null);assert.equal(new Set([...first.data,...second.data].map(row=>row.id)).size,25);
+ params.delete('cursor');params.delete('expand');const strict=await read();assert.equal(strict.data.length,6);assert.ok(strict.data.every((row:any)=>row.location_country===country));
+ await db.manualBloodDonor.updateMany({where:{location_country:country,blood_group:'B-'},data:{location_country:'Foreign'}});params.set('expand','nearby');params.delete('viewerCountry');const single=await read();assert.equal(single.data.length,16);assert.equal(single.data[0].id,user.id);assert.equal(single.data.filter((row:any)=>row.location_country===country).length,1,'A one-donor country is followed by real nearby matches');
+});
+
+test('expanded organ discovery fills matching nearby pledges while preserving selected organ and blood group',integration,async()=>{
+ const db=getPrisma(),country='Organ priority '+randomUUID(),marker='OrganBrowse'+randomUUID(),user=await newPatient();
+ await db.user.update({where:{id:user.id},data:{name:marker+' local',blood_group:'B-',location_country:country,location_city:'Local',location_lat:10,location_lng:10}});
+ await db.organPledge.create({data:{user_id:user.id,organ_type:'Kidney'}});
+ for(let i=0;i<18;i++)await db.manualOrganDonor.create({data:{name:marker+' '+i,mobile:randomUUID(),blood_group:i===17?'A+':'B-',organ_type:i===16?'Liver':'Kidney',location_city:'Other',location_country:'Foreign',location_lat:10,location_lng:11+i,source:'TEST',added_by_admin:'TEST'}});
+ const params=new URLSearchParams({country,viewerCountry:country,viewerCity:'Local',organ:'Kidney',bloodGroup:'B-',search:marker,expand:'nearby',limit:'16'});
+ const response=await publicOrganDonors(new Request('http://localhost/api/public/organ-donors?'+params)),body=await response.json();assert.equal(response.status,200);assert.equal(body.data.length,16);assert.equal(body.data[0].id,user.id);assert.ok(body.data.every((row:any)=>row.blood_group==='B-'&&row.organ_type==='Kidney'));assert.ok(!JSON.stringify(body).includes('internal_lat'));assert.equal(body.pagination.total,17);
+ params.set('cursor',body.pagination.nextCursor);const next=await(await publicOrganDonors(new Request('http://localhost/api/public/organ-donors?'+params))).json();assert.equal(next.data.length,1);assert.equal(next.pagination.nextCursor,null);assert.equal(new Set([...body.data,...next.data].map(row=>row.id)).size,17);
+});

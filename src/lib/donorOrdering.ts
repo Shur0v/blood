@@ -1,8 +1,9 @@
 import {NEARBY_COUNTRY_MAP,normalizeCountryToken} from './geoCountry';
-export type OrderingContext={sort:'NEWEST'|'NEARBY';viewerCity?:string;viewerCountry?:string;viewerLat?:number;viewerLng?:number;search?:string};
+export type OrderingContext={sort:'NEWEST'|'NEARBY';viewerCity?:string;viewerCountry?:string;viewerLat?:number;viewerLng?:number;search?:string;priorityCountry?:string};
 type Located={location_city:string;location_country:string;internal_lat?:number;internal_lng?:number};
 export function distanceScore(lat:number|undefined,lng:number|undefined,otherLat:number|undefined,otherLng:number|undefined){if([lat,lng,otherLat,otherLng].some(value=>value===undefined||!Number.isFinite(value)))return Infinity;const rad=(n:number)=>n*Math.PI/180;return Math.acos(Math.min(1,Math.max(-1,Math.sin(rad(lat!))*Math.sin(rad(otherLat!))+Math.cos(rad(lat!))*Math.cos(rad(otherLat!))*Math.cos(rad(otherLng!-lng!)))));}
 export function compareDonors(a:Located&{id:string;source_type:string;created_at:Date;sort_at:Date},b:typeof a,ctx:OrderingContext){
+ if(ctx.priorityCountry){const rank=(row:Located)=>row.location_country.trim().toLowerCase()===ctx.priorityCountry.trim().toLowerCase()?(ctx.viewerCity&&row.location_city.trim().toLowerCase()===ctx.viewerCity.trim().toLowerCase()?0:1):2;const difference=rank(a)-rank(b);if(difference)return difference;}
  if(ctx.sort==='NEARBY'&&ctx.viewerLat!==undefined&&ctx.viewerLng!==undefined){const difference=distanceScore(ctx.viewerLat,ctx.viewerLng,a.internal_lat,a.internal_lng)-distanceScore(ctx.viewerLat,ctx.viewerLng,b.internal_lat,b.internal_lng);if(difference)return difference;}
  if(ctx.search?.toLowerCase().includes('community')&&(a.source_type==='COMMUNITY')!==(b.source_type==='COMMUNITY'))return a.source_type==='COMMUNITY'?-1:1;
  if(ctx.sort==='NEWEST'){const rank=(source:string)=>source==='REGISTERED'?0:source==='MANUAL'?1:2;return rank(a.source_type)-rank(b.source_type)||b.created_at.getTime()-a.created_at.getTime()||b.id.localeCompare(a.id);}

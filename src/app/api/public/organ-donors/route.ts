@@ -4,6 +4,7 @@ import { Prisma } from '@prisma/client';
 import { getPrisma } from '@/src/backend/config/db';
 import { normalizeOrganName } from '@/src/lib/organCatalog';
 import { NEARBY_COUNTRY_MAP, normalizeCountryToken } from '@/src/lib/geoCountry';
+import {getDiscoveryOrigin} from '@/src/backend/services/donorCoverage';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,6 +19,7 @@ const QuerySchema = z.object({
   country: z.string().min(1).max(120).optional(),
   viewerLat: z.coerce.number().min(-90).max(90).optional(),
   viewerLng: z.coerce.number().min(-180).max(180).optional(),
+  expand: z.enum(['nearby']).optional(),
 });
 
 interface PublicOrganDonorRow {
@@ -51,17 +53,21 @@ export async function GET(req: Request) {
       bloodGroup: url.searchParams.get('bloodGroup') || undefined,
       search: url.searchParams.get('search') || undefined,
       viewerCity: url.searchParams.get('viewerCity') || undefined,
-      viewerCountry: url.searchParams.get('viewerCountry') || undefined,
+      viewerCountry: url.searchParams.get('viewerCountry') || (url.searchParams.get('expand')==='nearby'?url.searchParams.get('country'):undefined) || undefined,
       country: url.searchParams.get('country') || undefined,
       viewerLat: url.searchParams.get('viewerLat') ?? undefined,
       viewerLng: url.searchParams.get('viewerLng') ?? undefined,
+      expand: url.searchParams.get('expand') || undefined,
     });
 
     if (!parsed.success) {
       return NextResponse.json({ success: false, message: 'Invalid query params.' }, { status: 400 });
     }
 
-    const { limit, cursor, organ, bloodGroup, search, viewerCity, viewerCountry, country, viewerLat, viewerLng } = parsed.data;
+    const { limit, cursor, organ, bloodGroup, search, viewerCity, viewerCountry, country:selectedCountry, viewerLat:requestedLat, viewerLng:requestedLng,expand } = parsed.data;
+    const country=expand?undefined:selectedCountry;
+    const origin=expand&&requestedLat===undefined?await getDiscoveryOrigin(selectedCountry,viewerCity):null;
+    const viewerLat=requestedLat??origin?.lat,viewerLng=requestedLng??origin?.lng;
     const normalizedOrganFilter = organ ? normalizeOrganName(organ) : null;
     if (organ && !normalizedOrganFilter) {
       return NextResponse.json({
@@ -196,14 +202,15 @@ export async function GET(req: Request) {
         JOIN "User" u ON u.id = op.user_id
         LEFT JOIN LATERAL (
           SELECT usc.city, usc.country, usc.lat, usc.lng
-          FROM "UserServiceCity" usc
-          WHERE usc.user_id = u.id
+          FROM (SELECT city,country,lat,lng,created_at,id FROM "UserServiceCity" WHERE user_id=u.id
+            UNION ALL SELECT u.location_city,u.location_country,u.location_lat,u.location_lng,u.created_at,u.id WHERE ${Boolean(expand)}) usc
+          WHERE TRUE
             ${normalizedCountry ? Prisma.sql`AND LOWER(usc.country) = LOWER(${normalizedCountry})` : Prisma.empty}
           ORDER BY
             ${serviceCitySearchRank} ASC,
             ${serviceCityViewerCityRank} ASC,
             ${serviceCityViewerCountryRank} ASC,
-            usc.created_at ASC
+            usc.created_at ASC,usc.id ASC
           LIMIT 1
         ) sc ON TRUE
         WHERE op.is_active = true AND u.is_active_donor = true
@@ -243,10 +250,11 @@ export async function GET(req: Request) {
         ${manualFilterBySearch}
       ) AS organ_donors
       ORDER BY
+        ${expand?Prisma.sql`CASE WHEN LOWER(TRIM(organ_donors.location_country))=LOWER(TRIM(${selectedCountry||''})) THEN CASE WHEN LOWER(TRIM(organ_donors.location_city))=LOWER(TRIM(${viewerCity||''})) THEN 0 ELSE 1 END ELSE 2 END`:Prisma.sql`0::integer`} ASC,
         ${viewerLat !== undefined && viewerLng !== undefined ? Prisma.sql`acos(LEAST(1.0, GREATEST(-1.0, sin(radians(${viewerLat}::float8))*sin(radians(organ_donors.internal_lat)) + cos(radians(${viewerLat}::float8))*cos(radians(organ_donors.internal_lat))*cos(radians(organ_donors.internal_lng-${viewerLng}::float8)))))` : Prisma.sql`NULL::float8`} ASC NULLS LAST,
         ${donorViewerCityRank} ASC,
         ${donorViewerCountryRank} ASC,
-        organ_donors.sort_at DESC
+        organ_donors.sort_at DESC,organ_donors.id DESC,organ_donors.organ_type ASC
       LIMIT ${limit + 1}
       OFFSET ${safeOffset}
     `);
@@ -317,6 +325,7 @@ export async function GET(req: Request) {
       },
       meta: {
         globalTotal,
+        ...(expand?{expanded:true,priorityCountry:selectedCountry||'',priorityCity:viewerCity||''}:{}),
       },
     });
   } catch (error) {

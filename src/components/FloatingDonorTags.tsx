@@ -138,6 +138,7 @@ export default function FloatingDonorTags({forcedCountry}:{forcedCountry?:string
         while (!cancelled && pageCount < maxPages && collected.length < targetRows) {
           const params = new URLSearchParams(effectiveQuery || { limit: pageLimit });
           if (cursor) params.set("cursor", cursor);
+          params.set('expand','nearby');
           if (viewerGeo.city) params.set("viewerCity", viewerGeo.city);
           if (!effectiveQuery && viewerGeo.country) {
             params.set("country", viewerGeo.country);

@@ -4,6 +4,7 @@ import { Prisma } from '@prisma/client';
 import { getPrisma } from '@/src/backend/config/db';
 import { getActiveBloodDonorCounts } from '@/src/backend/services/donorCounts';
 import {compareDonors,selectServiceCity} from '@/src/lib/donorOrdering';
+import {getDiscoveryOrigin} from '@/src/backend/services/donorCoverage';
 import { NEARBY_COUNTRY_MAP, normalizeCountryToken } from '@/src/lib/geoCountry';
 
 export const dynamic = 'force-dynamic';
@@ -20,6 +21,7 @@ const QuerySchema = z.object({
   viewerLat: z.coerce.number().min(-90).max(90).optional(),
   viewerLng: z.coerce.number().min(-180).max(180).optional(),
   sort: z.enum(['NEWEST', 'NEARBY']).default('NEWEST'),
+  expand: z.enum(['nearby']).optional(),
 });
 
 interface PublicDonorRow {
@@ -53,18 +55,22 @@ export async function GET(req: Request) {
       bloodGroup: url.searchParams.get('bloodGroup') || undefined,
       search: url.searchParams.get('search') || undefined,
       viewerCity: url.searchParams.get('viewerCity') || undefined,
-      viewerCountry: url.searchParams.get('viewerCountry') || undefined,
+      viewerCountry: url.searchParams.get('viewerCountry') || (url.searchParams.get('expand')==='nearby'?url.searchParams.get('country'):undefined) || undefined,
       country: url.searchParams.get('country') || undefined,
       viewerLat: url.searchParams.get('viewerLat') ?? undefined,
       viewerLng: url.searchParams.get('viewerLng') ?? undefined,
       sort: url.searchParams.get('sort') || 'NEWEST',
+      expand: url.searchParams.get('expand') || undefined,
     });
 
     if (!parsed.success) {
       return NextResponse.json({ success: false, message: 'Invalid query params.' }, { status: 400 });
     }
 
-    const { limit, cursor, bloodGroup, search, viewerCity, viewerCountry, country, sort, viewerLat, viewerLng } = parsed.data;
+    const { limit, cursor, bloodGroup, search, viewerCity, viewerCountry, country:selectedCountry, sort:selectedSort, viewerLat:requestedLat, viewerLng:requestedLng, expand } = parsed.data;
+    const country=expand?undefined:selectedCountry,sort=expand?'NEARBY':selectedSort;
+    const origin=expand&&requestedLat===undefined?await getDiscoveryOrigin(selectedCountry,viewerCity):null;
+    const viewerLat=requestedLat??origin?.lat,viewerLng=requestedLng??origin?.lng;
     const offset = cursor ? Number.parseInt(cursor, 10) : 0;
     const safeOffset = Number.isNaN(offset) || offset < 0 ? 0 : offset;
     const normalizedSearch = search?.trim();
@@ -190,8 +196,9 @@ export async function GET(req: Request) {
         FROM "User" u
         LEFT JOIN LATERAL (
           SELECT usc.city, usc.country, usc.lat, usc.lng
-          FROM "UserServiceCity" usc
-          WHERE usc.user_id = u.id
+          FROM (SELECT city,country,lat,lng,created_at,id FROM "UserServiceCity" WHERE user_id=u.id
+            UNION ALL SELECT u.location_city,u.location_country,u.location_lat,u.location_lng,u.created_at,u.id WHERE ${Boolean(expand)}) usc
+          WHERE TRUE
             ${normalizedCountry ? Prisma.sql`AND LOWER(usc.country) = LOWER(${normalizedCountry})` : Prisma.empty}
           ORDER BY
             ${serviceCitySearchRank} ASC,
@@ -275,6 +282,7 @@ export async function GET(req: Request) {
         ${communityFilterBySearch}
       ) AS donors
       ORDER BY
+        ${expand?Prisma.sql`CASE WHEN LOWER(TRIM(donors.location_country))=LOWER(TRIM(${selectedCountry||''})) THEN CASE WHEN LOWER(TRIM(donors.location_city))=LOWER(TRIM(${viewerCity||''})) THEN 0 ELSE 1 END ELSE 2 END`:Prisma.sql`0::integer`} ASC,
         ${sort === 'NEARBY' && viewerLat !== undefined && viewerLng !== undefined ? Prisma.sql`acos(LEAST(1.0, GREATEST(-1.0, sin(radians(${viewerLat}::float8))*sin(radians(donors.internal_lat)) + cos(radians(${viewerLat}::float8))*cos(radians(donors.internal_lat))*cos(radians(donors.internal_lng-${viewerLng}::float8)))))` : Prisma.sql`NULL::float8`} ASC NULLS LAST,
         ${hasCommunityKeyword ? Prisma.sql`CASE WHEN donors.is_community THEN 0 ELSE 1 END` : Prisma.sql`1::integer`} ASC,
         CASE WHEN ${sort === 'NEWEST'} THEN
@@ -341,6 +349,7 @@ export async function GET(req: Request) {
       },
       meta: {
         globalTotal,
+        ...(expand?{expanded:true,priorityCountry:selectedCountry||'',priorityCity:viewerCity||''}:{}),
       },
     }, { headers: freshDonorHeaders });
   } catch (error) {
@@ -352,18 +361,22 @@ export async function GET(req: Request) {
         bloodGroup: url.searchParams.get('bloodGroup') || undefined,
         search: url.searchParams.get('search') || undefined,
         viewerCity: url.searchParams.get('viewerCity') || undefined,
-        viewerCountry: url.searchParams.get('viewerCountry') || undefined,
+        viewerCountry: url.searchParams.get('viewerCountry') || (url.searchParams.get('expand')==='nearby'?url.searchParams.get('country'):undefined) || undefined,
         country: url.searchParams.get('country') || undefined,
       viewerLat: url.searchParams.get('viewerLat') ?? undefined,
       viewerLng: url.searchParams.get('viewerLng') ?? undefined,
         sort: url.searchParams.get('sort') || 'NEWEST',
+        expand: url.searchParams.get('expand') || undefined,
       });
 
       if (!parsed.success) {
         return NextResponse.json({ success: false, message: 'Invalid query params.' }, { status: 400 });
       }
 
-      const { limit, cursor, bloodGroup, search, viewerCity, viewerCountry, country, sort, viewerLat, viewerLng } = parsed.data;
+      const { limit, cursor, bloodGroup, search, viewerCity, viewerCountry, country:selectedCountry, sort:selectedSort, viewerLat:requestedLat, viewerLng:requestedLng,expand } = parsed.data;
+      const country=expand?undefined:selectedCountry,sort=expand?'NEARBY':selectedSort;
+      const origin=expand&&requestedLat===undefined?await getDiscoveryOrigin(selectedCountry,viewerCity):null;
+      const viewerLat=requestedLat??origin?.lat,viewerLng=requestedLng??origin?.lng;
       const offset = cursor ? Number.parseInt(cursor, 10) : 0;
       const safeOffset = Number.isNaN(offset) || offset < 0 ? 0 : offset;
       const q = search?.trim();
@@ -456,8 +469,8 @@ export async function GET(req: Request) {
         getActiveBloodDonorCounts(),
       ]);
 
-      const orderContext={sort,viewerCity,viewerCountry,viewerLat,viewerLng,search:q};
-      const locatedUsers=users.map(user=>({...user,discoveryCity:selectServiceCity(user.ServiceCities,orderContext)}));
+      const orderContext={sort,viewerCity,viewerCountry,viewerLat,viewerLng,search:q,priorityCountry:expand?selectedCountry:undefined};
+      const locatedUsers=users.map(user=>({...user,discoveryCity:selectServiceCity([...user.ServiceCities,...(expand?[{city:user.location_city,country:user.location_country,lat:user.location_lat,lng:user.location_lng,created_at:user.created_at,id:user.id}]:[])],orderContext)}));
       const merged = [
         ...locatedUsers.map((u) => ({
           id: u.id,
@@ -536,6 +549,7 @@ export async function GET(req: Request) {
         meta: {
           globalTotal,
           fallback: true,
+          ...(expand?{expanded:true,priorityCountry:selectedCountry||'',priorityCity:viewerCity||''}:{}),
         },
       }, { headers: freshDonorHeaders });
     } catch (fallbackError) {

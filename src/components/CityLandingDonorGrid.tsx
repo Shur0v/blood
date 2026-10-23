@@ -45,7 +45,7 @@ export default function CityLandingDonorGrid({ mode, city, country, bloodGroup }
         viewerCountry: country,
         sort: 'NEARBY',
         country,
-        search: city,
+        expand: 'nearby',
       });
       if (cursor) {
         params.set("cursor", cursor);
@@ -77,7 +77,7 @@ export default function CityLandingDonorGrid({ mode, city, country, bloodGroup }
         };
       });
 
-      setCards((prev) => (cursor ? [...prev, ...mapped] : mapped));
+      setCards(prev=>cursor?[...new Map([...prev,...mapped].map(row=>[`${row.id}:${row.group}`,row])).values()]:mapped);
       setNextCursor(payload.pagination?.nextCursor ?? null);
     } finally {
       setLoading(false);

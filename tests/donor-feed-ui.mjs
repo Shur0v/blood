@@ -19,6 +19,7 @@ const calls = [];
 globalThis.fetch = async input => {
   const url = new URL(String(input), 'http://localhost');
   if (url.pathname === '/api/location/ip') return Response.json({success:true,data:{country:'India',city:'Mumbai',lat:19.076,lng:72.8777}});
+  if (url.pathname === '/api/public/donor-countries') return Response.json({success:true,data:['Anguilla','Bangladesh','India']});
   if (url.pathname === '/site-state.json') return Response.json({publicNetwork:{activeBloodDonors:11463}});
   if (url.pathname === '/api/public/donors') {
     calls.push(url.searchParams);
@@ -40,7 +41,7 @@ assert.match(document.body.textContent,/Bangladesh volunteer/);
 await render({key:'odisha',forcedCountry:'India',initialCity:'Odisha',initialGroup:'O+',headingLevel:2});
 await act(async()=>{await new Promise(resolve=>setTimeout(resolve,30));});
 const params=calls.at(-1);
-assert.equal(params.get('country'),'India');assert.equal(params.get('search'),'Odisha');assert.equal(params.get('bloodGroup'),'O+');assert.equal(params.get('sort'),'NEARBY');
+assert.equal(params.get('country'),'India');assert.equal(params.get('viewerCity'),'Odisha');assert.equal(params.has('search'),false);assert.equal(params.get('expand'),'nearby');assert.equal(params.get('bloodGroup'),'O+');assert.equal(params.get('sort'),'NEARBY');
 assert.equal(params.has('viewerLat'),false,'A Mumbai visitor cannot move Odisha matches below their current city');
 assert.match(document.body.textContent,/Odisha volunteer/);
 assert.equal(document.querySelector('button[data-analytics-component="Blood Filter O+"]').getAttribute('aria-pressed'),'true');
@@ -50,7 +51,7 @@ await render({key:'outage'});
 await act(async()=>{await new Promise(resolve=>setTimeout(resolve,30));});
 assert.match(document.body.textContent,/Bangladesh volunteer/,'A successful statistics response must not prevent cached donor cards from rendering');
 assert.match(document.body.textContent,/Showing saved results/);
-localStorage.removeItem('bloodnet_public_donors_cache:v4:Bangladesh:all:');
+localStorage.removeItem('bloodnet_public_donors_cache:v5:Bangladesh:all:');
 await render({key:'uncached-outage'});
 await act(async()=>{await new Promise(resolve=>setTimeout(resolve,30));});
 assert.match(document.body.textContent,/Donor cards could not be loaded/);

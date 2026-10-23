@@ -150,17 +150,17 @@ export default function Hero({ forcedCountry, initialCity = '', initialGroup = n
   const effectiveQuery=useRef<URLSearchParams|null>(null);
   const regionKey=viewerGeo.country||'global';
   const localReady = Boolean(viewerGeo.resolved) && loadedCountry === regionKey;
-  const donorCacheKey = `bloodnet_public_donors_cache:v4:${viewerGeo.country}:${activeGroup || 'all'}:${normalizedSearch}${initialCity ? ':nearby' : ''}`;
+  const donorCacheKey = `bloodnet_public_donors_cache:v5:${viewerGeo.country}:${activeGroup || 'all'}:${normalizedSearch}${initialCity ? ':nearby' : ''}`;
   const donorRequests = useRef<AbortController | null>(null);
   const buildBaseParams = () => {
-    const params = new URLSearchParams({ limit: "16", sort: initialCity ? 'NEARBY' : 'NEWEST' });
+    const params = new URLSearchParams({ limit: "16", sort: 'NEARBY',expand:'nearby' });
     if (viewerGeo.country) {
       params.set("country", viewerGeo.country);
     }
     if (activeGroup) {
       params.set("bloodGroup", activeGroup);
     }
-    if (normalizedSearch) {
+    if (normalizedSearch && normalizedSearch !== initialCity) {
       params.set("search", normalizedSearch);
     }
     if (initialCity || viewerGeo.city) {
@@ -276,7 +276,7 @@ export default function Hero({ forcedCountry, initialCity = '', initialGroup = n
         setNextCursor(payload.pagination?.nextCursor ?? null);
         const nextTotal = Number(payload.meta?.globalTotal ?? payload.pagination?.total ?? 0);
         setTotalActiveDonors(nextTotal);
-        if(!discovery.notice)persistCache(mapped, nextTotal);
+        persistCache(mapped, nextTotal);
         setIsDonorApiDown(false);
         setIsInitialDonorLoad(false);
       } catch (error) {
@@ -353,7 +353,7 @@ export default function Hero({ forcedCountry, initialCity = '', initialGroup = n
         return;
       }
       const mapped = mapRows(payload.data || []);
-      setDonors((prev) => [...prev, ...mapped]);
+      setDonors(prev=>[...new Map([...prev,...mapped].map(row=>[`${row.sourceType}:${row.id}`,row])).values()]);
       setNextCursor(payload.pagination?.nextCursor ?? null);
       setHasLoadedMoreOnce(true);
     } catch { /* Preserve local cards if pagination fails or is cancelled. */ } finally {

@@ -71,7 +71,7 @@ export default function OrganHero({ forcedCountry }: { forcedCountry?: string })
   const requests = useRef<AbortController | null>(null);
   const localReady = Boolean(viewerGeo.resolved) && loadedCountry === regionKey;
   const buildBaseParams = () => {
-    const params = new URLSearchParams({ limit: "16" });
+    const params = new URLSearchParams({ limit: "16",expand:'nearby' });
     if (viewerGeo.country) {
       params.set("country", viewerGeo.country);
     }
@@ -167,7 +167,7 @@ export default function OrganHero({ forcedCountry }: { forcedCountry?: string })
         return;
       }
       const mapped = mapRows(payload.data || []);
-      setDonors((prev) => [...prev, ...mapped]);
+      setDonors(prev=>[...new Map([...prev,...mapped].map(row=>[`${row.id}:${row.organ}`,row])).values()]);
       setNextCursor(payload.pagination?.nextCursor ?? null);
     } catch { /* Preserve local cards on failed or cancelled pagination. */ } finally {
       setIsLoadingMore(false);
