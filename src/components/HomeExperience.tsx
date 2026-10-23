@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import Navbar from "../components/Navbar";
+import { HomeNavigationRegistration } from './SiteNavigationProvider';
 import { motion, useScroll, useSpring } from "motion/react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import dynamic from "next/dynamic";
@@ -428,7 +428,7 @@ export function HomeExperience({ forcedCountry, locationDirectory, regionalFoote
         style={{ scaleX }}
       />
 
-      <Navbar
+      <HomeNavigationRegistration
         currentPage={currentPage}
         onPageChange={handlePageChange}
         onHomeClick={handleHomeClick}

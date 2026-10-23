@@ -1,0 +1,38 @@
+import assert from 'node:assert/strict';
+import { createRequire } from 'node:module';
+import path from 'node:path';
+const { JSDOM } = createRequire(path.resolve(process.env.BLOODNET_UI_TEST_PACKAGE || 'package.json'))('jsdom');
+const dom = new JSDOM('<div id="root"></div>', { url: 'http://localhost', pretendToBeVisual: true });
+for (const key of ['window', 'document', 'HTMLElement', 'Element', 'SVGElement', 'Node', 'Event', 'MouseEvent']) globalThis[key] = dom.window[key];
+Object.defineProperty(globalThis, 'navigator', { value: dom.window.navigator, configurable: true });
+globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+const { default: React, act } = await import('react');
+const { createRoot } = await import('react-dom/client');
+const { SiteNavigationProvider, HomeNavigationRegistration, useSiteNavigation } = await import('../src/components/SiteNavigationProvider.tsx');
+const { default: Navbar } = await import('../src/components/Navbar.tsx');
+let clicked = '';
+const fallback = { currentPage: '', isLoggedIn: false, onHomeClick() { clicked = 'fallback-home'; }, onAuthClick() { clicked = 'fallback-auth'; }, onPageChange(page) { clicked = page; } };
+function Shell() { return React.createElement(Navbar, useSiteNavigation() || fallback); }
+const root = createRoot(document.getElementById('root'));
+const render = async navigation => act(async () => root.render(React.createElement(SiteNavigationProvider, null,
+  navigation ? React.createElement(HomeNavigationRegistration, navigation) : null, React.createElement(Shell))));
+const menu = () => document.querySelectorAll('nav[aria-label="BloodNet main navigation"]');
+await render(null);
+assert.equal(menu().length, 1, 'Standalone pages have one global menu');
+assert.match(menu()[0].textContent, /Register/);
+await render({ ...fallback, currentPage: 'organ', isLoggedIn: true, onAuthClick() { clicked = 'home-auth'; } });
+assert.equal(menu().length, 1, 'Homepage registration does not mount a second menu');
+assert.match(menu()[0].textContent, /Profile/);
+assert.equal(document.querySelector('[aria-label="Organ donors"]').getAttribute('aria-current'), 'page');
+await act(async () => [...document.querySelectorAll('button')].find(button => button.textContent.includes('Profile')).click());
+assert.equal(clicked, 'home-auth');
+await render({ ...fallback, currentPage: 'organ', isLoggedIn: true, onAuthClick() { clicked = 'updated-auth'; } });
+await act(async () => [...document.querySelectorAll('button')].find(button => button.textContent.includes('Profile')).click());
+assert.equal(clicked, 'updated-auth', 'Registered actions use current state without stale closures');
+await render(null);
+assert.equal(menu().length, 1, 'Leaving the homepage restores the standalone menu');
+await act(async () => document.querySelector('[aria-label="Home"]').click());
+assert.equal(clicked, 'fallback-home');
+await act(async () => root.unmount());
+dom.window.close();
+console.log('Site navigation passed: single menu, standalone fallback, active state, session label, latest callbacks and route cleanup.');

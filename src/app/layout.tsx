@@ -5,6 +5,8 @@ import "./fonts.css";
 import "./discovery.css";
 import "./research.css";
 import SeoPagePresentation from '@/src/components/SeoPagePresentation';
+import SiteNavShell from '@/src/components/SiteNavShell';
+import { SiteNavigationProvider } from '@/src/components/SiteNavigationProvider';
 import DeferredClientEffects from "@/src/components/DeferredClientEffects";
 import GlobalAdSenseSlot from "@/src/components/GlobalAdSenseSlot";
 import GlobalHomepageContinuation from "@/src/components/GlobalHomepageContinuation";
@@ -147,12 +149,15 @@ export default async function RootLayout({
             <p>Last updated: {publicBotStats.lastUpdated}</p>
           </section>
         )}
-        <DeferredClientEffects />
-        <GlobalManagedAdsRuntime />
-        <SeoPagePresentation>{children}</SeoPagePresentation>
-        <GlobalHomepageContinuation />
-        <GlobalManagedSmartLinks />
-        <GlobalAdSenseSlot />
+        <SiteNavigationProvider>
+          <DeferredClientEffects />
+          <GlobalManagedAdsRuntime />
+          <SeoPagePresentation>{children}</SeoPagePresentation>
+          <GlobalHomepageContinuation />
+          <GlobalManagedSmartLinks />
+          <GlobalAdSenseSlot />
+          <SiteNavShell />
+        </SiteNavigationProvider>
         <Script
           id="simple-analytics"
           src="https://scripts.simpleanalyticscdn.com/latest.js"

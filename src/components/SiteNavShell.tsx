@@ -1,23 +1,36 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Navbar from "@/src/components/Navbar";
+import { useSiteNavigation } from './SiteNavigationProvider';
 
 const getCurrentPage = (pathname: string) => {
   if (pathname.startsWith("/organ")) return "organ";
   if (pathname.startsWith("/blog")) return "blog";
-  return "home";
+  return pathname === '/' ? 'home' : '';
 };
 
 export default function SiteNavShell() {
   const pathname = usePathname();
   const router = useRouter();
-  const currentPage = useMemo(() => getCurrentPage(pathname), [pathname]);
+  const navigation = useSiteNavigation();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  useEffect(() => {
+    if (navigation) return;
+    const controller = new AbortController();
+    void fetch('/api/auth/session', { credentials: 'include', cache: 'no-store', signal: controller.signal })
+      .then(async response => { if (!response.ok) return false; return Boolean((await response.json()).user); })
+      .then(value => { if (!controller.signal.aborted) setIsLoggedIn(value); })
+      .catch(() => { /* Navigation stays usable when the session service is unavailable. */ });
+    return () => controller.abort();
+  }, [pathname, Boolean(navigation)]);
+
+  if (navigation) return <Navbar {...navigation} />;
 
   return (
     <Navbar
-      currentPage={currentPage}
+      currentPage={getCurrentPage(pathname)}
       onPageChange={(page) => {
         if (page === "organ") {
           router.push("/organ");
@@ -31,7 +44,7 @@ export default function SiteNavShell() {
       }}
       onHomeClick={() => router.push("/")}
       onAuthClick={() => router.push("/?profile=1")}
-      isLoggedIn={false}
+      isLoggedIn={isLoggedIn}
     />
   );
 }

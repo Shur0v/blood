@@ -14,6 +14,7 @@ export default function Navbar({ currentPage, onPageChange, onAuthClick, onHomeC
   return (
     <div className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] left-2 right-2 z-50 flex justify-center">
       <motion.nav
+        aria-label="BloodNet main navigation"
         className="flex w-[370px] max-w-full min-w-0 items-center justify-between gap-1 rounded-full border border-white/10 bg-black/40 px-2 py-2 shadow-[0_20px_50px_rgba(0,0,0,0.3)] backdrop-blur-xl"
       >
         {/* Logo Section */}
