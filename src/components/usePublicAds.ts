@@ -27,7 +27,7 @@ export function publishAdsRuntime(value: AdsRuntime) {
 }
 export default function usePublicAds() {
   const path = usePathname();
-  const blocked = ['/admin-dashboard', '/dashboard', '/api'].some(prefix => path === prefix || path.startsWith(`${prefix}/`));
+  const blocked = ['/private', '/admin', '/admin-dashboard', '/dashboard', '/api'].some(prefix => path === prefix || path.startsWith(`${prefix}/`));
   const subscribe = useCallback((listener: () => void) => {
     if (blocked || window.self !== window.top && new URLSearchParams(window.location.search).get('heatmapPreview') === '1') return () => {};
     listenForAdminChanges();

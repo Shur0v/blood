@@ -18,7 +18,7 @@ export default function FooterBottomBannerAd() {
   } | null>(null);
   const [hasFrame, setHasFrame] = useState(false);
   const shouldHide = useMemo(
-    () => pathname.startsWith("/admin-dashboard") || pathname.startsWith("/dashboard") || pathname.startsWith("/api"),
+    () => pathname.startsWith("/private") || pathname.startsWith("/admin") || pathname.startsWith("/dashboard") || pathname.startsWith("/api"),
     [pathname]
   );
 

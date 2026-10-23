@@ -92,7 +92,7 @@ export function middleware(request: NextRequest) {
     response.headers.set('X-BloodNet-Locale', locale);
   }
 
-  if (/^\/donors(?:\/|$)/.test(pathname)) response.headers.set('Cache-Control','private, no-store');
+  if (/^\/(donors|private|admin|admin-dashboard|dashboard)(?:\/|$)/.test(pathname)) response.headers.set('Cache-Control','private, no-store');
   const isApiRoute = pathname.startsWith('/api/');
   if (isApiRoute || /^\/(admin|admin-dashboard|dashboard|account|profile|private|login|register|user|settings|checkout|payment|success|failed|backup|trash)(\/|$)/.test(pathname) || request.nextUrl.searchParams.has('profile') || request.nextUrl.searchParams.has('heatmapPreview') || request.nextUrl.searchParams.has('donorExplore')) {
     response.headers.set('X-Robots-Tag', 'noindex, nofollow');

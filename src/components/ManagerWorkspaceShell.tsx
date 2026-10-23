@@ -18,11 +18,11 @@ import {
 import { useEffect } from 'react';
 
 const MENU_ITEMS = [
-  { name: 'Organ Request', href: '/dashboard/user-management/organ-request', icon: HeartHandshake },
-  { name: 'User Verify Request', href: '/dashboard/user-management/verify-request', icon: UserCheck },
-  { name: 'Blog Approval', href: '/dashboard/user-management/blog-approval', icon: FileText },
-  { name: 'Active Donors', href: '/dashboard/user-management/active-donors', icon: Users },
-  { name: 'Reports', href: '/dashboard/user-management/reports', icon: AlertTriangle },
+  { name: 'Organ Request', href: '/private/operations-1c0fdec8fcca3f8ad2e6/workspace/organ-request', icon: HeartHandshake },
+  { name: 'User Verify Request', href: '/private/operations-1c0fdec8fcca3f8ad2e6/workspace/verify-request', icon: UserCheck },
+  { name: 'Blog Approval', href: '/private/operations-1c0fdec8fcca3f8ad2e6/workspace/blog-approval', icon: FileText },
+  { name: 'Active Donors', href: '/private/operations-1c0fdec8fcca3f8ad2e6/workspace/active-donors', icon: Users },
+  { name: 'Reports', href: '/private/operations-1c0fdec8fcca3f8ad2e6/workspace/reports', icon: AlertTriangle },
 ];
 
 export default function UserManagementLayout({ children }: { children: React.ReactNode }) {
@@ -30,12 +30,13 @@ export default function UserManagementLayout({ children }: { children: React.Rea
   const pathname = usePathname();
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [isCheckingSession, setIsCheckingSession] = useState(true);
+  const [authorized,setAuthorized]=useState(false);
 
   const handleLogout = async () => {
     try {
       await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
     } finally {
-      router.push('/dashboard');
+      router.push('/private/operations-1c0fdec8fcca3f8ad2e6/login');
     }
   };
 
@@ -49,18 +50,19 @@ export default function UserManagementLayout({ children }: { children: React.Rea
         });
 
         if (!res.ok) {
-          router.replace('/dashboard/user-login');
+          router.replace('/private/operations-1c0fdec8fcca3f8ad2e6/login');
           return;
         }
 
         const payload = await res.json();
         const role = payload?.user?.role;
         if (!role || !['ADMIN', 'MANAGER'].includes(role)) {
-          router.replace('/dashboard/user-login');
+          router.replace('/private/operations-1c0fdec8fcca3f8ad2e6/login');
           return;
         }
+        setAuthorized(true);
       } catch (error) {
-        router.replace('/dashboard/user-login');
+        router.replace('/private/operations-1c0fdec8fcca3f8ad2e6/login');
         return;
       } finally {
         setIsCheckingSession(false);
@@ -70,7 +72,7 @@ export default function UserManagementLayout({ children }: { children: React.Rea
     verifySession();
   }, [router]);
 
-  if (isCheckingSession) {
+  if (isCheckingSession || !authorized) {
     return <div className="min-h-screen bg-[var(--bg-app)]" />;
   }
 
@@ -110,7 +112,7 @@ export default function UserManagementLayout({ children }: { children: React.Rea
           </p>
           
           {MENU_ITEMS.map((item) => {
-            const isActive = pathname === item.href || (pathname === '/dashboard/user-management' && item.href.includes('organ-request'));
+            const isActive = pathname === item.href || (pathname === '/private/operations-1c0fdec8fcca3f8ad2e6/workspace' && item.href.includes('organ-request'));
             const Icon = item.icon;
             
             return (

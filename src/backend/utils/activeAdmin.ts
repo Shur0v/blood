@@ -1,13 +1,15 @@
 import { getPrisma } from '../config/db';
 import { ADMIN_ROLES, getSessionFromRequest } from './session';
 import { MedicalError, medicalFailure } from './medicalPrivacy';
+import { matchesStaffCredential } from './staffCredential';
 
 export async function requireActiveAdmin(req: Request) {
   const session = getSessionFromRequest(req);
   if (!session) throw new MedicalError('Unauthorized.', 401);
   if (!ADMIN_ROLES.includes(session.role as typeof ADMIN_ROLES[number])) throw new MedicalError('Forbidden.', 403);
-  const admin = await getPrisma().adminUser.findUnique({ where: { id: session.user_id }, select: { role: true } });
-  if (!admin || admin.role !== session.role) throw new MedicalError('Session expired. Please sign in again.', 401);
+  const admin = await getPrisma().adminUser.findUnique({ where: { id: session.user_id }, select: { role: true, password:true } });
+  if (!admin || admin.role !== session.role || !matchesStaffCredential(session.credential_version,session.user_id,admin.password)) throw new MedicalError('Session expired. Please sign in again.', 401);
+  if (new URL(req.url).pathname.startsWith('/api/admin/') && session.role !== 'ADMIN') throw new MedicalError('Administrator access required.',403);
   return session;
 }
 

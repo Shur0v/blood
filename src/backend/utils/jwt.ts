@@ -19,6 +19,7 @@ const getJwtSecret = (): string => {
 export interface JwtPayload {
   user_id: string;
   role: string;
+  credential_version?: string;
 }
 
 /**
@@ -41,7 +42,7 @@ export const verifyToken = (token: string): JwtPayload | null => {
     if (typeof decoded !== 'object' || typeof decoded.user_id !== 'string' || !decoded.user_id || !['USER','ADMIN','MANAGER'].includes(decoded.role) || typeof decoded.exp !== 'number' || typeof decoded.iat !== 'number') return null;
     // Also bound old privileged cookies minted before the shorter lifetime.
     if (decoded.role !== 'USER' && Date.now()/1000 - decoded.iat > 8*60*60) return null;
-    return { user_id: decoded.user_id, role: decoded.role };
+    return { user_id: decoded.user_id, role: decoded.role, ...(typeof decoded.credential_version === 'string' ? {credential_version:decoded.credential_version} : {}) };
   } catch (err) {
     return null;
   }

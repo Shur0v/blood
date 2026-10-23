@@ -105,6 +105,9 @@ test('real deploy preserves every legacy table, matches Prisma, and survives rec
         await delegate.findMany({ take: 1 });
       }
       const { signToken } = await import('../src/backend/utils/jwt');
+      const {staffCredentialVersion}=await import('../src/backend/utils/staffCredential');
+      const staff=await prisma.adminUser.findUniqueOrThrow({where:{id:ids.AdminUser}});
+      const credential_version=staffCredentialVersion(staff.id,staff.password);
       const routes = readdirSync('src/app/api', { recursive: true }).map(String).filter(file => file.endsWith('route.ts') && !file.includes('[') && !file.startsWith('location'));
       let checked = 0;
       const failures: string[] = [];
@@ -113,7 +116,7 @@ test('real deploy preserves every legacy table, matches Prisma, and survives rec
         const route = '/api/' + file.replace(/\\/g, '/').replace('/route.ts', '');
         const { GET } = await import(pathToFileURL(path.resolve('src/app/api', file)).href);
         const admin = route.startsWith('/api/admin/') || route.startsWith('/api/management/');
-        const request = new Request(`https://example.invalid${route}`, { headers: { authorization: `Bearer ${signToken({ user_id: admin ? ids.AdminUser : ids.User, role: admin ? 'ADMIN' : 'USER' })}` } });
+        const request = new Request(`https://example.invalid${route}`, { headers: { authorization: `Bearer ${signToken({ user_id: admin ? ids.AdminUser : ids.User, role: admin ? 'ADMIN' : 'USER',...(admin?{credential_version}:{}) })}` } });
         const response = await GET(request);
         if(response.headers.get('Content-Type')?.includes('text/event-stream'))await response.body?.cancel();
         const expectedStatus=route==='/api/users/me/public-profile'?403:200;
@@ -121,7 +124,7 @@ test('real deploy preserves every legacy table, matches Prisma, and survives rec
         checked++;
       }
       assert.deepEqual(failures, []);
-      const adminHeaders = { authorization: `Bearer ${signToken({ user_id: ids.AdminUser, role: 'ADMIN' })}`, 'content-type': 'application/json' };
+      const adminHeaders = { authorization: `Bearer ${signToken({ user_id: ids.AdminUser, role: 'ADMIN',credential_version })}`, 'content-type': 'application/json' };
       await sql.query('UPDATE "Blog" SET status=\'PUBLISHED\', author_type=\'USER\', author_id=$1 WHERE id=$2', [ids.User, ids.Blog]);
       for (const file of ['users/[userId]/profile/route.ts', 'admin/users/[userId]/route.ts', 'public/blogs/[slug]/route.ts']) {
         const { GET } = await import(pathToFileURL(path.resolve('src/app/api', file)).href);

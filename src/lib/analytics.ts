@@ -30,7 +30,7 @@ export function analyticsPagePath(page: string): string | null {
   const path = page === 'home' ? '/' : '/' + page.replace(/ > /g, '/').replace(/^\/+/, '');
   try {
     const decoded = decodeURIComponent(path);
-    if (!/^\/[\p{L}\p{N}/_ -]*$/u.test(decoded) || decoded.includes('//') || /^\/(api|admin-dashboard|dashboard|profile|account|settings|private|login|register|user)(\/|$)/i.test(decoded)) return null;
+    if (!/^\/[\p{L}\p{N}/_ -]*$/u.test(decoded) || decoded.includes('//') || /^\/(api|admin|admin-dashboard|dashboard|profile|account|settings|private|login|register|user)(\/|$)/i.test(decoded)) return null;
   } catch { return null; }
   return path;
 }

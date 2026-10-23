@@ -7,7 +7,7 @@ import { useEffect, useMemo } from "react";
 import { usePathname } from "next/navigation";
 
 
-const BLOCKED_PREFIXES = ["/admin-dashboard", "/dashboard", "/api"];
+const BLOCKED_PREFIXES = ["/private", "/admin", "/admin-dashboard", "/dashboard", "/api"];
 
 
 const removeManagedScripts = () => {

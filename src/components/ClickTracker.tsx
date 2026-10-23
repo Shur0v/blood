@@ -144,7 +144,7 @@ export default function ClickTracker() {
   const pending = useRef<Array<Record<string, unknown>>>([]);
   const sending = useRef(false);
   useEffect(() => {
-    if (!pathname || /^\/(admin-dashboard|api|dashboard)(\/|$)/.test(pathname)) return;
+    if (!pathname || /^\/(private|admin|admin-dashboard|api|dashboard)(\/|$)/.test(pathname)) return;
     if (window.self !== window.top) return;
     const sessionId = getHeatmapSessionId();
     let maxDepth = 0, lastScroll = 0;

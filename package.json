@@ -29,7 +29,8 @@
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
-    "medical:configure": "tsx src/backend/scripts/configureMedicalStorage.ts"
+    "medical:configure": "tsx src/backend/scripts/configureMedicalStorage.ts",
+    "access:rotate": "tsx src/backend/scripts/rotateStaffAccess.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1034.0",

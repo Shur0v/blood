@@ -4,6 +4,7 @@ import { getPrisma } from '@/src/backend/config/db';
 import { ADMIN_ROLES, getSessionFromRequest, SESSION_COOKIE } from '@/src/backend/utils/session';
 import { signToken } from '@/src/backend/utils/jwt';
 import { resolveSessionCookieDomain } from '@/src/backend/utils/cookieDomain';
+import { requireActiveAdmin } from '@/src/backend/utils/activeAdmin';
 
 const userRepo = new UserRepository();
 
@@ -20,8 +21,8 @@ export async function GET(req: Request) {
   }
 
   if (ADMIN_ROLES.includes(session.role as (typeof ADMIN_ROLES)[number])) {
-    const admin=await getPrisma().adminUser.findUnique({where:{id:session.user_id},select:{role:true}});
-    if(!admin||admin.role!==session.role)return NextResponse.json({authenticated:false},{status:401,headers:noStoreHeaders});
+    try { await requireActiveAdmin(req); }
+    catch { return NextResponse.json({authenticated:false},{status:401,headers:noStoreHeaders}); }
     const response = NextResponse.json({
       authenticated: true,
       user: {
@@ -29,7 +30,7 @@ export async function GET(req: Request) {
         role: session.role,
       },
     }, { headers: noStoreHeaders });
-    const refreshedToken = signToken({ user_id: session.user_id, role: session.role });
+    const refreshedToken = signToken(session);
     response.cookies.set({
       name: SESSION_COOKIE,
       value: refreshedToken,

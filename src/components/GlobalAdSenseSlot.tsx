@@ -17,7 +17,7 @@ const AD_CLIENT = "ca-pub-6276589710687942";
 const AD_SLOT = "9256247950";
 
 const BLOCKED_PREFIXES = [
-  "/admin-dashboard",
+  "/private", "/admin", "/admin-dashboard",
   "/dashboard",
   "/api",
   "/login",

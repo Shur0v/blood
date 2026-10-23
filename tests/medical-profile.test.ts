@@ -2,6 +2,7 @@ import { before, after, test, mock } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { randomBytes, randomUUID } from 'node:crypto';
 import { Client } from 'pg';
 import sharp from 'sharp';
@@ -15,7 +16,9 @@ import { createMedicalReport, ReportSchema, listMedicalTimeline, optimizeMedical
 import { acceptPrescription, authorizePrescriptionProvider, deliverPrescriptionEmail, PrescriptionSchema, prescriptionHtml } from '../src/backend/services/prescriptions';
 import { getPrisma } from '../src/backend/config/db';
 import { UserRepository } from '../src/backend/repositories/UserRepository';
-import { signToken } from '../src/backend/utils/jwt';
+import { signToken as rawSignToken, type JwtPayload } from '../src/backend/utils/jwt';
+import {staffCredentialVersion} from '../src/backend/utils/staffCredential';
+const signToken=(payload:JwtPayload)=>rawSignToken({...payload,...(payload.user_id===testAdminId&&payload.role!=='USER'?{credential_version:staffCredentialVersion(testAdminId,'test-only')}:{})});
 import { GET as downloadFile } from '../src/app/api/users/me/medical-reports/[reportId]/files/[fileId]/route';
 import { GET as inbox, POST as uploadPrescription } from '../src/app/api/users/me/prescriptions/route';
 import { GET as downloadPrescription } from '../src/app/api/users/me/prescriptions/[prescriptionId]/route';
@@ -780,19 +783,83 @@ test('database rate limiting is atomic across concurrent requests and expires co
 });
 
 test('admin login upgrades legacy passwords and deleted or demoted admins lose API access immediately', integration, async () => {
-  const {POST:login}=await import('../src/app/api/auth/admin/login/route');
+  const {POST:login}=await import('../src/app/api/access/599c8dc11cf069369fe4738c/login/route');
   const bcrypt=await import('bcryptjs');
   const admin=await getPrisma().adminUser.create({data:{admin_id:randomUUID(),password:'legacy-test-password',role:'ADMIN'}});
   const response=await login(new Request('http://localhost/api/auth/admin/login',{method:'POST',headers:{'Content-Type':'application/json','X-Real-IP':'192.0.2.71'},body:JSON.stringify({adminId:admin.admin_id,password:'legacy-test-password'})}));
   assert.equal(response.status,200);assert.match(response.headers.get('set-cookie')||'',/Max-Age=28800/);
   const updated=await getPrisma().adminUser.findUniqueOrThrow({where:{id:admin.id}});
   assert.match(updated.password,/^\$2/);assert.equal(await bcrypt.compare('legacy-test-password',updated.password),true);
-  const request=()=>new Request('http://localhost/api/admin/dashboard-overview',{headers:{authorization:'Bearer '+signToken({user_id:admin.id,role:'ADMIN'})}});
+  const request=()=>new Request('http://localhost/api/admin/dashboard-overview',{headers:{authorization:'Bearer '+signToken({user_id:admin.id,role:'ADMIN',credential_version:staffCredentialVersion(admin.id,updated.password)})}});
   assert.equal((await dashboardOverview(request())).status,200);
   await getPrisma().adminUser.update({where:{id:admin.id},data:{role:'MANAGER'}});
   assert.equal((await dashboardOverview(request())).status,401);
   await getPrisma().adminUser.delete({where:{id:admin.id}});
   assert.equal((await dashboardOverview(request())).status,401);
+});
+
+test('staff rotation is atomic, preserves identities and revokes old sessions; portals enforce roles',integration,async()=>{
+  const db=getPrisma(),bcrypt=await import('bcryptjs');
+  const {rotateStaffAccounts}=await import('../src/backend/services/staffRotation');
+  const {POST:adminLogin}=await import('../src/app/api/access/599c8dc11cf069369fe4738c/login/route');
+  const {POST:managerLogin}=await import('../src/app/api/access/0480dc5f453a73138ff83701/login/route');
+  const {POST:legacyLogin}=await import('../src/app/api/auth/admin/login/route');
+  const {GET:sessionGet}=await import('../src/app/api/auth/session/route');
+  const {GET:managerData}=await import('../src/app/api/management/active-donors/route');
+  const admin=await db.adminUser.create({data:{admin_id:randomUUID(),role:'ADMIN',password:await bcrypt.hash('before-rotation-password',12)}});
+  const manager=await db.adminUser.create({data:{admin_id:randomUUID(),role:'MANAGER',password:await bcrypt.hash('before-rotation-password',12)}});
+  const oldToken=rawSignToken({user_id:admin.id,role:'ADMIN',credential_version:staffCredentialVersion(admin.id,admin.password)});
+  const adminPass=randomBytes(30).toString('base64url'),managerPass=randomBytes(30).toString('base64url');
+  const entries=[{role:'ADMIN' as const,currentId:admin.admin_id,newId:randomUUID(),password:adminPass},{role:'MANAGER' as const,currentId:manager.admin_id,newId:randomUUID(),password:managerPass}];
+  try {
+    await assert.rejects(rotateStaffAccounts([entries[0],{...entries[1],currentId:'does-not-exist'}]));
+    assert.equal((await db.adminUser.findUniqueOrThrow({where:{id:admin.id}})).admin_id,admin.admin_id);
+    await rotateStaffAccounts(entries);
+    const updated=await db.adminUser.findUniqueOrThrow({where:{id:admin.id}});
+    assert.equal(updated.admin_id,entries[0].newId);assert.equal(updated.role,'ADMIN');assert.equal(await bcrypt.compare(adminPass,updated.password),true);
+    const request=(url:string,token:string)=>new Request('http://localhost'+url,{headers:{authorization:'Bearer '+token}});
+    assert.equal((await dashboardOverview(request('/api/admin/dashboard-overview',oldToken))).status,401);
+    assert.equal((await sessionGet(request('/api/auth/session',oldToken))).status,401);
+    assert.equal((await sessionGet(request('/api/auth/session',rawSignToken({user_id:admin.id,role:'ADMIN'})))).status,401);
+    const loginReq=(id:string,password:string)=>new Request('http://localhost/api/access/test/login',{method:'POST',headers:{'Content-Type':'application/json','X-Real-IP':'192.0.2.91'},body:JSON.stringify({adminId:id,password})});
+    assert.equal((await legacyLogin()).status,401);
+    assert.equal((await adminLogin(loginReq(entries[1].newId,managerPass))).status,401);
+    assert.equal((await managerLogin(loginReq(entries[0].newId,adminPass))).status,401);
+    const adminResponse=await adminLogin(loginReq(entries[0].newId,adminPass));assert.equal(adminResponse.status,200);
+    const adminCookie=adminResponse.headers.get('set-cookie')!.split(';')[0];
+    assert.equal((await sessionGet(new Request('http://localhost/api/auth/session',{headers:{cookie:adminCookie}}))).status,200);
+    const managerResponse=await managerLogin(loginReq(entries[1].newId,managerPass));assert.equal(managerResponse.status,200);
+    const managerCookie=managerResponse.headers.get('set-cookie')!.split(';')[0];
+    assert.equal((await dashboardOverview(new Request('http://localhost/api/admin/dashboard-overview',{headers:{cookie:managerCookie}}))).status,403);
+    assert.equal((await managerData(new Request('http://localhost/api/management/active-donors',{headers:{cookie:managerCookie}}))).status,200);
+    const compare=bcrypt.default.compare;
+    const race=mock.method(bcrypt.default,'compare',async(password:string,hash:string)=>{
+      const matched=await compare(password,hash);
+      await db.adminUser.update({where:{id:admin.id},data:{password:await bcrypt.hash(randomBytes(30).toString('base64url'),12)}});
+      return matched;
+    });
+    try {
+      const raced=await adminLogin(loginReq(entries[0].newId,adminPass));
+      assert.equal(raced.status,401,'Rotation during password validation cannot mint a new session from the old password');
+      assert.equal(raced.headers.get('set-cookie'),null);
+    }finally{race.mock.restore();}
+  } finally {await db.adminUser.deleteMany({where:{id:{in:[admin.id,manager.id]}}});}
+});
+
+test('every exported administrator and manager API method denies anonymous and ordinary-user requests',integration,async()=>{
+  const walk=(folder:string):string[]=>readdirSync(folder,{withFileTypes:true}).flatMap(entry=>entry.isDirectory()?walk(path.join(folder,entry.name)):[path.join(folder,entry.name)]);
+  let checked=0;
+  for(const area of ['admin','management'])for(const file of walk(path.resolve('src/app/api',area)).filter(file=>file.endsWith('route.ts'))){
+    const handlers=await import(pathToFileURL(file).href);
+    const url='http://localhost/api/'+path.relative(path.resolve('src/app/api'),file).replace(/\\/g,'/').replace(/\/route.ts$/,'').replace(/\[[^\]]+\]/g,'00000000-0000-4000-8000-000000000000');
+    for(const method of ['GET','POST','PATCH','PUT','DELETE'])if(typeof handlers[method]==='function'){
+      assert.equal((await handlers[method](new Request(url,{method}),{params:Promise.resolve({})})).status,401,`${method} ${url} must deny anonymous access`);
+      const request=new Request(url,{method,headers:{authorization:'Bearer '+signToken({user_id:migratedUserId,role:'USER'})}});
+      assert.equal((await handlers[method](request,{params:Promise.resolve({})})).status,403,`${method} ${url} must deny ordinary users`);
+      checked++;
+    }
+  }
+  assert.equal(checked,70,'Cover all existing privileged API methods');
 });
 
 test('verification uploads are encrypted, owner-bound and privately readable by owner or active admin', integration, async () => {
@@ -885,7 +952,14 @@ test('simultaneous registrations with one phone create one account and return on
 test('case-variant registrations are serialized without rewriting existing email addresses',integration,async()=>{
  const {AuthController}=await import('../src/backend/controllers/AuthController');const email=randomUUID()+'@example.invalid';const emails=[email,email.toUpperCase()];for(const value of emails)await new AuthService().storeOTP(value,'123456');
  const responses=await Promise.all(emails.map((value,i)=>AuthController.verifyOtp(authRequest('verify',registrationPayload(value,'+880191234567'+i)))));
- assert.deepEqual(responses.map(r=>r.status).sort(),[200,409]);assert.equal((await responses.find(r=>r.status===409)!.json()).code,'EMAIL_ALREADY_REGISTERED');assert.equal(await getPrisma().user.count({where:{email:{equals:email,mode:'insensitive'}}}),1);
+ // A request that sees the committed account can legitimately complete its verified-OTP sign-in.
+ // A request that saw no account must lose the serialized create with a conflict. Both paths keep one identity.
+ assert.ok(responses.every(r=>r.status===200||r.status===409));assert.ok(responses.some(r=>r.status===200));
+ const bodies=await Promise.all(responses.map(r=>r.json()));
+ for(let i=0;i<responses.length;i++)if(responses[i].status===409)assert.equal(bodies[i].code,'EMAIL_ALREADY_REGISTERED');
+ const accounts=await getPrisma().user.findMany({where:{email:{equals:email,mode:'insensitive'}}});assert.equal(accounts.length,1);
+ for(let i=0;i<responses.length;i++)if(responses[i].status===200)assert.equal(bodies[i].user.id,accounts[0].id);
+ assert.ok(emails.includes(accounts[0].email),'Retain the originally submitted email spelling');
 });
 
 

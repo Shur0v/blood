@@ -8,7 +8,7 @@ import { usePathname } from "next/navigation";
 type SlotKey = "native-ad-1" | "native-ad-2" | "native-ad-3";
 
 
-const BLOCKED_PREFIXES = ["/admin-dashboard", "/dashboard", "/api"];
+const BLOCKED_PREFIXES = ["/private", "/admin", "/admin-dashboard", "/dashboard", "/api"];
 
 export default function ManagedNativeAdSlot({ slotKey }: { slotKey: SlotKey }) {
   const pathname = usePathname();

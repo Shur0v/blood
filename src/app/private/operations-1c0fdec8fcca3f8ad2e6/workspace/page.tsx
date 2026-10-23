@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
 
 export default function UserManagementPage() {
-  redirect('/dashboard/user-management/organ-request');
+  redirect('/private/operations-1c0fdec8fcca3f8ad2e6/workspace/organ-request');
 }

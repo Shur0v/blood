@@ -160,6 +160,7 @@ export default async function RootLayout({
         </SiteNavigationProvider>
         <Script
           id="simple-analytics"
+          data-ignore-pages="/private,/private/*,/admin,/admin/*,/admin-dashboard,/admin-dashboard/*,/dashboard,/dashboard/*"
           src="https://scripts.simpleanalyticscdn.com/latest.js"
           strategy="afterInteractive"
         />
