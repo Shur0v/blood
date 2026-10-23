@@ -1108,3 +1108,28 @@ test('expanded organ discovery fills matching nearby pledges while preserving se
  const response=await publicOrganDonors(new Request('http://localhost/api/public/organ-donors?'+params)),body=await response.json();assert.equal(response.status,200);assert.equal(body.data.length,16);assert.equal(body.data[0].id,user.id);assert.ok(body.data.every((row:any)=>row.blood_group==='B-'&&row.organ_type==='Kidney'));assert.ok(!JSON.stringify(body).includes('internal_lat'));assert.equal(body.pagination.total,17);
  params.set('cursor',body.pagination.nextCursor);const next=await(await publicOrganDonors(new Request('http://localhost/api/public/organ-donors?'+params))).json();assert.equal(next.data.length,1);assert.equal(next.pagination.nextCursor,null);assert.equal(new Set([...body.data,...next.data].map(row=>row.id)).size,17);
 });
+
+test('search-preference discovery fills A-, O+ and AB- pages without hiding a searched match outside the selected country',integration,async()=>{
+ const db=getPrisma();
+ for(const group of ['A-','O+','AB-']){
+  const country='Search priority '+randomUUID(),query='ExactSearch'+randomUUID();
+  const local=await db.manualBloodDonor.create({data:{name:'Local category match',mobile:randomUUID(),blood_group:group,location_city:'Local',location_country:country,location_lat:24,location_lng:90,source:'TEST',added_by_admin:'TEST'}});
+  const match=await db.manualBloodDonor.create({data:{name:query,mobile:randomUUID(),blood_group:group,location_city:'Searched city',location_country:'Foreign',location_lat:25,location_lng:91,source:'TEST',added_by_admin:'TEST'}});
+  await db.manualBloodDonor.create({data:{name:'Local',mobile:randomUUID(),blood_group:group,location_city:'Elsewhere',location_country:'Foreign',location_lat:24,location_lng:90,source:'TEST',added_by_admin:'TEST'}});
+  for(let i=0;i<17;i++)await db.manualBloodDonor.create({data:{name:'Nearby category match '+i,mobile:randomUUID(),blood_group:group,location_city:'Nearby',location_country:'Foreign',location_lat:24+i*.1,location_lng:90,source:'TEST',added_by_admin:'TEST'}});
+  const params=new URLSearchParams({country,search:query,bloodGroup:group,expand:'nearby',preferSearch:'true',limit:'16'});
+  const read=async()=>{const response=await publicBloodDonors(new Request('http://localhost/api/public/donors?'+params));assert.equal(response.status,200);return response.json();};
+  const first=await read();assert.equal(first.data.length,16);assert.equal(first.data[0].id,match.id);assert.equal(first.data[1].id,local.id);assert.ok(first.data.every((row:any)=>row.blood_group===group));
+  const raw=db.$queryRaw;db.$queryRaw=()=>{throw Error('Synthetic SQL failure');};try{const recovered=await read();assert.equal(recovered.meta.fallback,true);assert.deepEqual(recovered.data.map((row:any)=>row.id),first.data.map((row:any)=>row.id));}finally{db.$queryRaw=raw;}
+  params.set('cursor',first.pagination.nextCursor);const next=await read();assert.equal(new Set([...first.data,...next.data].map(row=>row.id)).size,first.data.length+next.data.length);
+  params.delete('cursor');params.set('search','NoSuchLocation'+randomUUID());assert.equal((await read()).data.length,16,'An absent location must not suppress real category matches');
+  params.set('search',query);params.delete('preferSearch');assert.equal((await read()).data.length,1,'Legacy text-constrained API callers remain compatible');
+  params.set('preferSearch','true');params.set('country','Foreign');params.set('search','Local');assert.equal((await read()).data[0].id,local.id,'An exact searched city ranks above a donor merely named after that city');
+ }
+});
+
+test('organ search-preference suggestions fill the page without changing organ or blood category',integration,async()=>{
+ const db=getPrisma(),query='OrganSearch'+randomUUID();const match=await db.manualOrganDonor.create({data:{name:query,mobile:randomUUID(),blood_group:'B-',organ_type:'Kidney',location_city:'Searched city',location_country:'Foreign',location_lat:24,location_lng:90,source:'TEST',added_by_admin:'TEST'}});
+ const params=new URLSearchParams({country:'Bangladesh',search:query,organ:'Kidney',bloodGroup:'B-',expand:'nearby',preferSearch:'true',limit:'16'});
+ const response=await publicOrganDonors(new Request('http://localhost/api/public/organ-donors?'+params)),body=await response.json();assert.equal(response.status,200);assert.equal(body.data.length,16);assert.equal(body.data[0].id,match.id);assert.ok(body.data.every((row:any)=>row.organ_type==='Kidney'&&row.blood_group==='B-'));
+});

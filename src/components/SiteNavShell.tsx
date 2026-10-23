@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Navbar from "@/src/components/Navbar";
 import { useSiteNavigation } from './SiteNavigationProvider';
+import {openFreshHome} from '../lib/homeNavigation';
 
 const getCurrentPage = (pathname: string) => {
   if (pathname.startsWith("/organ")) return "organ";
@@ -42,7 +43,7 @@ export default function SiteNavShell() {
         }
         router.push("/");
       }}
-      onHomeClick={() => router.push("/")}
+      onHomeClick={() => openFreshHome()}
       onAuthClick={() => router.push("/?profile=1")}
       isLoggedIn={isLoggedIn}
     />

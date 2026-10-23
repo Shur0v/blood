@@ -6,6 +6,7 @@
  */
 
 import { HomeNavigationRegistration } from './SiteNavigationProvider';
+import {openFreshHome} from '../lib/homeNavigation';
 import { motion, useScroll, useSpring } from "motion/react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import dynamic from "next/dynamic";
@@ -398,12 +399,7 @@ export function HomeExperience({ forcedCountry, locationDirectory, regionalFoote
   };
 
   const handleHomeClick = () => {
-    if (pathname !== "/") {
-      router.push("/");
-      return;
-    }
-    setIsProfileView(false);
-    setCurrentPage("home");
+    openFreshHome();
   };
 
   const handlePageChange = (page: string) => {

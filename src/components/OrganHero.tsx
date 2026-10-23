@@ -84,13 +84,13 @@ export default function OrganHero({ forcedCountry }: { forcedCountry?: string })
     if (normalizedSearch) {
       params.set("search", normalizedSearch);
     }
-    if (viewerGeo.city) {
-      params.set("viewerCity", viewerGeo.city);
+    if (normalizedSearch || viewerGeo.city) {
+      params.set("viewerCity", normalizedSearch || viewerGeo.city);
     }
     if (viewerGeo.country) {
       params.set("viewerCountry", viewerGeo.country);
     }
-    if(viewerGeo.lat!==undefined&&viewerGeo.lng!==undefined){params.set("viewerLat",String(viewerGeo.lat));params.set("viewerLng",String(viewerGeo.lng));}
+    if((!normalizedSearch || normalizedSearch.toLowerCase()===viewerGeo.city?.toLowerCase()) && viewerGeo.lat!==undefined&&viewerGeo.lng!==undefined){params.set("viewerLat",String(viewerGeo.lat));params.set("viewerLng",String(viewerGeo.lng));}
     return params;
   };
 

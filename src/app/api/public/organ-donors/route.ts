@@ -20,6 +20,7 @@ const QuerySchema = z.object({
   viewerLat: z.coerce.number().min(-90).max(90).optional(),
   viewerLng: z.coerce.number().min(-180).max(180).optional(),
   expand: z.enum(['nearby']).optional(),
+  preferSearch: z.enum(['true']).optional(),
 });
 
 interface PublicOrganDonorRow {
@@ -58,6 +59,7 @@ export async function GET(req: Request) {
       viewerLat: url.searchParams.get('viewerLat') ?? undefined,
       viewerLng: url.searchParams.get('viewerLng') ?? undefined,
       expand: url.searchParams.get('expand') || undefined,
+      preferSearch: url.searchParams.get('preferSearch') || undefined,
     });
 
     if (!parsed.success) {
@@ -66,6 +68,7 @@ export async function GET(req: Request) {
 
     const { limit, cursor, organ, bloodGroup, search, viewerCity, viewerCountry, country:selectedCountry, viewerLat:requestedLat, viewerLng:requestedLng,expand } = parsed.data;
     const country=expand?undefined:selectedCountry;
+    const preferSearch=Boolean(expand&&parsed.data.preferSearch);
     const origin=expand&&requestedLat===undefined?await getDiscoveryOrigin(selectedCountry,viewerCity):null;
     const viewerLat=requestedLat??origin?.lat,viewerLng=requestedLng??origin?.lng;
     const normalizedOrganFilter = organ ? normalizeOrganName(organ) : null;
@@ -128,7 +131,7 @@ export async function GET(req: Request) {
       ELSE NULL
     END`;
     const manualFilterByOrgan = normalizedOrganFilter ? Prisma.sql`AND ${normalizedManualOrgan} = ${normalizedOrganFilter}` : Prisma.empty;
-    const userFilterBySearch = searchLike
+    const userFilterBySearch = searchLike&&!preferSearch
       ? Prisma.sql`
           AND (
             u.name ILIKE ${searchLike}
@@ -144,7 +147,7 @@ export async function GET(req: Request) {
           )
         `
       : Prisma.empty;
-    const manualFilterBySearch = searchLike
+    const manualFilterBySearch = searchLike&&!preferSearch
       ? Prisma.sql`
           AND (
             COALESCE(mod.name, 'BloodNet Organ Donor') ILIKE ${searchLike}
@@ -250,6 +253,7 @@ export async function GET(req: Request) {
         ${manualFilterBySearch}
       ) AS organ_donors
       ORDER BY
+        ${preferSearch&&searchLike?Prisma.sql`CASE WHEN LOWER(TRIM(organ_donors.location_city))=LOWER(TRIM(${search||''})) OR LOWER(TRIM(organ_donors.location_country))=LOWER(TRIM(${search||''})) THEN -1 WHEN organ_donors.name ILIKE ${searchLike} OR organ_donors.location_city ILIKE ${searchLike} OR organ_donors.location_country ILIKE ${searchLike} OR organ_donors.mobile ILIKE ${searchLike} THEN 0 ELSE 1 END`:Prisma.sql`0::integer`} ASC,
         ${expand?Prisma.sql`CASE WHEN LOWER(TRIM(organ_donors.location_country))=LOWER(TRIM(${selectedCountry||''})) THEN CASE WHEN LOWER(TRIM(organ_donors.location_city))=LOWER(TRIM(${viewerCity||''})) THEN 0 ELSE 1 END ELSE 2 END`:Prisma.sql`0::integer`} ASC,
         ${viewerLat !== undefined && viewerLng !== undefined ? Prisma.sql`acos(LEAST(1.0, GREATEST(-1.0, sin(radians(${viewerLat}::float8))*sin(radians(organ_donors.internal_lat)) + cos(radians(${viewerLat}::float8))*cos(radians(organ_donors.internal_lat))*cos(radians(organ_donors.internal_lng-${viewerLng}::float8)))))` : Prisma.sql`NULL::float8`} ASC NULLS LAST,
         ${donorViewerCityRank} ASC,

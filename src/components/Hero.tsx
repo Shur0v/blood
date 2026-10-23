@@ -150,7 +150,7 @@ export default function Hero({ forcedCountry, initialCity = '', initialGroup = n
   const effectiveQuery=useRef<URLSearchParams|null>(null);
   const regionKey=viewerGeo.country||'global';
   const localReady = Boolean(viewerGeo.resolved) && loadedCountry === regionKey;
-  const donorCacheKey = `bloodnet_public_donors_cache:v5:${viewerGeo.country}:${activeGroup || 'all'}:${normalizedSearch}${initialCity ? ':nearby' : ''}`;
+  const donorCacheKey = `bloodnet_public_donors_cache:v6:${viewerGeo.country}:${activeGroup || 'all'}:${normalizedSearch}${initialCity ? ':nearby' : ''}`;
   const donorRequests = useRef<AbortController | null>(null);
   const buildBaseParams = () => {
     const params = new URLSearchParams({ limit: "16", sort: 'NEARBY',expand:'nearby' });
@@ -163,15 +163,15 @@ export default function Hero({ forcedCountry, initialCity = '', initialGroup = n
     if (normalizedSearch && normalizedSearch !== initialCity) {
       params.set("search", normalizedSearch);
     }
-    if (initialCity || viewerGeo.city) {
-      params.set("viewerCity", initialCity || viewerGeo.city);
+    if (normalizedSearch || initialCity || viewerGeo.city) {
+      params.set("viewerCity", normalizedSearch || initialCity || viewerGeo.city);
     }
     if (viewerGeo.country) {
       params.set("viewerCountry", viewerGeo.country);
     }
     // A location page belongs to its named area, not the visiting device's
     // different city. Do not let remote visitor coordinates outrank that area.
-    if((!initialCity || viewerGeo.city?.toLowerCase() === initialCity.toLowerCase()) && viewerGeo.lat!==undefined&&viewerGeo.lng!==undefined){params.set("viewerLat",String(viewerGeo.lat));params.set("viewerLng",String(viewerGeo.lng));}
+    if((!initialCity || viewerGeo.city?.toLowerCase() === initialCity.toLowerCase()) && (!normalizedSearch || normalizedSearch.toLowerCase()===viewerGeo.city?.toLowerCase()) && viewerGeo.lat!==undefined&&viewerGeo.lng!==undefined){params.set("viewerLat",String(viewerGeo.lat));params.set("viewerLng",String(viewerGeo.lng));}
     return params;
   };
 
