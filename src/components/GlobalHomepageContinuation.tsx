@@ -8,7 +8,7 @@ import { isDiscoveryPath } from '@/src/lib/discoveryRoutes';
 
 import {getRegionBySlug} from '@/src/lib/regions';
 
-const EXCLUDED_PREFIXES = ["/api", "/private", "/admin", "/admin-dashboard", "/dashboard"];
+const EXCLUDED_PREFIXES = ["/api", "/private", "/admin", "/admin-dashboard", "/dashboard", "/blog"];
 const EXCLUDED_EXACT = new Set([
   "/",
   "/bd",
