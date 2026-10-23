@@ -13,10 +13,11 @@ import {
   bloodGroupReadable,
   bloodGroupToSlug,
   cityToSlug,
-  maskPublicPhone,
   type BloodGroup,
 } from "@/src/lib/seoRouting";
 import ManagedNativeAdSlot from "@/src/components/ManagedNativeAdSlot";
+import Hero from './Hero';
+import DonorDiscoveryPanel from './DonorDiscoveryPanel';
 
 const formatDate = (date: Date | null | undefined) =>
   date
@@ -118,8 +119,9 @@ export async function BloodGroupCitySeoPage({ bloodGroup, citySlug }: { bloodGro
 
   const city = donors[0]?.location_city || cityRows[0].city;
   const country = donors[0]?.location_country || cityRows[0].country;
-  const groupCount = donors.length;
-  const cityTotal = cityRows.reduce((sum, row) => sum + Number(row.total ?? 0), 0);
+  const localRows = cityRows.filter(row => row.country === country);
+  const groupCount = localRows.filter(row => row.blood_group === bloodGroup).reduce((sum, row) => sum + Number(row.total ?? 0), 0);
+  const cityTotal = localRows.reduce((sum, row) => sum + Number(row.total ?? 0), 0);
   const lastUpdated =
     donors.reduce<Date | null>((latest, row) => (!latest || row.updated_at > latest ? row.updated_at : latest), null) ||
     network.lastUpdated;
@@ -183,26 +185,17 @@ export async function BloodGroupCitySeoPage({ bloodGroup, citySlug }: { bloodGro
         </div>
       </section>
 
+      <Hero key={`${country}:${city}:${bloodGroup}`} forcedCountry={country} initialCity={city} initialGroup={bloodGroup} headingLevel={2}/>
+      <DonorDiscoveryPanel forcedCountry={country}/>
       <section className="mx-auto grid max-w-6xl gap-6 px-4 pb-16 lg:grid-cols-[1.4fr_0.8fr]">
-        <div className="rounded-[8px] bg-white p-6 shadow-card">
-          <h2 className="text-2xl font-semibold">Available {bloodGroup} Donors in {city}</h2>
-          <div className="mt-5 grid gap-3">
+        <details className="rounded-[8px] bg-white p-6 shadow-card">
+          <summary className="cursor-pointer text-xl font-semibold">Recent recorded {bloodGroup} entries in {city}</summary>
+          <ul className="mt-5 grid gap-3">
             {donors.slice(0, 12).map((donor) => (
-              <article key={`${donor.source_type}-${donor.id}`} className="rounded-[8px] border border-gray-100 p-4">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <h3 className="font-semibold">{donor.name || "BloodNet donor"}</h3>
-                    <p className="mt-1 text-sm font-semibold text-gray-500">{donor.location_city}, {donor.location_country}</p>
-                  </div>
-                  <span className="rounded-full bg-red-50 px-3 py-1 text-sm font-semibold text-primary">{donor.blood_group}</span>
-                </div>
-                <p className="mt-3 text-sm font-semibold text-gray-600">
-                  Contact: {maskPublicPhone(donor.mobile)} - BloodNet registered donor entry
-                </p>
-              </article>
+              <li key={`${donor.source_type}-${donor.id}`} className="text-sm text-gray-600">{donor.name || 'BloodNet donor'} · {donor.blood_group} · {donor.location_city}, {donor.location_country}</li>
             ))}
-          </div>
-        </div>
+          </ul>
+        </details>
 
         <aside className="space-y-6">
           <div className="rounded-[8px] bg-white p-6 shadow-card">

@@ -108,7 +108,7 @@ function MixedDonorBannerCard({ ad, onFail }: { ad: InlineBannerAdUnit; onFail: 
 
 const DONOR_GRID_AD_SLOTS = 4;
 
-export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
+export default function Hero({ forcedCountry, initialCity = '', initialGroup = null, headingLevel = 1 }: { forcedCountry?: string; initialCity?: string; initialGroup?: string | null; headingLevel?: 1 | 2 }) {
   const adsConfig = usePublicAds();
   const readServerRenderedDonorTotal = () => {
     if (forcedCountry) return 0;
@@ -124,8 +124,9 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
     return Number.isFinite(value) && value > 0 ? value : 0;
   };
 
-  const [activeGroup, setActiveGroup] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [activeGroup, setActiveGroup] = useState<string | null>(initialGroup);
+  const [searchQuery, setSearchQuery] = useState(initialCity);
+  const [retryAttempt, setRetryAttempt] = useState(0);
   const [selectedDonor, setSelectedDonor] = useState<Donor | null>(null);
   const [donors, setDonors] = useState<Donor[]>([]);
   const [totalActiveDonors, setTotalActiveDonors] = useState(readServerRenderedDonorTotal);
@@ -149,10 +150,10 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
   const effectiveQuery=useRef<URLSearchParams|null>(null);
   const regionKey=viewerGeo.country||'global';
   const localReady = Boolean(viewerGeo.resolved) && loadedCountry === regionKey;
-  const donorCacheKey = `bloodnet_public_donors_cache:v4:${viewerGeo.country}:${activeGroup || 'all'}:${normalizedSearch}`;
+  const donorCacheKey = `bloodnet_public_donors_cache:v4:${viewerGeo.country}:${activeGroup || 'all'}:${normalizedSearch}${initialCity ? ':nearby' : ''}`;
   const donorRequests = useRef<AbortController | null>(null);
   const buildBaseParams = () => {
-    const params = new URLSearchParams({ limit: "16", sort: 'NEWEST' });
+    const params = new URLSearchParams({ limit: "16", sort: initialCity ? 'NEARBY' : 'NEWEST' });
     if (viewerGeo.country) {
       params.set("country", viewerGeo.country);
     }
@@ -162,13 +163,15 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
     if (normalizedSearch) {
       params.set("search", normalizedSearch);
     }
-    if (viewerGeo.city) {
-      params.set("viewerCity", viewerGeo.city);
+    if (initialCity || viewerGeo.city) {
+      params.set("viewerCity", initialCity || viewerGeo.city);
     }
     if (viewerGeo.country) {
       params.set("viewerCountry", viewerGeo.country);
     }
-    if(viewerGeo.lat!==undefined&&viewerGeo.lng!==undefined){params.set("viewerLat",String(viewerGeo.lat));params.set("viewerLng",String(viewerGeo.lng));}
+    // A location page belongs to its named area, not the visiting device's
+    // different city. Do not let remote visitor coordinates outrank that area.
+    if((!initialCity || viewerGeo.city?.toLowerCase() === initialCity.toLowerCase()) && viewerGeo.lat!==undefined&&viewerGeo.lng!==undefined){params.set("viewerLat",String(viewerGeo.lat));params.set("viewerLng",String(viewerGeo.lng));}
     return params;
   };
 
@@ -253,6 +256,8 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
     setSelectedDonor(null);
     setNextCursor(null);
     setDonors([]);
+    setIsDonorApiDown(false);
+    setDiscoveryNotice('');
     setLoadedCountry(regionKey);
     setIsInitialDonorLoad(Boolean(viewerGeo.resolved));
     if (!viewerGeo.resolved) return () => controller.abort();
@@ -277,18 +282,24 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
       } catch (error) {
         if (controller.signal.aborted) return;
         setIsDonorApiDown(true);
-        if (donors.length === 0) {
-          const hydrated = await hydrateFromSiteState(controller.signal);
-          if (controller.signal.aborted) return;
-          if (!hydrated) hydrateFromCache();
-        }
+        // Statistics contain counts, not cards. Restore the scoped card cache
+        // independently rather than letting a successful count hide it.
+        hydrateFromCache();
+        await hydrateFromSiteState(controller.signal);
+        if (controller.signal.aborted) return;
         setIsInitialDonorLoad(false);
       }
     };
 
     void loadDonors();
     return () => controller.abort();
-  }, [activeGroup, normalizedSearch, viewerGeo.city, viewerGeo.country, viewerGeo.resolved, viewerGeo.lat, viewerGeo.lng, forcedCountry]);
+  }, [activeGroup, normalizedSearch, viewerGeo.city, viewerGeo.country, viewerGeo.resolved, viewerGeo.lat, viewerGeo.lng, forcedCountry, initialCity, retryAttempt]);
+
+  useEffect(() => {
+    const reconnect = () => setRetryAttempt(value => value + 1);
+    window.addEventListener('online', reconnect);
+    return () => window.removeEventListener('online', reconnect);
+  }, []);
 
   useEffect(() => {
     setHasLoadedMoreOnce(false);
@@ -392,9 +403,9 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
               </div>
             </motion.div>
 
-            <h1 className="mb-6 text-4xl font-bold tracking-tight text-gray-900 md:text-6xl">
+            {headingLevel === 1 ? <h1 className="mb-6 text-4xl font-bold tracking-tight text-gray-900 md:text-6xl">
               Every Drop <span className="text-primary-dark">Counts</span>.
-            </h1>
+            </h1> : <h2 className="mb-6 text-4xl font-bold tracking-tight text-gray-900 md:text-6xl">Every Drop <span className="text-primary-dark">Counts</span>.</h2>}
 
             <p className="mx-auto mb-8 max-w-2xl text-base text-gray-500">
               Join our premium community of life-savers. Connect with donors instantly and manage blood stocks with our futuristic medical dashboard.
@@ -414,7 +425,10 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
           </div>
         ) : hasNoResults ? (
           <div className="mx-auto min-h-[320px] max-w-4xl rounded-[8px] border border-white/40 bg-white/20 p-8 text-center text-sm font-semibold text-gray-700">
-            No active donors found for this filter.
+            <p>{isDonorApiDown ? 'Donor cards could not be loaded. Please retry.' : `No matching donor entries${viewerGeo.country ? ` in ${viewerGeo.country}` : ''}${normalizedSearch ? ` for “${normalizedSearch}”` : ''}${activeGroup ? ` (${activeGroup})` : ''}.`}</p>
+            <button type="button" className="mt-4 rounded-full border border-rose-200 bg-white px-5 py-3 text-sm font-semibold text-rose-700" onClick={() => isDonorApiDown ? setRetryAttempt(value => value + 1) : document.querySelector<HTMLButtonElement>('.donor-discovery-trigger')?.click()}>
+              {isDonorApiDown ? 'Retry donor search' : 'Choose another location'}
+            </button>
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -471,7 +485,7 @@ export default function Hero({ forcedCountry }: { forcedCountry?: string }) {
         )}
         {isDonorApiDown && (
           <p className="mx-auto mt-4 max-w-4xl text-center text-xs font-semibold text-amber-700">
-            Live donor feed is reconnecting. Showing last available data.
+            {donors.length ? 'Live donor feed is unavailable. Showing saved results for these filters.' : 'The donor feed is unavailable. This does not mean there are no donors.'}
           </p>
         )}
         {localReady && nextCursor && !hasNoResults && (
