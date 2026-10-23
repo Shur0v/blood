@@ -66,6 +66,8 @@ const deriveCountryFromLocale = (): string | undefined => {
 let pending: Promise<ViewerGeo> | undefined;
 let recent: ViewerGeo | undefined;
 let precisePending: Promise<ViewerGeo> | undefined;
+let cityPending:Promise<void>|undefined;
+let cityAttempt=0;
 const GEO_EVENT='bloodnet-viewer-geo';
 const TTL=10*60*1000;
 async function automaticLocation(): Promise<ViewerGeo> {
@@ -88,6 +90,21 @@ async function automaticLocation(): Promise<ViewerGeo> {
   return pending;
 }
 
+async function enrichCity(){
+  if(cityPending)return cityPending;
+  if(!recent?.country||recent.city||recent.source==='gps'||Date.now()-cityAttempt<TTL)return;
+  cityAttempt=Date.now();
+  cityPending=(async()=>{try{
+    const response=await fetch('/api/location/ip?detail=city',{cache:'no-store',signal:AbortSignal.timeout(5000)});
+    const payload=await response.json(),data=payload.data;
+    if(!response.ok||!payload.success||!data?.city||!data.country||recent?.source==='gps')return;
+    if(recent?.source==='ip'&&recent.country!==data.country)return;
+    recent={...data,source:'ip',resolved:true,updatedAt:Date.now()};
+    window.dispatchEvent(new Event(GEO_EVENT));
+  }catch{/* Country browsing remains available if city detection fails. */}
+  finally{cityPending=undefined;}})();return cityPending;
+}
+
 // Automatic browsing is permission-free; GPS is available only on request.
 export default function useViewerGeo() {
   const [geo,setGeo]=useState<ViewerGeo>({});
@@ -96,7 +113,7 @@ export default function useViewerGeo() {
     let cancelled=false;
     const changed=()=>{if(recent&&!cancelled)setGeo(recent);};
     window.addEventListener(GEO_EVENT,changed);
-    void automaticLocation().then(value=>{if(!cancelled)setGeo(recent?.source==='gps'?recent:value);});
+    void automaticLocation().then(value=>{if(!cancelled){setGeo(recent?.source==='gps'?recent:value);void enrichCity();}});
     return()=>{cancelled=true;window.removeEventListener(GEO_EVENT,changed);};
   },[]);
   const requestPreciseLocation=async()=>{

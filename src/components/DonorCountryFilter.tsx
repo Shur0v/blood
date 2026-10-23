@@ -13,6 +13,6 @@ export default function DonorCountryFilter({country,onChange,locked=false,onLoca
     </select>
     {!locked&&onLocate&&<button type="button" onClick={onLocate} disabled={locating} className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-full border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 hover:border-rose-300 hover:bg-rose-50 disabled:opacity-60"><LocateFixed className={`h-4 w-4 ${locating?'animate-pulse':''}`}/>{locating?'Confirming location…':'Use precise location'}</button>}
     {locationMessage&&<p role="status" className="mt-2 text-xs leading-5 text-slate-600">{locationMessage}</p>}
-    <p className="mt-2 text-xs leading-5 text-slate-500">{failed?'Country coverage could not be refreshed. Existing results remain available.':country ? `Prioritising ${country}. Local donors come first, followed by nearby cities and countries to fill the list. Blood group and organ filters stay selected. Distances are approximate.` : 'Detecting your country automatically. You can also choose a country with donor coverage here.'}</p>
+    <p className="mt-2 text-xs leading-5 text-slate-500">{failed?'Country coverage could not be refreshed. Existing results remain available.':country ? `Prioritising ${country}. When your city is known, its newest registered donors appear first. Nearby cities and countries then fill the list. Blood group and organ filters stay selected. Distances are approximate.` : 'Detecting your country automatically. You can also choose a country with donor coverage here.'}</p>
   </div>;
 }

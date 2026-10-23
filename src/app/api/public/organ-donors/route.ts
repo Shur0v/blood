@@ -89,6 +89,7 @@ export async function GET(req: Request) {
     const canonicalViewerCountry = normalizeCountryToken(normalizedViewerCountry);
     const nearbyCountries = canonicalViewerCountry ? (NEARBY_COUNTRY_MAP[canonicalViewerCountry] || []) : [];
     const normalizedCountry = country?.trim();
+    const localFreshness=expand?Prisma.sql`LOWER(TRIM(organ_donors.location_country))=LOWER(TRIM(${selectedCountry||''})) AND (${!viewerCity} OR LOWER(TRIM(organ_donors.location_city))=LOWER(TRIM(${viewerCity||''})))`:Prisma.sql`FALSE`;
     const userFilterByCountry = normalizedCountry
       ? Prisma.sql`AND (
           LOWER(u.location_country) = LOWER(${normalizedCountry})
@@ -199,7 +200,7 @@ export async function GET(req: Request) {
           END AS hemoglobin,
           u.last_donation_date,
           'REGISTERED'::text AS source_type,
-          op.created_at,
+          u.created_at AS created_at,
           op.updated_at AS sort_at
         FROM "OrganPledge" op
         JOIN "User" u ON u.id = op.user_id
@@ -255,6 +256,8 @@ export async function GET(req: Request) {
       ORDER BY
         ${preferSearch&&searchLike?Prisma.sql`CASE WHEN LOWER(TRIM(organ_donors.location_city))=LOWER(TRIM(${search||''})) OR LOWER(TRIM(organ_donors.location_country))=LOWER(TRIM(${search||''})) THEN -1 WHEN organ_donors.name ILIKE ${searchLike} OR organ_donors.location_city ILIKE ${searchLike} OR organ_donors.location_country ILIKE ${searchLike} OR organ_donors.mobile ILIKE ${searchLike} THEN 0 ELSE 1 END`:Prisma.sql`0::integer`} ASC,
         ${expand?Prisma.sql`CASE WHEN LOWER(TRIM(organ_donors.location_country))=LOWER(TRIM(${selectedCountry||''})) THEN CASE WHEN LOWER(TRIM(organ_donors.location_city))=LOWER(TRIM(${viewerCity||''})) THEN 0 ELSE 1 END ELSE 2 END`:Prisma.sql`0::integer`} ASC,
+        CASE WHEN ${localFreshness} THEN CASE WHEN organ_donors.source_type='REGISTERED' THEN 0 ELSE 1 END ELSE 0 END ASC,
+        CASE WHEN ${localFreshness} THEN organ_donors.created_at ELSE NULL END DESC,
         ${viewerLat !== undefined && viewerLng !== undefined ? Prisma.sql`acos(LEAST(1.0, GREATEST(-1.0, sin(radians(${viewerLat}::float8))*sin(radians(organ_donors.internal_lat)) + cos(radians(${viewerLat}::float8))*cos(radians(organ_donors.internal_lat))*cos(radians(organ_donors.internal_lng-${viewerLng}::float8)))))` : Prisma.sql`NULL::float8`} ASC NULLS LAST,
         ${donorViewerCityRank} ASC,
         ${donorViewerCountryRank} ASC,

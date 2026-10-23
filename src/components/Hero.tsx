@@ -150,7 +150,7 @@ export default function Hero({ forcedCountry, initialCity = '', initialGroup = n
   const effectiveQuery=useRef<URLSearchParams|null>(null);
   const regionKey=viewerGeo.country||'global';
   const localReady = Boolean(viewerGeo.resolved) && loadedCountry === regionKey;
-  const donorCacheKey = `bloodnet_public_donors_cache:v6:${viewerGeo.country}:${activeGroup || 'all'}:${normalizedSearch}${initialCity ? ':nearby' : ''}`;
+  const donorCacheKey = `bloodnet_public_donors_cache:v7:${viewerGeo.country}:${initialCity || viewerGeo.city || ''}:${activeGroup || 'all'}:${normalizedSearch}`;
   const donorRequests = useRef<AbortController | null>(null);
   const buildBaseParams = () => {
     const params = new URLSearchParams({ limit: "16", sort: 'NEARBY',expand:'nearby' });

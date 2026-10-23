@@ -51,7 +51,7 @@ await render({key:'outage'});
 await act(async()=>{await new Promise(resolve=>setTimeout(resolve,30));});
 assert.match(document.body.textContent,/Bangladesh volunteer/,'A successful statistics response must not prevent cached donor cards from rendering');
 assert.match(document.body.textContent,/Showing saved results/);
-localStorage.removeItem('bloodnet_public_donors_cache:v6:Bangladesh:all:');
+localStorage.removeItem('bloodnet_public_donors_cache:v7:Bangladesh::all:');
 await render({key:'uncached-outage'});
 await act(async()=>{await new Promise(resolve=>setTimeout(resolve,30));});
 assert.match(document.body.textContent,/Donor cards could not be loaded/);

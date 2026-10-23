@@ -90,6 +90,7 @@ export async function GET(req: Request) {
     const canonicalViewerCountry = normalizeCountryToken(normalizedViewerCountry);
     const nearbyCountries = canonicalViewerCountry ? (NEARBY_COUNTRY_MAP[canonicalViewerCountry] || []) : [];
     const normalizedCountry = country?.trim();
+    const localFreshness=expand?Prisma.sql`LOWER(TRIM(donors.location_country))=LOWER(TRIM(${selectedCountry||''})) AND (${!viewerCity} OR LOWER(TRIM(donors.location_city))=LOWER(TRIM(${viewerCity||''})))`:Prisma.sql`FALSE`;
     const userFilterByCountry = normalizedCountry
       ? Prisma.sql`AND (
           LOWER(u.location_country) = LOWER(${normalizedCountry})
@@ -287,6 +288,8 @@ export async function GET(req: Request) {
       ORDER BY
         ${preferSearch&&searchLike?Prisma.sql`CASE WHEN LOWER(TRIM(donors.location_city))=LOWER(TRIM(${search||''})) OR LOWER(TRIM(donors.location_country))=LOWER(TRIM(${search||''})) THEN -1 WHEN donors.name ILIKE ${searchLike} OR donors.location_city ILIKE ${searchLike} OR donors.location_country ILIKE ${searchLike} OR donors.mobile ILIKE ${searchLike} THEN 0 ELSE 1 END`:Prisma.sql`0::integer`} ASC,
         ${expand?Prisma.sql`CASE WHEN LOWER(TRIM(donors.location_country))=LOWER(TRIM(${selectedCountry||''})) THEN CASE WHEN LOWER(TRIM(donors.location_city))=LOWER(TRIM(${viewerCity||''})) THEN 0 ELSE 1 END ELSE 2 END`:Prisma.sql`0::integer`} ASC,
+        CASE WHEN ${localFreshness} THEN CASE WHEN ${hasCommunityKeyword} AND donors.is_community THEN -1 WHEN donors.source_type='REGISTERED' THEN 0 WHEN donors.source_type='MANUAL' THEN 1 ELSE 2 END ELSE 0 END ASC,
+        CASE WHEN ${localFreshness} THEN donors.created_at ELSE NULL END DESC,
         ${sort === 'NEARBY' && viewerLat !== undefined && viewerLng !== undefined ? Prisma.sql`acos(LEAST(1.0, GREATEST(-1.0, sin(radians(${viewerLat}::float8))*sin(radians(donors.internal_lat)) + cos(radians(${viewerLat}::float8))*cos(radians(donors.internal_lat))*cos(radians(donors.internal_lng-${viewerLng}::float8)))))` : Prisma.sql`NULL::float8`} ASC NULLS LAST,
         ${hasCommunityKeyword ? Prisma.sql`CASE WHEN donors.is_community THEN 0 ELSE 1 END` : Prisma.sql`1::integer`} ASC,
         CASE WHEN ${sort === 'NEWEST'} THEN

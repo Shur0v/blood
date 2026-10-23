@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { automaticIpLocation } from '@/src/backend/services/automaticLocation';
+import {normalizeCountryToken} from '@/src/lib/geoCountry';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,7 +23,11 @@ export async function GET(req: Request) {
       req.headers.get('cloudfront-viewer-country');
 
     const country = countryNameFromCode(countryCode);
-    const detected = country ? {country} : await automaticIpLocation(req);
+    const detailed=new URL(req.url).searchParams.get('detail')==='city';
+    const approximate=!country||detailed?await automaticIpLocation(req):null;
+    // Keep the proxy's country authoritative and never attach a different
+    // country's city/coordinates to it. The default country response stays fast.
+    const detected = country ? {...(approximate&&normalizeCountryToken(approximate.country)===normalizeCountryToken(country)?approximate:{}),country} : approximate;
 
     if (!detected) {
       return NextResponse.json(

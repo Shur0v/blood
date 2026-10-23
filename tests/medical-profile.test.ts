@@ -1133,3 +1133,25 @@ test('organ search-preference suggestions fill the page without changing organ o
  const params=new URLSearchParams({country:'Bangladesh',search:query,organ:'Kidney',bloodGroup:'B-',expand:'nearby',preferSearch:'true',limit:'16'});
  const response=await publicOrganDonors(new Request('http://localhost/api/public/organ-donors?'+params)),body=await response.json();assert.equal(response.status,200);assert.equal(body.data.length,16);assert.equal(body.data[0].id,match.id);assert.ok(body.data.every((row:any)=>row.organ_type==='Kidney'&&row.blood_group==='B-'));
 });
+
+test('new registered donors lead their own city in blood and organ feeds and SQL recovery agrees',integration,async()=>{
+ const db=getPrisma(),country='Local freshness '+randomUUID(),old=await newPatient(),fresh=await newPatient(),other=await newPatient();
+ for(const [user,city,date,lat] of [[old,'Dhaka','2020-01-01',23.8],[fresh,'Dhaka','2026-01-01',23.9],[other,'Other city','2026-10-01',23.8]] as const){await db.user.update({where:{id:user.id},data:{location_country:country,location_city:city,blood_group:'AB-',location_lat:lat,location_lng:90.4,created_at:new Date(date)}});await db.organPledge.create({data:{user_id:user.id,organ_type:'Kidney'}});}
+ await db.manualBloodDonor.create({data:{name:'New manual entry',mobile:randomUUID(),blood_group:'AB-',location_city:'Dhaka',location_country:country,location_lat:23.8,location_lng:90.4,source:'TEST',added_by_admin:'TEST'}});
+ const params=new URLSearchParams({country,viewerCountry:country,viewerCity:'Dhaka',viewerLat:'23.8',viewerLng:'90.4',bloodGroup:'AB-',expand:'nearby',organ:'Kidney'});
+ const blood=await(await publicBloodDonors(new Request('http://localhost/api/public/donors?'+params))).json();assert.equal(blood.data[0].id,fresh.id);assert.equal(blood.data[1].id,old.id);assert.equal(blood.data[3].id,other.id);
+ const organs=await(await publicOrganDonors(new Request('http://localhost/api/public/organ-donors?'+params))).json();assert.equal(organs.data[0].id,fresh.id);assert.equal(organs.data[1].id,old.id);assert.equal(organs.data[2].id,other.id);
+ const raw=db.$queryRaw;db.$queryRaw=()=>{throw Error('Synthetic SQL failure');};try{const recovery=await(await publicBloodDonors(new Request('http://localhost/api/public/donors?'+params))).json();assert.equal(recovery.meta.fallback,true);assert.deepEqual(recovery.data.map((row:any)=>row.id),blood.data.map((row:any)=>row.id));}finally{db.$queryRaw=raw;}
+});
+
+test('country headers stay fast and city enrichment never attaches a different country location',integration,async()=>{
+ const original=globalThis.fetch;let calls=0;
+ globalThis.fetch=async()=>{calls++;return Response.json({country:{name:'Bangladesh'},city:{name:'Dhaka'},location:{latitude:23.8,longitude:90.4}});};
+ try{
+  const headers={'cf-ipcountry':'BD','cf-connecting-ip':'198.51.100.24'};
+  const fast=await(await detectCountry(new Request('http://localhost/api/location/ip',{headers}))).json();assert.deepEqual(fast.data,{country:'Bangladesh'});assert.equal(calls,0);
+  const detail=await(await detectCountry(new Request('http://localhost/api/location/ip?detail=city',{headers}))).json();assert.equal(detail.data.city,'Dhaka');assert.equal(detail.data.country,'Bangladesh');assert.equal(calls,1);
+  globalThis.fetch=async()=>Response.json({country:{name:'India'},city:{name:'Mumbai'},location:{latitude:19.07,longitude:72.87}});
+  const mismatched=await(await detectCountry(new Request('http://localhost/api/location/ip?detail=city',{headers:{'cf-ipcountry':'BD','cf-connecting-ip':'198.51.100.25'}}))).json();assert.deepEqual(mismatched.data,{country:'Bangladesh'});
+ }finally{globalThis.fetch=original;}
+});

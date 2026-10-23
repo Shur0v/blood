@@ -3,6 +3,13 @@ import {compareDonors,distanceScore,selectServiceCity} from '../src/lib/donorOrd
 import {discoverySnapshot} from '../src/lib/discoveryState';
 test('nearby distance precedes recency while newest preserves source and registration order',()=>{const row=(id:string,lat:number,date:string)=>({id,location_city:'Delhi',location_country:'India',internal_lat:lat,internal_lng:77,source_type:'REGISTERED',created_at:new Date(date),sort_at:new Date(date)});const near=row('near',28.6,'2020-01-01'),far=row('far',50,'2026-01-01');assert.deepEqual([far,near].sort((a,b)=>compareDonors(a,b,{sort:'NEARBY',viewerLat:28.6,viewerLng:77})).map(r=>r.id),['near','far']);assert.deepEqual([near,far].sort((a,b)=>compareDonors(a,b,{sort:'NEWEST',viewerLat:28.6,viewerLng:77})).map(r=>r.id),['far','near']);assert.equal(distanceScore(undefined,77,28,77),Infinity);});
 test('service-city selection honors explicit search, viewer city and stable creation order',()=>{const city=(id:string,name:string,created:string)=>({id,city:name,country:'India',lat:1,lng:1,created_at:new Date(created)});const delhi=city('a','Delhi','2020-01-01'),mumbai=city('b','Mumbai','2026-01-01');assert.equal(selectServiceCity([delhi,mumbai],{sort:'NEARBY',search:'Mumbai',viewerCity:'Delhi'})?.id,'b');assert.equal(selectServiceCity([mumbai,delhi],{sort:'NEARBY',viewerCity:'Delhi'})?.id,'a');});
+
+test('local registrations sort newest first before distance, while another city cannot jump ahead',()=>{
+ const row=(id:string,city:string,source:string,date:string,lat:number)=>({id,name:id,location_city:city,location_country:'Bangladesh',internal_lat:lat,internal_lng:90.4,source_type:source,created_at:new Date(date),sort_at:new Date(date)});
+ const old=row('old','Dhaka','REGISTERED','2020-01-01',23.8),fresh=row('new','Dhaka','REGISTERED','2026-01-01',23.9),manual=row('manual','Dhaka','MANUAL','2026-10-01',23.8),other=row('other','Chattogram','REGISTERED','2026-10-02',23.8);
+ const sorted=[manual,other,old,fresh].sort((a,b)=>compareDonors(a,b,{sort:'NEARBY',priorityCountry:'Bangladesh',viewerCountry:'Bangladesh',viewerCity:'Dhaka',viewerLat:23.8,viewerLng:90.4}));
+ assert.deepEqual(sorted.map(row=>row.id),['new','old','manual','other']);
+});
 test('discovery summaries exclude queries, blood groups, phones and coordinates',()=>{const summary=discoverySnapshot('/api/public/donors',new URLSearchParams({country:'Pakistan',search:'private name',bloodGroup:'B+',viewerLat:'23',viewerLng:'90'}),0);assert.deepEqual(summary,{kind:'blood',country:'Pakistan',scope:'local',count:0,empty:true,filtersRetained:true});assert.ok(!JSON.stringify(summary).includes('private name'));assert.ok(!JSON.stringify(summary).includes('B+'));});
 
 import {ClickEventSchema,analyticsComponentLabel} from '../src/lib/analytics';
