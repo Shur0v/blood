@@ -1060,6 +1060,29 @@ test('blog archive API paginates published URLs without exposing anonymous autho
  const post=(await response.json()).data.find((post:{id:string})=>post.id===id);assert.ok(post);assert.equal(post.author_name,'Anonymous');assert.equal(post.author_city,null);assert.equal(post.author_profile_image,null);assert.equal(post.author_id,undefined);assert.equal(post.content,undefined);assert.equal(post.excerpt,'A public paragraph with clear text.');
 });
 
+test('blog discovery serves 40-item pages and a published-only canonical feed',integration,async()=>{
+ const db=getPrisma(),owner=await newPatient(),prefix='discovery-'+randomUUID();
+ const ids:string[]=[];
+ try {
+ for(let i=0;i<97;i++){
+  const id=randomUUID();ids.push(id);
+  await db.blog.create({data:{id,slug:prefix+'-'+i,title:'Synthetic discovery '+i,content:'<p>Public information.</p>',author_id:owner.id,author_type:'ADMIN',status:'PUBLISHED',published_at:new Date(2000000000000-i*1000)}});
+ }
+ const draftId=randomUUID();ids.push(draftId);
+ await db.blog.create({data:{id:draftId,slug:prefix+'-draft',title:'Private draft',content:'Private content',author_id:owner.id,status:'DRAFT'}});
+ const {GET}=await import('../src/app/api/public/blogs/route');
+ const a=await (await GET(new Request('http://localhost/api/public/blogs?limit=40&page=1'))).json();
+ const b=await (await GET(new Request('http://localhost/api/public/blogs?limit=40&page=2'))).json();
+ const c=await (await GET(new Request('http://localhost/api/public/blogs?limit=40&page=3'))).json();
+ assert.equal(a.data.length,40);assert.equal(b.data.length,40);
+ const combined=[...a.data,...b.data,...c.data].filter((row:{slug:string})=>row.slug.startsWith(prefix));
+ assert.equal(new Set(combined.map((row:{id:string})=>row.id)).size,97);
+ const {GET:feed}=await import('../src/app/blog/feed.xml/route');
+ const response=await feed();assert.equal(response.status,200);assert.match(response.headers.get('Content-Type')!,/application\/atom\+xml/);
+ const xml=await response.text();assert.ok(!xml.includes(prefix+'-draft'));assert.equal((xml.match(new RegExp('<id>[^<]*'+prefix+'-','g'))||[]).length,97);
+ } finally {await db.blog.deleteMany({where:{id:{in:ids}}});}
+});
+
 
 test('admin-added emails log into the original account and removed addresses lose pending OTP access',integration,async()=>{
  const {changeLoginEmails,listLoginEmails}=await import('../src/backend/services/loginEmails');

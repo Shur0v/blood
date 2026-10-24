@@ -3,11 +3,12 @@ import { z } from 'zod';
 import { getPrisma } from '@/src/backend/config/db';
 import { DEFAULT_LOCALE, resolveLocaleFromRequest } from '@/src/lib/locale';
 import { translateTextCached } from '@/src/backend/services/translationService';
+import {BLOG_PAGE_SIZE} from '@/src/lib/blogArchive';
 import {blogDescription} from '@/src/lib/blogSeo';
 
 const QuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
-  limit: z.coerce.number().int().min(1).max(20).default(10),
+  limit: z.coerce.number().int().min(1).max(BLOG_PAGE_SIZE).default(10),
   authorType: z.enum(['ALL', 'USER', 'ADMIN']).default('ALL'),
 });
 

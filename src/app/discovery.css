@@ -46,7 +46,7 @@
 .donor-directory-page h1{font-size:clamp(30px,3.5vw,50px);line-height:1.13;letter-spacing:-.045em;font-weight:600;max-width:900px}
 .donor-directory-page h2{letter-spacing:-.025em;font-weight:600}
 .donor-directory-page h3{letter-spacing:-.015em}
-.donor-directory-page main>section,.donor-directory-page main>header,.donor-directory-page main>div{max-width:1160px;padding-left:32px;padding-right:32px}
+.donor-directory-page main>section,.donor-directory-page main>header,.donor-directory-page main>div{max-width:1160px;margin-inline:auto;padding-left:32px;padding-right:32px}
 .donor-directory-page li[class*="border"],.donor-directory-page a[class*="shadow-sm"]{border-color:#e8e4eb;border-radius:18px;box-shadow:0 3px 14px #17203303;transition:border-color .2s,box-shadow .2s}
 .donor-directory-page li[class*="border"]:hover,.donor-directory-page a[class*="shadow-sm"]:hover{border-color:#eac0cd;box-shadow:0 8px 24px #88133708}
 @keyframes discovery-backdrop-in{from{background:#10182700;backdrop-filter:blur(0)}to{background:#10182766;backdrop-filter:blur(9px)}}

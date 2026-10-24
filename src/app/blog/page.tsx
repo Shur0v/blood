@@ -6,11 +6,11 @@ import { stripHtmlTags } from "@/src/lib/blogContent";
 import BlogListingClient from "@/src/components/BlogListingClient";
 import BlogUnavailable from "@/src/components/BlogUnavailable";
 import type {Metadata} from 'next';
-import Link from 'next/link';
+import {BLOG_PAGE_SIZE,BLOG_FEED_PATH} from '@/src/lib/blogArchive';
 import {notFound} from 'next/navigation';
 import {archivePage} from '@/src/lib/blogSeo';
 type ArchiveProps={searchParams:Promise<{page?:string}>};
-export async function generateMetadata({searchParams}:ArchiveProps):Promise<Metadata>{const page=archivePage((await searchParams).page);return {title:`BloodNet Journal — Blood Donation & Health Articles${page>1?` — Page ${page}`:''}`,description:'Read BloodNet articles about blood donation, donor coordination, organ support and health. Browse the complete published article archive.',alternates:{canonical:page>1?`/blog?page=${page}`:'/blog'},openGraph:{type:'website',url:page>1?`/blog?page=${page}`:'/blog'}};}
+export async function generateMetadata({searchParams}:ArchiveProps):Promise<Metadata>{const page=archivePage((await searchParams).page);return {title:`BloodNet Journal — Blood Donation & Health Articles${page>1?` — Page ${page}`:''}`,description:'Read BloodNet articles about blood donation, donor coordination, organ support and health. Browse the complete published article archive.',alternates:{types:{'application/atom+xml':BLOG_FEED_PATH},canonical:page>1?`/blog?page=${page}`:'/blog'},openGraph:{type:'website',url:page>1?`/blog?page=${page}`:'/blog'}};}
 
 export const dynamic = "force-dynamic";
 
@@ -46,8 +46,8 @@ async function loadBlogListing(page:number) {
     prisma.blog.findMany({
       where: { status: "PUBLISHED",slug:{not:null} },
       orderBy: [{ published_at: "desc" },{id:'desc'}],
-      skip:(page-1)*20,
-      take: 20,
+      skip:(page-1)*BLOG_PAGE_SIZE,
+      take: BLOG_PAGE_SIZE,
       select: {
         id: true,
         title: true,
@@ -64,7 +64,7 @@ async function loadBlogListing(page:number) {
     }),
     prisma.blog.count({ where: { status: "PUBLISHED",slug:{not:null} } }),
   ]);
-  const pages=Math.max(1,Math.ceil(total/20));if(page>pages)notFound();
+  const pages=Math.max(1,Math.ceil(total/BLOG_PAGE_SIZE));if(page>pages)notFound();
 
   const userIds = [...new Set(rows.filter((row) => row.author_type === "USER").map((row) => row.author_id))];
   const users = userIds.length
@@ -160,7 +160,6 @@ async function loadBlogListing(page:number) {
         </section>
 
         <BlogListingClient key={page} initialRows={initialClientRows} initialTotal={total} initialPage={page}/>
-        <nav aria-label="Article archive pages" className="mt-10 flex flex-wrap items-center justify-center gap-2 text-sm">{page>1&&<Link rel="prev" href={page===2?'/blog':`/blog?page=${page-1}`} className="rounded-xl border bg-white px-4 py-3">Previous</Link>}{Array.from({length:pages},(_,i)=>i+1).filter(p=>p===1||p===pages||Math.abs(p-page)<=2).map(p=><Link key={p} href={p===1?'/blog':`/blog?page=${p}`} aria-current={page===p?'page':undefined} className={`rounded-xl border px-4 py-3 ${p===page?'bg-rose-700 text-white':'bg-white text-slate-700'}`}>{p}</Link>)}{page<pages&&<Link rel="next" href={`/blog?page=${page+1}`} className="rounded-xl border bg-white px-4 py-3">Next</Link>}</nav>
       </main>
     </div>
   );

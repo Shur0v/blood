@@ -7,6 +7,8 @@ import { bloodGroupToSlug, cityToSlug, countryToShortcut, organToSlug } from '@/
 import { REGIONS } from '@/src/lib/regions';
 import { getDonorLocations, type DonorLocation } from '@/src/backend/services/donorLocations';
 
+import {blogPageLastModified,publicBlogUrl} from '@/src/lib/blogDiscovery';
+
 export const dynamic = 'force-dynamic';
 
 interface CityRow {
@@ -90,7 +92,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const [blogs, cityRows, bloodRows, organTypes, organDonors, organRequests] = await Promise.all([
       prisma.blog.findMany({
         where: { status: 'PUBLISHED', slug: { not: null } },
-        select: { slug: true, updated_at: true },
+        select: { slug: true, canonical_url:true, updated_at: true },
       }),
       getDonorLocations(),
       getBloodGroupCityCounts(),
@@ -100,10 +102,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ]);
 
     const blogRoutes: MetadataRoute.Sitemap = blogs
-      .filter((row) => row.slug)
+      .filter((row) => publicBlogUrl(row,baseUrl))
       .map((row) => ({
-        url: `${baseUrl}/blog/${row.slug}`,
-        lastModified: row.updated_at,
+        url: publicBlogUrl(row,baseUrl)!,
+        lastModified: blogPageLastModified(row.updated_at),
       }));
 
     const cityRoutes = buildCityRoutes(baseUrl, cityRows);

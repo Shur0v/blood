@@ -1,0 +1,28 @@
+[
+  {
+    "path": "/blog",
+    "status": 200,
+    "type": "text/html; charset=utf-8",
+    "bytes": 130401,
+    "feedDiscovery": true,
+    "hasHomepageContinuation": false
+  },
+  {
+    "path": "/blog/feed.xml",
+    "status": 200,
+    "type": "application/atom+xml; charset=utf-8",
+    "bytes": 201491
+  },
+  {
+    "path": "/sitemap-blog.xml",
+    "status": 200,
+    "type": "application/xml; charset=utf-8",
+    "bytes": 56445
+  },
+  {
+    "path": "/robots.txt",
+    "status": 200,
+    "type": "text/plain",
+    "bytes": 3120
+  }
+]

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Clock3 } from "lucide-react";
 
@@ -19,7 +19,7 @@ type BlogListItem = {
   author_profile_image?: string | null;
 };
 
-const PAGE_LIMIT = 20;
+import {BLOG_PAGE_SIZE as PAGE_LIMIT} from '../lib/blogArchive';
 
 export default function BlogListingClient({
   initialRows,
@@ -34,12 +34,15 @@ export default function BlogListingClient({
   const [page, setPage] = useState(initialPage);
   const [total, setTotal] = useState(initialTotal);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [loadError,setLoadError] = useState(false);
+  const pages=Math.max(1,Math.ceil(total/PAGE_LIMIT));
 
-  const hasMore = useMemo(() => (initialPage-1)*PAGE_LIMIT+rows.length < total, [rows.length, total,initialPage]);
+  const hasMore = page*PAGE_LIMIT < total;
 
   const loadMore = async () => {
     if (loadingMore || !hasMore) return;
     setLoadingMore(true);
+    setLoadError(false);
     try {
       const nextPage = page + 1;
       const res = await fetch(`/api/public/blogs?page=${nextPage}&limit=${PAGE_LIMIT}&authorType=ALL`, {
@@ -47,19 +50,21 @@ export default function BlogListingClient({
         cache: "no-store",
       });
       const payload = await res.json();
-      if (!res.ok || !payload?.success) return;
+      if (!res.ok || !payload?.success) throw new Error('Unable to load articles');
 
       const incoming = (payload.data || []) as BlogListItem[];
       setRows((prev) => {
         const seen = new Set(prev.map((item) => item.id));
         const merged = [...prev];
         for (const item of incoming) {
-          if (!seen.has(item.id)) merged.push(item);
+          if (!seen.has(item.id)) { merged.push(item); seen.add(item.id); }
         }
         return merged;
       });
       setPage(nextPage);
-      setTotal(Number(payload?.pagination?.total || total));
+      setTotal(Number(payload?.pagination?.total ?? total));
+    } catch {
+      setLoadError(true);
     } finally {
       setLoadingMore(false);
     }
@@ -77,7 +82,7 @@ export default function BlogListingClient({
             >
               <div className="mb-4 flex items-center justify-between gap-3">
                 <span className="inline-flex items-center rounded-full bg-red-50 px-3 py-1 text-xs font-bold uppercase tracking-wide text-red-600">
-                  Article #{index + 1}
+                  Article #{(initialPage-1)*PAGE_LIMIT + index + 1}
                 </span>
                 <span className="inline-flex items-center gap-1 text-xs font-semibold text-gray-500">
                   <Clock3 className="h-3.5 w-3.5" />
@@ -132,6 +137,7 @@ export default function BlogListingClient({
         })}
       </div>
 
+      {loadError&&<p role="alert" className="mt-6 text-center text-sm text-red-700">Articles could not be loaded. Please try again.</p>}
       {hasMore && (
         <div className="mt-10 flex justify-center">
           <button
@@ -144,6 +150,11 @@ export default function BlogListingClient({
           </button>
         </div>
       )}
+      {pages>1 && !(initialPage===1&&!hasMore) && <nav aria-label="Article archive pages" className="mt-10 flex flex-wrap items-center justify-center gap-2 text-sm">
+        {initialPage>1&&<Link rel="prev" href={initialPage===2?'/blog':`/blog?page=${initialPage-1}`} className="rounded-xl border bg-white px-4 py-3">Previous</Link>}
+        {Array.from({length:pages},(_,i)=>i+1).filter(p=>p===1||p===pages||Math.abs(p-page)<=2).map(p=><Link key={p} href={p===1?'/blog':`/blog?page=${p}`} aria-current={page===p?'page':undefined} className={`rounded-xl border px-4 py-3 ${p===page?'bg-rose-700 text-white':'bg-white text-slate-700'}`}>{p}</Link>)}
+        {hasMore&&<Link rel="next" href={`/blog?page=${page+1}`} className="rounded-xl border bg-white px-4 py-3">Next</Link>}
+      </nav>}
     </>
   );
 }

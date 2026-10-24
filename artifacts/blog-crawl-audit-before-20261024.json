@@ -1,0 +1,814 @@
+{
+  "base": "https://bloodnet.live",
+  "auditedAt": "2026-10-23T19:36:39.735Z",
+  "publishedInventory": 97,
+  "uniquePublicUrls": 97,
+  "pagesChecked": 97,
+  "successfulPages": 97,
+  "articlesWithReviewNotes": 11,
+  "duplicateCanonicals": [],
+  "pages": [
+    {
+      "path": "/blog/abdominal-ct-diverticulitis-gallstones-explained",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/abdominal-ct-diverticulitis-gallstones-explained",
+      "headingCount": 17,
+      "externalReferences": 3,
+      "issues": []
+    },
+    {
+      "path": "/blog/alzheimers-disease-pathology-amyloid-tau-mechanics",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/alzheimers-disease-pathology-amyloid-tau-mechanics",
+      "headingCount": 16,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/anatomy-of-a-heart-attack-first-20-minutes-ami",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/anatomy-of-a-heart-attack-first-20-minutes-ami",
+      "headingCount": 21,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/angiogenesis-tumor-staging-blood-vessels",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/angiogenesis-tumor-staging-blood-vessels",
+      "headingCount": 23,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/antidepressant-neuro-shift-ssri-snri-mechanics",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/antidepressant-neuro-shift-ssri-snri-mechanics",
+      "headingCount": 21,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/arthroscopy-protocol-knee-shoulder-ligament-repairs",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/arthroscopy-protocol-knee-shoulder-ligament-repairs",
+      "headingCount": 20,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/asphyxiation-vs-heart-failure-forensic-guide",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/asphyxiation-vs-heart-failure-forensic-guide",
+      "headingCount": 16,
+      "externalReferences": 3,
+      "issues": []
+    },
+    {
+      "path": "/blog/autoimmune-attack-multiple-sclerosis-tcells-myelin",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/autoimmune-attack-multiple-sclerosis-tcells-myelin",
+      "headingCount": 28,
+      "externalReferences": 5,
+      "issues": []
+    },
+    {
+      "path": "/blog/autopsy-toxicology-lethal-drug-concentrations",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/autopsy-toxicology-lethal-drug-concentrations",
+      "headingCount": 19,
+      "externalReferences": 3,
+      "issues": []
+    },
+    {
+      "path": "/blog/blood-brain-barrier-bbb-endothelial-shield-mechanics",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/blood-brain-barrier-bbb-endothelial-shield-mechanics",
+      "headingCount": 21,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/blood-thinners-vs-antiplatelets-chemical-difference",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/blood-thinners-vs-antiplatelets-chemical-difference",
+      "headingCount": 21,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/brain-mri-micro-changes-white-matter-hyperintensities",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/brain-mri-micro-changes-white-matter-hyperintensities",
+      "headingCount": 10,
+      "externalReferences": 3,
+      "issues": []
+    },
+    {
+      "path": "/blog/brain-mri-micro-changes-white-matter-hyperintensities-2",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/brain-mri-micro-changes-white-matter-hyperintensities-2",
+      "headingCount": 16,
+      "externalReferences": 3,
+      "issues": []
+    },
+    {
+      "path": "/blog/brca-mutation-map-dna-repair-cancer-risks",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/brca-mutation-map-dna-repair-cancer-risks",
+      "headingCount": 20,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/cataract-surgery-laser-extraction-premium-iol",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/cataract-surgery-laser-extraction-premium-iol",
+      "headingCount": 21,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/cellular-reset-after-blood-donation",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/cellular-reset-after-blood-donation",
+      "headingCount": 20,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/cellular-toll-of-chemotherapy-cytotoxic-drugs",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/cellular-toll-of-chemotherapy-cytotoxic-drugs",
+      "headingCount": 29,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/ckd-stages-nephron-filtration-loss",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/ckd-stages-nephron-filtration-loss",
+      "headingCount": 15,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/contrast-ct-scan-protocol-guide",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/contrast-ct-scan-protocol-guide",
+      "headingCount": 10,
+      "externalReferences": 0,
+      "issues": [
+        "Review factual references: no external links in article"
+      ]
+    },
+    {
+      "path": "/blog/cortisol-hpa-axis-dexamethasone-suppression-test",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/cortisol-hpa-axis-dexamethasone-suppression-test",
+      "headingCount": 22,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/critical-48-hours-post-surgery-icu-delirium",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/critical-48-hours-post-surgery-icu-delirium",
+      "headingCount": 18,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/crohns-vs-ulcerative-colitis-intestinal-inflammation",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/crohns-vs-ulcerative-colitis-intestinal-inflammation",
+      "headingCount": 20,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/cytokine-storm-viral-hyperinflammation-immune-overreaction",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/cytokine-storm-viral-hyperinflammation-immune-overreaction",
+      "headingCount": 22,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/cytotoxic-blueprint-target-specific-immunotherapy-mechanics",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/cytotoxic-blueprint-target-specific-immunotherapy-mechanics",
+      "headingCount": 21,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/dangerous-drug-intersections-er-combinations",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/dangerous-drug-intersections-er-combinations",
+      "headingCount": 27,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/decay-timeline-forensic-guide",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/decay-timeline-forensic-guide",
+      "headingCount": 18,
+      "externalReferences": 3,
+      "issues": []
+    },
+    {
+      "path": "/blog/deciphering-autoimmune-markers-ana-rf-anti-ccp",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/deciphering-autoimmune-markers-ana-rf-anti-ccp",
+      "headingCount": 18,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/deciphering-lfts-bilirubin-vs-alkaline-phosphatase",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/deciphering-lfts-bilirubin-vs-alkaline-phosphatase",
+      "headingCount": 21,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/decoding-colonoscopy-report-polyps-adenomas-diverticulosis",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/decoding-colonoscopy-report-polyps-adenomas-diverticulosis",
+      "headingCount": 23,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/decoding-glasgow-coma-scale-gcs-consciousness",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/decoding-glasgow-coma-scale-gcs-consciousness",
+      "headingCount": 21,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/decoding-pelvic-ultrasound-cysts-fluid",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/decoding-pelvic-ultrasound-cysts-fluid",
+      "headingCount": 31,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/decoding-ultrasound-terminology-hypoechoic-mass-nodules",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/decoding-ultrasound-terminology-hypoechoic-mass-nodules",
+      "headingCount": 19,
+      "externalReferences": 0,
+      "issues": [
+        "Review factual references: no external links in article"
+      ]
+    },
+    {
+      "path": "/blog/demystifying-tia-transient-ischemic-attack-warning-stroke",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/demystifying-tia-transient-ischemic-attack-warning-stroke",
+      "headingCount": 17,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/diabetes-metabolic-mechanics-vascular-nerves-10-years",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/diabetes-metabolic-mechanics-vascular-nerves-10-years",
+      "headingCount": 27,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/echocardiographic-interpretation",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/echocardiographic-interpretation",
+      "headingCount": 16,
+      "externalReferences": 0,
+      "issues": [
+        "Review factual references: no external links in article"
+      ]
+    },
+    {
+      "path": "/blog/emerging-viral-mutations-respiratory-strains",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/emerging-viral-mutations-respiratory-strains",
+      "headingCount": 29,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/faith-and-the-scalpel-organ-donation-religions",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/faith-and-the-scalpel-organ-donation-religions",
+      "headingCount": 19,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/full-thyroid-panel-breakdown-tsh-t3-t4-tpo",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/full-thyroid-panel-breakdown-tsh-t3-t4-tpo",
+      "headingCount": 18,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/general-anesthesia-gateway-consciousness-breathing",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/general-anesthesia-gateway-consciousness-breathing",
+      "headingCount": 18,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/glioblastoma-multiforme-gbm-cellular-infestation",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/glioblastoma-multiforme-gbm-cellular-infestation",
+      "headingCount": 18,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/golden-hour-stroke-intervention-tpa-mechanics",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/golden-hour-stroke-intervention-tpa-mechanics",
+      "headingCount": 19,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/hba1c-timeline-glucose-red-blood-cells",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/hba1c-timeline-glucose-red-blood-cells",
+      "headingCount": 19,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/high-dose-insulin-cellular-mechanics-resistance",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/high-dose-insulin-cellular-mechanics-resistance",
+      "headingCount": 20,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/high-sensitivity-troponin-test-micro-heart-attacks",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/high-sensitivity-troponin-test-micro-heart-attacks",
+      "headingCount": 18,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/high-stakes-blood-panel",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/high-stakes-blood-panel",
+      "headingCount": 19,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/how-biliary-sludge-and-cholesterol-crystals-block-the-cystic-duct",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/how-biliary-sludge-and-cholesterol-crystals-block-the-cystic-duct",
+      "headingCount": 7,
+      "externalReferences": 0,
+      "issues": [
+        "Review factual references: no external links in article"
+      ]
+    },
+    {
+      "path": "/blog/how-to-read-a-biopsy-report",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/how-to-read-a-biopsy-report",
+      "headingCount": 23,
+      "externalReferences": 0,
+      "issues": [
+        "Review factual references: no external links in article"
+      ]
+    },
+    {
+      "path": "/blog/immunotherapy-side-effects-crs-immune-inflammation",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/immunotherapy-side-effects-crs-immune-inflammation",
+      "headingCount": 20,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/interpreting-arterial-blood-gases-abg-acidosis-alkalosis",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/interpreting-arterial-blood-gases-abg-acidosis-alkalosis",
+      "headingCount": 21,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/intestinal-microbiome-disruption-cdiff-leaky-gut",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/intestinal-microbiome-disruption-cdiff-leaky-gut",
+      "headingCount": 20,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/iron-panel-roadmap-ferritin-tibc-transferrin",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/iron-panel-roadmap-ferritin-tibc-transferrin",
+      "headingCount": 21,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/lipid-profile-apob-ldl-particle-size-atherosclerosis",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/lipid-profile-apob-ldl-particle-size-atherosclerosis",
+      "headingCount": 20,
+      "externalReferences": 3,
+      "issues": []
+    },
+    {
+      "path": "/blog/liver-cirrhosis-fibrotic-scar-tissue-mechanics",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/liver-cirrhosis-fibrotic-scar-tissue-mechanics",
+      "headingCount": 15,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/long-term-corticosteroids-prednisone-bone-density-adrenal-function",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/long-term-corticosteroids-prednisone-bone-density-adrenal-function",
+      "headingCount": 25,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/longevity-screening-hscrp-heart-attack-predictor",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/longevity-screening-hscrp-heart-attack-predictor",
+      "headingCount": 19,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/managing-intracranial-pressure-icp-brain-swelling",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/managing-intracranial-pressure-icp-brain-swelling",
+      "headingCount": 20,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/mastectomy-reconstruction-surgical-guide",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/mastectomy-reconstruction-surgical-guide",
+      "headingCount": 14,
+      "externalReferences": 3,
+      "issues": []
+    },
+    {
+      "path": "/blog/mechanics-of-a-stroke-ischemic-hemorrhagic-brain",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/mechanics-of-a-stroke-ischemic-hemorrhagic-brain",
+      "headingCount": 18,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/mechanics-of-defibrillation-myocardial-depolarization",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/mechanics-of-defibrillation-myocardial-depolarization",
+      "headingCount": 20,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/mechanics-of-endoscopy-barretts-ulcers-hpylori",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/mechanics-of-endoscopy-barretts-ulcers-hpylori",
+      "headingCount": 20,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/mechanics-of-gastric-bypass-hormones-absorption",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/mechanics-of-gastric-bypass-hormones-absorption",
+      "headingCount": 24,
+      "externalReferences": 5,
+      "issues": []
+    },
+    {
+      "path": "/blog/mechanics-of-lymphoma-malignant-lymphocytes-mutation",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/mechanics-of-lymphoma-malignant-lymphocytes-mutation",
+      "headingCount": 21,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/mechanics-of-metastasis-lymphatic-invasion-colonization",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/mechanics-of-metastasis-lymphatic-invasion-colonization",
+      "headingCount": 26,
+      "externalReferences": 5,
+      "issues": []
+    },
+    {
+      "path": "/blog/mechanics-of-spinal-meningitis-bacterial-viral",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/mechanics-of-spinal-meningitis-bacterial-viral",
+      "headingCount": 19,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/mechanism-of-sepsis-shock-vascular-collapse",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/mechanism-of-sepsis-shock-vascular-collapse",
+      "headingCount": 23,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/neurological-toll-long-covid-brain-fog-fatigue",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/neurological-toll-long-covid-brain-fog-fatigue",
+      "headingCount": 22,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/nsaid-kidney-toll-ibuprofen-renal-ischemia",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/nsaid-kidney-toll-ibuprofen-renal-ischemia",
+      "headingCount": 20,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/open-heart-surgery-bypass-cabg-mechanics",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/open-heart-surgery-bypass-cabg-mechanics",
+      "headingCount": 22,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/opioid-receptor-mechanics-pain-dependence-cycle",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/opioid-receptor-mechanics-pain-dependence-cycle",
+      "headingCount": 15,
+      "externalReferences": 3,
+      "issues": []
+    },
+    {
+      "path": "/blog/organ-transplantation-logistics-viability-windows",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/organ-transplantation-logistics-viability-windows",
+      "headingCount": 24,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/orthopedic-joint-replacement-mechanical-reality",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/orthopedic-joint-replacement-mechanical-reality",
+      "headingCount": 26,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/parkinsons-disease-pathology-substantia-nigra-dopamine",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/parkinsons-disease-pathology-substantia-nigra-dopamine",
+      "headingCount": 21,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/pathology-of-acute-pancreatitis-cellular-autodigestion",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/pathology-of-acute-pancreatitis-cellular-autodigestion",
+      "headingCount": 22,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/psychological-landscape-organ-donation",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/psychological-landscape-organ-donation",
+      "headingCount": 25,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/rare-blood-type-phenomenon-golden-blood-bombay",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/rare-blood-type-phenomenon-golden-blood-bombay",
+      "headingCount": 23,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/reading-between-the-spine-lines-mri",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/reading-between-the-spine-lines-mri",
+      "headingCount": 28,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/science-of-embalming-vascular-preservation-guide",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/science-of-embalming-vascular-preservation-guide",
+      "headingCount": 16,
+      "externalReferences": 3,
+      "issues": []
+    },
+    {
+      "path": "/blog/science-of-peripheral-neuropathy-micro-vessels-starvation",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/science-of-peripheral-neuropathy-micro-vessels-starvation",
+      "headingCount": 21,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/science-of-traumatic-shock-hemorrhage-blood-flow",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/science-of-traumatic-shock-hemorrhage-blood-flow",
+      "headingCount": 21,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/spinal-fusion-surgery-guide",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/spinal-fusion-surgery-guide",
+      "headingCount": 14,
+      "externalReferences": 3,
+      "issues": []
+    },
+    {
+      "path": "/blog/spinal-fusion-surgery-guide-2",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/spinal-fusion-surgery-guide-2",
+      "headingCount": 14,
+      "externalReferences": 3,
+      "issues": []
+    },
+    {
+      "path": "/blog/statin-beta-blocker-daily-pharmacology",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/statin-beta-blocker-daily-pharmacology",
+      "headingCount": 26,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/sudden-cardiac-death-autopsy-forensic-guide",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/sudden-cardiac-death-autopsy-forensic-guide",
+      "headingCount": 16,
+      "externalReferences": 3,
+      "issues": []
+    },
+    {
+      "path": "/blog/the-2026-national-blood-crisis-new-us-reports-on-donor-trends-and-emergency-programs",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/the-2026-national-blood-crisis-new-us-reports-on-donor-trends-and-emergency-programs",
+      "headingCount": 0,
+      "externalReferences": 0,
+      "issues": [
+        "No section headings",
+        "Review factual references: no external links in article"
+      ]
+    },
+    {
+      "path": "/blog/the-human-quotient-why-empathy-driven-design-is-the-future-of-digital-connection-in-2026",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/the-human-quotient-why-empathy-driven-design-is-the-future-of-digital-connection-in-2026",
+      "headingCount": 0,
+      "externalReferences": 0,
+      "issues": [
+        "No section headings",
+        "Review factual references: no external links in article"
+      ]
+    },
+    {
+      "path": "/blog/the-psychology-of-choice-how-digital-landscapes-shape-human-generosity-in-2026",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/the-psychology-of-choice-how-digital-landscapes-shape-human-generosity-in-2026",
+      "headingCount": 0,
+      "externalReferences": 0,
+      "issues": [
+        "No section headings",
+        "Review factual references: no external links in article"
+      ]
+    },
+    {
+      "path": "/blog/thyroid-ultrasound-roadmap-tirads-nodules",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/thyroid-ultrasound-roadmap-tirads-nodules",
+      "headingCount": 33,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/tumor-markers-explained-ca125-psa-cea",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/tumor-markers-explained-ca125-psa-cea",
+      "headingCount": 18,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/tumor-resection-surgical-mechanics",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/tumor-resection-surgical-mechanics",
+      "headingCount": 15,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/understanding-fatty-liver-on-a-sonogram-grades",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/understanding-fatty-liver-on-a-sonogram-grades",
+      "headingCount": 21,
+      "externalReferences": 0,
+      "issues": [
+        "Review factual references: no external links in article"
+      ]
+    },
+    {
+      "path": "/blog/understanding-intubation-mechanical-ventilation-mechanics",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/understanding-intubation-mechanical-ventilation-mechanics",
+      "headingCount": 22,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/understanding-leukemia-bone-marrow-crowding-effect",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/understanding-leukemia-bone-marrow-crowding-effect",
+      "headingCount": 15,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/understanding-liquid-biopsies-ctdna-oncology",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/understanding-liquid-biopsies-ctdna-oncology",
+      "headingCount": 19,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/understanding-vitamin-d3-k2-calcium-routing",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/understanding-vitamin-d3-k2-calcium-routing",
+      "headingCount": 20,
+      "externalReferences": 4,
+      "issues": []
+    },
+    {
+      "path": "/blog/wbc-liver-enzymes-creatinine-blood-panel-explained",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/wbc-liver-enzymes-creatinine-blood-panel-explained",
+      "headingCount": 18,
+      "externalReferences": 0,
+      "issues": [
+        "Review factual references: no external links in article"
+      ]
+    },
+    {
+      "path": "/blog/whipple-procedure-surgical-guide",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/whipple-procedure-surgical-guide",
+      "headingCount": 15,
+      "externalReferences": 3,
+      "issues": []
+    },
+    {
+      "path": "/blog/why-your-blood-type-matters-a-2026-guide-to-personal-health-and-global-impact",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blog/why-your-blood-type-matters-a-2026-guide-to-personal-health-and-global-impact",
+      "headingCount": 0,
+      "externalReferences": 0,
+      "issues": [
+        "No section headings",
+        "Review factual references: no external links in article"
+      ]
+    }
+  ]
+}

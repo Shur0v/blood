@@ -10,6 +10,7 @@ import { translateTextCached } from "@/src/backend/services/translationService";
 import BlogUnavailable from "@/src/components/BlogUnavailable";
 import {cache} from 'react';
 import {blogCanonical,blogDescription,prepareBlogReading} from '@/src/lib/blogSeo';
+import {BLOG_FEED_PATH} from '@/src/lib/blogArchive';
 import {getPublicBaseUrl} from '@/src/backend/config/env';
 
 interface BlogPageProps {
@@ -43,6 +44,7 @@ export async function generateMetadata({ params }: BlogPageProps): Promise<Metad
     description,
     alternates: {
       canonical,
+      types: {'application/atom+xml': BLOG_FEED_PATH},
     },
     openGraph: {
       title,

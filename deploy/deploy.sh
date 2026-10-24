@@ -108,5 +108,10 @@ curl --fail --silent --show-error --retry 10 --retry-connrefused --retry-delay 2
 echo "==> Save PM2 process list"
 pm2 save
 
+echo "==> Notify Google of blog sitemaps when Search Console credentials are configured"
+if ! npm run seo:notify-blogs -- --optional; then
+  echo "Google sitemap notification failed; the application is healthy. Review Search Console configuration and retry npm run seo:notify-blogs."
+fi
+
 echo "==> Deploy done"
 pm2 status "${APP_NAME}"
