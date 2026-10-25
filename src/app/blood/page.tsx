@@ -1,4 +1,6 @@
-import { HomeExperience } from "@/src/components/HomeExperience";
+import Hero from '@/src/components/Hero';
+import {ServiceInvitation} from '@/src/components/PublicServiceContent';
+import DonorLocationDirectory from '@/src/components/DonorLocationDirectory';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -10,6 +12,6 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default function BloodIndexPage() {
-  return <HomeExperience />;
+  return <main><Hero contentOverride={{heading:"Find blood donors by group and location",description:"Search recorded local entries first, then explore broader suggestions while keeping your selected blood group. Confirm availability and collection arrangements directly."}}/><section className="mx-auto max-w-7xl px-4 pb-24"><DonorLocationDirectory limit={24}/><ServiceInvitation context="donor"/></section></main>;
 }
 

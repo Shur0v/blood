@@ -1,5 +1,6 @@
 "use client";
 
+import usePublicNetwork from './usePublicNetwork';
 import usePublicAds from "./usePublicAds";
 import React, { useEffect, useState } from "react";
 import { motion } from "motion/react";
@@ -28,20 +29,21 @@ type PublicPolicyData = {
 
 
 export default function SocialMedia() {
+  const network=usePublicNetwork();
   const adsConfig = usePublicAds();
   const [communityData, setCommunityData] = useState({
     joinCommunityTelegramUrl: "https://t.me/bloodnet",
     joinCommunityTitle: "JOIN THE COMMUNITY",
     joinCommunityDescription:
       "Be part of our growing network of life-savers. Get instant notifications for urgent blood requirements in your area.",
-    joinCommunityMembersTitle: "10K+ Members",
+    joinCommunityMembersTitle: "Global community",
     joinCommunityMembersDesc: "Join a growing network",
     joinCommunityAlertsTitle: "Live Alerts",
     joinCommunityAlertsDesc: "Get instant notifications",
-    joinCommunityVerifiedTitle: "Verified Only",
-    joinCommunityVerifiedDesc: "Safe & trusted donors",
-    joinCommunityTrustText: "Trusted by 10,000+ donors • Updated every minute",
-    joinCommunityActiveRequestsText: "12 active requests in your area",
+    joinCommunityVerifiedTitle: "Confirm details",
+    joinCommunityVerifiedDesc: "Check directly before travel",
+    joinCommunityTrustText: "A shared network for local connections",
+    joinCommunityActiveRequestsText: "Availability can change",
   });
   const [communityImageBannerAd, setCommunityImageBannerAd] = useState<{
     id: string;
@@ -142,7 +144,7 @@ export default function SocialMedia() {
             <div className="mb-8 grid w-full min-w-0 gap-3 sm:grid-cols-3">
               <CommunityFeature
                 icon={<Users className="h-5 w-5" />}
-                title={communityData.joinCommunityMembersTitle}
+                title={network?network.totalRegisteredAccounts.toLocaleString()+' accounts worldwide':'Global community'}
                 desc={communityData.joinCommunityMembersDesc}
               />
               <CommunityFeature
@@ -152,8 +154,8 @@ export default function SocialMedia() {
               />
               <CommunityFeature
                 icon={<ShieldCheck className="h-5 w-5" />}
-                title={communityData.joinCommunityVerifiedTitle}
-                desc={communityData.joinCommunityVerifiedDesc}
+                title="Confirm details"
+                desc="Check directly before travel"
               />
             </div>
 
@@ -176,7 +178,7 @@ export default function SocialMedia() {
                   <Image
                     key={i}
                     src={`https://i.pravatar.cc/100?u=${i + 10}`}
-                    alt="Community member"
+                    alt="Illustrative community avatar"
                     width={32}
                     height={32}
                     className="h-8 w-8 rounded-full border-2 border-white object-cover shadow-sm"
@@ -186,11 +188,11 @@ export default function SocialMedia() {
               </div>
               <div className="flex flex-wrap items-center gap-3">
                 <span className="text-xs leading-5 text-slate-600">
-                  {communityData.joinCommunityTrustText}
+                  {network?network.totalRegisteredAccounts.toLocaleString()+' registered accounts worldwide':'A shared network for local connections'}
                 </span>
                 <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-800">
                   <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
-                  {communityData.joinCommunityActiveRequestsText}
+                  Confirm availability directly
                 </span>
               </div>
             </div>

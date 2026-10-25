@@ -13,6 +13,7 @@ export default function robots(): MetadataRoute.Robots {
       `${baseUrl}/sitemap-categories.xml`,
       `${baseUrl}/sitemap-regions.xml`,
       `${baseUrl}/sitemap-blog.xml`,
+      `${baseUrl}/sitemap-images.xml`,
       `${baseUrl}/blog/feed.xml`,
       `${baseUrl}/sitemap-location.xml`,
       `${baseUrl}/sitemap-guides.xml`,

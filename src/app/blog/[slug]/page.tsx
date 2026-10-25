@@ -1,3 +1,7 @@
+import {ServiceInvitation} from '@/src/components/PublicServiceContent';
+import ManagedPublicImage from '@/src/components/ManagedPublicImage';
+import {getManagedImage} from '@/src/backend/services/publicImages';
+import {PublicImagePlacementSchema} from '@/src/lib/publicImages';
 import { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -35,6 +39,7 @@ export async function generateMetadata({ params }: BlogPageProps): Promise<Metad
     return { title: "Blog not found",robots:{index:false,follow:true} };
   }
 
+  const parsedImage=PublicImagePlacementSchema.safeParse(post.public_image);const featured=parsedImage.success&&!parsedImage.data.decorative?await getManagedImage(parsedImage.data.assetId):null;
   const title = post.meta_title || post.seo_title || post.title;
   const description = blogDescription(post.content,post.meta_description||post.seo_desc);
   const canonical = blogCanonical(post.slug!,post.canonical_url,getPublicBaseUrl());
@@ -53,9 +58,9 @@ export async function generateMetadata({ params }: BlogPageProps): Promise<Metad
       type: "article",
       publishedTime:(post.published_at||post.created_at).toISOString(),
       modifiedTime:post.updated_at.toISOString(),
-      images:[{url:`/blog/${post.slug}/opengraph-image`,width:1200,height:630,alt:post.title}],
+      images:featured?[{url:featured.url,width:featured.width,height:featured.height,alt:parsedImage.success?parsedImage.data.alt:post.title}]:[{url:`/blog/${post.slug}/opengraph-image`,width:1200,height:630,alt:post.title}],
     },
-    twitter:{card:'summary_large_image',title,description,images:[`/blog/${post.slug}/opengraph-image`]},
+    twitter:{card:'summary_large_image',title,description,images:[featured?.url||`/blog/${post.slug}/opengraph-image`]},
     robots:{index:true,follow:true,googleBot:{index:true,follow:true,'max-snippet':-1,'max-image-preview':'large'}},
   };
 }
@@ -108,6 +113,7 @@ async function loadBlogDetail({ params }: BlogPageProps) {
 
   const canonical = blogCanonical(post.slug!,post.canonical_url,getPublicBaseUrl());
   const reading=prepareBlogReading(localizedContent);
+  const parsedImage=PublicImagePlacementSchema.safeParse(post.public_image);const featured=parsedImage.success?await getManagedImage(parsedImage.data.assetId):null;
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
@@ -116,7 +122,7 @@ async function loadBlogDetail({ params }: BlogPageProps) {
     url:canonical,
     inLanguage:locale,
     wordCount:reading.wordCount,
-    image:new URL(`/blog/${post.slug}/opengraph-image`,getPublicBaseUrl()).href,
+    image:featured&&parsedImage.success&&!parsedImage.data.decorative?new URL(featured.url,getPublicBaseUrl()).href:new URL(`/blog/${post.slug}/opengraph-image`,getPublicBaseUrl()).href,
     datePublished: post.published_at || post.created_at,
     dateModified: post.updated_at,
     mainEntityOfPage: canonical,
@@ -197,7 +203,8 @@ async function loadBlogDetail({ params }: BlogPageProps) {
               dangerouslySetInnerHTML={{ __html: reading.html }}
             />
           )}
-        </article>
+        {parsedImage.success&&featured&&<ManagedPublicImage image={featured} placement={parsedImage.data} className="mt-8"/>}</article>
+        <ServiceInvitation topic={post.title}/>
 
         <BlogInterlinkCluster currentBlogId={post.id} />
       </main>

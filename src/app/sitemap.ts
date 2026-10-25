@@ -1,3 +1,4 @@
+import {getPublicPageDates} from '@/src/backend/services/publicContent';
 import { MetadataRoute } from 'next';
 import { getPrisma } from '@/src/backend/config/db';
 import { toLocationSlug } from '@/src/backend/utils/locationSlug';
@@ -50,6 +51,7 @@ const buildCityRoutes = (baseUrl: string, rows: DonorLocation[]) => {
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = getPublicBaseUrl();
+  const contentDates=await getPublicPageDates();
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: `${baseUrl}/`, changeFrequency: 'daily', priority: 1, lastModified:await getHomepagePublicationDate() },
     { url: `${baseUrl}/us`, changeFrequency: 'daily', priority: 0.85 },
@@ -58,6 +60,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/organ/donor`, changeFrequency: 'weekly', priority: 0.8 },
     { url: `${baseUrl}/organ/request`, changeFrequency: 'daily', priority: 0.9 },
     { url: `${baseUrl}/organ/registry`, changeFrequency: 'weekly', priority: 0.8 },
+    ...['medical-profile','medical-reports','prescriptions','doctor-appointments'].map(key=>({url:baseUrl+'/'+key,lastModified:contentDates.get(key)})),
     { url: `${baseUrl}/blog`, changeFrequency: 'weekly', priority: 0.7 },
     { url: `${baseUrl}/about`, changeFrequency: 'monthly', priority: 0.6 },
     { url: `${baseUrl}/faq`, changeFrequency: 'weekly', priority: 0.7 },
@@ -89,6 +92,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })),
   ];
 
+  for(const entry of staticRoutes){const date=contentDates.get(new URL(entry.url).pathname.slice(1));if(date)entry.lastModified=date;}
   try {
     const prisma = getPrisma();
     const [blogs, cityRows, bloodRows, organTypes, organDonors, organRequests] = await Promise.all([
@@ -112,6 +116,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     const cityRoutes = buildCityRoutes(baseUrl, cityRows);
     const regionalDates=await getRegionalPublicationDates();
+    for(const region of REGIONS){const route=staticRoutes.find(entry=>entry.url===baseUrl+'/'+region.slug);if(route)route.lastModified=regionalLastModified(region.country,undefined,new Date(0),regionalDates); }
     for(const row of cityRows){
       const modified=regionalLastModified(row.country,row.city,row.updatedAt,regionalDates);
       for(const route of [...staticRoutes,...cityRoutes]){

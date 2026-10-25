@@ -1,6 +1,15 @@
+import {getManagedImage} from './publicImages';
+import {validateImagePlacement} from './publicImages';
+import {markHomepagePublication} from './homepageContent';
+import {getPrisma} from '../config/db';
+import {MedicalError} from '../utils/medicalPrivacy';
+import {Prisma} from '@prisma/client';
+import {PublicImagePlacementSchema,type ManagedImage,type PublicImagePlacement} from '@/src/lib/publicImages';
 import { PrismaClient } from '@prisma/client';
 
 export interface HomepageSlideDto {
+ image?:ManagedImage|null;
+ public_image?:PublicImagePlacement|null;
   id: string;
   title: string;
   description: string;
@@ -48,6 +57,25 @@ export const ensureHomepageSlidesSeeded = async (prisma: PrismaClient): Promise<
   });
 };
 
+type SlideInput={title:string;description?:string;image_url:string;status:string;public_image?:PublicImagePlacement|null};
+const signature=(value:unknown)=>JSON.stringify(value,(_key,item)=>item&&typeof item==='object'&&!Array.isArray(item)?Object.fromEntries(Object.entries(item).sort(([a],[b])=>a.localeCompare(b))):item);
+export async function saveHomepageSlide(input:SlideInput,id?:string){
+ if(input.public_image)await validateImagePlacement(input.public_image);
+ const url=input.public_image?(await getManagedImage(input.public_image.assetId))!.url:input.image_url;
+ return getPrisma().$transaction(async tx=>{
+  await tx.$queryRaw`SELECT 1 FROM pg_advisory_xact_lock(hashtextextended('homepage-slides',0))`;
+  const previous=id?await tx.homepageSlider.findUnique({where:{id}}):null;if(id&&!previous)throw new MedicalError('Slide not found.',404);
+  const legacyReplacement=input.public_image===undefined&&previous&&url!==previous.image_url;
+  const data={title:input.title,description:input.description||null,image_url:url,status:input.status,...(input.public_image!==undefined?{public_image:input.public_image===null?Prisma.JsonNull:input.public_image}:legacyReplacement?{public_image:Prisma.JsonNull}:{})};
+  const row=id?await tx.homepageSlider.update({where:{id},data}):await tx.homepageSlider.create({data:{...data,order:((await tx.homepageSlider.aggregate({_max:{order:true}}))._max.order||0)+1}});
+  const changed=!previous||['title','description','image_url','status','public_image'].some(key=>signature(previous[key as keyof typeof previous])!==signature(row[key as keyof typeof row]));
+  if(changed&&(previous?.status==='ACTIVE'||row.status==='ACTIVE'))await markHomepagePublication(tx);
+  return row;
+ });
+}
+export async function deleteHomepageSlide(id:string){return getPrisma().$transaction(async tx=>{await tx.$queryRaw`SELECT 1 FROM pg_advisory_xact_lock(hashtextextended('homepage-slides',0))`;const previous=await tx.homepageSlider.findUnique({where:{id}});if(!previous)throw new MedicalError('Slide not found.',404);await tx.homepageSlider.delete({where:{id}});if(previous.status==='ACTIVE')await markHomepagePublication(tx);});}
+export async function reorderHomepageSlides(ids:string[]){return getPrisma().$transaction(async tx=>{await tx.$queryRaw`SELECT 1 FROM pg_advisory_xact_lock(hashtextextended('homepage-slides',0))`;const before=await tx.homepageSlider.findMany({where:{status:'ACTIVE'},orderBy:[{order:'asc'},{id:'asc'}],select:{id:true}});for(const [index,id] of ids.entries())await tx.homepageSlider.update({where:{id},data:{order:index+1}});const after=await tx.homepageSlider.findMany({where:{status:'ACTIVE'},orderBy:[{order:'asc'},{id:'asc'}],select:{id:true}});if(signature(before)!==signature(after))await markHomepagePublication(tx);});}
+
 export const listHomepageSlides = async (
   prisma: PrismaClient,
   options?: { includeInactive?: boolean },
@@ -55,9 +83,10 @@ export const listHomepageSlides = async (
   await ensureHomepageSlidesSeeded(prisma);
   const includeInactive = options?.includeInactive ?? false;
 
-  return prisma.homepageSlider.findMany({
+  const rows=await prisma.homepageSlider.findMany({
     where: includeInactive ? undefined : { status: 'ACTIVE' },
     orderBy: [{ order: 'asc' }, { id: 'asc' }],
   });
+  return Promise.all(rows.map(async row=>{const parsed=PublicImagePlacementSchema.safeParse(row.public_image);return {...row,description:row.description||'',public_image:parsed.success?parsed.data:null,image:parsed.success?await getManagedImage(parsed.data.assetId):null};}));
 };
 

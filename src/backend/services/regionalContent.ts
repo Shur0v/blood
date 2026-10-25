@@ -1,3 +1,4 @@
+import {getManagedImage} from './publicImages';
 import {cache} from 'react';
 import {getPrisma} from '../config/db';
 import {toLocationSlug} from '../utils/locationSlug';
@@ -8,13 +9,13 @@ import {normalizeRegionalDesign,regionalDesignContrastError} from '@/src/lib/reg
 export const regionalContentKey=(country:string,city?:string|null)=>`${toLocationSlug(country)}:${city?toLocationSlug(city):'*'}`;
 type PublicationDates=Map<string,{updatedAt:Date;published:boolean}>;
 export async function getRegionalPublicationDates(){
- try{return new Map((await getPrisma().regionalPageContent.findMany({where:{public_updated_at:{not:null}},select:{key:true,public_updated_at:true,published:true}})).map(row=>[row.key,{updatedAt:row.public_updated_at!,published:row.published}])) as PublicationDates;}
+ try{const db=getPrisma();const [regions,services]=await Promise.all([db.regionalPageContent.findMany({where:{public_updated_at:{not:null}},select:{key:true,public_updated_at:true,published:true}}),db.serviceAvailability.findMany({where:{public_updated_at:{not:null}},select:{key:true,public_updated_at:true,live:true}}).catch(()=>[])]);return new Map([...regions.map(row=>[row.key,{updatedAt:row.public_updated_at!,published:row.published}] as const),...services.map(row=>['service:'+row.key,{updatedAt:row.public_updated_at!,published:row.live!==null}] as const)]) as PublicationDates;}
  catch{return new Map() as PublicationDates;}
 }
+
 export function regionalLastModified(country:string,city:string|undefined,original:Date,dates:PublicationDates){
- if(!city&&country.toLowerCase()!=='nepal')return original;
- const cityDate=dates.get(regionalContentKey(country,city)),countryDate=dates.get(regionalContentKey(country));
- return new Date(Math.max(original.getTime(),new Date(city?GLOBAL_CITY_REVISION:REGIONAL_CITY_REVISION).getTime(),cityDate?.updatedAt.getTime()||0,cityDate?.published?0:countryDate?.updatedAt.getTime()||0));
+ const cityDate=dates.get(regionalContentKey(country,city)),countryDate=dates.get(regionalContentKey(country)),serviceCity=city?dates.get('service:'+regionalContentKey(country,city)):undefined,serviceCountry=dates.get('service:'+regionalContentKey(country));
+ return new Date(Math.max(original.getTime(),new Date(GLOBAL_CITY_REVISION).getTime(),cityDate?.updatedAt.getTime()||0,cityDate?.published?0:countryDate?.updatedAt.getTime()||0,serviceCity?.updatedAt.getTime()||0,serviceCity?.published?0:serviceCountry?.updatedAt.getTime()||0));
 }
 const slideSignature=(slides:unknown)=>JSON.stringify(slides,(_key,value)=>value&&typeof value==='object'&&!Array.isArray(value)?Object.fromEntries(Object.entries(value).sort(([a],[b])=>a.localeCompare(b))):value);
 
@@ -49,6 +50,7 @@ export const getRegionalContent=cache(async function getRegionalContent(country:
   const value=RegionalContentSchema.safeParse({country:record.country,city:record.city,title:record.title,summary:record.summary,published:true,slides:record.slides,design:record.design});
   if(!value.success)return null;
   const assets=await getPrisma().mediaAsset.findMany({where:{id:{in:value.data.slides.map(slide=>slide.assetId)},category:'SLIDER',mime_type:'image/webp'},select:{id:true,public_url:true,width:true,height:true}});
-  return {title:record.title,summary:record.summary,design:value.data.design,updatedAt:(record.public_updated_at||record.updated_at).toISOString(),slides:value.data.slides.flatMap(slide=>{const asset=assets.find(row=>row.id===slide.assetId);return asset?[{...slide,url:asset.public_url,width:asset.width,height:asset.height}]:[];})};
+  const managed=await Promise.all(value.data.slides.map(slide=>getManagedImage(slide.assetId)));
+  return {title:record.title,summary:record.summary,design:value.data.design,updatedAt:(record.public_updated_at||record.updated_at).toISOString(),slides:value.data.slides.flatMap(slide=>{const asset=assets.find(row=>row.id===slide.assetId);return asset?[{...slide,url:asset.public_url,width:asset.width,height:asset.height,managed:managed.find(image=>image?.id===asset.id)||undefined}]:[];})};
  }catch{return null;} // Pre-migration build/unavailable optional content must not hide donor search.
 });

@@ -1,4 +1,4 @@
-import { HomeExperience } from "@/src/components/HomeExperience";
+import {HomePageExperience as HomeExperience} from '@/src/components/HomePageExperience';
 import DonorLocationDirectory from '@/src/components/DonorLocationDirectory';
 
 import {getHomepageContent} from '@/src/backend/services/homepageContent';

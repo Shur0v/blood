@@ -2,6 +2,12 @@ import {cache} from 'react';
 import {getPrisma} from '../config/db';
 import {MedicalError} from '../utils/medicalPrivacy';
 import {HomepageCommandSchema,normalizeHomepageConfig,type HomepageConfig} from '@/src/lib/homepageContent';
+import type {Prisma} from '@prisma/client';
+
+export async function markHomepagePublication(tx:Prisma.TransactionClient){
+ await tx.$queryRaw`SELECT 1 FROM pg_advisory_xact_lock(hashtextextended('homepage:main',0))`;
+ await tx.homepageContent.upsert({where:{key:'main'},create:{key:'main',draft:{},public_updated_at:new Date()},update:{public_updated_at:new Date()}});
+}
 
 export const getHomepageContent=cache(async():Promise<HomepageConfig|null>=>{
  try {const record=await getPrisma().homepageContent.findUnique({where:{key:'main'}});return record?.live?normalizeHomepageConfig(record.live):null;}

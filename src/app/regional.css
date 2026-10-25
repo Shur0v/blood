@@ -122,3 +122,7 @@
 .regional-city-page[data-region-spacing="compact"]>.region-section{padding-top:36px;padding-bottom:36px}
 .regional-city-page .region-button:hover{background:color-mix(in srgb,var(--region-accent),black 18%)}
 .region-local-nav:empty{display:none}
+/* Shared by city-only and blood-group city URLs; never applied to the homepage. */
+.regional-city-search-scope{padding:0!important}
+.regional-city-search-scope>.regional-donor-search{max-width:1200px;margin:0 auto;padding-left:40px;padding-right:40px}
+@media(max-width:600px){.regional-city-search-scope>.regional-donor-search{padding-left:20px;padding-right:20px}}

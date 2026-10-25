@@ -1,13 +1,16 @@
+import {PublicContentSections,ServiceInvitation} from './PublicServiceContent';
+import type {PublicContentPage} from '@/src/lib/publicServices';
 import type { ReactNode } from "react";
 
 interface SeoStaticPageProps {
+  pageKey?:PublicContentPage;
   eyebrow: string;
   title: string;
   description: string;
   children?: ReactNode;
 }
 
-export default function SeoStaticPage({ eyebrow, title, description, children }: SeoStaticPageProps) {
+export default function SeoStaticPage({ eyebrow, title, description, children, pageKey }: SeoStaticPageProps) {
   return (
     <main className="min-h-screen bg-bg text-gray-900">
       <section className="mx-auto max-w-4xl px-4 py-20">
@@ -16,7 +19,9 @@ export default function SeoStaticPage({ eyebrow, title, description, children }:
         <p className="mt-5 text-lg font-semibold leading-8 text-gray-600">{description}</p>
         <div className="mt-10 space-y-6 rounded-[8px] bg-white p-6 font-semibold leading-8 text-gray-700 shadow-card">
           {children}
+          {pageKey&&<PublicContentSections page={pageKey}/>}
         </div>
+      {pageKey&&<ServiceInvitation context="service"/>}
       </section>
     </main>
   );

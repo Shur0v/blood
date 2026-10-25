@@ -1,3 +1,5 @@
+import {reorderHomepageSlides} from '@/src/backend/services/homepageSlides';
+import {securityJson} from '@/src/backend/utils/security';
 import { withActiveAdmin } from '@/src/backend/utils/activeAdmin';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
@@ -24,22 +26,13 @@ async function handlePUT(req: Request) {
   if (!auth.ok) return auth.response;
 
   try {
-    const parsed = ReorderSchema.safeParse(await req.json());
+    const parsed = ReorderSchema.safeParse(await securityJson(req));
     if (!parsed.success) {
       return NextResponse.json({ success: false, message: 'Invalid reorder payload.' }, { status: 400 });
     }
 
     const orderedIds = parsed.data.orderedIds;
-    const prisma = getPrisma();
-
-    await prisma.$transaction(
-      orderedIds.map((id, index) =>
-        prisma.homepageSlider.update({
-          where: { id },
-          data: { order: index + 1 },
-        }),
-      ),
-    );
+    await reorderHomepageSlides(orderedIds);
 
     return NextResponse.json({ success: true, message: 'Slide order updated.' });
   } catch (error) {

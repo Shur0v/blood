@@ -1,43 +1,11 @@
+import usePublicNetwork from './usePublicNetwork';
 import React from "react";
 import { motion, useMotionValue, useTransform, animate } from "motion/react";
 import { useEffect, useState } from "react";
 
-const defaultStats = [
-  { label: "lives Impacted", suffix: "+", target: 12 },
-  { label: "Countries", suffix: "", target: 45 },
-  { label: "Active Heroes", suffix: "+", target: 25 },
-  { label: "Success Rate", suffix: "%", target: 99 }
-];
-
 export default function ImpactData() {
-  const [stats, setStats] = useState(defaultStats);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    const load = async () => {
-      try {
-        const res = await fetch('/api/public/policy-content', {
-          method: 'GET',
-          cache: 'no-store',
-          signal: controller.signal,
-        });
-        const payload = await res.json();
-        if (!res.ok || !payload.success || !payload.data) return;
-
-        setStats([
-          { label: "lives Impacted", suffix: "+", target: Number(payload.data.impactLivesSaved ?? 12) },
-          { label: "Countries", suffix: "", target: Number(payload.data.impactCountries ?? 45) },
-          { label: "Active Heroes", suffix: "+", target: Number(payload.data.impactActiveDonors ?? 25) },
-          { label: "Success Rate", suffix: "%", target: Number(payload.data.impactSuccessRate ?? 99) },
-        ]);
-      } catch {
-        // keep defaults
-      }
-    };
-    void load();
-    return () => controller.abort();
-  }, []);
-
+  const network=usePublicNetwork();
+  const stats=[{label:'Registered accounts',suffix:'',target:network?.totalRegisteredAccounts||0},{label:'Countries',suffix:'',target:network?.activeCountries||0},{label:'Donor listings',suffix:'',target:network?.totalListingCount||0},{label:'Recorded cities',suffix:'',target:network?.activeCities||0}];
   return (
     <section className="relative overflow-hidden py-24 bg-gray-50/50">
       <div className="mx-auto max-w-7xl px-4">
@@ -49,6 +17,7 @@ export default function ImpactData() {
               target={stat.target}
               suffix={stat.suffix}
               delay={i * 0.1}
+              pending={!network}
             />
           ))}
         </div>
@@ -68,10 +37,11 @@ interface CounterProps {
   target: number;
   suffix: string;
   delay: number;
+  pending?:boolean;
   key?: React.Key;
 }
 
-const Counter = ({ label, target, suffix, delay }: CounterProps) => {
+const Counter = ({ label, target, suffix, delay, pending }: CounterProps) => {
   const count = useMotionValue(0);
   const rounded = useTransform(count, (latest) => Math.round(latest));
 
@@ -93,7 +63,7 @@ const Counter = ({ label, target, suffix, delay }: CounterProps) => {
     >
       <div className="mb-2 flex items-center justify-center">
         <motion.span className="text-5xl font-semibold tracking-tighter text-text md:text-7xl">
-          {rounded}
+          {pending?'—':rounded}
         </motion.span>
         <span className="text-3xl font-semibold tracking-tighter text-text md:text-5xl">
           {suffix}

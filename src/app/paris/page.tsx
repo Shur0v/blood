@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { HomeExperience } from "@/src/components/HomeExperience";
+import {HomePageExperience as HomeExperience} from '@/src/components/HomePageExperience';
 
 export const revalidate = 1800;
 export const dynamic = "force-dynamic";

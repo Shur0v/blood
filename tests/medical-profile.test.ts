@@ -120,6 +120,7 @@ before(async () => {
   await sql.query(readFileSync('prisma/migrations/20261025090000_regional_city_pages/migration.sql','utf8'));
   await sql.query(readFileSync('prisma/migrations/20261025220000_regional_design_controls/migration.sql','utf8'));
   await sql.query(readFileSync('prisma/migrations/20261026080000_homepage_editor/migration.sql','utf8'));
+  await sql.query(readFileSync('prisma/migrations/20261026100000_public_content_images/migration.sql','utf8'));
   const migratedPublication=(await sql.query('SELECT * FROM "PublicDonorProfile" WHERE id=$1',[legacyPublicationId])).rows[0];
   assert.equal(migratedPublication.is_published,false);assert.equal(migratedPublication.bio,legacyBio);assert.equal(migratedPublication.admin_approved_at,null);assert.ok(migratedPublication.consented_at);
 });
@@ -863,7 +864,7 @@ test('every exported administrator and manager API method denies anonymous and o
       checked++;
     }
   }
-  assert.equal(checked,74,'Cover all existing privileged API methods');
+  assert.equal(checked,82,'Cover all existing privileged API methods');
 });
 
 test('verification uploads are encrypted, owner-bound and privately readable by owner or active admin', integration, async () => {
@@ -1396,4 +1397,77 @@ test('homepage editor drafts are private, publication persists and restores with
   assert.ok((await getHomepagePublicationDate())!>date);
   assert.deepEqual(await db.regionalPageContent.findMany(),regionalBefore);
  }finally{await db.homepageContent.deleteMany({where:{key:'main'}});}
+});
+
+
+test('public image variants, publication and private asset boundaries are enforced',integration,async()=>{
+ const {createPublicImage,getManagedImage,validateImagePlacement,updatePublicImage}=await import('../src/backend/services/publicImages');
+ const {imageSitemap}=await import('../src/backend/services/imageSitemap');const db=getPrisma();
+ const image=await createPublicImage(await sharp({create:{width:800,height:400,channels:3,background:'#bd2647'}}).png().toBuffer(),{filename:'Kathmandu community event',credit:'Synthetic test image',sourcePage:'',licenseUrl:'',rightsConfirmed:true});
+ let slideId:string|undefined;try{
+ assert.deepEqual(image.variants.map(item=>item.width),[320,640,800]);assert.equal(image.width,800);assert.match(image.url,/kathmandu-community-event/);
+ assert.ok(!(await imageSitemap()).includes(image.url),'Unattached library images must not be indexed');
+ await assert.rejects(createPublicImage(Buffer.from('fake image'),{filename:'test-image',rightsConfirmed:true}));
+ await assert.rejects(createPublicImage(Buffer.from('fake image'),{filename:'test-image',rightsConfirmed:false}));
+ const privateAsset=await db.mediaAsset.create({data:{category:'VERIFICATION',storage_key:randomUUID(),public_url:'/private-file',mime_type:'image/webp',width:100,height:100,size_bytes:100,public_metadata:{filename:'not-public',rightsConfirmed:true}}});
+ try{assert.equal(await getManagedImage(privateAsset.id),null);await assert.rejects(validateImagePlacement({assetId:privateAsset.id,alt:'Never publish verification documents'}));}finally{await db.mediaAsset.delete({where:{id:privateAsset.id}});}
+ const placement={assetId:image.id,alt:'A synthetic community event illustration',decorative:false,caption:'Test fixture'};
+ const slide=await db.homepageSlider.create({data:{title:'Synthetic public image',image_url:image.url,status:'INACTIVE',public_image:placement}});slideId=slide.id;
+ assert.ok(!(await imageSitemap()).includes(image.url));await db.homepageSlider.update({where:{id:slide.id},data:{status:'ACTIVE'}});assert.ok((await imageSitemap()).includes(image.url));
+ const {saveHomepageSlide}=await import('../src/backend/services/homepageSlides');const legacy=await saveHomepageSlide({title:slide.title,image_url:'https://example.invalid/replacement.webp',status:'ACTIVE'},slide.id);assert.equal(legacy.public_image,null,'A legacy client replacing the URL clears the previous managed binding');assert.equal(legacy.image_url,'https://example.invalid/replacement.webp');await saveHomepageSlide({title:slide.title,image_url:image.url,status:'ACTIVE',public_image:placement},slide.id);
+ const previousDate=new Date('2010-01-01');await db.homepageSlider.update({where:{id:slide.id},data:{updated_at:previousDate}});await updatePublicImage(image.id,image.metadata);assert.equal((await db.homepageSlider.findUniqueOrThrow({where:{id:slide.id}})).updated_at.toISOString(),previousDate.toISOString(),'Identical metadata does not fake a page update');const edited=await updatePublicImage(image.id,{...image.metadata,credit:'Updated synthetic credit'});assert.equal(edited.url,image.url,'Editing metadata preserves URLs');assert.ok((await db.homepageSlider.findUniqueOrThrow({where:{id:slide.id}})).updated_at>previousDate);
+ await db.homepageSlider.update({where:{id:slide.id},data:{public_image:{...placement,decorative:true,alt:''}}});assert.ok(!(await imageSitemap()).includes(image.url));
+ }finally{if(slideId)await db.homepageSlider.delete({where:{id:slideId}});await db.mediaAsset.delete({where:{id:image.id}});}
+});
+
+test('public content and regional service drafts stay private and published overrides restore correctly',integration,async()=>{
+ const db=getPrisma();const {savePublicContent,getPublicContent,saveAvailability,getServiceAvailability}=await import('../src/backend/services/publicContent');
+ try{
+ await savePublicContent({key:'medical-profile',action:'draft',content:{heading:'A private draft',sections:[]}});assert.equal(await getPublicContent('medical-profile'),null);
+ await savePublicContent({key:'medical-profile',action:'publish',content:{heading:'An approved profile explanation',sections:[]}});assert.equal((await getPublicContent('medical-profile'))?.heading,'An approved profile explanation');
+ const oldDate=new Date('2010-01-01');await db.publicPageContent.update({where:{key:'medical-profile'},data:{public_updated_at:oldDate}});
+ await savePublicContent({key:'medical-profile',action:'draft',content:{heading:'Another draft'}});assert.equal((await getPublicContent('medical-profile'))?.heading,'An approved profile explanation');
+ await savePublicContent({key:'medical-profile',action:'publish',content:{heading:'An approved profile explanation',sections:[]}});assert.equal((await db.publicPageContent.findUniqueOrThrow({where:{key:'medical-profile'}})).public_updated_at?.toISOString(),oldDate.toISOString());
+ await savePublicContent({key:'medical-profile',action:'restore',content:{}});assert.equal((await getPublicContent('medical-profile'))?.heading,'');
+ const destination={url:'https://example.invalid/appointments',label:'Synthetic booking test',verifiedOn:'2026-01-01',verificationNote:'Synthetic provider destination checked by the test.'};
+ await saveAvailability({country:'Bangladesh',action:'draft',availability:{booking:destination}});assert.equal((await getServiceAvailability('Bangladesh','Dhaka')).booking,null);
+ await saveAvailability({country:'Bangladesh',action:'publish',availability:{booking:destination}});assert.equal((await getServiceAvailability('Bangladesh','Dhaka')).booking?.label,destination.label);
+ await saveAvailability({country:'Bangladesh',city:'Dhaka',action:'publish',availability:{}});assert.equal((await getServiceAvailability('Bangladesh','Dhaka')).booking,null,'An explicit city override can remove country destinations');
+ await assert.rejects(saveAvailability({country:'No invented country',action:'publish',availability:{booking:destination}}));
+ }finally{await db.publicPageContent.deleteMany({where:{key:'medical-profile'}});await db.serviceAvailability.deleteMany({where:{key:{in:['bangladesh:*','bangladesh:dhaka']}}});}
+});
+
+
+test('public image API enforces reuse permission, lists only managed images and updates metadata without renaming',integration,async()=>{
+ const {POST,GET,PATCH}=await import('../src/app/api/admin/public-images/route');const db=getPrisma();
+ const auth={authorization:'Bearer '+signToken({user_id:testAdminId,role:'ADMIN'})};
+ const bytes=await sharp({create:{width:120,height:80,channels:3,background:'#bd2647'}}).png().toBuffer();
+ const form=(rights:boolean)=>{const data=new FormData();data.set('file',new File([bytes],'synthetic.png',{type:'image/png'}));data.set('metadata',JSON.stringify({filename:'small synthetic illustration',rightsConfirmed:rights}));return data;};
+ assert.equal((await POST(new Request('https://bloodnet.test/api/admin/public-images',{method:'POST',headers:auth,body:form(false)}))).status,400);
+ const response=await POST(new Request('https://bloodnet.test/api/admin/public-images',{method:'POST',headers:auth,body:form(true)}));assert.equal(response.status,201);const image=(await response.json()).data;
+ try{const library=await GET(new Request('https://bloodnet.test/api/admin/public-images',{headers:auth}));assert.equal(library.status,200);assert.ok((await library.json()).data.some((item:{id:string})=>item.id===image.id));
+ const patched=await PATCH(new Request('https://bloodnet.test/api/admin/public-images',{method:'PATCH',headers:{...auth,'Content-Type':'application/json'},body:JSON.stringify({id:image.id,metadata:{...image.metadata,credit:'An approved synthetic illustration'}})}));assert.equal(patched.status,200);assert.equal((await patched.json()).data.url,image.url);
+ }finally{await db.mediaAsset.delete({where:{id:image.id}});}
+});
+
+test('organ-specific city pages include registered service-city pledges without exposing coordinates',integration,async()=>{
+ const db=getPrisma(),person=await newPatient(),city='Service-'+randomUUID();
+ await db.user.update({where:{id:person.id},data:{is_active_donor:true}});
+ await db.userServiceCity.create({data:{user_id:person.id,city,country:'Nepal',formatted_location:city+', Nepal',lat:27,lng:85,provider_place_id:randomUUID(),locked_until:new Date()}});
+ await db.organPledge.create({data:{user_id:person.id,organ_type:'Kidney',is_active:true}});
+ const {getOrganDonors}=await import('../src/backend/services/seoData');const rows=await getOrganDonors('kidney',city.toLowerCase());assert.ok(rows.some(row=>row.id===person.id&&row.location_city===city));assert.ok(rows.every(row=>!('location_lat'in row)&&!('location_lng'in row)));
+});
+
+
+test('slider publication dates track meaningful changes and legacy image replacement remains compatible',integration,async()=>{
+ const db=getPrisma(),{saveHomepageSlide,deleteHomepageSlide,reorderHomepageSlides}=await import('../src/backend/services/homepageSlides');
+ const rootBefore=await db.homepageContent.findUnique({where:{key:'main'}}),original=await db.homepageSlider.findMany(),ids:string[]=[];
+ const input={title:'Synthetic publication check',description:'A public illustration',image_url:'https://example.invalid/illustration.webp',status:'ACTIVE'};const old=new Date('2010-01-01');
+ try{
+ const row=await saveHomepageSlide(input);ids.push(row.id);await db.homepageContent.update({where:{key:'main'},data:{public_updated_at:old}});await saveHomepageSlide(input,row.id);assert.equal((await db.homepageContent.findUniqueOrThrow({where:{key:'main'}})).public_updated_at?.toISOString(),old.toISOString(),'Identical saves preserve the publication date');
+ await saveHomepageSlide({...input,status:'INACTIVE'},row.id);assert.ok((await db.homepageContent.findUniqueOrThrow({where:{key:'main'}})).public_updated_at!>old);
+ await db.homepageContent.update({where:{key:'main'},data:{public_updated_at:old}});await saveHomepageSlide({...input,status:'INACTIVE',title:'Private inactive edit'},row.id);assert.equal((await db.homepageContent.findUniqueOrThrow({where:{key:'main'}})).public_updated_at?.toISOString(),old.toISOString());
+ await saveHomepageSlide(input,row.id);await db.homepageContent.update({where:{key:'main'},data:{public_updated_at:old}});const active=await db.homepageSlider.findMany({where:{status:'ACTIVE'},orderBy:[{order:'asc'},{id:'asc'}],select:{id:true}});await reorderHomepageSlides(active.map(item=>item.id));assert.equal((await db.homepageContent.findUniqueOrThrow({where:{key:'main'}})).public_updated_at?.toISOString(),old.toISOString(),'Identical ordering is not a content change');
+ await deleteHomepageSlide(row.id);ids.splice(ids.indexOf(row.id),1);assert.ok((await db.homepageContent.findUniqueOrThrow({where:{key:'main'}})).public_updated_at!>old);
+ }finally{await db.homepageSlider.deleteMany({where:{id:{in:ids}}});for(const row of original)await db.homepageSlider.update({where:{id:row.id},data:{order:row.order}});if(rootBefore)await db.homepageContent.update({where:{key:'main'},data:{draft:rootBefore.draft,public_updated_at:rootBefore.public_updated_at}});else await db.homepageContent.deleteMany({where:{key:'main'}});}
 });

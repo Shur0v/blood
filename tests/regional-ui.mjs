@@ -40,15 +40,15 @@ globalThis.fetch=async(url,init={})=>{
  return Response.json({success:true,data:{country:'Nepal'}});
 };
 await act(async()=>root.render(React.createElement(React.Fragment,null,React.createElement(Visibility),React.createElement(RegionalRequestBuilder,{city:'Kathmandu',group:'A+'}))));
-assert.equal(document.querySelector('[data-region-section="6"]'),null);
+assert.equal(document.querySelector('[data-region-request="preparation"]'),null);
 await act(async()=>document.querySelector('[role="switch"]').dispatchEvent(new MouseEvent('click',{bubbles:true})));
 // Request preparation is fetched only after the administrator enables it.
-for(let attempt=0;attempt<40&&!document.querySelector('[data-region-section="6"]');attempt++)await act(async()=>new Promise(resolve=>setTimeout(resolve,50)));
-assert.equal(document.querySelector('[role="switch"]').getAttribute('aria-checked'),'true');assert.ok(document.querySelector('[data-region-section="6"]'));
+for(let attempt=0;attempt<40&&!document.querySelector('[data-region-request="preparation"]');attempt++)await act(async()=>new Promise(resolve=>setTimeout(resolve,50)));
+assert.equal(document.querySelector('[role="switch"]').getAttribute('aria-checked'),'true');assert.ok(document.querySelector('[data-region-request="preparation"]'));
 await act(async()=>[...document.querySelectorAll('button')].find(el=>el.textContent.includes('Copy message')).dispatchEvent(new MouseEvent('click',{bubbles:true})));
 assert.match(copied,/Kathmandu/);assert.match(copied,/A\+/);
 await act(async()=>document.querySelector('[role="switch"]').dispatchEvent(new MouseEvent('click',{bubbles:true})));
-assert.equal(document.querySelector('[data-region-section="6"]'),null);
+assert.equal(document.querySelector('[data-region-request="preparation"]'),null);
 
 let closed=0;
 await act(async()=>root.render(React.createElement(DonorModal,{donor:{name:'Synthetic Nepal volunteer',phone:'+977000000000',group:'A+',location:'Kathmandu, Nepal'},onClose:()=>closed++})));

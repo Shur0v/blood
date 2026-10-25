@@ -1,3 +1,9 @@
+import {saveHomepageSlide} from '@/src/backend/services/homepageSlides';
+import {PublicImagePlacementSchema} from '@/src/lib/publicImages';
+import {validateImagePlacement,getManagedImage} from '@/src/backend/services/publicImages';
+import {medicalFailure,MedicalError} from '@/src/backend/utils/medicalPrivacy';
+import {securityJson} from '@/src/backend/utils/security';
+import {Prisma} from '@prisma/client';
 import { withActiveAdmin } from '@/src/backend/utils/activeAdmin';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
@@ -9,6 +15,7 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 const SlideCreateSchema = z.object({
+  public_image: PublicImagePlacementSchema.nullable().optional(),
   title: z.string().trim().min(2).max(140),
   description: z.string().trim().max(500).optional().default(''),
   image_url: z.string().trim().url(),
@@ -43,6 +50,7 @@ async function handleGET(req: Request) {
       },
     );
   } catch (error) {
+    if(error instanceof MedicalError)return medicalFailure(error);
     return NextResponse.json({ success: false, message: 'Failed to load slides.' }, { status: 500 });
   }
 }
@@ -52,28 +60,16 @@ async function handlePOST(req: Request) {
   if (!auth.ok) return auth.response;
 
   try {
-    const parsed = SlideCreateSchema.safeParse(await req.json());
+    const parsed = SlideCreateSchema.safeParse(await securityJson(req));
     if (!parsed.success) {
       return NextResponse.json({ success: false, message: 'Invalid slide payload.' }, { status: 400 });
     }
 
-    const prisma = getPrisma();
-    const maxOrder = await prisma.homepageSlider.aggregate({
-      _max: { order: true },
-    });
-
-    const created = await prisma.homepageSlider.create({
-      data: {
-        title: parsed.data.title,
-        description: parsed.data.description || null,
-        image_url: parsed.data.image_url,
-        status: parsed.data.status,
-        order: (maxOrder._max.order ?? 0) + 1,
-      },
-    });
+    const created=await saveHomepageSlide(parsed.data);
 
     return NextResponse.json({ success: true, data: created, message: 'Slide added successfully.' }, { status: 201 });
   } catch (error) {
+    if(error instanceof MedicalError)return medicalFailure(error);
     return NextResponse.json({ success: false, message: 'Failed to add slide.' }, { status: 500 });
   }
 }

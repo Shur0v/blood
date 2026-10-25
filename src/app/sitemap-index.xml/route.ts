@@ -5,6 +5,7 @@ const EXTRA_SITEMAPS = [
   "sitemap-categories.xml",
   "sitemap-regions.xml",
   "sitemap-blog.xml",
+  "sitemap-images.xml",
   "sitemap-location.xml",
   "sitemap-guides.xml",
   "sitemap-network.xml",

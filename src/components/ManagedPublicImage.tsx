@@ -1,0 +1,6 @@
+import type {ManagedImage,PublicImagePlacement} from '@/src/lib/publicImages';
+import {imageSrcSet,imageObject} from '@/src/lib/imagePresentation';
+export default function ManagedPublicImage({image,placement,className='',eager=false,showCaption=true}:{image:ManagedImage;placement:PublicImagePlacement;className?:string;eager?:boolean;showCaption?:boolean}){
+ const schema=imageObject(image,placement);
+ return <figure className={className}>{!placement.decorative&&<script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(schema).replace(/</g,'\\u003c')}}/>}<img src={image.url} srcSet={imageSrcSet(image)||undefined} sizes="(max-width: 768px) 100vw, 960px" width={image.width} height={image.height} alt={placement.decorative?'':placement.alt} loading={eager?'eager':'lazy'} decoding="async" className="h-auto w-full rounded-2xl object-cover"/>{showCaption&&(placement.caption||image.metadata.credit)&&<figcaption className="mt-3 text-sm leading-6 text-slate-500">{placement.caption}{placement.caption&&image.metadata.credit?' · ':''}{image.metadata.credit}{image.metadata.sourcePage&&<> · <a href={image.metadata.sourcePage} rel="noopener noreferrer" target="_blank">Source</a></>}</figcaption>}</figure>;
+}

@@ -1,3 +1,4 @@
+import {ServiceInvitation} from './PublicServiceContent';
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
@@ -44,6 +45,7 @@ function PageShell({ children, jsonLd }: { children: React.ReactNode; jsonLd: un
       <script type="application/ld+json" dangerouslySetInnerHTML={pageJsonLd(jsonLd)} />
       <ManagedNativeAdSlot slotKey="native-ad-2" />
       {children}
+      <div className="mx-auto max-w-6xl px-4"><ServiceInvitation context="donor"/></div>
       <ManagedNativeAdSlot slotKey="native-ad-2" />
     </main>
   );

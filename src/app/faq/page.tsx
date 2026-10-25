@@ -1,3 +1,4 @@
+import {PublicContentSections} from '@/src/components/PublicServiceContent';
 import type { Metadata } from "next";
 import { getPrisma } from "@/src/backend/config/db";
 import { getPublicFaqs } from "@/src/backend/services/faqService";
@@ -45,6 +46,6 @@ export default async function FaqPage() {
           </article>
         ))}
       </div>
-    </main>
+    <PublicContentSections page="faq"/></main>
   );
 }

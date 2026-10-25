@@ -1,3 +1,4 @@
+'use client';
 import { discoverDonors } from '../lib/donorDiscovery';
 import { motion, useMotionValue, useTransform, animate } from "motion/react";
 import { useEffect, useRef, useState } from "react";
@@ -48,10 +49,10 @@ interface OrganDonorApiResponse {
   };
 }
 
-export default function OrganHero({ forcedCountry }: { forcedCountry?: string }) {
-  const [activeOrgan, setActiveOrgan] = useState<string | null>(null);
+export default function OrganHero({ forcedCountry,initialOrgan=null,initialCity='',heading,description }: { forcedCountry?: string;initialOrgan?:string|null;initialCity?:string;heading?:string;description?:string }) {
+  const [activeOrgan, setActiveOrgan] = useState<string | null>(initialOrgan);
   const [activeBloodGroup, setActiveBloodGroup] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(initialCity);
   const [selectedDonor, setSelectedDonor] = useState<OrganDonor | null>(null);
   const [donors, setDonors] = useState<OrganDonor[]>([]);
   const [totalOrganDonors, setTotalOrganDonors] = useState(0);
@@ -203,11 +204,11 @@ export default function OrganHero({ forcedCountry }: { forcedCountry?: string })
             </motion.div>
 
             <h1 className="mb-6 text-4xl font-bold tracking-tight text-gray-900 md:text-6xl">
-              Give the Gift of <span className="text-primary-dark">Life</span>.
+              {heading||<>Give the Gift of <span className="text-primary-dark">Life</span>.</>}
             </h1>
 
             <p className="mx-auto mb-8 max-w-2xl text-base text-gray-500">
-              Connect with organ donors instantly. Our platform facilitates the matching process for life-saving transplants with utmost care and security.
+              {description||'Connect with organ donors instantly. Our platform facilitates the matching process for life-saving transplants with utmost care and security.'}
             </p>
 
             <div className="relative mx-auto flex flex-col gap-4 w-full max-w-5xl">

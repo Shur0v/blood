@@ -9,7 +9,6 @@ import SiteNavShell from '@/src/components/SiteNavShell';
 import { SiteNavigationProvider } from '@/src/components/SiteNavigationProvider';
 import DeferredClientEffects from "@/src/components/DeferredClientEffects";
 import GlobalAdSenseSlot from "@/src/components/GlobalAdSenseSlot";
-import GlobalHomepageContinuation from "@/src/components/GlobalHomepageContinuation";
 import GlobalManagedAdsRuntime from "@/src/components/GlobalManagedAdsRuntime";
 import GlobalManagedSmartLinks from "@/src/components/GlobalManagedSmartLinks";
 import { getPublicBaseUrl } from "@/src/backend/config/env";
@@ -137,6 +136,7 @@ export default async function RootLayout({
             data-last-updated={publicBotStats.lastUpdated}
           >
             <h2>Current public BloodNet network statistics</h2>
+            <p>Total registered accounts worldwide: {publicBotStats.totalRegisteredAccounts}</p>
             <p>Active registered donor accounts: {publicBotStats.registeredAccounts}</p>
             <p>Manual donor entries: {publicBotStats.manualDonorEntries}</p>
             <p>Community organisation listings: {publicBotStats.communityListings}</p>
@@ -153,7 +153,6 @@ export default async function RootLayout({
           <DeferredClientEffects />
           <GlobalManagedAdsRuntime />
           <SeoPagePresentation>{children}</SeoPagePresentation>
-          <GlobalHomepageContinuation />
           <GlobalManagedSmartLinks />
           <GlobalAdSenseSlot />
           <SiteNavShell />

@@ -54,15 +54,17 @@ export const saveOptimizedWebp = async ({
   category,
   optimizedBuffer,
   encrypted = false,
+  descriptiveName,
 }: {
   category: UploadCategory;
   optimizedBuffer: Buffer;
   encrypted?: boolean;
+  descriptiveName?: string;
 }): Promise<{ storageKey: string; publicUrl: string }> => {
   const env = getAppEnv();
   const bucket = env.R2_BUCKET;
   const r2Client = getR2Client();
-  const fileName = `${randomUUID()}.webp`;
+  const fileName = `${descriptiveName ? descriptiveName.replace(/[^a-z0-9-]/g,'').slice(0,80)+'-' : ''}${randomUUID()}.webp`;
   const datePrefix = new Date().toISOString().slice(0, 10);
   const storageKey = `${category.toLowerCase()}/${datePrefix}/${fileName}`;
 
@@ -73,6 +75,7 @@ export const saveOptimizedWebp = async ({
         Key: storageKey,
         Body: optimizedBuffer,
         ContentType: encrypted ? 'application/octet-stream' : 'image/webp',
+        ...(descriptiveName&&!encrypted?{CacheControl:'public, max-age=31536000, immutable'}:{}),
       }),
     );
 

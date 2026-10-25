@@ -1,3 +1,8 @@
+import {PublicImagePlacementSchema} from '@/src/lib/publicImages';
+import {validateImagePlacement,getManagedImage} from '@/src/backend/services/publicImages';
+import {medicalFailure,MedicalError} from '@/src/backend/utils/medicalPrivacy';
+import {securityJson} from '@/src/backend/utils/security';
+import {Prisma} from '@prisma/client';
 import { withActiveAdmin } from '@/src/backend/utils/activeAdmin';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
@@ -17,6 +22,7 @@ const optionalNullableTrimmedString = (max: number) =>
   );
 
 const UpdateBlogSchema = z.object({
+  public_image: PublicImagePlacementSchema.nullable().optional(),
   title: z.string().trim().min(5).max(180).optional(),
   content: z.string().trim().min(100).optional(),
   status: z.enum(['DRAFT', 'PUBLISHED', 'ARCHIVED']).optional(),
@@ -80,13 +86,14 @@ async function handlePUT(req: Request, { params }: { params: Promise<{ id: strin
   const resolved = await params;
   const id = resolved.id;
 
-  const parsed = UpdateBlogSchema.safeParse(await req.json());
+  const parsed = UpdateBlogSchema.safeParse(await securityJson(req,1024*1024));
   if (!parsed.success) {
     const reason = parsed.error.issues[0]?.message || 'Invalid blog payload.';
     return NextResponse.json({ success: false, message: reason }, { status: 400 });
   }
 
   const payload = parsed.data;
+  if(payload.public_image)await validateImagePlacement(payload.public_image);
   const prisma = getPrisma();
   const existing = await prisma.blog.findUnique({ where: { id } });
   if (!existing) {
@@ -110,6 +117,7 @@ async function handlePUT(req: Request, { params }: { params: Promise<{ id: strin
   const updated = await prisma.blog.update({
     where: { id },
     data: {
+      ...(payload.public_image!==undefined?{public_image:payload.public_image===null?Prisma.JsonNull:payload.public_image}:{}),
       title: nextTitle,
       content: nextContent,
       status: nextStatus,

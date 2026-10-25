@@ -1,0 +1,42 @@
+{
+  "odisha": {
+    "allGroupCards": 16,
+    "filteredGroup": "O+",
+    "filteredCards": 16,
+    "afterShowMore": 29,
+    "cityRetained": true,
+    "mobileOverflow": false
+  },
+  "otherRoutes": [
+    {
+      "cards": 16,
+      "overflow": false,
+      "path": "/blood/dhaka",
+      "search": "Dhaka",
+      "selected": [
+        "All groups"
+      ],
+      "theme": "bangladesh"
+    },
+    {
+      "cards": 16,
+      "overflow": false,
+      "path": "/blood/kathmandu",
+      "search": "Kathmandu",
+      "selected": [
+        "All groups"
+      ],
+      "theme": "nepal"
+    },
+    {
+      "cards": 16,
+      "overflow": false,
+      "path": "/blood/a-positive/chennai",
+      "search": "Chennai",
+      "selected": [
+        "A+"
+      ],
+      "theme": "india"
+    }
+  ]
+}

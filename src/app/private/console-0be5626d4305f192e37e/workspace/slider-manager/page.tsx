@@ -1,5 +1,7 @@
 'use client';
 
+import ManagedImagePicker from '@/src/components/ManagedImagePicker';
+import type {PublicImagePlacement} from '@/src/lib/publicImages';
 import React, { useMemo, useState } from 'react';
 import { Card } from '@/src/admin-dashboard/components/common/Card';
 import { Badge } from '@/src/admin-dashboard/components/common/Badge';
@@ -7,6 +9,7 @@ import { GripVertical, Edit, Trash2, Plus, Loader2, Upload } from 'lucide-react'
 import type { HomepageSlide } from '@/src/types/homepageSlide';
 
 type FormState = {
+  public_image?:PublicImagePlacement|null;
   id: string | null;
   title: string;
   description: string;
@@ -49,6 +52,7 @@ export default function SliderManagerPage() {
         const first: HomepageSlide = payload.data[0];
         setForm({
           id: first.id,
+          public_image:first.public_image,
           title: first.title,
           description: first.description || '',
           image_url: first.image_url,
@@ -90,6 +94,7 @@ export default function SliderManagerPage() {
   const fillFormFromSlide = (slide: HomepageSlide) => {
     setForm({
       id: slide.id,
+      public_image:slide.public_image,
       title: slide.title,
       description: slide.description || '',
       image_url: slide.image_url,
@@ -126,6 +131,7 @@ export default function SliderManagerPage() {
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          public_image:form.public_image,
           title: form.title.trim(),
           description: form.description.trim(),
           image_url: form.image_url.trim(),
@@ -339,6 +345,7 @@ export default function SliderManagerPage() {
                 void handleSave();
               }}
             >
+              <ManagedImagePicker key={form.id||'new'} value={form.public_image} onSelected={image=>setForm(current=>({...current,image_url:image.url}))} onChange={public_image=>setForm(current=>({...current,public_image}))}/>
               <div>
                 <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Slide Title</label>
                 <input
@@ -363,28 +370,16 @@ export default function SliderManagerPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Background Image URL</label>
+                  <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Current image URL (legacy links preserved)</label>
                   <input
                     type="url"
                     value={form.image_url}
-                    onChange={(event) => setForm((prev) => ({ ...prev, image_url: event.target.value }))}
+                    readOnly
                     className="w-full bg-gray-50 dark:bg-[#0f1115] border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-red-500"
                     placeholder="https://..."
                   />
                 </div>
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Upload Image</label>
-                  <label className="w-full bg-gray-50 dark:bg-[#0f1115] border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm outline-none flex items-center justify-center gap-2 cursor-pointer hover:border-red-400 transition">
-                    {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-                    {uploading ? 'Uploading...' : 'Choose image'}
-                    <input
-                      type="file"
-                      className="hidden"
-                      accept="image/png,image/jpeg,image/webp"
-                      onChange={(event) => void handleImageUpload(event.target.files?.[0] || null)}
-                    />
-                  </label>
-                </div>
+
               </div>
 
               <div className="flex items-center gap-3 pt-2">

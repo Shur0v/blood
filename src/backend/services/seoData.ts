@@ -230,8 +230,9 @@ export const getVerifiedOrganRequests = async (organSlug?: string, citySlug?: st
 };
 
 export const getVerifiedOrganRequestBySlug = async (slug: string) => {
-  const rows = await getVerifiedOrganRequests();
-  return rows.find((row) => buildOrganRequestSlug(row) === slug) ?? null;
+  const prefix=slug.match(/-([0-9a-f]{8})$/i)?.[1];if(!prefix)return null;
+  const rows=await getPrisma().organRequest.findMany({where:{status:'VERIFIED',id:{startsWith:prefix}},take:10});
+  return rows.find(row=>buildOrganRequestSlug(row)===slug) as OrganRequestSeoRow||null;
 };
 
 export const buildOrganRequestSlug = (row: Pick<OrganRequestSeoRow, "id" | "organ_type" | "location_city" | "created_at">) => {

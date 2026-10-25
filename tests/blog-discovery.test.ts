@@ -14,9 +14,9 @@ test('97 articles occupy 40, 40 and 17 slots without overlaps',()=>{
 });
 test('sitemap dates reflect meaningful page changes without changing article dates',()=>{
  const old=new Date('2026-05-31T00:00:00Z');
- assert.equal(blogPageLastModified(old).toISOString(),'2026-10-23T19:34:02.000Z');
+ assert.equal(blogPageLastModified(old).toISOString(),'2026-10-25T18:15:03.000Z');
  assert.equal(old.toISOString(),'2026-05-31T00:00:00.000Z');
- const edited=new Date('2026-10-24T15:00:00Z');assert.equal(blogPageLastModified(edited).toISOString(),edited.toISOString());
+ const edited=new Date('2026-10-26T15:00:00Z');assert.equal(blogPageLastModified(edited).toISOString(),edited.toISOString());
 });
 test('canonical aliases and external destinations stay out of blog discovery',()=>{
  const base='https://bloodnet.live';

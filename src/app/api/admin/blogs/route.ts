@@ -1,3 +1,8 @@
+import {PublicImagePlacementSchema} from '@/src/lib/publicImages';
+import {validateImagePlacement,getManagedImage} from '@/src/backend/services/publicImages';
+import {medicalFailure,MedicalError} from '@/src/backend/utils/medicalPrivacy';
+import {securityJson} from '@/src/backend/utils/security';
+import {Prisma} from '@prisma/client';
 import { withActiveAdmin } from '@/src/backend/utils/activeAdmin';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
@@ -22,6 +27,7 @@ const QuerySchema = z.object({
 });
 
 const CreateBlogSchema = z.object({
+  public_image: PublicImagePlacementSchema.nullable().optional(),
   title: z.string().trim().min(5).max(180),
   content: z.string().trim().min(100),
   status: z.enum(['DRAFT', 'PUBLISHED', 'ARCHIVED']).default('DRAFT'),
@@ -124,13 +130,14 @@ async function handlePOST(req: Request) {
   const authError = ensureAdminSession(req);
   if (authError) return authError;
 
-  const parsed = CreateBlogSchema.safeParse(await req.json());
+  const parsed = CreateBlogSchema.safeParse(await securityJson(req,1024*1024));
   if (!parsed.success) {
     const reason = parsed.error.issues[0]?.message || 'Invalid blog payload.';
     return NextResponse.json({ success: false, message: reason }, { status: 400 });
   }
 
   const payload = parsed.data;
+  if(payload.public_image)await validateImagePlacement(payload.public_image);
   const wordCount = countWords(payload.content);
   if (payload.status === 'PUBLISHED' && wordCount < payload.minWordCount) {
     return NextResponse.json(
@@ -143,6 +150,7 @@ async function handlePOST(req: Request) {
   const now = new Date();
   const row = await getPrisma().blog.create({
     data: {
+      ...(payload.public_image!==undefined?{public_image:payload.public_image===null?Prisma.JsonNull:payload.public_image}:{}),
       title: payload.title,
       content: payload.content,
       author_id: 'admin',

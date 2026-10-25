@@ -1,3 +1,4 @@
+import {ServiceInvitation} from './PublicServiceContent';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -58,5 +59,5 @@ export default async function DonorLocationLanding({params,mode,bloodGroup}:{par
     <CityLandingDonorGrid mode={mode} city={row.city} country={row.country} bloodGroup={bloodGroup}/>
     <section className="research-page"><div className="research-container"><p className="research-kicker">The local picture, explained</p><h2>Read the {row.city} directory with context.</h2><div className="research-chapters columns">{locationCommentary(row,await getDonorLocations(),mode).map(chapter=><article key={chapter.title}><header><h3>{chapter.title}</h3></header><p className="research-prose">{chapter.text}</p></article>)}</div><div className="research-grid two"><Link className="research-text-link" href="/guides/read-donor-data-responsibly">How these counts are defined →</Link><Link className="research-text-link" href="/guides/understand-organ-donation-pledges">A practical guide to the next step →</Link></div><p className="research-small">Source: current BloodNet directory records. This is platform coverage, not a representative survey or clinical assessment.</p></div></section>
     <section className="mx-auto max-w-7xl px-4 pb-16"><h2 className="text-2xl font-semibold">Donation support in {row.city}</h2><p className="mt-4 max-w-3xl text-sm leading-7 text-slate-600">BloodNet helps people discover willing donors. For a medical emergency, contact your hospital or local emergency services first. Never buy or sell blood or organs, and confirm identity and medical requirements with your care team.</p>{nearby.length>0&&<><h2 className="mt-10 text-2xl font-semibold">More donor locations in {row.country}</h2><ul className="mt-5 grid gap-3 sm:grid-cols-3">{nearby.map(other=><li key={other.city}><Link href={donorLocationPath(other,mode)} className="block rounded-xl border border-slate-200 bg-white p-4 text-sm font-medium">Organ donors in {other.city}</Link></li>)}</ul></>}</section>
-  </main>;
+  <div className="mx-auto max-w-7xl px-4"><ServiceInvitation context="donor"/></div></main>;
 }

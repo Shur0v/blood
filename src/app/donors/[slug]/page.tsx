@@ -1,3 +1,4 @@
+import {ServiceInvitation} from '@/src/components/PublicServiceContent';
 import { donorLocationPath } from '@/src/backend/services/donorLocations';
 import type { Metadata } from 'next';
 import PublicDonorArticle from '@/src/components/PublicDonorArticle';
@@ -21,5 +22,6 @@ export default async function Page({params}:Props) {
   return <>
     <script type="application/ld+json" dangerouslySetInnerHTML={{__html:stringifyJsonLd({'@context':'https://schema.org','@type':'ProfilePage',url,dateModified:profile.updatedAt.toISOString(),mainEntity:{'@type':'Person',name:profile.name,url,description:profile.bio,address:{'@type':'PostalAddress',addressLocality:profile.city,addressCountry:profile.country},...(profile.phone?{telephone:profile.phone}:{})}})}}/>
     <PublicDonorArticle profile={profile} localPath={donorLocationPath({country:profile.country,city:profile.city},'blood')}/>
+    <div className="mx-auto max-w-6xl px-4"><ServiceInvitation context="donor"/></div>
   </>;
 }

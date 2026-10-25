@@ -1,9 +1,9 @@
 import { blogCanonical, blogDescription } from './blogSeo';
 
 import { BLOG_FEED_PATH } from './blogArchive';
-// Significant shared content removal: the full homepage no longer follows articles.
+// Significant template update: contextual private-record guidance and managed public images.
 // Never replace this with the current build/request time.
-const ARTICLE_TEMPLATE_UPDATED = new Date('2026-10-23T19:34:02Z');
+const ARTICLE_TEMPLATE_UPDATED = new Date('2026-10-25T18:15:03Z');
 export function blogPageLastModified(updated: Date) {
   return new Date(Math.max(updated.getTime(), ARTICLE_TEMPLATE_UPDATED.getTime()));
 }

@@ -264,6 +264,7 @@ model ManualOrganDonor {
 }
 
 model Blog {
+  public_image Json?
   id          String   @id @default(uuid())
   title       String
   content     String
@@ -289,6 +290,8 @@ model Blog {
 }
 
 model HomepageSlider {
+  public_image Json?
+  updated_at DateTime @default(now()) @updatedAt
   id          String   @id @default(uuid())
   title       String
   description String?
@@ -444,6 +447,8 @@ model VerificationDocument {
 }
 
 model MediaAsset {
+  public_metadata Json?
+  variants Json?
   id             String   @id @default(uuid())
   owner_user_id  String?
   category       String   // PROFILE | BLOG | SLIDER | VERIFICATION | MEDICAL_AID | OTHER
@@ -636,6 +641,23 @@ model Prescription {
 
 model HomepageContent {
  key String @id
+ draft Json @default("{}")
+ live Json?
+ public_updated_at DateTime?
+ updated_at DateTime @updatedAt
+}
+
+model PublicPageContent {
+ key String @id
+ draft Json @default("{}")
+ live Json?
+ public_updated_at DateTime?
+ updated_at DateTime @updatedAt
+}
+model ServiceAvailability {
+ key String @id
+ country String
+ city String?
  draft Json @default("{}")
  live Json?
  public_updated_at DateTime?

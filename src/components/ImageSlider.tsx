@@ -1,12 +1,14 @@
+'use client';
+import {imageSrcSet,imageObject} from '@/src/lib/imagePresentation';
 import { motion, AnimatePresence } from "motion/react";
 import { useState, useEffect, useCallback } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { HomepageSlide } from "@/src/types/homepageSlide";
 
-export default function ImageSlider() {
+export default function ImageSlider({initialSlides}:{initialSlides?:HomepageSlide[]}={}) {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [slides, setSlides] = useState<HomepageSlide[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [slides, setSlides] = useState<HomepageSlide[]>(initialSlides||[]);
+  const [isLoading, setIsLoading] = useState(!initialSlides);
 
   const loadSlides = useCallback(async () => {
     try {
@@ -67,6 +69,7 @@ export default function ImageSlider() {
 
   return (
     <section className="mx-auto max-w-7xl px-4 py-24">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(slides.flatMap(slide=>slide.image&&slide.public_image&&!slide.public_image.decorative?[imageObject(slide.image,slide.public_image)]:[])).replace(/</g,'\\u003c')}}/>
       <div className="relative h-[600px] w-full overflow-hidden rounded-[8px] shadow-2xl">
         <AnimatePresence mode="wait">
           <motion.div
@@ -77,14 +80,7 @@ export default function ImageSlider() {
             transition={{ duration: 0.8, ease: "easeInOut" }}
             className="absolute inset-0"
           >
-            <img
-              src={slides[currentIndex].image_url}
-              alt={slides[currentIndex].title}
-              className="h-full w-full object-cover object-center"
-              loading="lazy"
-              decoding="async"
-              referrerPolicy="no-referrer"
-            />
+            {slides.map((slide,index)=><img key={slide.id} src={slide.image?.url||slide.image_url} srcSet={slide.image?imageSrcSet(slide.image):undefined} sizes="(max-width: 768px) 100vw, 1280px" width={slide.image?.width||1920} height={slide.image?.height||1280} alt={slide.public_image?(slide.public_image.decorative?'':slide.public_image.alt):slide.title} aria-hidden={index!==currentIndex} className="absolute inset-0 h-full w-full object-cover object-center" style={{opacity:index===currentIndex?1:0}} loading="lazy" decoding="async" referrerPolicy="no-referrer"/>)}
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
             
             <div className="absolute bottom-16 left-16 max-w-xl text-white">

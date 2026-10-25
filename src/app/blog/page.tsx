@@ -1,3 +1,4 @@
+import {ServiceInvitation} from '@/src/components/PublicServiceContent';
 import { getPrisma } from "@/src/backend/config/db";
 import BlogTopNav from "@/src/components/BlogTopNav";
 import { DEFAULT_LOCALE, getRequestLocale } from "@/src/lib/locale";
@@ -160,7 +161,7 @@ async function loadBlogListing(page:number) {
         </section>
 
         <BlogListingClient key={page} initialRows={initialClientRows} initialTotal={total} initialPage={page}/>
-      </main>
+      <ServiceInvitation/></main>
     </div>
   );
 }

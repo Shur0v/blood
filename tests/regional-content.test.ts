@@ -16,14 +16,14 @@ test('regional updates distinguish drafts from publishable text and bound galler
  assert.ok(!RegionalContentSchema.safeParse({...draft,slides:Array(7).fill(slide)}).success);
  assert.ok(!RegionalContentSchema.safeParse({...draft,administrator:true}).success);
 });
-test('regional sitemap dates follow city publication across countries without changing unmodified country pages',()=>{
+test('regional sitemap dates follow city and country publication including new service content',()=>{
  const old=new Date('2020-01-01'),country=new Date('2028-03-01'),city=new Date('2028-02-01');
  const dates=new Map([['nepal:*',{updatedAt:country,published:true}],['nepal:kathmandu',{updatedAt:city,published:true}]]);
  assert.equal(regionalLastModified('Nepal','Kathmandu',old,dates).toISOString(),city.toISOString(),'A city override does not inherit hidden country edits');
  dates.set('nepal:kathmandu',{updatedAt:city,published:false});
  assert.equal(regionalLastModified('Nepal','Kathmandu',old,dates).toISOString(),country.toISOString(),'Withdrawn overrides fall back to country content');
  assert.equal(regionalLastModified('India','Delhi',old,dates).toISOString(),new Date(GLOBAL_CITY_REVISION).toISOString());
- assert.equal(regionalLastModified('India',undefined,old,dates).toISOString(),old.toISOString());
+ assert.equal(regionalLastModified('India',undefined,old,dates).toISOString(),new Date(GLOBAL_CITY_REVISION).toISOString());
  dates.set('india:*',{updatedAt:country,published:true});
  assert.equal(regionalLastModified('India','Delhi',old,dates).toISOString(),country.toISOString());
 });

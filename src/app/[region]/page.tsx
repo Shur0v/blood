@@ -5,7 +5,7 @@ import RegionalCityExperience from '@/src/components/regional/RegionalCityExperi
 import RegionalSeoFooter from '@/src/components/RegionalSeoFooter';
 import DonorLocationDirectory from '@/src/components/DonorLocationDirectory';
 import {getDonorLocations} from '@/src/backend/services/donorLocations';
-import { HomeExperience } from "@/src/components/HomeExperience";
+import {HomePageExperience as HomeExperience} from '@/src/components/HomePageExperience';
 import { getRegionBySlug } from "@/src/lib/regions";
 import { stringifyJsonLd } from "@/src/lib/aiSeo";
 import { getPublicBaseUrl } from "@/src/backend/config/env";

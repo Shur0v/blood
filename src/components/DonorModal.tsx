@@ -134,7 +134,7 @@ export default function DonorModal({ donor, onClose }: DonorModalProps) {
 
               {/* Action Buttons */}
               <div className="flex w-full flex-col gap-3">
-                <motion.a
+                <motion.a data-analytics-component="Donor Contact"
                   href={`tel:${dialTarget}`}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}

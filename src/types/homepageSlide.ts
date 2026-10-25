@@ -1,4 +1,7 @@
+import type {ManagedImage,PublicImagePlacement} from '@/src/lib/publicImages';
 export interface HomepageSlide {
+ image?:ManagedImage|null;
+ public_image?:PublicImagePlacement|null;
   id: string;
   title: string;
   description: string | null;

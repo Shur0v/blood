@@ -134,7 +134,7 @@ const readCachedJson = <T,>(key: string): T | null => {
   }
 };
 
-export function HomeExperience({ forcedCountry, locationDirectory, regionalFooter, homepageContent=null }: { homepageContent?: HomepageConfig|null;
+export function HomeExperience({ forcedCountry, locationDirectory, regionalFooter, homepageContent=null, sliderContent, regionalHeroContent }: { regionalHeroContent?:{heading?:string;description?:string}; sliderContent?:React.ReactNode; homepageContent?: HomepageConfig|null;
  forcedCountry?: string; locationDirectory?: React.ReactNode; regionalFooter?:React.ReactNode } = {}) {
   const pathname = usePathname();
   const router = useRouter();
@@ -476,13 +476,13 @@ export function HomeExperience({ forcedCountry, locationDirectory, regionalFoote
 
         {!isProfileView && currentPage === "home" && (
           <HomepageContentProvider value={homepageContent}>
-            <Hero forcedCountry={forcedCountry} contentOverride={homepageContent?{heading:homepageContent.copy.heroHeading,description:homepageContent.copy.heroDescription}:undefined} />
+            <Hero forcedCountry={forcedCountry} contentOverride={homepageContent?{heading:homepageContent.copy.heroHeading,description:homepageContent.copy.heroDescription}:regionalHeroContent} />
             <div className="mx-auto mt-2 w-full max-w-7xl px-4">
               <ManagedNativeAdSlot slotKey="native-ad-1" />
             </div>
             <HomeSectionVisibility name="process"><div><ProcessSteps /></div></HomeSectionVisibility>
             <HomeSectionVisibility name="reminder"><div><DonorReminder onSignUpClick={() => setIsAuthModalOpen(true)} showSignUpButton={!sessionUser} /></div></HomeSectionVisibility>
-            <HomeSectionVisibility name="slider"><div><ImageSlider /></div></HomeSectionVisibility>
+            <HomeSectionVisibility name="slider"><div>{sliderContent||<ImageSlider />}</div></HomeSectionVisibility>
             <HomeSectionVisibility name="fund"><div><MedicalAidFund /></div></HomeSectionVisibility>
             <HomeSectionVisibility name="about"><div><AboutBloodNet onTermsClick={() => handlePageChange("terms-conditions")} /></div></HomeSectionVisibility>
             <HomeSectionVisibility name="activity"><div><FloatingDonorTags forcedCountry={forcedCountry}/></div></HomeSectionVisibility>
@@ -504,7 +504,7 @@ export function HomeExperience({ forcedCountry, locationDirectory, regionalFoote
             <div><ApprovedOrganRequests forcedCountry={forcedCountry}/></div>
             <div><ProcessSteps /></div>
             <div><DonorReminder onSignUpClick={() => setIsAuthModalOpen(true)} showSignUpButton={!sessionUser} /></div>
-            <div><ImageSlider /></div>
+            <div>{sliderContent||<ImageSlider />}</div>
             <div><MedicalAidFund /></div>
             <div><AboutBloodNet onTermsClick={() => handlePageChange("terms-conditions")} /></div>
             <div><FloatingDonorTags forcedCountry={forcedCountry}/></div>

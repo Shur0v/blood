@@ -1,5 +1,7 @@
 'use client';
 
+import ManagedImagePicker from '@/src/components/ManagedImagePicker';
+import type {PublicImagePlacement} from '@/src/lib/publicImages';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Card } from '@/src/admin-dashboard/components/common/Card';
 import { Table, TableRow, TableCell } from '@/src/admin-dashboard/components/common/Table';
@@ -8,6 +10,7 @@ import { Badge } from '@/src/admin-dashboard/components/common/Badge';
 type BlogStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
 
 interface BlogItem {
+ public_image?:PublicImagePlacement|null;
   id: string;
   title: string;
   content: string;
@@ -60,6 +63,7 @@ export default function WriteBlogPage() {
     total: 0,
     totalPages: 1,
   });
+  const [publicImage,setPublicImage]=useState<PublicImagePlacement|null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [loadingTable, setLoadingTable] = useState(false);
@@ -97,6 +101,7 @@ export default function WriteBlogPage() {
   }, []);
 
   const resetForm = () => {
+    setPublicImage(null);
     setTitle('');
     setContent('');
     setSlug('');
@@ -113,6 +118,7 @@ export default function WriteBlogPage() {
     setSaving(true);
     setMessage('');
     const payload = {
+      public_image:publicImage,
       title,
       content,
       status: nextStatus || status,
@@ -147,6 +153,7 @@ export default function WriteBlogPage() {
   };
 
   const startEdit = async (item: BlogItem) => {
+    setPublicImage(item.public_image||null);
     setEditingId(item.id);
     setTitle(item.title);
     setContent(item.content || '');
@@ -230,7 +237,7 @@ export default function WriteBlogPage() {
               <input value={canonicalUrl} onChange={(e) => setCanonicalUrl(e.target.value)} placeholder="Canonical URL (optional)" className="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#0f1115] px-4 py-2.5 text-sm outline-none" />
               <input value={metaTitle} onChange={(e) => setMetaTitle(e.target.value)} placeholder="Meta title" className="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#0f1115] px-4 py-2.5 text-sm outline-none" />
               <input value={primaryKeyword} onChange={(e) => setPrimaryKeyword(e.target.value)} placeholder="Primary keyword" className="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#0f1115] px-4 py-2.5 text-sm outline-none" />
-              <textarea value={metaDescription} onChange={(e) => setMetaDescription(e.target.value)} rows={3} placeholder="Meta description" className="md:col-span-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#0f1115] px-4 py-2.5 text-sm outline-none resize-none" />
+              <ManagedImagePicker key={editingId||'new'} value={publicImage} onChange={setPublicImage}/><textarea value={metaDescription} onChange={(e) => setMetaDescription(e.target.value)} rows={3} placeholder="Meta description" className="md:col-span-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#0f1115] px-4 py-2.5 text-sm outline-none resize-none" />
               <input value={secondaryKeywords} onChange={(e) => setSecondaryKeywords(e.target.value)} placeholder="Secondary keywords (comma separated)" className="md:col-span-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#0f1115] px-4 py-2.5 text-sm outline-none" />
             </div>
           </Card>
