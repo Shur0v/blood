@@ -17,6 +17,7 @@ import {
 } from "@/src/lib/seoRouting";
 import ManagedNativeAdSlot from "@/src/components/ManagedNativeAdSlot";
 import RegionalCityExperience from './regional/RegionalCityExperience';
+import {RegionalAuthActions} from './regional/RegionalInteractions';
 import Hero from './Hero';
 import DonorDiscoveryPanel from './DonorDiscoveryPanel';
 
@@ -120,7 +121,6 @@ export async function BloodGroupCitySeoPage({ bloodGroup, citySlug }: { bloodGro
 
   const city = donors[0]?.location_city || cityRows[0].city;
   const country = donors[0]?.location_country || cityRows[0].country;
-  if(country.toLowerCase()==='nepal')return <RegionalCityExperience country={country} city={city} group={bloodGroup} canonicalPath={`/blood/${bloodGroupToSlug(bloodGroup)}/${citySlug}`} title={`Urgent ${bloodGroup} Blood Donors in ${city}`}/>;
   const localRows = cityRows.filter(row => row.country === country);
   const groupCount = localRows.filter(row => row.blood_group === bloodGroup).reduce((sum, row) => sum + Number(row.total ?? 0), 0);
   const cityTotal = localRows.reduce((sum, row) => sum + Number(row.total ?? 0), 0);
@@ -168,9 +168,8 @@ export async function BloodGroupCitySeoPage({ bloodGroup, citySlug }: { bloodGro
     },
   ];
 
-  return (
-    <PageShell jsonLd={jsonLd}>
-      <section className="mx-auto max-w-6xl px-4 py-16">
+  const introduction = (
+      <section data-region-section={country.toLowerCase()==='nepal'?'1':undefined} className="mx-auto max-w-6xl px-4 py-16">
         <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary">{country} blood donor network</p>
         <h1 className="mt-4 text-4xl font-semibold tracking-normal md:text-6xl">Urgent {bloodGroup} Blood Donors in {city}</h1>
         <p className="mt-5 max-w-3xl text-lg font-semibold leading-8 text-gray-600">
@@ -185,7 +184,14 @@ export async function BloodGroupCitySeoPage({ bloodGroup, citySlug }: { bloodGro
           <StatCard label="Blood groups in city" value={network.bloodGroups.length} />
           <StatCard label="Last updated" value={formatDate(lastUpdated)} />
         </div>
+        {country.toLowerCase()==='nepal'&&<div className="mt-6"><RegionalAuthActions appearance="original"/></div>}
       </section>
+  );
+  if(country.toLowerCase()==='nepal')return <RegionalCityExperience country={country} city={city} group={bloodGroup} canonicalPath={`/blood/${bloodGroupToSlug(bloodGroup)}/${citySlug}`} title={`Urgent ${bloodGroup} Blood Donors in ${city}`} introduction={introduction}/>;
+
+  return (
+    <PageShell jsonLd={jsonLd}>
+      {introduction}
 
       <Hero key={`${country}:${city}:${bloodGroup}`} forcedCountry={country} initialCity={city} initialGroup={bloodGroup} headingLevel={2}/>
       <DonorDiscoveryPanel forcedCountry={country}/>
@@ -292,7 +298,6 @@ export async function CityBloodSeoPage({ citySlug, canonicalPath }: { citySlug: 
 
   const city = rows[0].city;
   const country = rows[0].country;
-  if(country.toLowerCase()==='nepal')return <RegionalCityExperience country={country} city={city} canonicalPath={canonicalPath||`/city/${citySlug}`} title={`Blood Donors in ${city}`}/>;
   const total = rows.reduce((sum, row) => sum + Number(row.total ?? 0), 0);
   const available = new Set(rows.map((row) => row.blood_group));
   const lastUpdated = rows.reduce<Date | null>((latest, row) => {
@@ -300,17 +305,8 @@ export async function CityBloodSeoPage({ citySlug, canonicalPath }: { citySlug: 
     return !latest || row.updated_at > latest ? row.updated_at : latest;
   }, null);
 
-  return (
-    <PageShell
-      jsonLd={{
-        "@context": "https://schema.org",
-        "@type": "MedicalWebPage",
-        name: `Blood donors in ${city}`,
-        description: `Find active blood donor entries and available blood groups in ${city}, ${country}.`,
-        dateModified: lastUpdated?.toISOString(),
-      }}
-    >
-      <section className="mx-auto max-w-6xl px-4 py-16">
+  const introduction = (
+      <section data-region-section={country.toLowerCase()==='nepal'?'1':undefined} className="mx-auto max-w-6xl px-4 py-16">
         <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary">{country} city donor directory</p>
         <h1 className="mt-4 text-4xl font-semibold md:text-6xl">Blood Donors in {city}</h1>
         <p className="mt-5 max-w-3xl text-lg font-semibold leading-8 text-gray-600">
@@ -322,7 +318,22 @@ export async function CityBloodSeoPage({ citySlug, canonicalPath }: { citySlug: 
           <StatCard label="Available blood groups" value={available.size} />
           <StatCard label="Last updated" value={formatDate(lastUpdated)} />
         </div>
+        {country.toLowerCase()==='nepal'&&<div className="mt-6"><RegionalAuthActions appearance="original"/></div>}
       </section>
+  );
+  if(country.toLowerCase()==='nepal')return <RegionalCityExperience country={country} city={city} canonicalPath={canonicalPath||`/city/${citySlug}`} title={`Blood Donors in ${city}`} introduction={introduction}/>;
+
+  return (
+    <PageShell
+      jsonLd={{
+        "@context": "https://schema.org",
+        "@type": "MedicalWebPage",
+        name: `Blood donors in ${city}`,
+        description: `Find active blood donor entries and available blood groups in ${city}, ${country}.`,
+        dateModified: lastUpdated?.toISOString(),
+      }}
+    >
+      {introduction}
 
       <section className="mx-auto max-w-6xl px-4 pb-20">
         <h2 className="text-2xl font-semibold">Available Blood Groups in {city}</h2>

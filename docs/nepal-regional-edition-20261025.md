@@ -4,13 +4,15 @@
 
 This release upgrades `/nepal` and Nepal blood-city pages, including existing blood-group/city URLs, general city URLs and country-qualified location URLs. It retains their canonical destinations, metadata titles and existing search engine. Other countries keep their existing presentation. Country-qualified Nepal routes continue to be generated from actual primary/service-city coverage, not a hardcoded list of cities.
 
-The main homepage `/` keeps its existing layout, colors, spacing, animations and responsive behavior. The shared hero defaults to its original presentation; Nepal explicitly opts into the regional presentation. Regional styles are loaded by the relevant route entrypoints and use dedicated classes. Donor modal accessibility now supports a named dialog, focus management, Escape and keyboard activation; its appearance and contact behavior are preserved.
+The main homepage `/` keeps its existing layout, colors, spacing, animations and responsive behavior. Following the pasted 12-section specification, Nepal **city** pages retain each route's original introduction, statistics, filter hero and donor-card presentation. Login/Register actions are added to the introduction. Their indigo/ivory regional styling begins below the donor cards; published regional images appear in the coverage section. `/nepal` retains the previously implemented country presentation. Other countries and organ-city pages retain their presentation.
+
+The shared hero defaults to its original presentation. A separate, nonvisual `regionalSections` option identifies the filters/cards as two logical sections and retains keyboard activation without opting into different styling. Regional styles are loaded by the relevant route entrypoints and use dedicated classes. Donor modal accessibility supports a named dialog, focus management, Escape and keyboard activation; its appearance and contact behavior are preserved.
 
 ## Twelve logical sections
 
 1. City/country introduction, local counts and Login/Register actions.
-2. Refreshed blood filters and city search.
-3. Donor cards, existing details/contact behavior and pagination.
+2. Original blood filters and city search, initialized to the route's city/group.
+3. Original donor cards, existing details/contact behavior and pagination.
 4. Local coverage, published regional update and count explanations.
 5. Homepage invitation: explore the wider directory.
 6. Request preparation checklist and copyable message builder — **off by default**.
@@ -22,6 +24,14 @@ The main homepage `/` keeps its existing layout, colors, spacing, animations and
 12. Closing homepage invitation.
 
 With request preparation disabled, eleven sections are visible without a blank placeholder. All three homepage invitation buttons link to `/`. The existing bottom menu and floating-plus discovery remain available. City navigation remounts the search with the destination city/group so prior client-side filters do not leak into the next page. Successful regional authentication updates navigation in place without clearing donor filters.
+
+The request-builder module is lazy-loaded only when its visibility switch is enabled. The correction to preserve the first three city sections requires no additional database migration or publication permission. The existing editor and default-off switch from the prior regional implementation remain supported.
+
+### Preserved city presentation verification
+
+The follow-up passed 78 database/authorization/privacy tests, 25 discovery/SEO/unit tests, the regional UI workflow and the production build. Seven HTTP route checks confirm existing canonical destinations, Nepal isolation and anonymous editor rejection. At 390, 768 and 1280 pixels, the city page has no horizontal overflow and retains its city/group search, 16 initial cards and keyboard access. Show More continues through all available matching fallback entries (29 in the synthetic preview). The eleven visible sections become twelve when request preparation is enabled; no hidden placeholder occupies space. The homepage hero's geometry, font sizes, colors and backgrounds exactly match the saved baseline measurements at all three widths; animated screenshot pixels are not treated as a static equality claim.
+
+Updated screenshots and measurements use the `artifacts/nepal-preserved-*` prefix. These are isolated synthetic fixtures, not production donor counts. They supersede the earlier city screenshots that showed refreshed top sections. Production deployment and subsequent Search Console monitoring remain operational steps after the code is pushed.
 
 ## Admin workflow
 

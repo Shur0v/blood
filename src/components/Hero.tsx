@@ -108,7 +108,7 @@ function MixedDonorBannerCard({ ad, onFail }: { ad: InlineBannerAdUnit; onFail: 
 
 const DONOR_GRID_AD_SLOTS = 4;
 
-export default function Hero({ forcedCountry, initialCity = '', initialGroup = null, headingLevel = 1, presentation = "default" }: { forcedCountry?: string; initialCity?: string; initialGroup?: string | null; headingLevel?: 1 | 2; presentation?: "default" | "regional" }) {
+export default function Hero({ forcedCountry, initialCity = '', initialGroup = null, headingLevel = 1, presentation = "default", regionalSections = false }: { forcedCountry?: string; initialCity?: string; initialGroup?: string | null; headingLevel?: 1 | 2; presentation?: "default" | "regional"; regionalSections?: boolean }) {
   const adsConfig = usePublicAds();
   const readServerRenderedDonorTotal = () => {
     if (forcedCountry) return 0;
@@ -379,7 +379,7 @@ export default function Hero({ forcedCountry, initialCity = '', initialGroup = n
   }, [hasLoadedMoreOnce, inlineBannerAd, hideInlineBanner, donors, activeGroup, normalizedSearch]);
 
   return (
-    <section id={presentation==="regional"?"regional-donor-search":undefined} data-region-section={presentation==="regional"?"2":undefined} className={(presentation==="regional"?"regional-donor-search ":"")+"relative flex min-h-screen flex-col items-center justify-center px-4 pt-20 pb-32"}>
+    <section id={regionalSections||presentation==="regional"?"regional-donor-search":undefined} data-region-section={regionalSections||presentation==="regional"?"2":undefined} className={(presentation==="regional"?"regional-donor-search ":"")+"relative flex min-h-screen flex-col items-center justify-center px-4 pt-20 pb-32"}>
       <div className="absolute top-1/4 left-1/4 hidden h-64 w-64 rounded-full bg-primary-dark/10 blur-[100px] md:block" />
       <div className="absolute bottom-1/4 right-1/4 hidden h-96 w-96 rounded-full bg-primary/5 blur-[120px] md:block" />
 
@@ -420,18 +420,18 @@ export default function Hero({ forcedCountry, initialCity = '', initialGroup = n
         </motion.div>
 
         {!viewerGeo.resolved || isInitialDonorLoad || !localReady ? (
-          <div data-region-section={presentation==="regional"?"3":undefined} className="mx-auto min-h-[320px] max-w-4xl rounded-[8px] border border-white/40 bg-white/20 p-8 text-center text-sm font-semibold text-gray-700">
+          <div data-region-section={regionalSections||presentation==="regional"?"3":undefined} className="mx-auto min-h-[320px] max-w-4xl rounded-[8px] border border-white/40 bg-white/20 p-8 text-center text-sm font-semibold text-gray-700">
             Loading nearby active donors...
           </div>
         ) : hasNoResults ? (
-          <div data-region-section={presentation==="regional"?"3":undefined} className="mx-auto min-h-[320px] max-w-4xl rounded-[8px] border border-white/40 bg-white/20 p-8 text-center text-sm font-semibold text-gray-700">
+          <div data-region-section={regionalSections||presentation==="regional"?"3":undefined} className="mx-auto min-h-[320px] max-w-4xl rounded-[8px] border border-white/40 bg-white/20 p-8 text-center text-sm font-semibold text-gray-700">
             <p>{isDonorApiDown ? 'Donor cards could not be loaded. Please retry.' : `No matching donor entries${viewerGeo.country ? ` in ${viewerGeo.country}` : ''}${normalizedSearch ? ` for “${normalizedSearch}”` : ''}${activeGroup ? ` (${activeGroup})` : ''}.`}</p>
             <button type="button" className="mt-4 rounded-full border border-rose-200 bg-white px-5 py-3 text-sm font-semibold text-rose-700" onClick={() => isDonorApiDown ? setRetryAttempt(value => value + 1) : document.querySelector<HTMLButtonElement>('.donor-discovery-trigger')?.click()}>
               {isDonorApiDown ? 'Retry donor search' : 'Choose another location'}
             </button>
           </div>
         ) : (
-          <div data-region-section={presentation==="regional"?"3":undefined} className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div data-region-section={regionalSections||presentation==="regional"?"3":undefined} className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {donors.map((donor, index) => (
               <div key={`slot-${donor.id}`}>
                 {inlineBannerAd && !hideInlineBanner && adInsertIndexes.includes(index) && !failedAdSlots[index] && (
@@ -446,9 +446,9 @@ export default function Hero({ forcedCountry, initialCity = '', initialGroup = n
                   transition={{ delay: index * 0.05 }}
                   onClick={() => setSelectedDonor(donor)}
                   data-regional-card={presentation==="regional"?"true":undefined}
-                  role={presentation==="regional"?"button":undefined}
-                  tabIndex={presentation==="regional"?0:undefined}
-                  onKeyDown={presentation==="regional"?(event)=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();setSelectedDonor(donor);}}:undefined}
+                  role={regionalSections||presentation==="regional"?"button":undefined}
+                  tabIndex={regionalSections||presentation==="regional"?0:undefined}
+                  onKeyDown={regionalSections||presentation==="regional"?(event)=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();setSelectedDonor(donor);}}:undefined}
                   data-analytics-component="Blood Donor Card Open"
                   whileHover={{
                     y: -5,

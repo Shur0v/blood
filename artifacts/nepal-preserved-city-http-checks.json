@@ -1,0 +1,45 @@
+{
+  "results": [
+    {
+      "path": "/blood/o-positive/kathmandu",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/o-positive/kathmandu",
+      "preservedCityTop": true
+    },
+    {
+      "path": "/city/kathmandu",
+      "status": 200,
+      "canonical": "https://bloodnet.live/city/kathmandu",
+      "preservedCityTop": true
+    },
+    {
+      "path": "/blood/kathmandu",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/kathmandu",
+      "preservedCityTop": true
+    },
+    {
+      "path": "/blood-donors/nepal/kathmandu",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/nepal/kathmandu",
+      "preservedCityTop": true
+    },
+    {
+      "path": "/blood-donors/nepal/kathmandu/o-positive",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/nepal/kathmandu/o-positive",
+      "preservedCityTop": true
+    },
+    {
+      "path": "/nepal",
+      "status": 200,
+      "canonical": "https://bloodnet.live/nepal"
+    },
+    {
+      "path": "/india",
+      "status": 200,
+      "canonical": "https://bloodnet.live/india"
+    }
+  ],
+  "anonymousEditorStatus": 401
+}
