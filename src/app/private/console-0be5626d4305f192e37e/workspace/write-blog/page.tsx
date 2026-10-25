@@ -177,7 +177,7 @@ export default function WriteBlogPage() {
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+    <div id="controls-blog" className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
       <div>
         <h2 className="text-2xl font-bold">Content Editor (CMS)</h2>
         <p className="text-sm text-gray-500 mt-1">HTML-ready SEO blog publishing with responsive rendering support.</p>

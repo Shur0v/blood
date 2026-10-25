@@ -1,0 +1,3378 @@
+[
+  {
+    "kind": "api",
+    "name": "/api/access/0480dc5f453a73138ff83701/login",
+    "flow": "security",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/api/access/0480dc5f453a73138ff83701/login/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "sha256": "56ae100138ca935627f5f629072ae4cefcc59f6b34339a033cf76655bbfa0ad1"
+  },
+  {
+    "kind": "api",
+    "name": "/api/access/599c8dc11cf069369fe4738c/login",
+    "flow": "security",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/api/access/599c8dc11cf069369fe4738c/login/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "sha256": "dafafdb11f603b6d3bf2428db7db82d30ee38e66006e95cea3b7c92ff85bc00a"
+  },
+  {
+    "kind": "api",
+    "name": "/api/admin/abuse/restrict/[userId]",
+    "flow": "security",
+    "access": "Administrator",
+    "source": "src/app/api/admin/abuse/restrict/[userId]/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "sha256": "217f4e12e42d8256fd09b24d2ce8bd9158ac6482f76c2d275f5a505e83e9dcf3"
+  },
+  {
+    "kind": "api",
+    "name": "/api/admin/abuse/suspicious-users",
+    "flow": "security",
+    "access": "Administrator",
+    "source": "src/app/api/admin/abuse/suspicious-users/route.ts",
+    "methods": [
+      "GET"
+    ],
+    "sha256": "8d768ceeb93691b1d7bd3fb8bd9cfd7d06d729507c19252ac0626fcf84a33b17"
+  },
+  {
+    "kind": "api",
+    "name": "/api/admin/ads-settings",
+    "flow": "appearance",
+    "access": "Administrator",
+    "source": "src/app/api/admin/ads-settings/route.ts",
+    "methods": [
+      "GET",
+      "PUT"
+    ],
+    "sha256": "723b7d92da83f1e6bbf7fb3ee6f46ff294db9a646e72f78abfb68239133ce00d"
+  },
+  {
+    "kind": "api",
+    "name": "/api/admin/aid-requests",
+    "flow": "moderation",
+    "access": "Administrator",
+    "source": "src/app/api/admin/aid-requests/route.ts",
+    "methods": [
+      "GET",
+      "PATCH",
+      "DELETE"
+    ],
+    "sha256": "30cd3f25b90cb55013d40d4d467a96a25fc555733bcd306d72adcd5e072baebb"
+  },
+  {
+    "kind": "api",
+    "name": "/api/admin/analytics/clicks",
+    "flow": "measurement",
+    "access": "Administrator",
+    "source": "src/app/api/admin/analytics/clicks/route.ts",
+    "methods": [
+      "GET"
+    ],
+    "sha256": "1a895f5f453b63f1d7a3b69923781b2f73d70276542f45a8fe851c8991c7cb5a"
+  },
+  {
+    "kind": "api",
+    "name": "/api/admin/analytics/heatmap",
+    "flow": "measurement",
+    "access": "Administrator",
+    "source": "src/app/api/admin/analytics/heatmap/route.ts",
+    "methods": [
+      "GET"
+    ],
+    "sha256": "ce43c6878df974cdac2afe47db0526360cbabd2d18d7ee8ac3b070310de70541"
+  },
+  {
+    "kind": "api",
+    "name": "/api/admin/analytics/regions",
+    "flow": "measurement",
+    "access": "Administrator",
+    "source": "src/app/api/admin/analytics/regions/route.ts",
+    "methods": [
+      "GET"
+    ],
+    "sha256": "edf00c6efc1f533fa80ab70adbb2e2a1a7b72ec81c090dc4f0649e701eb2faef"
+  },
+  {
+    "kind": "api",
+    "name": "/api/admin/blogs",
+    "flow": "blogs",
+    "access": "Administrator",
+    "source": "src/app/api/admin/blogs/route.ts",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "sha256": "e8ba312ab4a976e98b2aacc8c4515a8c5b249bed4722267e5e2a3252c3f93a44"
+  },
+  {
+    "kind": "api",
+    "name": "/api/admin/blogs/[id]",
+    "flow": "blogs",
+    "access": "Administrator",
+    "source": "src/app/api/admin/blogs/[id]/route.ts",
+    "methods": [
+      "PUT"
+    ],
+    "sha256": "9f0568e0825ae4bcc9b68669589acca08d5f1312c5442b9fbf1ded89adbbc00c"
+  },
+  {
+    "kind": "api",
+    "name": "/api/admin/community-donors",
+    "flow": "manual",
+    "access": "Administrator",
+    "source": "src/app/api/admin/community-donors/route.ts",
+    "methods": [
+      "GET",
+      "DELETE"
+    ],
+    "sha256": "235182b01cbec7e278636c5f0af1fe4d56966cbb153260320ce00279f21022f7"
+  },
+  {
+    "kind": "api",
+    "name": "/api/admin/community-donors/csv-upload",
+    "flow": "manual",
+    "access": "Administrator",
+    "source": "src/app/api/admin/community-donors/csv-upload/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "sha256": "0e6064ff54152ade02791c8cf0883a3d8c4f876208c5ac5239305cd877692dfb"
+  },
+  {
+    "kind": "api",
+    "name": "/api/admin/dashboard-overview",
+    "flow": "measurement",
+    "access": "Administrator",
+    "source": "src/app/api/admin/dashboard-overview/route.ts",
+    "methods": [
+      "GET"
+    ],
+    "sha256": "b81ba8ad85e41739045c8ca211724c338d106ffa6b8318718132ed136abed0a6"
+  },
+  {
+    "kind": "api",
+    "name": "/api/admin/database-backup",
+    "flow": "deployment",
+    "access": "Administrator",
+    "source": "src/app/api/admin/database-backup/route.ts",
+    "methods": [
+      "GET"
+    ],
+    "sha256": "cb6684a18a538f51606de464c8bbe1f2a83f7d8e7a51a78475c47cde47f05e99"
+  },
+  {
+    "kind": "api",
+    "name": "/api/admin/faqs",
+    "flow": "appearance",
+    "access": "Administrator",
+    "source": "src/app/api/admin/faqs/route.ts",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "sha256": "9c10b2970e32d16efa7cc2497f6063454e4df91daef436958871f486c19b1ff6"
+  },
+  {
+    "kind": "api",
+    "name": "/api/admin/faqs/[id]",
+    "flow": "appearance",
+    "access": "Administrator",
+    "source": "src/app/api/admin/faqs/[id]/route.ts",
+    "methods": [
+      "PUT",
+      "DELETE"
+    ],
+    "sha256": "7cf0e3cc7cbbf5ece4737426bc8981dd3cce7c02fb9a2dcda9187cededc36ae1"
+  },
+  {
+    "kind": "api",
+    "name": "/api/admin/homepage-content",
+    "flow": "homepage",
+    "access": "Administrator",
+    "source": "src/app/api/admin/homepage-content/route.ts",
+    "methods": [
+      "GET",
+      "PUT"
+    ],
+    "sha256": "37cbae646f3af4eba2a8714760ad9ead30a3352fb1452afec0f5c7b304c94b23"
+  },
+  {
+    "kind": "api",
+    "name": "/api/admin/homepage-slides",
+    "flow": "slider",
+    "access": "Administrator",
+    "source": "src/app/api/admin/homepage-slides/route.ts",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "sha256": "75e6fa177641f75e0d6dd468682e4c2419460f96f80fdb2692cc6494207606e8"
+  },
+  {
+    "kind": "api",
+    "name": "/api/admin/homepage-slides/[id]",
+    "flow": "slider",
+    "access": "Administrator",
+    "source": "src/app/api/admin/homepage-slides/[id]/route.ts",
+    "methods": [
+      "PUT",
+      "DELETE"
+    ],
+    "sha256": "879bee91b9b2a0d073f593d21d366f5e8c96f91b211de8519b096f6c928b955a"
+  },
+  {
+    "kind": "api",
+    "name": "/api/admin/homepage-slides/reorder",
+    "flow": "slider",
+    "access": "Administrator",
+    "source": "src/app/api/admin/homepage-slides/reorder/route.ts",
+    "methods": [
+      "PUT"
+    ],
+    "sha256": "a8ba86dd2ba468e67067d9fd0409dfa02fbe3660ff0023d12e6b30e0a432fe77"
+  },
+  {
+    "kind": "api",
+    "name": "/api/admin/inactive-donors",
+    "flow": "admin-users",
+    "access": "Administrator",
+    "source": "src/app/api/admin/inactive-donors/route.ts",
+    "methods": [
+      "GET"
+    ],
+    "sha256": "c8a0dbbe8df067b78f017844e1e1f239330f0f8e99d467b5fb5eb5510f2fce27"
+  },
+  {
+    "kind": "api",
+    "name": "/api/admin/maintenance",
+    "flow": "recovery",
+    "access": "Administrator",
+    "source": "src/app/api/admin/maintenance/route.ts",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "sha256": "6c9f97c963790f3f7c77eb023b9356dcd0b4b49bbc325ec42549117fd1af68b9"
+  },
+  {
+    "kind": "api",
+    "name": "/api/admin/manual-blood-donors",
+    "flow": "manual",
+    "access": "Administrator",
+    "source": "src/app/api/admin/manual-blood-donors/route.ts",
+    "methods": [
+      "GET",
+      "POST",
+      "DELETE"
+    ],
+    "sha256": "e91746ee7b2f9af4e97d3745e5b2e94ed8077614f233167cc473e7c3592c0814"
+  },
+  {
+    "kind": "api",
+    "name": "/api/admin/manual-blood-donors/csv-upload",
+    "flow": "manual",
+    "access": "Administrator",
+    "source": "src/app/api/admin/manual-blood-donors/csv-upload/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "sha256": "8818a0c973174ed05bc48c7ecaa6cf30ab5a02f80635b8f246cdd9a69441ffc6"
+  },
+  {
+    "kind": "api",
+    "name": "/api/admin/manual-organ-donors",
+    "flow": "manual",
+    "access": "Administrator",
+    "source": "src/app/api/admin/manual-organ-donors/route.ts",
+    "methods": [
+      "GET",
+      "POST",
+      "DELETE"
+    ],
+    "sha256": "90d3e8437078dd3901f2a82c1cb475469d74a94cd31e4178a5b8fbf9beb46df3"
+  },
+  {
+    "kind": "api",
+    "name": "/api/admin/medical-operations",
+    "flow": "records",
+    "access": "Administrator",
+    "source": "src/app/api/admin/medical-operations/route.ts",
+    "methods": [
+      "GET"
+    ],
+    "sha256": "0ac3af1324a5b86831537d8f01febce84c7f490c14cf672ef9414a1ece2db2e3"
+  },
+  {
+    "kind": "api",
+    "name": "/api/admin/notifications",
+    "flow": "notifications",
+    "access": "Administrator",
+    "source": "src/app/api/admin/notifications/route.ts",
+    "methods": [
+      "GET",
+      "PATCH"
+    ],
+    "sha256": "e8aae683a2dadc6044d2f6fbf6d401dd3ccbf2d56021f970c62eb69d82ed8ba8"
+  },
+  {
+    "kind": "api",
+    "name": "/api/admin/platform-outcomes",
+    "flow": "measurement",
+    "access": "Administrator",
+    "source": "src/app/api/admin/platform-outcomes/route.ts",
+    "methods": [
+      "GET"
+    ],
+    "sha256": "1ec328a4c732b9203cfbc4b9f88295bdb7020bae2433a4a064e7de74a53656d3"
+  },
+  {
+    "kind": "api",
+    "name": "/api/admin/platform-stats",
+    "flow": "measurement",
+    "access": "Administrator",
+    "source": "src/app/api/admin/platform-stats/route.ts",
+    "methods": [
+      "PUT"
+    ],
+    "sha256": "0d2b4e9a4518ecc9de64551cf0bfa92f63bab950f0249e720cda2a0992a9586e"
+  },
+  {
+    "kind": "api",
+    "name": "/api/admin/policy-content",
+    "flow": "appearance",
+    "access": "Administrator",
+    "source": "src/app/api/admin/policy-content/route.ts",
+    "methods": [
+      "GET",
+      "PUT"
+    ],
+    "sha256": "72ad514eec3e3e1a520518b70e894f905648fc66d1b57cc9df599f84307e3702"
+  },
+  {
+    "kind": "api",
+    "name": "/api/admin/public-content",
+    "flow": "services",
+    "access": "Administrator",
+    "source": "src/app/api/admin/public-content/route.ts",
+    "methods": [
+      "GET",
+      "PUT"
+    ],
+    "sha256": "da02c067313d7542a4599313064b030961752522a78ba505cbb69a7dbd5b1a25"
+  },
+  {
+    "kind": "api",
+    "name": "/api/admin/public-images",
+    "flow": "images",
+    "access": "Administrator",
+    "source": "src/app/api/admin/public-images/route.ts",
+    "methods": [
+      "GET",
+      "PATCH",
+      "POST"
+    ],
+    "sha256": "33f80b5054b5077cd111f71ec3cbd953f318c348c7741b8b8566b0dd8f4887e9"
+  },
+  {
+    "kind": "api",
+    "name": "/api/admin/recovery/jobs",
+    "flow": "recovery",
+    "access": "Administrator",
+    "source": "src/app/api/admin/recovery/jobs/route.ts",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "sha256": "b433f69b466c3040c37aa9f4a100a546f4639002e78bf253b2774bec8592d3e0"
+  },
+  {
+    "kind": "api",
+    "name": "/api/admin/recovery/jobs/[id]",
+    "flow": "recovery",
+    "access": "Administrator",
+    "source": "src/app/api/admin/recovery/jobs/[id]/route.ts",
+    "methods": [
+      "GET"
+    ],
+    "sha256": "d294a5f1c7c9b3d5e0aea52c8ccbc2456896def2c1d2dbbf517928ca84fabe1c"
+  },
+  {
+    "kind": "api",
+    "name": "/api/admin/recovery/jobs/[id]/download",
+    "flow": "recovery",
+    "access": "Administrator",
+    "source": "src/app/api/admin/recovery/jobs/[id]/download/route.ts",
+    "methods": [
+      "POST",
+      "GET"
+    ],
+    "sha256": "f22eef3785fb1bef339c13f9b786d7a37f54da0b5d2fe13e60fae1c7b346851b"
+  },
+  {
+    "kind": "api",
+    "name": "/api/admin/recovery/jobs/[id]/upload",
+    "flow": "recovery",
+    "access": "Administrator",
+    "source": "src/app/api/admin/recovery/jobs/[id]/upload/route.ts",
+    "methods": [
+      "PUT"
+    ],
+    "sha256": "34eea046d6f3f34578a3a0ad538ea2f8f5c476d26400a1409e3ccfe3301a4ad1"
+  },
+  {
+    "kind": "api",
+    "name": "/api/admin/recovery/progress/[id]",
+    "flow": "recovery",
+    "access": "Administrator",
+    "source": "src/app/api/admin/recovery/progress/[id]/route.ts",
+    "methods": [
+      "GET"
+    ],
+    "sha256": "6e645c4d33f194780f63818733de342b09ece0825e4358fae9911997380e8ae4"
+  },
+  {
+    "kind": "api",
+    "name": "/api/admin/regional-content",
+    "flow": "regional",
+    "access": "Administrator",
+    "source": "src/app/api/admin/regional-content/route.ts",
+    "methods": [
+      "GET",
+      "PUT"
+    ],
+    "sha256": "db0a76717c1d740c0ac74683757f00072b2a05b251a381d88c6a15f4bd32250a"
+  },
+  {
+    "kind": "api",
+    "name": "/api/admin/reports",
+    "flow": "moderation",
+    "access": "Administrator",
+    "source": "src/app/api/admin/reports/route.ts",
+    "methods": [
+      "GET",
+      "PATCH"
+    ],
+    "sha256": "2cbc9e696b1577f2db88d323da67db42e95b5e54bdb6131e91a2b1fb6ed1bd9a"
+  },
+  {
+    "kind": "api",
+    "name": "/api/admin/service-availability",
+    "flow": "services",
+    "access": "Administrator",
+    "source": "src/app/api/admin/service-availability/route.ts",
+    "methods": [
+      "GET",
+      "PUT"
+    ],
+    "sha256": "ba777dbd4dce5c7dab773902c3bd5d26bf5a7eb02c023d484a2a3e43c2d4eb7a"
+  },
+  {
+    "kind": "api",
+    "name": "/api/admin/site-controls",
+    "flow": "navigation",
+    "access": "Administrator",
+    "source": "src/app/api/admin/site-controls/route.ts",
+    "methods": [
+      "GET",
+      "PATCH"
+    ],
+    "sha256": "5855be2007e42686462868cafa2a6853de8cd79693a710e90f55c647964fdf92"
+  },
+  {
+    "kind": "api",
+    "name": "/api/admin/theme",
+    "flow": "appearance",
+    "access": "Administrator",
+    "source": "src/app/api/admin/theme/route.ts",
+    "methods": [
+      "GET",
+      "PUT"
+    ],
+    "sha256": "d504f80506f7e3851ae6accc95d14059af5a5c4181e01a08a7454b3d5a1e4bad"
+  },
+  {
+    "kind": "api",
+    "name": "/api/admin/users",
+    "flow": "admin-users",
+    "access": "Administrator",
+    "source": "src/app/api/admin/users/route.ts",
+    "methods": [
+      "GET"
+    ],
+    "sha256": "1be710a9e12d3278bf14ab073f6c9df5413dc91ba0022c3a241d5a7feff28443"
+  },
+  {
+    "kind": "api",
+    "name": "/api/admin/users/[userId]",
+    "flow": "admin-users",
+    "access": "Administrator",
+    "source": "src/app/api/admin/users/[userId]/route.ts",
+    "methods": [
+      "GET",
+      "PATCH",
+      "DELETE"
+    ],
+    "sha256": "225fa16f40d071ead269f5bdd83f8c7f71ef186d2a0ef6fb984ffe191c729de9"
+  },
+  {
+    "kind": "api",
+    "name": "/api/admin/users/[userId]/emails",
+    "flow": "admin-users",
+    "access": "Administrator",
+    "source": "src/app/api/admin/users/[userId]/emails/route.ts",
+    "methods": [
+      "GET",
+      "PATCH"
+    ],
+    "sha256": "dc6adf816c2815c2eccd485fb77408b0bb0655bc9a0229a57dfad763078e0fc1"
+  },
+  {
+    "kind": "api",
+    "name": "/api/admin/users/[userId]/health",
+    "flow": "admin-users",
+    "access": "Administrator",
+    "source": "src/app/api/admin/users/[userId]/health/route.ts",
+    "methods": [
+      "PATCH"
+    ],
+    "sha256": "0ba5182aa896e870fb345a59af3bd4de4009ada6395dfbd4263e0d479b44451a"
+  },
+  {
+    "kind": "api",
+    "name": "/api/admin/users/[userId]/medical-records/history",
+    "flow": "records",
+    "access": "Administrator",
+    "source": "src/app/api/admin/users/[userId]/medical-records/history/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "sha256": "6b356fc45cd11b16d7c1d22be69600ed0da07250514590b94733b51decbfb6c4"
+  },
+  {
+    "kind": "api",
+    "name": "/api/admin/users/[userId]/medical-reports/[reportId]/files/[fileId]",
+    "flow": "records",
+    "access": "Administrator",
+    "source": "src/app/api/admin/users/[userId]/medical-reports/[reportId]/files/[fileId]/route.ts",
+    "methods": [
+      "GET"
+    ],
+    "sha256": "03f4cf764e951b6f538c840cba290ccd273f34cf0fcabbfe565116e98fa5e1c2"
+  },
+  {
+    "kind": "api",
+    "name": "/api/admin/users/[userId]/organs",
+    "flow": "admin-users",
+    "access": "Administrator",
+    "source": "src/app/api/admin/users/[userId]/organs/route.ts",
+    "methods": [
+      "PATCH"
+    ],
+    "sha256": "877e8e56768729f2e0811bebc8d820530162e695d0311329b0a6494bf56c3bbc"
+  },
+  {
+    "kind": "api",
+    "name": "/api/admin/users/[userId]/prescriptions/[prescriptionId]",
+    "flow": "prescriptions",
+    "access": "Administrator",
+    "source": "src/app/api/admin/users/[userId]/prescriptions/[prescriptionId]/route.ts",
+    "methods": [
+      "GET"
+    ],
+    "sha256": "3a5981cf1cc08a720ae06ebbbb6acfaf06e879beabb22bd844ee9cf8804a90ec"
+  },
+  {
+    "kind": "api",
+    "name": "/api/admin/users/[userId]/public-profile",
+    "flow": "public-profiles",
+    "access": "Administrator",
+    "source": "src/app/api/admin/users/[userId]/public-profile/route.ts",
+    "methods": [
+      "GET",
+      "PATCH"
+    ],
+    "sha256": "57698332eeef8a6ba73c0d94a80a0297c8c851349c8ccff9875ccf2cc26bd034"
+  },
+  {
+    "kind": "api",
+    "name": "/api/admin/users/[userId]/verification-documents",
+    "flow": "admin-users",
+    "access": "Administrator",
+    "source": "src/app/api/admin/users/[userId]/verification-documents/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "sha256": "e679b83ff0116c1ebd8e09a90befac1c474a150c26abc0fb648efa6034a1323f"
+  },
+  {
+    "kind": "api",
+    "name": "/api/analytics/clicks",
+    "flow": "measurement",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/api/analytics/clicks/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "sha256": "db1eb793978d0eccf59a5ac42def3b6b8c4407f434119f8f503882100fb654cc"
+  },
+  {
+    "kind": "api",
+    "name": "/api/analytics/heatmap",
+    "flow": "measurement",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/api/analytics/heatmap/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "sha256": "05791d58dd26dc4090dc44ed15766581cd7139090138b941df73ce26bde6c454"
+  },
+  {
+    "kind": "api",
+    "name": "/api/auth/admin/login",
+    "flow": "security",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/api/auth/admin/login/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "sha256": "1aa068abf380d37d1b79c7cefc1e47eb3776a1724d9b49df72664c0f141a0ddb"
+  },
+  {
+    "kind": "api",
+    "name": "/api/auth/logout",
+    "flow": "security",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/api/auth/logout/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "sha256": "3c41ba522d12b4c380bf2d23b4650151937c9df52380128827d9470f42052666"
+  },
+  {
+    "kind": "api",
+    "name": "/api/auth/otp/request",
+    "flow": "registration",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/api/auth/otp/request/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "sha256": "7b41d8c72bf97954949f4a68c42d21dda27c4b9ef3a9d2295f46e60b7d85a127"
+  },
+  {
+    "kind": "api",
+    "name": "/api/auth/otp/verify",
+    "flow": "registration",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/api/auth/otp/verify/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "sha256": "06eae8fd41615e1fda500767dde137c0c1216d897429097b879a0c09ed3364b6"
+  },
+  {
+    "kind": "api",
+    "name": "/api/auth/session",
+    "flow": "security",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/api/auth/session/route.ts",
+    "methods": [
+      "GET"
+    ],
+    "sha256": "fe55e706a06015ec0778fb094fd7a41f24d6274728d20d459e6d2e3efd5cff4a"
+  },
+  {
+    "kind": "api",
+    "name": "/api/health",
+    "flow": "deployment",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/api/health/route.ts",
+    "methods": [
+      "GET"
+    ],
+    "sha256": "1996c980803f3112c5aa21345c3b8661e95e39dcf36275cbde76835ee368aa20"
+  },
+  {
+    "kind": "api",
+    "name": "/api/integrations/prescriptions",
+    "flow": "prescriptions",
+    "access": "Authorized provider",
+    "source": "src/app/api/integrations/prescriptions/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "sha256": "01b4bdaf1889c981ff28af6d0d60533eabe70262f596765959a0ceb4cd9a2600"
+  },
+  {
+    "kind": "api",
+    "name": "/api/location/cities",
+    "flow": "countries",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/api/location/cities/route.ts",
+    "methods": [
+      "GET"
+    ],
+    "sha256": "870558ec4ab728674c4a5fc744bd479a05aa49a21633c1f3f772210b83addd0b"
+  },
+  {
+    "kind": "api",
+    "name": "/api/location/ip",
+    "flow": "countries",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/api/location/ip/route.ts",
+    "methods": [
+      "GET"
+    ],
+    "sha256": "95960cedcc1ddc607e562bc167f4d58f133cfce07a63c9e21d3c16077c14ac4f"
+  },
+  {
+    "kind": "api",
+    "name": "/api/location/reverse",
+    "flow": "countries",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/api/location/reverse/route.ts",
+    "methods": [
+      "GET"
+    ],
+    "sha256": "233b1c8b0d530bb1fa04adecfed92eda89979107797881bbba81e46de9246a2b"
+  },
+  {
+    "kind": "api",
+    "name": "/api/management/active-donors",
+    "flow": "moderation",
+    "access": "Staff queues",
+    "source": "src/app/api/management/active-donors/route.ts",
+    "methods": [
+      "GET"
+    ],
+    "sha256": "f9cb21dbb8f319a99f60299a8e4475cbf6d93371609212b647e2446a47299a78"
+  },
+  {
+    "kind": "api",
+    "name": "/api/management/blog-approvals",
+    "flow": "blogs",
+    "access": "Staff queues",
+    "source": "src/app/api/management/blog-approvals/route.ts",
+    "methods": [
+      "GET",
+      "PATCH",
+      "DELETE"
+    ],
+    "sha256": "d60492a16e7fe41b9da7f574ac3501203dad6ef08e5fbdb354ab616e73723d6e"
+  },
+  {
+    "kind": "api",
+    "name": "/api/management/organ-requests",
+    "flow": "moderation",
+    "access": "Staff queues",
+    "source": "src/app/api/management/organ-requests/route.ts",
+    "methods": [
+      "GET",
+      "PATCH",
+      "DELETE"
+    ],
+    "sha256": "a024e3b8fd97d0f3e210a8277ae7981619a4a7f5748839d88955b31b3fda5b6d"
+  },
+  {
+    "kind": "api",
+    "name": "/api/management/reports",
+    "flow": "moderation",
+    "access": "Staff queues",
+    "source": "src/app/api/management/reports/route.ts",
+    "methods": [
+      "GET",
+      "PATCH"
+    ],
+    "sha256": "e61ec56051d25dcf323b3974a9c375942013d08833153ee911651490ca3a73bb"
+  },
+  {
+    "kind": "api",
+    "name": "/api/management/verifications",
+    "flow": "moderation",
+    "access": "Staff queues",
+    "source": "src/app/api/management/verifications/route.ts",
+    "methods": [
+      "GET",
+      "PATCH"
+    ],
+    "sha256": "d1eea7b3acd60bf6ae350bfc744eaf0d89d41a8cae4d890cc8737398e06fc694"
+  },
+  {
+    "kind": "api",
+    "name": "/api/public/ads-settings",
+    "flow": "appearance",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/api/public/ads-settings/route.ts",
+    "methods": [
+      "GET"
+    ],
+    "sha256": "3e11db7b351311957c72a4110a2469b71f6f095102697ed90054c6f2671cf3a6"
+  },
+  {
+    "kind": "api",
+    "name": "/api/public/aid-requests",
+    "flow": "moderation",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/api/public/aid-requests/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "sha256": "2783496b111bebbe20bd811b97b79da4d164990a68fa53f2ffd18ecda5e22adf"
+  },
+  {
+    "kind": "api",
+    "name": "/api/public/blogs",
+    "flow": "blogs",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/api/public/blogs/route.ts",
+    "methods": [
+      "GET"
+    ],
+    "sha256": "20a328b440affd46c7c17d966a76a98c54ca0b043f0ecf9298dc041a66f38a87"
+  },
+  {
+    "kind": "api",
+    "name": "/api/public/blogs/[slug]",
+    "flow": "blogs",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/api/public/blogs/[slug]/route.ts",
+    "methods": [
+      "GET"
+    ],
+    "sha256": "7ca872c68fdf75648395efdf0d13ddaba6e8fa65c52e8f97cd4264c960c5b274"
+  },
+  {
+    "kind": "api",
+    "name": "/api/public/contact",
+    "flow": "moderation",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/api/public/contact/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "sha256": "328868d0cc029b374b8e43c2ba206b43ffe9be7b7740bff34bd7b25f91309ebe"
+  },
+  {
+    "kind": "api",
+    "name": "/api/public/donor-countries",
+    "flow": "countries",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/api/public/donor-countries/route.ts",
+    "methods": [
+      "GET"
+    ],
+    "sha256": "c33fb18fd3ddf70b4f7f21bed0d03e5acbf84c2a5a88464b8865da67c1d9c6c1"
+  },
+  {
+    "kind": "api",
+    "name": "/api/public/donors",
+    "flow": "donor-search",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/api/public/donors/route.ts",
+    "methods": [
+      "GET"
+    ],
+    "sha256": "5032c72f8389ee51325fcd2b9e721e9516368ceb3600b7b4f108fede7a743eb1"
+  },
+  {
+    "kind": "api",
+    "name": "/api/public/faqs",
+    "flow": "appearance",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/api/public/faqs/route.ts",
+    "methods": [
+      "GET"
+    ],
+    "sha256": "f00d01476440fbed5450e3e9665c45745e17dffcd64ebec32c219e9336415f0e"
+  },
+  {
+    "kind": "api",
+    "name": "/api/public/homepage-slides",
+    "flow": "slider",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/api/public/homepage-slides/route.ts",
+    "methods": [
+      "GET"
+    ],
+    "sha256": "0760f3ab6a2b23d0c9e00b9a484caf09688a69669417e049c27c1ddae1d33d08"
+  },
+  {
+    "kind": "api",
+    "name": "/api/public/maintenance",
+    "flow": "recovery",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/api/public/maintenance/route.ts",
+    "methods": [
+      "GET"
+    ],
+    "sha256": "afcd533dce508feaf8f8c76c4666edfefeb77535d3a12fb3a79349a8177e1ef8"
+  },
+  {
+    "kind": "api",
+    "name": "/api/public/organ-donors",
+    "flow": "donor-search",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/api/public/organ-donors/route.ts",
+    "methods": [
+      "GET"
+    ],
+    "sha256": "25a65757930726b5faffb659a0fab53cb8bd3c9e6bb6ca1446457632ad1406cb"
+  },
+  {
+    "kind": "api",
+    "name": "/api/public/organ-requests",
+    "flow": "moderation",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/api/public/organ-requests/route.ts",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "sha256": "5cbded898f2b47c6992940febb9278baded7c5e6793cd14fb6ccab8865ac82ec"
+  },
+  {
+    "kind": "api",
+    "name": "/api/public/platform-stats",
+    "flow": "measurement",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/api/public/platform-stats/route.ts",
+    "methods": [
+      "GET"
+    ],
+    "sha256": "42a724fb259cff2ea6c10fe42393f79b7bd1d432b6b4b50e5a2b481e44835f74"
+  },
+  {
+    "kind": "api",
+    "name": "/api/public/policy-content",
+    "flow": "appearance",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/api/public/policy-content/route.ts",
+    "methods": [
+      "GET"
+    ],
+    "sha256": "fa5e9a560caab817d59371aea2d6cdc389ffdce39c1b5f72848483598e0fd304"
+  },
+  {
+    "kind": "api",
+    "name": "/api/public/reports",
+    "flow": "moderation",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/api/public/reports/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "sha256": "5bec1571eb06910780393ab83620898eb995232991402009b12bc787e81d092b"
+  },
+  {
+    "kind": "api",
+    "name": "/api/public/theme",
+    "flow": "appearance",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/api/public/theme/route.ts",
+    "methods": [
+      "GET"
+    ],
+    "sha256": "aea9fdeb5987fe27fd8d062b2b5e3b856fcafd98bdde57ea1a80b09354b100cb"
+  },
+  {
+    "kind": "api",
+    "name": "/api/public/ui-events",
+    "flow": "navigation",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/api/public/ui-events/route.ts",
+    "methods": [
+      "GET"
+    ],
+    "sha256": "6e19c659aee53a8c594bec970b89eba725c6cf07f709d50fe1c0d04cc27ea657"
+  },
+  {
+    "kind": "api",
+    "name": "/api/uploads/image",
+    "flow": "images",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/api/uploads/image/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "sha256": "0048f876761f9d2645b498e2e9e431dc99d3af1235a12ba97cf55e9e69c35d3f"
+  },
+  {
+    "kind": "api",
+    "name": "/api/uploads/image/[assetId]",
+    "flow": "images",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/api/uploads/image/[assetId]/route.ts",
+    "methods": [
+      "GET"
+    ],
+    "sha256": "e22c5255738eae970fc3fb209f10e2eaa746462484802e930431b15052470a73"
+  },
+  {
+    "kind": "api",
+    "name": "/api/users/[userId]/profile",
+    "flow": "admin-users",
+    "access": "Account owner or guarded audit",
+    "source": "src/app/api/users/[userId]/profile/route.ts",
+    "methods": [
+      "GET"
+    ],
+    "sha256": "36734f27c3d483cebeb55df9ddacb2e6a017d3920d49a30dff08df09ac7b7f68"
+  },
+  {
+    "kind": "api",
+    "name": "/api/users/me/blogs",
+    "flow": "blogs",
+    "access": "Account owner or guarded audit",
+    "source": "src/app/api/users/me/blogs/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "sha256": "950ae9a5557b67e886bd0ef88b3a8289e44c85de6830208bdf383914e3933a86"
+  },
+  {
+    "kind": "api",
+    "name": "/api/users/me/health",
+    "flow": "admin-users",
+    "access": "Account owner or guarded audit",
+    "source": "src/app/api/users/me/health/route.ts",
+    "methods": [
+      "PATCH"
+    ],
+    "sha256": "f4b80547917f9c5ec2895ff1ba0965d03d5009843e032b1204a86a3713b126b4"
+  },
+  {
+    "kind": "api",
+    "name": "/api/users/me/medical-records/history",
+    "flow": "records",
+    "access": "Account owner or guarded audit",
+    "source": "src/app/api/users/me/medical-records/history/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "sha256": "86997dff1da64b484a9807d31af478c327afa9e0589fc7fbdf2a2bc3a3d7db71"
+  },
+  {
+    "kind": "api",
+    "name": "/api/users/me/medical-reports",
+    "flow": "services",
+    "access": "Account owner or guarded audit",
+    "source": "src/app/api/users/me/medical-reports/route.ts",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "sha256": "96d0cde39f44e01c1a86f0fc07b75553196fb3b7893b5be4f70504a4245afc63"
+  },
+  {
+    "kind": "api",
+    "name": "/api/users/me/medical-reports/[reportId]/files/[fileId]",
+    "flow": "records",
+    "access": "Account owner or guarded audit",
+    "source": "src/app/api/users/me/medical-reports/[reportId]/files/[fileId]/route.ts",
+    "methods": [
+      "GET"
+    ],
+    "sha256": "4314beb0951c21166740c7cc0f892b011a8cf77c6e6f3351d3231c20c20c16f4"
+  },
+  {
+    "kind": "api",
+    "name": "/api/users/me/organs",
+    "flow": "admin-users",
+    "access": "Account owner or guarded audit",
+    "source": "src/app/api/users/me/organs/route.ts",
+    "methods": [
+      "PATCH"
+    ],
+    "sha256": "64732db4db1a531cc297c7665f46ea226039289e851b559c0edb86d65860cc15"
+  },
+  {
+    "kind": "api",
+    "name": "/api/users/me/prescriptions",
+    "flow": "prescriptions",
+    "access": "Account owner or guarded audit",
+    "source": "src/app/api/users/me/prescriptions/route.ts",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "sha256": "24683b5f7975bf546e987446c0ad88952968f2777f68ce4b8ddc778e52f86913"
+  },
+  {
+    "kind": "api",
+    "name": "/api/users/me/prescriptions/[prescriptionId]",
+    "flow": "prescriptions",
+    "access": "Account owner or guarded audit",
+    "source": "src/app/api/users/me/prescriptions/[prescriptionId]/route.ts",
+    "methods": [
+      "GET",
+      "PATCH"
+    ],
+    "sha256": "7f3b2d5323cc5b3f440e0aaad4121876da33fb0a62f15ea7061bd238e03a0c3f"
+  },
+  {
+    "kind": "api",
+    "name": "/api/users/me/profile",
+    "flow": "admin-users",
+    "access": "Account owner or guarded audit",
+    "source": "src/app/api/users/me/profile/route.ts",
+    "methods": [
+      "GET",
+      "PATCH"
+    ],
+    "sha256": "fca6ae2d758ca1f58f1935453ae7d9d0a83b1c1865a82351389503cab10a91fd"
+  },
+  {
+    "kind": "api",
+    "name": "/api/users/me/profile-id",
+    "flow": "admin-users",
+    "access": "Account owner or guarded audit",
+    "source": "src/app/api/users/me/profile-id/route.ts",
+    "methods": [
+      "GET",
+      "PATCH"
+    ],
+    "sha256": "2af45759553d4fdec3076253938ada9c5a19dbd1fc9e1f74548967696981b428"
+  },
+  {
+    "kind": "api",
+    "name": "/api/users/me/public-profile",
+    "flow": "public-profiles",
+    "access": "Account owner or guarded audit",
+    "source": "src/app/api/users/me/public-profile/route.ts",
+    "methods": [
+      "GET",
+      "PATCH"
+    ],
+    "sha256": "46a1d9e6c2262f911e02628dd05dfc011451aebca1dbbf30eb69faa60ef0e0ef"
+  },
+  {
+    "kind": "api",
+    "name": "/api/users/me/service-cities",
+    "flow": "countries",
+    "access": "Account owner or guarded audit",
+    "source": "src/app/api/users/me/service-cities/route.ts",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "sha256": "b64bba9fa5d1e2afeaf3d054b5d55406d971f0460f350689cad96c265107f0e3"
+  },
+  {
+    "kind": "api",
+    "name": "/api/users/me/service-cities/[cityId]",
+    "flow": "countries",
+    "access": "Account owner or guarded audit",
+    "source": "src/app/api/users/me/service-cities/[cityId]/route.ts",
+    "methods": [
+      "DELETE"
+    ],
+    "sha256": "29822a905955829d15d6a067f897934c37ea751efcf3f1a13dbd9a17febb3c77"
+  },
+  {
+    "kind": "api",
+    "name": "/api/users/me/verification-documents",
+    "flow": "admin-users",
+    "access": "Account owner or guarded audit",
+    "source": "src/app/api/users/me/verification-documents/route.ts",
+    "methods": [
+      "POST"
+    ],
+    "sha256": "5a06ab3508a2b299fe4eed00315dcd96718e1f91f94c10a02d93d402c3f26184"
+  },
+  {
+    "kind": "model",
+    "name": "AdminNotification",
+    "flow": "notifications",
+    "access": "Server-managed; record-level publication/authorization",
+    "source": "prisma/schema.prisma",
+    "methods": [],
+    "sha256": "b505dd6cfac759ab6c244ce2e0f4378b8562513a76c542cc9dd093eeb8fec743"
+  },
+  {
+    "kind": "model",
+    "name": "AdminNotificationRead",
+    "flow": "notifications",
+    "access": "Server-managed; record-level publication/authorization",
+    "source": "prisma/schema.prisma",
+    "methods": [],
+    "sha256": "d9d984348a140294f9b24688122461b3e157c1f0a8f685c10a56633259fef90c"
+  },
+  {
+    "kind": "model",
+    "name": "AdminUser",
+    "flow": "security",
+    "access": "Server-managed; record-level publication/authorization",
+    "source": "prisma/schema.prisma",
+    "methods": [],
+    "sha256": "6238ffdf540d49c15b4294f586f6e65434fe69c31f6ccaccc7286bcac6f05df4"
+  },
+  {
+    "kind": "model",
+    "name": "AnalyticsClickLog",
+    "flow": "measurement",
+    "access": "Server-managed; record-level publication/authorization",
+    "source": "prisma/schema.prisma",
+    "methods": [],
+    "sha256": "ce7a6548142631087fd0c72487740565fd824c853eeacc9d57df2f444a7ac6bd"
+  },
+  {
+    "kind": "model",
+    "name": "AnalyticsHeatmapLog",
+    "flow": "measurement",
+    "access": "Server-managed; record-level publication/authorization",
+    "source": "prisma/schema.prisma",
+    "methods": [],
+    "sha256": "15cc39297394464adea7ba1c7666617be300ef2c4b2cebe4f83efc9a818b6b9c"
+  },
+  {
+    "kind": "model",
+    "name": "AuthRiskEvent",
+    "flow": "security",
+    "access": "Server-managed; record-level publication/authorization",
+    "source": "prisma/schema.prisma",
+    "methods": [],
+    "sha256": "d5ae5196c1185984ad0b95a3c4c43a1deec8e8bdfa335308dda4dffa59b1b7cf"
+  },
+  {
+    "kind": "model",
+    "name": "Blog",
+    "flow": "blogs",
+    "access": "Server-managed; record-level publication/authorization",
+    "source": "prisma/schema.prisma",
+    "methods": [],
+    "sha256": "fbdf820df0bfeeadd0ab88b1f0f909f7473702b6a7a37d511ca71f2029c6943d"
+  },
+  {
+    "kind": "model",
+    "name": "CommunityDonor",
+    "flow": "manual",
+    "access": "Server-managed; record-level publication/authorization",
+    "source": "prisma/schema.prisma",
+    "methods": [],
+    "sha256": "9a8e79ccff58ff08783358315b8a6ed7950a774fcfea470b1ef89c804aae1c9f"
+  },
+  {
+    "kind": "model",
+    "name": "DeviceFingerprint",
+    "flow": "security",
+    "access": "Server-managed; record-level publication/authorization",
+    "source": "prisma/schema.prisma",
+    "methods": [],
+    "sha256": "3f589d1ede4903d36099480b8588d8108a298b7e8f72de763d795f8b560a2275"
+  },
+  {
+    "kind": "model",
+    "name": "DonorStatusHistory",
+    "flow": "admin-users",
+    "access": "Server-managed; record-level publication/authorization",
+    "source": "prisma/schema.prisma",
+    "methods": [],
+    "sha256": "84e4f03a5a576ee3582c5918d706389554ba8b77f5d9f2a8cbab47d1fea39d18"
+  },
+  {
+    "kind": "model",
+    "name": "FaqItem",
+    "flow": "appearance",
+    "access": "Server-managed; record-level publication/authorization",
+    "source": "prisma/schema.prisma",
+    "methods": [],
+    "sha256": "edca0449010e4f2ac3bb745cf7337ac0966af0baf86430edeea20370a3c7d481"
+  },
+  {
+    "kind": "model",
+    "name": "HomepageContent",
+    "flow": "homepage",
+    "access": "Server-managed; record-level publication/authorization",
+    "source": "prisma/schema.prisma",
+    "methods": [],
+    "sha256": "47f4efe11713d3095f5c3b47255336c0cb11016b5732251431ba6a760766d501"
+  },
+  {
+    "kind": "model",
+    "name": "HomepageSlider",
+    "flow": "slider",
+    "access": "Server-managed; record-level publication/authorization",
+    "source": "prisma/schema.prisma",
+    "methods": [],
+    "sha256": "1f84eced1e062f2e8df08f4314d0ea48fb8a5a3de7f87c27322a8f3c9ff780db"
+  },
+  {
+    "kind": "model",
+    "name": "MaintenanceGate",
+    "flow": "maintenance",
+    "access": "Server-managed; record-level publication/authorization",
+    "source": "prisma/schema.prisma",
+    "methods": [],
+    "sha256": "868dc09caf98e459554236c3960dd03ef596a64d1780d0712107590b727212d9"
+  },
+  {
+    "kind": "model",
+    "name": "ManualBloodDonor",
+    "flow": "manual",
+    "access": "Server-managed; record-level publication/authorization",
+    "source": "prisma/schema.prisma",
+    "methods": [],
+    "sha256": "869fb9cdc638f54f08bf57cadf847fb0d5b9d1b9d43ff9ae9a36c17c7fea665b"
+  },
+  {
+    "kind": "model",
+    "name": "ManualOrganDonor",
+    "flow": "manual",
+    "access": "Server-managed; record-level publication/authorization",
+    "source": "prisma/schema.prisma",
+    "methods": [],
+    "sha256": "4c5a2008a6a990f7c4a00253ae7f931c57f3f9690e20aa00bf9a8e1d21b7bc74"
+  },
+  {
+    "kind": "model",
+    "name": "MediaAsset",
+    "flow": "images",
+    "access": "Server-managed; record-level publication/authorization",
+    "source": "prisma/schema.prisma",
+    "methods": [],
+    "sha256": "3ee2ef885902f8f9aa8916053d2648885ae9110609361e40603091169242e890"
+  },
+  {
+    "kind": "model",
+    "name": "MedicalAidRequest",
+    "flow": "moderation",
+    "access": "Server-managed; record-level publication/authorization",
+    "source": "prisma/schema.prisma",
+    "methods": [],
+    "sha256": "889e631382064beaedb30645fe6b6a47ee1645582392a97b9e257d6ca28f01c5"
+  },
+  {
+    "kind": "model",
+    "name": "MedicalReport",
+    "flow": "records",
+    "access": "Server-managed; record-level publication/authorization",
+    "source": "prisma/schema.prisma",
+    "methods": [],
+    "sha256": "f31651efe1e04fad65e4cecc16267e36ec17c3930a8ebf3bb653952fe4361177"
+  },
+  {
+    "kind": "model",
+    "name": "MedicalReportFile",
+    "flow": "records",
+    "access": "Server-managed; record-level publication/authorization",
+    "source": "prisma/schema.prisma",
+    "methods": [],
+    "sha256": "b97c72079d71a371edcae4ee5c12600fdb4577f4ce0bf1b5550aaa685840485b"
+  },
+  {
+    "kind": "model",
+    "name": "NetworkFingerprint",
+    "flow": "security",
+    "access": "Server-managed; record-level publication/authorization",
+    "source": "prisma/schema.prisma",
+    "methods": [],
+    "sha256": "16d829a5a5bbe4c76482064a9280230fbc6157684356d961dba27ad81fd04aec"
+  },
+  {
+    "kind": "model",
+    "name": "OrganPledge",
+    "flow": "profile",
+    "access": "Server-managed; record-level publication/authorization",
+    "source": "prisma/schema.prisma",
+    "methods": [],
+    "sha256": "2b1a9a2d902c94f58dbee245edeaa2d3d2739ca2f941ad6d7dc7ba7af72d18d9"
+  },
+  {
+    "kind": "model",
+    "name": "OrganRequest",
+    "flow": "moderation",
+    "access": "Server-managed; record-level publication/authorization",
+    "source": "prisma/schema.prisma",
+    "methods": [],
+    "sha256": "bc74ff953776c1fdf3db135e4c8b9cda88a1f96b5eeecf05c02752b5129bf39f"
+  },
+  {
+    "kind": "model",
+    "name": "OrganRequestAttachment",
+    "flow": "moderation",
+    "access": "Server-managed; record-level publication/authorization",
+    "source": "prisma/schema.prisma",
+    "methods": [],
+    "sha256": "f7e8a69924db136302ea8f10c5d258214946352cabb723d50a7cac8685348a4f"
+  },
+  {
+    "kind": "model",
+    "name": "OtpVerification",
+    "flow": "registration",
+    "access": "Server-managed; record-level publication/authorization",
+    "source": "prisma/schema.prisma",
+    "methods": [],
+    "sha256": "ab8d762213443cd84ca3d5568a6becf4e165805488c66be05d86276e9fadcc4b"
+  },
+  {
+    "kind": "model",
+    "name": "PlatformSettings",
+    "flow": "appearance",
+    "access": "Server-managed; record-level publication/authorization",
+    "source": "prisma/schema.prisma",
+    "methods": [],
+    "sha256": "0cd1d0640ebb411feacce2374e15036a840092bfb39455f95afed7744b1106e5"
+  },
+  {
+    "kind": "model",
+    "name": "Policy",
+    "flow": "appearance",
+    "access": "Server-managed; record-level publication/authorization",
+    "source": "prisma/schema.prisma",
+    "methods": [],
+    "sha256": "b6a4539eaacd3e4d7ed8f53756010346e4d9a01ef485a1cbd1e0a69a2fc4b97e"
+  },
+  {
+    "kind": "model",
+    "name": "Prescription",
+    "flow": "prescriptions",
+    "access": "Server-managed; record-level publication/authorization",
+    "source": "prisma/schema.prisma",
+    "methods": [],
+    "sha256": "d1be8f2cffd8de8bd4cb0282c0e2cb70cf36c97fbf1129f64181a0d96ae05cad"
+  },
+  {
+    "kind": "model",
+    "name": "ProfileIdentifier",
+    "flow": "profile",
+    "access": "Server-managed; record-level publication/authorization",
+    "source": "prisma/schema.prisma",
+    "methods": [],
+    "sha256": "c1634563b91b695644268dfe8ad589fad5759738d5a40286d4f26a7e23473e4b"
+  },
+  {
+    "kind": "model",
+    "name": "PublicDonorProfile",
+    "flow": "public-profiles",
+    "access": "Server-managed; record-level publication/authorization",
+    "source": "prisma/schema.prisma",
+    "methods": [],
+    "sha256": "dbe76bbe2952ce908ba14ff30cc9e180388a614f31e96e24926e7916ad35c6ed"
+  },
+  {
+    "kind": "model",
+    "name": "PublicPageContent",
+    "flow": "services",
+    "access": "Server-managed; record-level publication/authorization",
+    "source": "prisma/schema.prisma",
+    "methods": [],
+    "sha256": "d48f673a402f6ed736a66780e7b0967217a020e8a31ccebb35366a9d5017efb4"
+  },
+  {
+    "kind": "model",
+    "name": "RegionalPageContent",
+    "flow": "regional",
+    "access": "Server-managed; record-level publication/authorization",
+    "source": "prisma/schema.prisma",
+    "methods": [],
+    "sha256": "39002c923794f6d8583a2041432efa8006bde5a8b3879c674d285e19f796da95"
+  },
+  {
+    "kind": "model",
+    "name": "Report",
+    "flow": "moderation",
+    "access": "Server-managed; record-level publication/authorization",
+    "source": "prisma/schema.prisma",
+    "methods": [],
+    "sha256": "82533628a2f76f345c94b0d8e7833d8210ddce7352e0d1f397e72914a896d6be"
+  },
+  {
+    "kind": "model",
+    "name": "RestrictedIdentity",
+    "flow": "security",
+    "access": "Server-managed; record-level publication/authorization",
+    "source": "prisma/schema.prisma",
+    "methods": [],
+    "sha256": "d91e66a5f3b97cf81ebaabe3df0f6fb439a6aa4caad437acc7560c9bc8724de1"
+  },
+  {
+    "kind": "model",
+    "name": "ServiceAvailability",
+    "flow": "services",
+    "access": "Server-managed; record-level publication/authorization",
+    "source": "prisma/schema.prisma",
+    "methods": [],
+    "sha256": "5fb1dcea16ef20e9256e29b2c70d1f839811e95c87fd7bdd79d6c91764c16914"
+  },
+  {
+    "kind": "model",
+    "name": "Survey",
+    "flow": "future",
+    "access": "Schema present; no active workflow assumed",
+    "source": "prisma/schema.prisma",
+    "methods": [],
+    "sha256": "fe5a3baa19c40cd6d2929691581f92cdd1b103568c74d8a9fcc90e7864eb5907"
+  },
+  {
+    "kind": "model",
+    "name": "SurveyAnswer",
+    "flow": "future",
+    "access": "Schema present; no active workflow assumed",
+    "source": "prisma/schema.prisma",
+    "methods": [],
+    "sha256": "806eefad947d88d0608fe71c8e0d629962d58f6485fcd692009e6c48255214a1"
+  },
+  {
+    "kind": "model",
+    "name": "SurveyQuestion",
+    "flow": "future",
+    "access": "Schema present; no active workflow assumed",
+    "source": "prisma/schema.prisma",
+    "methods": [],
+    "sha256": "91b312c5c5435ef9de1f4cb617f066fc3b1d9d7d39244b97ede422dcb07b4b36"
+  },
+  {
+    "kind": "model",
+    "name": "TranslatedContent",
+    "flow": "appearance",
+    "access": "Server-managed; record-level publication/authorization",
+    "source": "prisma/schema.prisma",
+    "methods": [],
+    "sha256": "a329adfed1a8636d48c02f31240800afbea7305883f27f8240863d7c07604a28"
+  },
+  {
+    "kind": "model",
+    "name": "TrashRecord",
+    "flow": "security",
+    "access": "Server-managed; record-level publication/authorization",
+    "source": "prisma/schema.prisma",
+    "methods": [],
+    "sha256": "f0147a55ec77cf71f67aa2d0f3b99de82f5fe3d49b02b1e10200fac02c5fd5e4"
+  },
+  {
+    "kind": "model",
+    "name": "User",
+    "flow": "profile",
+    "access": "Server-managed; record-level publication/authorization",
+    "source": "prisma/schema.prisma",
+    "methods": [],
+    "sha256": "bd3986a289dfed7e74b849b68ea2887e3c2f1da970ecea1c7b9b5e550e05ecf7"
+  },
+  {
+    "kind": "model",
+    "name": "UserLoginEmail",
+    "flow": "admin-users",
+    "access": "Server-managed; record-level publication/authorization",
+    "source": "prisma/schema.prisma",
+    "methods": [],
+    "sha256": "4ac48049db7fcbe2f9da10e936ffcb9f1ebc476171fd795007e91211e7bb4eb7"
+  },
+  {
+    "kind": "model",
+    "name": "UserServiceCity",
+    "flow": "countries",
+    "access": "Server-managed; record-level publication/authorization",
+    "source": "prisma/schema.prisma",
+    "methods": [],
+    "sha256": "8557ee4c130ff10c63cf9a9af01f700e3940bbd70823beb3cfbd495386bfe083"
+  },
+  {
+    "kind": "model",
+    "name": "VerificationDocument",
+    "flow": "admin-users",
+    "access": "Server-managed; record-level publication/authorization",
+    "source": "prisma/schema.prisma",
+    "methods": [],
+    "sha256": "633272b247d0591a8a22ef59d30544899002ab6f91305df68f251a44cb740bb1"
+  },
+  {
+    "kind": "module",
+    "name": "deploy/deploy.sh",
+    "flow": "hosting",
+    "access": "Reviewed supporting implementation",
+    "source": "deploy/deploy.sh",
+    "methods": [],
+    "sha256": "e0eb755703fb3ca260db093253f994d7327e6d5f90345f8d477e99b8409678b2"
+  },
+  {
+    "kind": "module",
+    "name": "deploy/nginx/bloodnet.live.conf",
+    "flow": "domain-point",
+    "access": "Reviewed supporting implementation",
+    "source": "deploy/nginx/bloodnet.live.conf",
+    "methods": [],
+    "sha256": "ee0eb84a95ee7da57175cadd30ec60299f8c962174a4c3d4b033e2c8db68ca8e"
+  },
+  {
+    "kind": "module",
+    "name": "deploy/PRODUCTION_CHECKLIST.md",
+    "flow": "hosting",
+    "access": "Reviewed supporting implementation",
+    "source": "deploy/PRODUCTION_CHECKLIST.md",
+    "methods": [],
+    "sha256": "4820e9f77100165c34a730db794e82df6f033d89144553e5d25f0326c7dc8da2"
+  },
+  {
+    "kind": "module",
+    "name": "docs/hostinger-migration-sources.md",
+    "flow": "domain-account",
+    "access": "Reviewed supporting implementation",
+    "source": "docs/hostinger-migration-sources.md",
+    "methods": [],
+    "sha256": "ada6846fed488ffeb6fa31895efd3d8831d33378dfc096e30a35e49705dbac47"
+  },
+  {
+    "kind": "module",
+    "name": "ecosystem.config.cjs",
+    "flow": "hosting",
+    "access": "Reviewed supporting implementation",
+    "source": "ecosystem.config.cjs",
+    "methods": [],
+    "sha256": "1ab874ef0225af1a50e633ee52bc169f6841557cd2cd828f167bc2ba979016d1"
+  },
+  {
+    "kind": "module",
+    "name": "prisma/migrations/20261027090000_admin_operations/migration.sql",
+    "flow": "notifications",
+    "access": "Reviewed supporting implementation",
+    "source": "prisma/migrations/20261027090000_admin_operations/migration.sql",
+    "methods": [],
+    "sha256": "ec1a4b23fd60c3cf1a9e9a4dc9e9547e5fc8d17d3c2e6f24c89fb2285d1d0750"
+  },
+  {
+    "kind": "module",
+    "name": "src/app/layout.tsx",
+    "flow": "platform",
+    "access": "Reviewed supporting implementation",
+    "source": "src/app/layout.tsx",
+    "methods": [],
+    "sha256": "92e6a2f756a812b2f6ef777a42ad3db01e9c3ff52dd5f68714770f99054d582f"
+  },
+  {
+    "kind": "module",
+    "name": "src/backend/config/env.ts",
+    "flow": "domain-new",
+    "access": "Reviewed supporting implementation",
+    "source": "src/backend/config/env.ts",
+    "methods": [],
+    "sha256": "8040a82569086154be7e2d377d8e0742bdc0564526879f31920df2b891877b9f"
+  },
+  {
+    "kind": "module",
+    "name": "src/backend/controllers/AuthController.ts",
+    "flow": "registration",
+    "access": "Reviewed supporting implementation",
+    "source": "src/backend/controllers/AuthController.ts",
+    "methods": [],
+    "sha256": "a2c7e881019e79626b72fa2403b78208c7edaa820b6a396c1766737e3043efef"
+  },
+  {
+    "kind": "module",
+    "name": "src/backend/repositories/UserRepository.ts",
+    "flow": "registration",
+    "access": "Reviewed supporting implementation",
+    "source": "src/backend/repositories/UserRepository.ts",
+    "methods": [],
+    "sha256": "767aca00c2e726051bf4e499587de8cd0a353531335d77598cef709990aaea75"
+  },
+  {
+    "kind": "module",
+    "name": "src/backend/scripts/deploymentCheck.ts",
+    "flow": "deployment",
+    "access": "Reviewed supporting implementation",
+    "source": "src/backend/scripts/deploymentCheck.ts",
+    "methods": [],
+    "sha256": "73f7d9fcd33aad30743d9d3abac091fa3e9386432a55e0fb4abcd1289bbc3fae"
+  },
+  {
+    "kind": "module",
+    "name": "src/backend/scripts/prescriptionEmailWorker.ts",
+    "flow": "prescriptions",
+    "access": "Reviewed supporting implementation",
+    "source": "src/backend/scripts/prescriptionEmailWorker.ts",
+    "methods": [],
+    "sha256": "5c1f28907b03a1010da410ab076b847f699c362cf5ac6d1e668a42555f4a98f8"
+  },
+  {
+    "kind": "module",
+    "name": "src/backend/scripts/recoveryCli.ts",
+    "flow": "restore",
+    "access": "Reviewed supporting implementation",
+    "source": "src/backend/scripts/recoveryCli.ts",
+    "methods": [],
+    "sha256": "13c32566d5044eb63de9c665d82197773626bb852a9105e7224bfc89babec346"
+  },
+  {
+    "kind": "module",
+    "name": "src/backend/scripts/recoveryWorker.ts",
+    "flow": "restore",
+    "access": "Reviewed supporting implementation",
+    "source": "src/backend/scripts/recoveryWorker.ts",
+    "methods": [],
+    "sha256": "56ac88cc45f601d88ea577d05032f2c9bfaee12386016d066367a228628e56b8"
+  },
+  {
+    "kind": "module",
+    "name": "src/backend/utils/activeAdmin.ts",
+    "flow": "security",
+    "access": "Reviewed supporting implementation",
+    "source": "src/backend/utils/activeAdmin.ts",
+    "methods": [],
+    "sha256": "a475fb94155fd0592f3e8b5a780e2fcf263792ac002a34f36bcfc61de3ab9561"
+  },
+  {
+    "kind": "module",
+    "name": "src/components/AdminNotifications.tsx",
+    "flow": "notifications",
+    "access": "Reviewed supporting implementation",
+    "source": "src/components/AdminNotifications.tsx",
+    "methods": [],
+    "sha256": "0941286222edb12c9b8eafcba916b09addd9babced19ef59b12abac1b6bd4a8d"
+  },
+  {
+    "kind": "module",
+    "name": "src/components/AdminWorkspaceShell.tsx",
+    "flow": "platform",
+    "access": "Reviewed supporting implementation",
+    "source": "src/components/AdminWorkspaceShell.tsx",
+    "methods": [],
+    "sha256": "9e1c7c71550b5ed3fabf881997cd6935fe8cd574ba782995f93bc7c527a2e32b"
+  },
+  {
+    "kind": "module",
+    "name": "src/components/Hero.tsx",
+    "flow": "donor-search",
+    "access": "Reviewed supporting implementation",
+    "source": "src/components/Hero.tsx",
+    "methods": [],
+    "sha256": "32245d3a797b264a319ff1a723878184dea6ac0ec8c38bd3ae3ed460053f1af2"
+  },
+  {
+    "kind": "module",
+    "name": "src/components/HomepageContentEditor.tsx",
+    "flow": "homepage",
+    "access": "Reviewed supporting implementation",
+    "source": "src/components/HomepageContentEditor.tsx",
+    "methods": [],
+    "sha256": "143462dc0e64de0ff747a9406f3461d51f30241a170546ed20f3cd5a3ae2ed1d"
+  },
+  {
+    "kind": "module",
+    "name": "src/components/ImageSlider.tsx",
+    "flow": "slider",
+    "access": "Reviewed supporting implementation",
+    "source": "src/components/ImageSlider.tsx",
+    "methods": [],
+    "sha256": "0e546d50b29d8e2875003ab5d75b6437fc49229076c49b45efe60f40d8f8b399"
+  },
+  {
+    "kind": "module",
+    "name": "src/components/ManagedImagePicker.tsx",
+    "flow": "images",
+    "access": "Reviewed supporting implementation",
+    "source": "src/components/ManagedImagePicker.tsx",
+    "methods": [],
+    "sha256": "de5d1c12dcabaebcb36f95a23a46af2e747217928fa4950dd0da157078688865"
+  },
+  {
+    "kind": "module",
+    "name": "src/components/ProfileIdentityCard.tsx",
+    "flow": "profile",
+    "access": "Reviewed supporting implementation",
+    "source": "src/components/ProfileIdentityCard.tsx",
+    "methods": [],
+    "sha256": "751f3ffe9ef7b8999bc8045cd967ee362513881d0f46bfeb587afd2b5e4b89d6"
+  },
+  {
+    "kind": "module",
+    "name": "src/components/PublicContentEditor.tsx",
+    "flow": "services",
+    "access": "Reviewed supporting implementation",
+    "source": "src/components/PublicContentEditor.tsx",
+    "methods": [],
+    "sha256": "a6cb86b46167b85fd56e3865a70baf0d08176760c4c0655fa5a6dad1573f5f73"
+  },
+  {
+    "kind": "module",
+    "name": "src/components/PublicDonorArticle.tsx",
+    "flow": "public-profiles",
+    "access": "Reviewed supporting implementation",
+    "source": "src/components/PublicDonorArticle.tsx",
+    "methods": [],
+    "sha256": "d843f68d3d9b3774e099542365496accdbdbbe50f395a39420c30bb40fe390ea"
+  },
+  {
+    "kind": "module",
+    "name": "src/components/regional/RegionalCityExperience.tsx",
+    "flow": "regional",
+    "access": "Reviewed supporting implementation",
+    "source": "src/components/regional/RegionalCityExperience.tsx",
+    "methods": [],
+    "sha256": "a6f2c0970feb0cae73087a55a2ae7424ffda2f4dc6eeef3f8459bb452bcd9006"
+  },
+  {
+    "kind": "module",
+    "name": "src/components/RegionalContentEditor.tsx",
+    "flow": "regional",
+    "access": "Reviewed supporting implementation",
+    "source": "src/components/RegionalContentEditor.tsx",
+    "methods": [],
+    "sha256": "bba22940c5ed9daf7cd2be58b3370339795c9c46d0c5790486bef4672d5397a7"
+  },
+  {
+    "kind": "module",
+    "name": "src/components/SiteNavShell.tsx",
+    "flow": "navigation",
+    "access": "Reviewed supporting implementation",
+    "source": "src/components/SiteNavShell.tsx",
+    "methods": [],
+    "sha256": "85a2cbec344a4d4e226986cf7ff59c616267df5a81c2287c1c5d0e5c5b0a9083"
+  },
+  {
+    "kind": "module",
+    "name": "src/components/useDonorRegion.ts",
+    "flow": "location",
+    "access": "Reviewed supporting implementation",
+    "source": "src/components/useDonorRegion.ts",
+    "methods": [],
+    "sha256": "22852a50e6d92f3d0ef4091556a9f3c62a2b13109eea4e8a66af338d8e8b905a"
+  },
+  {
+    "kind": "module",
+    "name": "src/components/useViewerGeo.ts",
+    "flow": "location",
+    "access": "Reviewed supporting implementation",
+    "source": "src/components/useViewerGeo.ts",
+    "methods": [],
+    "sha256": "540a05085574fd60f3bae89218c1f5845aec8b9e210aa0011c38f2578635d32e"
+  },
+  {
+    "kind": "module",
+    "name": "src/lib/adsRuntimeStore.ts",
+    "flow": "appearance",
+    "access": "Reviewed supporting implementation",
+    "source": "src/lib/adsRuntimeStore.ts",
+    "methods": [],
+    "sha256": "031b2f944530d18e0585e961f9d6fe94ad4fcaf8b4b7259108a928013edf73a0"
+  },
+  {
+    "kind": "module",
+    "name": "src/lib/blogDiscovery.ts",
+    "flow": "blogs",
+    "access": "Reviewed supporting implementation",
+    "source": "src/lib/blogDiscovery.ts",
+    "methods": [],
+    "sha256": "8f306916f1b7f12c488df20b23122429cc8830f0194334439c9fdf77723d805e"
+  },
+  {
+    "kind": "module",
+    "name": "src/lib/canonicalOrigin.ts",
+    "flow": "domain-point",
+    "access": "Reviewed supporting implementation",
+    "source": "src/lib/canonicalOrigin.ts",
+    "methods": [],
+    "sha256": "a6abf1e91a71bdce1be21c44e967267108b23b283e702ccaf3f49981a37b4bfd"
+  },
+  {
+    "kind": "module",
+    "name": "src/lib/donorDiscovery.ts",
+    "flow": "donor-search",
+    "access": "Reviewed supporting implementation",
+    "source": "src/lib/donorDiscovery.ts",
+    "methods": [],
+    "sha256": "a7ef256a8404fa9dbd60385964b910df58cf6469645843926206e8e68ef97ca5"
+  },
+  {
+    "kind": "module",
+    "name": "src/lib/donorOrdering.ts",
+    "flow": "donor-search",
+    "access": "Reviewed supporting implementation",
+    "source": "src/lib/donorOrdering.ts",
+    "methods": [],
+    "sha256": "71652300d4e11abf5d673e6d4e0e81a4c565390a86f206fe673a3cca7001ce80"
+  },
+  {
+    "kind": "module",
+    "name": "src/lib/homeNavigation.ts",
+    "flow": "navigation",
+    "access": "Reviewed supporting implementation",
+    "source": "src/lib/homeNavigation.ts",
+    "methods": [],
+    "sha256": "225ccac368701100426fb3401a452569fec922ad038bfc14c1cf5adf00f284d9"
+  },
+  {
+    "kind": "module",
+    "name": "src/lib/maintenanceState.server.ts",
+    "flow": "maintenance",
+    "access": "Reviewed supporting implementation",
+    "source": "src/lib/maintenanceState.server.ts",
+    "methods": [],
+    "sha256": "6e26c16feba60cc14b0439e7194745a08a428d70afe9827996d9a2ce57ef1a70"
+  },
+  {
+    "kind": "module",
+    "name": "src/lib/profileIdentifier.ts",
+    "flow": "profile",
+    "access": "Reviewed supporting implementation",
+    "source": "src/lib/profileIdentifier.ts",
+    "methods": [],
+    "sha256": "5e39e5a52733164e70d076063600bfb878f138b4b21535fca43e3e4d47d0c0e2"
+  },
+  {
+    "kind": "module",
+    "name": "src/lib/publicServices.ts",
+    "flow": "future",
+    "access": "Reviewed supporting implementation",
+    "source": "src/lib/publicServices.ts",
+    "methods": [],
+    "sha256": "6b96ea8ebeef81b6ec6483832aa94332583e4559fb11b3eff97cc2ae33368d07"
+  },
+  {
+    "kind": "page",
+    "name": "/",
+    "flow": "platform",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/page.tsx",
+    "methods": [],
+    "sha256": "9e944dbca54edb8df78a6d2137a80d4f61182fa6eb74773587bedac3ce4fa4f1"
+  },
+  {
+    "kind": "page",
+    "name": "/[region]",
+    "flow": "donor-search",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/[region]/page.tsx",
+    "methods": [],
+    "sha256": "108902f7e5262f5a2f1710c6d6f18a293e5810a7816ffe5dd6d7f55acafb6b35"
+  },
+  {
+    "kind": "page",
+    "name": "/about",
+    "flow": "platform",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/about/page.tsx",
+    "methods": [],
+    "sha256": "27ea2302103568ee09f37e27187b2c5dcce8f359545821bec16fc893ba85add5"
+  },
+  {
+    "kind": "page",
+    "name": "/admin-dashboard/[[...path]]",
+    "flow": "platform",
+    "access": "Private or decoy",
+    "source": "src/app/admin-dashboard/[[...path]]/page.tsx",
+    "methods": [],
+    "sha256": "d2d6688f462666b29782faf5fd2f44fa577c43bce0b65ad5979bad153e520a37"
+  },
+  {
+    "kind": "page",
+    "name": "/admin/[[...path]]",
+    "flow": "platform",
+    "access": "Private or decoy",
+    "source": "src/app/admin/[[...path]]/page.tsx",
+    "methods": [],
+    "sha256": "d2d6688f462666b29782faf5fd2f44fa577c43bce0b65ad5979bad153e520a37"
+  },
+  {
+    "kind": "page",
+    "name": "/america",
+    "flow": "platform",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/america/page.tsx",
+    "methods": [],
+    "sha256": "8cb1b18fcc9c3f6a91c973b9ea5c8f6775fad79ce8db8901efde6ae19c34caf3"
+  },
+  {
+    "kind": "page",
+    "name": "/au",
+    "flow": "platform",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/au/page.tsx",
+    "methods": [],
+    "sha256": "f39674019c27948e42d4685b2ae43c640a426f91979f2ed5028def56f485588e"
+  },
+  {
+    "kind": "page",
+    "name": "/australia",
+    "flow": "platform",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/australia/page.tsx",
+    "methods": [],
+    "sha256": "5e14ceda48a0e3004e969509f4ff329a2a0a0f590d8cb2e9faace5016792f026"
+  },
+  {
+    "kind": "page",
+    "name": "/bd",
+    "flow": "platform",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/bd/page.tsx",
+    "methods": [],
+    "sha256": "3bf5e53ff21e6e6c69c8ae49a66901cb0a874a12e3bb0aa8659db689a2563007"
+  },
+  {
+    "kind": "page",
+    "name": "/blog",
+    "flow": "blogs",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/blog/page.tsx",
+    "methods": [],
+    "sha256": "ed8187d60635f7c7ac3739184e87e18473ce445c3e3b2d2e7ae9808d3217672a"
+  },
+  {
+    "kind": "page",
+    "name": "/blog/[slug]",
+    "flow": "blogs",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/blog/[slug]/page.tsx",
+    "methods": [],
+    "sha256": "2bcfb8e4d867b93b1685cf1b8b4cf71a8d084ec287208ac629c4c0bde2fdb545"
+  },
+  {
+    "kind": "page",
+    "name": "/blog/feed.xml",
+    "flow": "blogs",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/blog/feed.xml/route.ts",
+    "methods": [],
+    "sha256": "fe6293058553725aaea7808bd2c026f80ca78b936fa6f1a69905ee9e48816069"
+  },
+  {
+    "kind": "page",
+    "name": "/blood",
+    "flow": "donor-search",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/blood/page.tsx",
+    "methods": [],
+    "sha256": "5d041746fb1a8b3368a0a7f9f3d447d6bcd1d473c65002205fa90ab6e11a1f20"
+  },
+  {
+    "kind": "page",
+    "name": "/blood-donation-guide",
+    "flow": "donor-search",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/blood-donation-guide/page.tsx",
+    "methods": [],
+    "sha256": "153f9659cd97743137fecfaa77ff87949cb5b00c014a3f13444aeac428a813cf"
+  },
+  {
+    "kind": "page",
+    "name": "/blood-donors/[country]/[city]",
+    "flow": "donor-search",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/blood-donors/[country]/[city]/page.tsx",
+    "methods": [],
+    "sha256": "7086fd315297cd9a9094a4f051bdb18c35a8759bf82b54a0fb586d8aeb725435"
+  },
+  {
+    "kind": "page",
+    "name": "/blood-donors/[country]/[city]/[group]",
+    "flow": "donor-search",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/blood-donors/[country]/[city]/[group]/page.tsx",
+    "methods": [],
+    "sha256": "71dcfb35f343e5e2f60ad069395d8b92e82171d6a36aa172473f68a8833ac2a4"
+  },
+  {
+    "kind": "page",
+    "name": "/blood/[slug]",
+    "flow": "donor-search",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/blood/[slug]/page.tsx",
+    "methods": [],
+    "sha256": "12db35eea523de2ab5899d6d35e7da9778a250ec969603037ddcc85e71db40b2"
+  },
+  {
+    "kind": "page",
+    "name": "/blood/[slug]/[city]",
+    "flow": "donor-search",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/blood/[slug]/[city]/page.tsx",
+    "methods": [],
+    "sha256": "99a1013e37ace24bddb9b0632ab9b24b7c69745361d896f9cf96c0f9f325a0ff"
+  },
+  {
+    "kind": "page",
+    "name": "/ca",
+    "flow": "platform",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/ca/page.tsx",
+    "methods": [],
+    "sha256": "3cadf768c78dc8398098ac7c116fe5af12adbafbd58ccb77fa28384d16232519"
+  },
+  {
+    "kind": "page",
+    "name": "/cities",
+    "flow": "donor-search",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/cities/page.tsx",
+    "methods": [],
+    "sha256": "280339ff50463967ddfdd5788252a2a85d180f0acb21de77e88177c336e1d87d"
+  },
+  {
+    "kind": "page",
+    "name": "/city/[city]",
+    "flow": "donor-search",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/city/[city]/page.tsx",
+    "methods": [],
+    "sha256": "10265cb11e2d4b7e83c2607ba42951704f2e3c97eb1d1cb6194375124c0c79a5"
+  },
+  {
+    "kind": "page",
+    "name": "/common-blood-searches",
+    "flow": "donor-search",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/common-blood-searches/page.tsx",
+    "methods": [],
+    "sha256": "8fb60c5b2c3cd59e92cb474e2496b5f4f2a70429bf4bccd37385e32d381ca580"
+  },
+  {
+    "kind": "page",
+    "name": "/common-organ-searches",
+    "flow": "donor-search",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/common-organ-searches/page.tsx",
+    "methods": [],
+    "sha256": "4beb15ede9589f5ebaaa135b373e897013f478c91916a63d01cf6866bfe5332e"
+  },
+  {
+    "kind": "page",
+    "name": "/contact",
+    "flow": "moderation",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/contact/page.tsx",
+    "methods": [],
+    "sha256": "3dcd386a60f2fefd04e26047e9fa052d17545fd7395870b781d71b7ddba9bad7"
+  },
+  {
+    "kind": "page",
+    "name": "/countries",
+    "flow": "donor-search",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/countries/page.tsx",
+    "methods": [],
+    "sha256": "bb7a711f9bece736229d3313c5124d5e852f6d30fe99370713b6eb45522194f4"
+  },
+  {
+    "kind": "page",
+    "name": "/country-keyword-hubs/[country]",
+    "flow": "donor-search",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/country-keyword-hubs/[country]/page.tsx",
+    "methods": [],
+    "sha256": "0e27aacba262dc1a11f5d46ca43c6768d7deb9ded888fa6b2cea8177bdd258d7"
+  },
+  {
+    "kind": "page",
+    "name": "/dashboard/[[...path]]",
+    "flow": "platform",
+    "access": "Private or decoy",
+    "source": "src/app/dashboard/[[...path]]/page.tsx",
+    "methods": [],
+    "sha256": "d2d6688f462666b29782faf5fd2f44fa577c43bce0b65ad5979bad153e520a37"
+  },
+  {
+    "kind": "page",
+    "name": "/doctor-appointments",
+    "flow": "services",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/doctor-appointments/page.tsx",
+    "methods": [],
+    "sha256": "029ddabad4d8af4248643ae08a3be2cdcddcefddf6c127c2ecf7017ac12d72a8"
+  },
+  {
+    "kind": "page",
+    "name": "/donors",
+    "flow": "public-profiles",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/donors/page.tsx",
+    "methods": [],
+    "sha256": "dcb1bbaa424ddeedd6727020d28b3d731506ab2a14d404afabad3b67daba8489"
+  },
+  {
+    "kind": "page",
+    "name": "/donors/[slug]",
+    "flow": "public-profiles",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/donors/[slug]/page.tsx",
+    "methods": [],
+    "sha256": "01bbb98b8841f12fb0ae81fce5c785a39a168e8a0f080e8537075c8be58655d4"
+  },
+  {
+    "kind": "page",
+    "name": "/emergency-blood-help",
+    "flow": "donor-search",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/emergency-blood-help/page.tsx",
+    "methods": [],
+    "sha256": "c1c581ab374ff1f76a29bd09842d81d7420a5bac5ae71d4d0053bc498d809054"
+  },
+  {
+    "kind": "page",
+    "name": "/faq",
+    "flow": "appearance",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/faq/page.tsx",
+    "methods": [],
+    "sha256": "2ce8f776627f7c874738ca37ebf05585e3e242729c427e5328433e403e507396"
+  },
+  {
+    "kind": "page",
+    "name": "/global-search-entry",
+    "flow": "donor-search",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/global-search-entry/page.tsx",
+    "methods": [],
+    "sha256": "05582bfe44c22050e67c1ddaf450fb3e8bf6ef7337bc7f6f7eed65850dcd9060"
+  },
+  {
+    "kind": "page",
+    "name": "/guides",
+    "flow": "donor-search",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/guides/page.tsx",
+    "methods": [],
+    "sha256": "ef3d2b52b4b1105fcf9ae8a25fcc1ac240dfbb26a5e1c5bfab936861eb3375f4"
+  },
+  {
+    "kind": "page",
+    "name": "/guides/[slug]",
+    "flow": "donor-search",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/guides/[slug]/page.tsx",
+    "methods": [],
+    "sha256": "38af21705b8729d0ee102492b5c0eaededc7912a875b645bf346b8a348ea61c2"
+  },
+  {
+    "kind": "page",
+    "name": "/how-it-works",
+    "flow": "platform",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/how-it-works/page.tsx",
+    "methods": [],
+    "sha256": "f4c851dea901405e4485b6e21387e654d850de984779417b5fd982ae4329687c"
+  },
+  {
+    "kind": "page",
+    "name": "/in",
+    "flow": "platform",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/in/page.tsx",
+    "methods": [],
+    "sha256": "f826a41520c43f608416f8d97b5bffe2fa43ebcecc779a7bf8321236cce6ca75"
+  },
+  {
+    "kind": "page",
+    "name": "/indexnow-key.txt",
+    "flow": "platform",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/indexnow-key.txt/route.ts",
+    "methods": [],
+    "sha256": "cf4a2ea85ee5f526858ea10bb8e16c125d8eca8b403c2ec32a192a67d0511f52"
+  },
+  {
+    "kind": "page",
+    "name": "/italy",
+    "flow": "platform",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/italy/page.tsx",
+    "methods": [],
+    "sha256": "38a9b0fc773e98dbfd1f0c466ca1c5bdf56e63930f7ef6a82f003afe1b27a7e0"
+  },
+  {
+    "kind": "page",
+    "name": "/keywords/[slug]",
+    "flow": "donor-search",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/keywords/[slug]/page.tsx",
+    "methods": [],
+    "sha256": "f5ba7448cbaeed77673f4e58a6ee82707c7213e48299cf837a59d69e621f9a03"
+  },
+  {
+    "kind": "page",
+    "name": "/medical-disclaimer",
+    "flow": "platform",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/medical-disclaimer/page.tsx",
+    "methods": [],
+    "sha256": "94eca17a783e4568e6984124c9da3efaa0f58387bc722d08c12cbed0a569ce3c"
+  },
+  {
+    "kind": "page",
+    "name": "/medical-profile",
+    "flow": "services",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/medical-profile/page.tsx",
+    "methods": [],
+    "sha256": "38b939b2433246da2925d398a5937df7b4e0e33739eeb530c2778db213410234"
+  },
+  {
+    "kind": "page",
+    "name": "/medical-reports",
+    "flow": "services",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/medical-reports/page.tsx",
+    "methods": [],
+    "sha256": "5efab34f2657f2e636a361f842e65aae5a09aef55b72c38f03741a9978d28fa3"
+  },
+  {
+    "kind": "page",
+    "name": "/netherlands",
+    "flow": "platform",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/netherlands/page.tsx",
+    "methods": [],
+    "sha256": "d6888ebe16dd104b778ca3796505d2bbfa44702fdf4199551141e2d364c18a45"
+  },
+  {
+    "kind": "page",
+    "name": "/network",
+    "flow": "donor-search",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/network/page.tsx",
+    "methods": [],
+    "sha256": "28406a8072ccc696c7861fd88000ec8b58b10bbb43e062377b5aeba33524f499"
+  },
+  {
+    "kind": "page",
+    "name": "/network/[country]",
+    "flow": "donor-search",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/network/[country]/page.tsx",
+    "methods": [],
+    "sha256": "1c232f73eb3fa3d0f687b60998aa78ebab87303c5634cc2549a516180db9fd50"
+  },
+  {
+    "kind": "page",
+    "name": "/organ",
+    "flow": "donor-search",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/organ/page.tsx",
+    "methods": [],
+    "sha256": "adaac1dca6db321243be107626b9fd7cb4a7b9132687cf9a1f6d442fb501713b"
+  },
+  {
+    "kind": "page",
+    "name": "/organ-donation-ethics",
+    "flow": "donor-search",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/organ-donation-ethics/page.tsx",
+    "methods": [],
+    "sha256": "89bd8955905814bc44fae77937a107266576e00044d8a701a27df57bf046588f"
+  },
+  {
+    "kind": "page",
+    "name": "/organ-donation-guide",
+    "flow": "donor-search",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/organ-donation-guide/page.tsx",
+    "methods": [],
+    "sha256": "9d009b3b8fcab4750093996430cf17085d5de901de3274324c49451986333b9a"
+  },
+  {
+    "kind": "page",
+    "name": "/organ-donors/[country]/[city]",
+    "flow": "donor-search",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/organ-donors/[country]/[city]/page.tsx",
+    "methods": [],
+    "sha256": "2b49ea330560b15707a217b1874e0cd530308b3034bec6e92bd553c06340a76f"
+  },
+  {
+    "kind": "page",
+    "name": "/organ/[organType]",
+    "flow": "donor-search",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/organ/[organType]/page.tsx",
+    "methods": [],
+    "sha256": "93ccd6a7b15c80cfe19566d1c832918edebc80468d0774642dda387631cbc989"
+  },
+  {
+    "kind": "page",
+    "name": "/organ/[organType]/[city]",
+    "flow": "donor-search",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/organ/[organType]/[city]/page.tsx",
+    "methods": [],
+    "sha256": "93ccd6a7b15c80cfe19566d1c832918edebc80468d0774642dda387631cbc989"
+  },
+  {
+    "kind": "page",
+    "name": "/organ/donor",
+    "flow": "donor-search",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/organ/donor/page.tsx",
+    "methods": [],
+    "sha256": "38a1290d1a83ec200131e9718364df554ffcc138d818e5c09aa75bd91f5e6a5a"
+  },
+  {
+    "kind": "page",
+    "name": "/organ/registry",
+    "flow": "donor-search",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/organ/registry/page.tsx",
+    "methods": [],
+    "sha256": "5bc605267dc7de69d3827435eae583d1b9530eea2fe053bbe21ddb3593fdbaa1"
+  },
+  {
+    "kind": "page",
+    "name": "/organ/request",
+    "flow": "moderation",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/organ/request/page.tsx",
+    "methods": [],
+    "sha256": "57717a048995ee2c1d66201182989a32c644cee0e899768bebc0730188866772"
+  },
+  {
+    "kind": "page",
+    "name": "/organ/request/[organType]",
+    "flow": "moderation",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/organ/request/[organType]/page.tsx",
+    "methods": [],
+    "sha256": "5ee70554e5a0817046eb9734d419b3fbb4b5ede035db3b2b9863838a540206ee"
+  },
+  {
+    "kind": "page",
+    "name": "/organ/request/[organType]/[city]",
+    "flow": "moderation",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/organ/request/[organType]/[city]/page.tsx",
+    "methods": [],
+    "sha256": "5ee70554e5a0817046eb9734d419b3fbb4b5ede035db3b2b9863838a540206ee"
+  },
+  {
+    "kind": "page",
+    "name": "/organ/request/details/[slug]",
+    "flow": "moderation",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/organ/request/details/[slug]/page.tsx",
+    "methods": [],
+    "sha256": "97d264afc7059ce95502132026c4a2dc709d07bce5f174aad4e2cec9a81137de"
+  },
+  {
+    "kind": "page",
+    "name": "/paris",
+    "flow": "platform",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/paris/page.tsx",
+    "methods": [],
+    "sha256": "a4189ffc84a291613f59adade3c9e7626060300971f55f9b35bed142eabbd134"
+  },
+  {
+    "kind": "page",
+    "name": "/ph",
+    "flow": "platform",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/ph/page.tsx",
+    "methods": [],
+    "sha256": "93e8ff7d2dbef588eaa4cf0e16ecb92e56d6a140b92e39c7671dbce0eec214fe"
+  },
+  {
+    "kind": "page",
+    "name": "/poland",
+    "flow": "platform",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/poland/page.tsx",
+    "methods": [],
+    "sha256": "4a8ef0040c2aba97e95f408d49a444f0aa26de1dc1f382d3730491145242e527"
+  },
+  {
+    "kind": "page",
+    "name": "/policy.txt",
+    "flow": "appearance",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/policy.txt/route.ts",
+    "methods": [],
+    "sha256": "23a8ebd9828528a545f31dc508a06c00df7e7974cc69042a8e3c4dec04f1493b"
+  },
+  {
+    "kind": "page",
+    "name": "/prescriptions",
+    "flow": "prescriptions",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/prescriptions/page.tsx",
+    "methods": [],
+    "sha256": "129b762cfd4a8c1fb3118643eb14942a714ff882a5b27074d5a291648d17c89b"
+  },
+  {
+    "kind": "page",
+    "name": "/privacy",
+    "flow": "platform",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/privacy/page.tsx",
+    "methods": [],
+    "sha256": "57abb8c81aaf956e676b2a4487025c23a7b924d7bb952a31202d48408ec506ee"
+  },
+  {
+    "kind": "page",
+    "name": "/privacy-policy",
+    "flow": "appearance",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/privacy-policy/page.tsx",
+    "methods": [],
+    "sha256": "0b65625d9850ffabc01dbebace7223f35654cf7ba608076532f6d7ecdcc17de7"
+  },
+  {
+    "kind": "page",
+    "name": "/private/console-0be5626d4305f192e37e/login",
+    "flow": "security",
+    "access": "Administrator",
+    "source": "src/app/private/console-0be5626d4305f192e37e/login/page.tsx",
+    "methods": [],
+    "sha256": "3294a5d54b9d9ed649f26b483c45402e15f7f7a74a87f3abb31c4fc5c4736e4d"
+  },
+  {
+    "kind": "page",
+    "name": "/private/console-0be5626d4305f192e37e/workspace",
+    "flow": "platform",
+    "access": "Administrator",
+    "source": "src/app/private/console-0be5626d4305f192e37e/workspace/page.tsx",
+    "methods": [],
+    "sha256": "a44a1671b787a8f3341fe3eadf290c169a8d627ae952b8e6e798a7f796dd5b00"
+  },
+  {
+    "kind": "page",
+    "name": "/private/console-0be5626d4305f192e37e/workspace/ads-control",
+    "flow": "appearance",
+    "access": "Administrator",
+    "source": "src/app/private/console-0be5626d4305f192e37e/workspace/ads-control/page.tsx",
+    "methods": [],
+    "sha256": "6f9654c57fa241c7e722215aef603e114051a4df8b6d7b847629c3eda9777e7b"
+  },
+  {
+    "kind": "page",
+    "name": "/private/console-0be5626d4305f192e37e/workspace/click-analytics",
+    "flow": "measurement",
+    "access": "Administrator",
+    "source": "src/app/private/console-0be5626d4305f192e37e/workspace/click-analytics/page.tsx",
+    "methods": [],
+    "sha256": "657e2dd737f1923ece067b74b32634c8df07ea7adeebd171a631ac03643aed60"
+  },
+  {
+    "kind": "page",
+    "name": "/private/console-0be5626d4305f192e37e/workspace/documentation",
+    "flow": "platform",
+    "access": "Administrator",
+    "source": "src/app/private/console-0be5626d4305f192e37e/workspace/documentation/page.tsx",
+    "methods": [],
+    "sha256": "3066c50bc5bb43eb3f76afaf83ae13f0326b3db484f93cd0243c03c2178c6df3"
+  },
+  {
+    "kind": "page",
+    "name": "/private/console-0be5626d4305f192e37e/workspace/faq",
+    "flow": "appearance",
+    "access": "Administrator",
+    "source": "src/app/private/console-0be5626d4305f192e37e/workspace/faq/page.tsx",
+    "methods": [],
+    "sha256": "cdb38c95b4cef6e6b1ec9ec8201cf770660cb079eae94dc0f2db66017c0c3832"
+  },
+  {
+    "kind": "page",
+    "name": "/private/console-0be5626d4305f192e37e/workspace/financial-requests",
+    "flow": "moderation",
+    "access": "Administrator",
+    "source": "src/app/private/console-0be5626d4305f192e37e/workspace/financial-requests/page.tsx",
+    "methods": [],
+    "sha256": "3b7ff4cd9119289466b84118a48533317b51b8b020a1b2a5a84e791ad80e0fcd"
+  },
+  {
+    "kind": "page",
+    "name": "/private/console-0be5626d4305f192e37e/workspace/heatmap",
+    "flow": "measurement",
+    "access": "Administrator",
+    "source": "src/app/private/console-0be5626d4305f192e37e/workspace/heatmap/page.tsx",
+    "methods": [],
+    "sha256": "e13e209e16f67ac25c0155bcc9b72224e29567c730e960ac9d321c4bd57ce295"
+  },
+  {
+    "kind": "page",
+    "name": "/private/console-0be5626d4305f192e37e/workspace/inactive-donors",
+    "flow": "admin-users",
+    "access": "Administrator",
+    "source": "src/app/private/console-0be5626d4305f192e37e/workspace/inactive-donors/page.tsx",
+    "methods": [],
+    "sha256": "c2bc605a513c13ee63c0715b6a0b1ca9adf1c22e96f68ffc8e6bc396c5f6eaf7"
+  },
+  {
+    "kind": "page",
+    "name": "/private/console-0be5626d4305f192e37e/workspace/manual-blood-donor",
+    "flow": "manual",
+    "access": "Administrator",
+    "source": "src/app/private/console-0be5626d4305f192e37e/workspace/manual-blood-donor/page.tsx",
+    "methods": [],
+    "sha256": "7ac79520ae23c999628efa0079d87e4d92ca6c4a03088d58794028cb59b6738d"
+  },
+  {
+    "kind": "page",
+    "name": "/private/console-0be5626d4305f192e37e/workspace/manual-organ-donor",
+    "flow": "manual",
+    "access": "Administrator",
+    "source": "src/app/private/console-0be5626d4305f192e37e/workspace/manual-organ-donor/page.tsx",
+    "methods": [],
+    "sha256": "61bf4e85d8fcd896296bda85a1f615bc5f9b32db75434c7ea8d132d3b64bd5b3"
+  },
+  {
+    "kind": "page",
+    "name": "/private/console-0be5626d4305f192e37e/workspace/medical-operations",
+    "flow": "records",
+    "access": "Administrator",
+    "source": "src/app/private/console-0be5626d4305f192e37e/workspace/medical-operations/page.tsx",
+    "methods": [],
+    "sha256": "d847375f2768d75df66e3821d444fd4444ad0310333722191043c171c18a5839"
+  },
+  {
+    "kind": "page",
+    "name": "/private/console-0be5626d4305f192e37e/workspace/notifications",
+    "flow": "notifications",
+    "access": "Administrator",
+    "source": "src/app/private/console-0be5626d4305f192e37e/workspace/notifications/page.tsx",
+    "methods": [],
+    "sha256": "95016c4577298e1a1a5547fd3ae9b0b0352eda02c28e463c15e40cae8ea732be"
+  },
+  {
+    "kind": "page",
+    "name": "/private/console-0be5626d4305f192e37e/workspace/policy",
+    "flow": "appearance",
+    "access": "Administrator",
+    "source": "src/app/private/console-0be5626d4305f192e37e/workspace/policy/page.tsx",
+    "methods": [],
+    "sha256": "078f82a35943ab322d574f6213c065a7a3848e2c250a1041a5894e5aa413489a"
+  },
+  {
+    "kind": "page",
+    "name": "/private/console-0be5626d4305f192e37e/workspace/regional-users",
+    "flow": "countries",
+    "access": "Administrator",
+    "source": "src/app/private/console-0be5626d4305f192e37e/workspace/regional-users/page.tsx",
+    "methods": [],
+    "sha256": "12192bf0c10d246230ee038f1bb7f2c6d4e541e4eab77f5c8e2736949d352cce"
+  },
+  {
+    "kind": "page",
+    "name": "/private/console-0be5626d4305f192e37e/workspace/reports",
+    "flow": "moderation",
+    "access": "Administrator",
+    "source": "src/app/private/console-0be5626d4305f192e37e/workspace/reports/page.tsx",
+    "methods": [],
+    "sha256": "2851932770c7e218d03e7193cdc32b6aa22e101567392a406706d1d342357062"
+  },
+  {
+    "kind": "page",
+    "name": "/private/console-0be5626d4305f192e37e/workspace/slider-manager",
+    "flow": "slider",
+    "access": "Administrator",
+    "source": "src/app/private/console-0be5626d4305f192e37e/workspace/slider-manager/page.tsx",
+    "methods": [],
+    "sha256": "13ee83e338c6577fec3f4ee3ed5c6ffe0c356b69bf417eed09dfbb4c4a8983f4"
+  },
+  {
+    "kind": "page",
+    "name": "/private/console-0be5626d4305f192e37e/workspace/spam-monitor",
+    "flow": "security",
+    "access": "Administrator",
+    "source": "src/app/private/console-0be5626d4305f192e37e/workspace/spam-monitor/page.tsx",
+    "methods": [],
+    "sha256": "e539c72c2c1f3bea942fb5f7727525675f3159d9baf1f26c6fa836c2fc56698a"
+  },
+  {
+    "kind": "page",
+    "name": "/private/console-0be5626d4305f192e37e/workspace/theme-control",
+    "flow": "appearance",
+    "access": "Administrator",
+    "source": "src/app/private/console-0be5626d4305f192e37e/workspace/theme-control/page.tsx",
+    "methods": [],
+    "sha256": "e7396b46b29a8797d7f51c46265fceffb58d677ee4f50284ff2534028c099e3c"
+  },
+  {
+    "kind": "page",
+    "name": "/private/console-0be5626d4305f192e37e/workspace/users",
+    "flow": "admin-users",
+    "access": "Administrator",
+    "source": "src/app/private/console-0be5626d4305f192e37e/workspace/users/page.tsx",
+    "methods": [],
+    "sha256": "c33b6f0b87b919ba90fa85cd7edce4ebf5b720c297f3d0c168381724463cf447"
+  },
+  {
+    "kind": "page",
+    "name": "/private/console-0be5626d4305f192e37e/workspace/write-blog",
+    "flow": "blogs",
+    "access": "Administrator",
+    "source": "src/app/private/console-0be5626d4305f192e37e/workspace/write-blog/page.tsx",
+    "methods": [],
+    "sha256": "f90ea994183223ab6961911304029cd41dbec2daa242a2f67ad0cd60e91ee33b"
+  },
+  {
+    "kind": "page",
+    "name": "/private/operations-1c0fdec8fcca3f8ad2e6/login",
+    "flow": "security",
+    "access": "Staff queues",
+    "source": "src/app/private/operations-1c0fdec8fcca3f8ad2e6/login/page.tsx",
+    "methods": [],
+    "sha256": "19fe8964505fdf3ee4575dda2a981d78b4e9bfe35582f0698a58d2ad6097c550"
+  },
+  {
+    "kind": "page",
+    "name": "/private/operations-1c0fdec8fcca3f8ad2e6/workspace",
+    "flow": "platform",
+    "access": "Staff queues",
+    "source": "src/app/private/operations-1c0fdec8fcca3f8ad2e6/workspace/page.tsx",
+    "methods": [],
+    "sha256": "5282349dee77ce3a5a7b9e26e8d37cf6edc21ef824bb595a17b45d11624f5990"
+  },
+  {
+    "kind": "page",
+    "name": "/private/operations-1c0fdec8fcca3f8ad2e6/workspace/active-donors",
+    "flow": "platform",
+    "access": "Staff queues",
+    "source": "src/app/private/operations-1c0fdec8fcca3f8ad2e6/workspace/active-donors/page.tsx",
+    "methods": [],
+    "sha256": "7179c5ee556a7828e75f205c95fee1eb983fd9dc289b8b56d4dc2d038bb91b61"
+  },
+  {
+    "kind": "page",
+    "name": "/private/operations-1c0fdec8fcca3f8ad2e6/workspace/blog-approval",
+    "flow": "blogs",
+    "access": "Staff queues",
+    "source": "src/app/private/operations-1c0fdec8fcca3f8ad2e6/workspace/blog-approval/page.tsx",
+    "methods": [],
+    "sha256": "9e87cd5b035746ae4ffc2ef758a8918d082e85dbd7adcd38069d72bba0414ab9"
+  },
+  {
+    "kind": "page",
+    "name": "/private/operations-1c0fdec8fcca3f8ad2e6/workspace/organ-request",
+    "flow": "moderation",
+    "access": "Staff queues",
+    "source": "src/app/private/operations-1c0fdec8fcca3f8ad2e6/workspace/organ-request/page.tsx",
+    "methods": [],
+    "sha256": "1004f046524bf255da7f0037a7c9e7159704d5a65a8dda587abdb12577157f2c"
+  },
+  {
+    "kind": "page",
+    "name": "/private/operations-1c0fdec8fcca3f8ad2e6/workspace/reports",
+    "flow": "moderation",
+    "access": "Staff queues",
+    "source": "src/app/private/operations-1c0fdec8fcca3f8ad2e6/workspace/reports/page.tsx",
+    "methods": [],
+    "sha256": "2ba031093b2c3bc20e96fd96bbfbdad73c92b174b115f2e6102e5d8bd33dc584"
+  },
+  {
+    "kind": "page",
+    "name": "/private/operations-1c0fdec8fcca3f8ad2e6/workspace/verify-request",
+    "flow": "platform",
+    "access": "Staff queues",
+    "source": "src/app/private/operations-1c0fdec8fcca3f8ad2e6/workspace/verify-request/page.tsx",
+    "methods": [],
+    "sha256": "ca5e7bff00c39c0f13733805fd7db5b349bfc05b7ce909dab94ff784df80faab"
+  },
+  {
+    "kind": "page",
+    "name": "/register-donor",
+    "flow": "registration",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/register-donor/page.tsx",
+    "methods": [],
+    "sha256": "d1b2f5962eae768be5d59337eb93886fc9a3798c03eada0de6982288612870b3"
+  },
+  {
+    "kind": "page",
+    "name": "/request-blood",
+    "flow": "moderation",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/request-blood/page.tsx",
+    "methods": [],
+    "sha256": "4b19141a86a7831feae91b0f47318b5c86bbe47eb51da4b1a88def23130bfcd1"
+  },
+  {
+    "kind": "page",
+    "name": "/request-organ",
+    "flow": "moderation",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/request-organ/page.tsx",
+    "methods": [],
+    "sha256": "0a44d539468d66d5a7dc54345546eb4784ebd1968534bc333d38274d66fcf99f"
+  },
+  {
+    "kind": "page",
+    "name": "/safety-policy",
+    "flow": "appearance",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/safety-policy/page.tsx",
+    "methods": [],
+    "sha256": "b780bf3314039b4e3afa21ddd2ed352a155b5fb0be4df45cdad624f927ccb4c0"
+  },
+  {
+    "kind": "page",
+    "name": "/search",
+    "flow": "donor-search",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/search/page.tsx",
+    "methods": [],
+    "sha256": "88ce658887af4aed00bf5f5b503fff9dc44fcdfed191350a2fd8585e7d2a9894"
+  },
+  {
+    "kind": "page",
+    "name": "/sg",
+    "flow": "platform",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/sg/page.tsx",
+    "methods": [],
+    "sha256": "3106b767ab8419bdd5a6fa5437e8218c2073c89f32eb1612565c188f7e996d3a"
+  },
+  {
+    "kind": "page",
+    "name": "/site-state.json",
+    "flow": "platform",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/site-state.json/route.ts",
+    "methods": [],
+    "sha256": "20031410ecf50a54817c28d18b5984ed923d52b6fc4ce199700456bc3b93186e"
+  },
+  {
+    "kind": "page",
+    "name": "/site-state.txt",
+    "flow": "platform",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/site-state.txt/route.ts",
+    "methods": [],
+    "sha256": "279b18b1c8960e97edc6be6ba7b5b21c71348136eef13e7dd505783582ccffbb"
+  },
+  {
+    "kind": "page",
+    "name": "/sitemap-blog.xml",
+    "flow": "blogs",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/sitemap-blog.xml/route.ts",
+    "methods": [],
+    "sha256": "a75b4c012317f57265fecd14ed0c489fc07e19473a6feedfa7ee5f389565e423"
+  },
+  {
+    "kind": "page",
+    "name": "/sitemap-categories.xml",
+    "flow": "platform",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/sitemap-categories.xml/route.ts",
+    "methods": [],
+    "sha256": "e8581c45c62df16163e973d8d65900f19785473a3719668c61b4c113d9372a6f"
+  },
+  {
+    "kind": "page",
+    "name": "/sitemap-donors.xml",
+    "flow": "platform",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/sitemap-donors.xml/route.ts",
+    "methods": [],
+    "sha256": "f62cf7def5d8153e428fd4dc04452bbe731978d2ceb37195dfe1838689eedb84"
+  },
+  {
+    "kind": "page",
+    "name": "/sitemap-guides.xml",
+    "flow": "donor-search",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/sitemap-guides.xml/route.ts",
+    "methods": [],
+    "sha256": "3cf94a7cb2f66abae4617a2dee077e30b035f495d37bb0fbf92bc8b9400296db"
+  },
+  {
+    "kind": "page",
+    "name": "/sitemap-images.xml",
+    "flow": "platform",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/sitemap-images.xml/route.ts",
+    "methods": [],
+    "sha256": "70f1cd254b737b45eea4c537df537df4ff59abfa486641c8861359546302597e"
+  },
+  {
+    "kind": "page",
+    "name": "/sitemap-index.xml",
+    "flow": "platform",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/sitemap-index.xml/route.ts",
+    "methods": [],
+    "sha256": "974c0fe86a7dc0022a5b37b317079a23421df38d95e90bc4e38c23a8b07fabd5"
+  },
+  {
+    "kind": "page",
+    "name": "/sitemap-keywords-1.xml",
+    "flow": "donor-search",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/sitemap-keywords-1.xml/route.ts",
+    "methods": [],
+    "sha256": "49eec686f8ac8734c8bc99f1777235372e69835231933b302c51ce77984aa81b"
+  },
+  {
+    "kind": "page",
+    "name": "/sitemap-keywords-2.xml",
+    "flow": "donor-search",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/sitemap-keywords-2.xml/route.ts",
+    "methods": [],
+    "sha256": "49eec686f8ac8734c8bc99f1777235372e69835231933b302c51ce77984aa81b"
+  },
+  {
+    "kind": "page",
+    "name": "/sitemap-keywords-3.xml",
+    "flow": "donor-search",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/sitemap-keywords-3.xml/route.ts",
+    "methods": [],
+    "sha256": "49eec686f8ac8734c8bc99f1777235372e69835231933b302c51ce77984aa81b"
+  },
+  {
+    "kind": "page",
+    "name": "/sitemap-keywords-4.xml",
+    "flow": "donor-search",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/sitemap-keywords-4.xml/route.ts",
+    "methods": [],
+    "sha256": "49eec686f8ac8734c8bc99f1777235372e69835231933b302c51ce77984aa81b"
+  },
+  {
+    "kind": "page",
+    "name": "/sitemap-location.xml",
+    "flow": "countries",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/sitemap-location.xml/route.ts",
+    "methods": [],
+    "sha256": "5713cd321c11310c1c9331b8c28a3cd48bb2a61aa28924900c23db6c31e3a76b"
+  },
+  {
+    "kind": "page",
+    "name": "/sitemap-main.xml",
+    "flow": "platform",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/sitemap-main.xml/route.ts",
+    "methods": [],
+    "sha256": "25911c09ac1a6515b0a755051451fa4988f6af824d0ea88917b66f461c857299"
+  },
+  {
+    "kind": "page",
+    "name": "/sitemap-network.xml",
+    "flow": "donor-search",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/sitemap-network.xml/route.ts",
+    "methods": [],
+    "sha256": "f33179670156e4b4c1bfb80e5da6aa2c20772f8e4a0bbb1257b21caddea2e5a0"
+  },
+  {
+    "kind": "page",
+    "name": "/sitemap-regions.xml",
+    "flow": "donor-search",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/sitemap-regions.xml/route.ts",
+    "methods": [],
+    "sha256": "a53e0c48900fb62c154ca7d8ff015af2ab159d1009c5e68d3b98c2b8d31dff60"
+  },
+  {
+    "kind": "page",
+    "name": "/spain",
+    "flow": "platform",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/spain/page.tsx",
+    "methods": [],
+    "sha256": "6a38c13c57f64c90eb39cfa1443ea275dbead864d0202b74acb6f3194e8e466c"
+  },
+  {
+    "kind": "page",
+    "name": "/statistics",
+    "flow": "platform",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/statistics/page.tsx",
+    "methods": [],
+    "sha256": "e34bdcdf187ef56281aad7d7e502a6f8ee68ed5b3110d84bcba33aa6efa07763"
+  },
+  {
+    "kind": "page",
+    "name": "/terms",
+    "flow": "platform",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/terms/page.tsx",
+    "methods": [],
+    "sha256": "7225ab8d027a0d406dec33b45428fca7634d6523f69bc4045ee7e1484f51ddfd"
+  },
+  {
+    "kind": "page",
+    "name": "/uk",
+    "flow": "platform",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/uk/page.tsx",
+    "methods": [],
+    "sha256": "cf7fc67eac76bd7f2b78bf29aa012fd70331127fc6f60d6fdfdf2e9cac66176b"
+  },
+  {
+    "kind": "page",
+    "name": "/united-states",
+    "flow": "platform",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/united-states/page.tsx",
+    "methods": [],
+    "sha256": "5a3f36f95dacdbc13fa453501e096867be214c7b5c4b7da8c67489e9da77cfdf"
+  },
+  {
+    "kind": "page",
+    "name": "/us",
+    "flow": "platform",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/us/page.tsx",
+    "methods": [],
+    "sha256": "fdc59be2f925031e2f3e81e0a007050b2c8ffbbbdd4cac63acc0d7c2366ff10e"
+  },
+  {
+    "kind": "page",
+    "name": "/usa",
+    "flow": "platform",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/usa/page.tsx",
+    "methods": [],
+    "sha256": "5a3f36f95dacdbc13fa453501e096867be214c7b5c4b7da8c67489e9da77cfdf"
+  },
+  {
+    "kind": "service",
+    "name": "adminNotifications",
+    "flow": "notifications",
+    "access": "Internal server module",
+    "source": "src/backend/services/adminNotifications.ts",
+    "methods": [],
+    "sha256": "d760f5b3437c244591c319b9f5ea211309348511e302e0d6ff536bf41d5e4cfc"
+  },
+  {
+    "kind": "service",
+    "name": "adminReauthentication",
+    "flow": "security",
+    "access": "Internal server module",
+    "source": "src/backend/services/adminReauthentication.ts",
+    "methods": [],
+    "sha256": "d2e47264a5628f5eed171402c92e00e1ef35f3eff5f5c64bc1ccf342bc15fcca"
+  },
+  {
+    "kind": "service",
+    "name": "AuthService",
+    "flow": "registration",
+    "access": "Internal server module",
+    "source": "src/backend/services/AuthService.ts",
+    "methods": [],
+    "sha256": "2da41187da33146cfeff40304390182d17506e4e0f1c97467ce3ff8c3b79c8e8"
+  },
+  {
+    "kind": "service",
+    "name": "automaticLocation",
+    "flow": "location",
+    "access": "Internal server module",
+    "source": "src/backend/services/automaticLocation.ts",
+    "methods": [],
+    "sha256": "24d6c32b1caa5f500dda6855a1408e1d412f5fddaab304756c73535631a5b7de"
+  },
+  {
+    "kind": "service",
+    "name": "donorCounts",
+    "flow": "platform",
+    "access": "Internal server module",
+    "source": "src/backend/services/donorCounts.ts",
+    "methods": [],
+    "sha256": "0e8c38ae5f02ee423a6c424a8a04128cb7985382dcc626c0965a1e774eba6c47"
+  },
+  {
+    "kind": "service",
+    "name": "donorCoverage",
+    "flow": "countries",
+    "access": "Internal server module",
+    "source": "src/backend/services/donorCoverage.ts",
+    "methods": [],
+    "sha256": "2049cf750bc713ee14305ebf54ab72bab995b259e54d5533bc67e8f7129519ca"
+  },
+  {
+    "kind": "service",
+    "name": "donorLocations",
+    "flow": "countries",
+    "access": "Internal server module",
+    "source": "src/backend/services/donorLocations.ts",
+    "methods": [],
+    "sha256": "df12deb3f2e21d0125b88ba8258f494d41668d1221e20b1be35a1fbf6b78a2c6"
+  },
+  {
+    "kind": "service",
+    "name": "donorResearch",
+    "flow": "manual",
+    "access": "Internal server module",
+    "source": "src/backend/services/donorResearch.ts",
+    "methods": [],
+    "sha256": "8a61a0fd11f6959a7bdfedb18b49b77071ef4274f582c3e4bf8bb98a7756b94d"
+  },
+  {
+    "kind": "service",
+    "name": "faqService",
+    "flow": "appearance",
+    "access": "Internal server module",
+    "source": "src/backend/services/faqService.ts",
+    "methods": [],
+    "sha256": "80cb8689d5626fce0cd18d25177f8e02d46accad1726f1509b44d3f75d85ff89"
+  },
+  {
+    "kind": "service",
+    "name": "googleBlogDiscovery",
+    "flow": "blogs",
+    "access": "Internal server module",
+    "source": "src/backend/services/googleBlogDiscovery.ts",
+    "methods": [],
+    "sha256": "b589b645a66dffbd8ffae34db08d77df81a35d01adc897fa32971bfe99b729ca"
+  },
+  {
+    "kind": "service",
+    "name": "homepageContent",
+    "flow": "homepage",
+    "access": "Internal server module",
+    "source": "src/backend/services/homepageContent.ts",
+    "methods": [],
+    "sha256": "ab4567d1519384b6c2df76cbb658b804462d148fb90ac9eb29af7e3085e7d6e5"
+  },
+  {
+    "kind": "service",
+    "name": "homepageSlides",
+    "flow": "slider",
+    "access": "Internal server module",
+    "source": "src/backend/services/homepageSlides.ts",
+    "methods": [],
+    "sha256": "df15a046021d3010f0cab88c3cc52f0f2885d478f4aa97c9fe256b57b2f10da1"
+  },
+  {
+    "kind": "service",
+    "name": "imageSitemap",
+    "flow": "images",
+    "access": "Internal server module",
+    "source": "src/backend/services/imageSitemap.ts",
+    "methods": [],
+    "sha256": "beba75ed87d36dda25393ce449795da8c07d750de7080164f4deab6dc303bdc9"
+  },
+  {
+    "kind": "service",
+    "name": "loginEmails",
+    "flow": "admin-users",
+    "access": "Internal server module",
+    "source": "src/backend/services/loginEmails.ts",
+    "methods": [],
+    "sha256": "ee274be7c53b4c936665ec2252c3b448eeb8558d694708cb257e2ef8cdb4eaa2"
+  },
+  {
+    "kind": "service",
+    "name": "mediaStorage",
+    "flow": "images",
+    "access": "Internal server module",
+    "source": "src/backend/services/mediaStorage.ts",
+    "methods": [],
+    "sha256": "ebe33971a488527dadeb5583a31fb03b75c70b7cb51852db9d497c86815fc0f1"
+  },
+  {
+    "kind": "service",
+    "name": "medicalRecordReads",
+    "flow": "records",
+    "access": "Internal server module",
+    "source": "src/backend/services/medicalRecordReads.ts",
+    "methods": [],
+    "sha256": "9043991799796156821bc6cd9631676ed9af29ee1281dd89d1593259f49b0cae"
+  },
+  {
+    "kind": "service",
+    "name": "medicalReports",
+    "flow": "records",
+    "access": "Internal server module",
+    "source": "src/backend/services/medicalReports.ts",
+    "methods": [],
+    "sha256": "28d9bf988c4cf018abf1cad57d80a24609072411c815d7e847b56eb05a4ac9ac"
+  },
+  {
+    "kind": "service",
+    "name": "medicalStorageSetup",
+    "flow": "security",
+    "access": "Internal server module",
+    "source": "src/backend/services/medicalStorageSetup.ts",
+    "methods": [],
+    "sha256": "21370cd020f5447a4c4d4a333ab1df621547c7b853a80cf5d12c6cc2afa825d7"
+  },
+  {
+    "kind": "service",
+    "name": "policyContent",
+    "flow": "appearance",
+    "access": "Internal server module",
+    "source": "src/backend/services/policyContent.ts",
+    "methods": [],
+    "sha256": "801270b9476f3b01578aed9d1b4150eefc577116374080dbe2b366488b9775ed"
+  },
+  {
+    "kind": "service",
+    "name": "prescriptions",
+    "flow": "prescriptions",
+    "access": "Internal server module",
+    "source": "src/backend/services/prescriptions.ts",
+    "methods": [],
+    "sha256": "5e7c26e030a6add1e3c0686bc199fdd1239e141c0e4f2e45d638b40cabd21c20"
+  },
+  {
+    "kind": "service",
+    "name": "profileIdentifiers",
+    "flow": "profile",
+    "access": "Internal server module",
+    "source": "src/backend/services/profileIdentifiers.ts",
+    "methods": [],
+    "sha256": "c8bc4c4453e7c86aa410bdecca912f0c83b611e492e86b0734d4c2c40f16ac5d"
+  },
+  {
+    "kind": "service",
+    "name": "publicContent",
+    "flow": "services",
+    "access": "Internal server module",
+    "source": "src/backend/services/publicContent.ts",
+    "methods": [],
+    "sha256": "c7430f192661a9e7a01eaf2e501b3d4dd191ae635cf3846b9213134b6cb1888f"
+  },
+  {
+    "kind": "service",
+    "name": "publicDonorProfiles",
+    "flow": "public-profiles",
+    "access": "Internal server module",
+    "source": "src/backend/services/publicDonorProfiles.ts",
+    "methods": [],
+    "sha256": "963110192a3014b98edb3d73b0e83d3bd5728cad0eb358af61e39da2888dc21c"
+  },
+  {
+    "kind": "service",
+    "name": "publicImages",
+    "flow": "images",
+    "access": "Internal server module",
+    "source": "src/backend/services/publicImages.ts",
+    "methods": [],
+    "sha256": "c3734a47c80b19c6a1aae0d406efa1a7536b93ae77d711ce3e0c2e16585e6e0b"
+  },
+  {
+    "kind": "service",
+    "name": "recoveryArchive",
+    "flow": "recovery",
+    "access": "Internal server module",
+    "source": "src/backend/services/recoveryArchive.ts",
+    "methods": [],
+    "sha256": "238109a55c95f3ffede9f68288b9e9bd30bf0bf8381fe320dc2378f6c1cd5c55"
+  },
+  {
+    "kind": "service",
+    "name": "recoveryDatabase",
+    "flow": "restore",
+    "access": "Internal server module",
+    "source": "src/backend/services/recoveryDatabase.ts",
+    "methods": [],
+    "sha256": "859cb76ad6584cf2671b70e3bc110d638db34bb0aa4e721ab3eeb7c28bb1fc93"
+  },
+  {
+    "kind": "service",
+    "name": "recoveryEngine",
+    "flow": "restore",
+    "access": "Internal server module",
+    "source": "src/backend/services/recoveryEngine.ts",
+    "methods": [],
+    "sha256": "9cd5f98cdedf371c1013c86957a8b40ba24bc568d0d5f79596ae4c14b7c47296"
+  },
+  {
+    "kind": "service",
+    "name": "recoveryMedia",
+    "flow": "recovery",
+    "access": "Internal server module",
+    "source": "src/backend/services/recoveryMedia.ts",
+    "methods": [],
+    "sha256": "c58090a8dd25425aaaa8ff3e29d97cb1ae2747cff9960495ada29b418456a0c6"
+  },
+  {
+    "kind": "service",
+    "name": "recoveryProgress",
+    "flow": "recovery",
+    "access": "Internal server module",
+    "source": "src/backend/services/recoveryProgress.ts",
+    "methods": [],
+    "sha256": "5641e5f7bc024fb9c107794c4fe401b25d692f76f9a6e5a066fe93189573022a"
+  },
+  {
+    "kind": "service",
+    "name": "recoveryStore",
+    "flow": "recovery",
+    "access": "Internal server module",
+    "source": "src/backend/services/recoveryStore.ts",
+    "methods": [],
+    "sha256": "9fe8f5a75b2a6ffd0fb8abe0c95f4ed5d0cadc28d73b5aeec24eabaaec815000"
+  },
+  {
+    "kind": "service",
+    "name": "regionalContent",
+    "flow": "regional",
+    "access": "Internal server module",
+    "source": "src/backend/services/regionalContent.ts",
+    "methods": [],
+    "sha256": "30f0e4d2e5905f51423fc5c6d4d7506a4b425ed45bf3c433a211c2a7ebf491fd"
+  },
+  {
+    "kind": "service",
+    "name": "registrationIdentity",
+    "flow": "registration",
+    "access": "Internal server module",
+    "source": "src/backend/services/registrationIdentity.ts",
+    "methods": [],
+    "sha256": "6c95a617ad5a002c1de44d8466caf98a7cabd238d0bf1d944fc46c8e47f552ca"
+  },
+  {
+    "kind": "service",
+    "name": "remoteImage",
+    "flow": "images",
+    "access": "Internal server module",
+    "source": "src/backend/services/remoteImage.ts",
+    "methods": [],
+    "sha256": "6a49250c7441e08a3a671e625bf1ad98b57119958fc35c38eda23b2755ed3eeb"
+  },
+  {
+    "kind": "service",
+    "name": "seoData",
+    "flow": "donor-search",
+    "access": "Internal server module",
+    "source": "src/backend/services/seoData.ts",
+    "methods": [],
+    "sha256": "469dc9df33c7c7be75657cb761e8341d314fc48c4cface6cd104e2776f95985c"
+  },
+  {
+    "kind": "service",
+    "name": "ServiceCityService",
+    "flow": "countries",
+    "access": "Internal server module",
+    "source": "src/backend/services/ServiceCityService.ts",
+    "methods": [],
+    "sha256": "6fc7a709624a94c4637fe20992da813189cc91af7ac93773ecf54215c338ed14"
+  },
+  {
+    "kind": "service",
+    "name": "staffLogin",
+    "flow": "security",
+    "access": "Internal server module",
+    "source": "src/backend/services/staffLogin.ts",
+    "methods": [],
+    "sha256": "afefa99dda9ca8a08b96fe408a9c03f71a888aa7665dfe072b72db2fab905460"
+  },
+  {
+    "kind": "service",
+    "name": "staffRotation",
+    "flow": "security",
+    "access": "Internal server module",
+    "source": "src/backend/services/staffRotation.ts",
+    "methods": [],
+    "sha256": "9c99feb93396d0445f5c699d8e7b9413caa2f3efaacf282bd02c17add6971029"
+  },
+  {
+    "kind": "service",
+    "name": "translationService",
+    "flow": "appearance",
+    "access": "Internal server module",
+    "source": "src/backend/services/translationService.ts",
+    "methods": [],
+    "sha256": "b6dd590939d5c7b2a3d18862b44a7277f04ea3726b642459265b2d9858b5433c"
+  },
+  {
+    "kind": "service",
+    "name": "uiControls",
+    "flow": "navigation",
+    "access": "Internal server module",
+    "source": "src/backend/services/uiControls.ts",
+    "methods": [],
+    "sha256": "e6b7385df0f1f1e7a355e2939a2c4a3fcbd180a0651e8ec7dd7143cf6289f973"
+  }
+]

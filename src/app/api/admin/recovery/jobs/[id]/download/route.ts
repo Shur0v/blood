@@ -1,0 +1,11 @@
+import {NextResponse} from 'next/server';
+import fs from 'node:fs';
+import path from 'node:path';
+import {Readable} from 'node:stream';
+import {withActiveAdmin,requireActiveAdmin} from '@/src/backend/utils/activeAdmin';
+import {reauthenticateAdmin} from '@/src/backend/services/adminReauthentication';
+import {securityJson} from '@/src/backend/utils/security';
+import {privateHeaders,MedicalError} from '@/src/backend/utils/medicalPrivacy';
+import {readJob,jobPath,downloadGrant,validDownloadGrant} from '@/src/backend/services/recoveryStore';
+export const POST=withActiveAdmin(async(req:Request,{params}:{params:Promise<{id:string}>})=>{const {id}=await params,body=await securityJson(req),admin=await reauthenticateAdmin(req,body.password);readJob(id);const response=NextResponse.json({success:true},{headers:privateHeaders});response.cookies.set('bloodnet_recovery_download',downloadGrant(id,admin.user_id),{httpOnly:true,secure:process.env.NODE_ENV==='production',sameSite:'strict',path:'/api/admin/recovery',maxAge:600});return response;});
+export const GET=withActiveAdmin(async(req:Request,{params}:{params:Promise<{id:string}>})=>{const {id}=await params,admin=await requireActiveAdmin(req),token=(req.headers.get('cookie')||'').split(';').map(v=>v.trim()).find(v=>v.startsWith('bloodnet_recovery_download='))?.split('=').slice(1).join('=')||'';if(!validDownloadGrant(decodeURIComponent(token),id,admin.user_id))throw new MedicalError('Confirm your administrator password before downloading.',401);const job=readJob(id),safety=new URL(req.url).searchParams.get('safety')==='1',file=path.join(jobPath(id),safety?'safety.bloodnet':'download.bloodnet');if((!safety&&job.status!=='READY')||!fs.existsSync(file))throw new MedicalError('This recovery download is not ready.',409);return new Response(Readable.toWeb(fs.createReadStream(file)) as ReadableStream,{headers:{...privateHeaders,'Content-Type':'application/octet-stream','Content-Disposition':`attachment; filename="bloodnet-${safety?'safety-':''}${id}.bloodnet"`,'Content-Length':String(fs.statSync(file).size)}});});

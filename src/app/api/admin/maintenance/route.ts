@@ -1,0 +1,14 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import {getPrisma} from '@/src/backend/config/db';
+import {NextResponse} from 'next/server';
+import {withActiveAdmin} from '@/src/backend/utils/activeAdmin';
+import {securityJson} from '@/src/backend/utils/security';
+import {privateHeaders,MedicalError} from '@/src/backend/utils/medicalPrivacy';
+import {readMaintenance,writeMaintenance,maintenancePublic,operationsRoot} from '@/src/lib/maintenanceState.server';
+import {reauthenticateAdmin} from '@/src/backend/services/adminReauthentication';
+import {recordAdminEvent} from '@/src/backend/services/adminNotifications';
+import {randomUUID} from 'node:crypto';
+import {z} from 'zod';
+export const GET=withActiveAdmin(async()=>NextResponse.json({success:true,data:maintenancePublic()},{headers:privateHeaders}));
+export const POST=withActiveAdmin(async(req:Request)=>{const value=z.object({password:z.string().max(1024),action:z.enum(['start','resume']),minutes:z.number().int().min(1).max(10080).optional(),message:z.string().trim().max(500).default('')}).strict().safeParse(await securityJson(req));if(!value.success)throw new MedicalError('Choose a duration from 1 minute to 7 days.',400);await reauthenticateAdmin(req,value.data.password);const old=readMaintenance();if(old.lock||old.failed||fs.existsSync(path.join(operationsRoot(),'active.lock')))throw new MedicalError('Recovery is locked. Complete recovery checks before resuming.',409);if(value.data.action==='start'&&!value.data.minutes)throw new MedicalError('Choose a maintenance duration.',400);if(value.data.action==='resume'){let healthy=false;try{healthy=(await fetch('http://127.0.0.1:'+(process.env.PORT||3000)+'/api/health',{signal:AbortSignal.timeout(5000)})).ok;}catch{}if(!healthy)throw new MedicalError('Service health checks failed. Keep maintenance enabled.',503);}const next={enabled:value.data.action==='start',deadline:new Date(Date.now()+(value.data.minutes||1)*60_000).toISOString(),message:value.data.message,lock:null,failed:false,updatedAt:''};if(next.enabled)writeMaintenance(next);await getPrisma().$executeRaw`UPDATE "MaintenanceGate" SET paused=${next.enabled} WHERE id=1`;if(!next.enabled)writeMaintenance(next);await recordAdminEvent({type:'maintenance.'+value.data.action,family:'recovery',title:value.data.action==='start'?'Maintenance scheduled':'Service resumed',detail:'An administrator changed the maintenance window.',dedupeKey:randomUUID()});return NextResponse.json({success:true,data:maintenancePublic()},{headers:privateHeaders});});

@@ -90,45 +90,10 @@ export default function ThemeControlPage() {
     }
   };
 
-  const downloadFullBackup = async () => {
-    setDownloadingBackup(true);
-    setError(null);
-    setMessage(null);
-    try {
-      const res = await fetch("/api/admin/database-backup", {
-        method: "GET",
-        credentials: "include",
-        cache: "no-store",
-      });
-      if (!res.ok) {
-        const payload = await res.json().catch(() => null);
-        throw new Error(payload?.message || "Failed to download backup.");
-      }
-
-      const blob = await res.blob();
-      const contentDisposition = res.headers.get("Content-Disposition") || "";
-      const nameMatch = contentDisposition.match(/filename="(.+?)"/i);
-      const fileName = nameMatch?.[1] || `bloodnet-db-backup-${Date.now()}.json.gz`;
-
-      const url = window.URL.createObjectURL(blob);
-      const anchor = document.createElement("a");
-      anchor.href = url;
-      anchor.download = fileName;
-      document.body.appendChild(anchor);
-      anchor.click();
-      anchor.remove();
-      window.URL.revokeObjectURL(url);
-
-      setMessage("Full database backup downloaded successfully.");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to download backup.");
-    } finally {
-      setDownloadingBackup(false);
-    }
-  };
+  const downloadFullBackup = async () => { window.location.assign('/private/console-0be5626d4305f192e37e/workspace/spam-monitor#recovery-center'); };
 
   return (
-    <div className="space-y-6">
+    <div id="controls-theme" className="space-y-6">
       <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-[#1a1b23]">
         <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
           <div>
@@ -154,7 +119,7 @@ export default function ThemeControlPage() {
             className="inline-flex items-center justify-center gap-2 rounded-xl border border-green-300 bg-green-50 px-4 py-2 text-sm font-bold text-green-700 transition hover:bg-green-100 disabled:opacity-60 dark:border-green-900/70 dark:bg-green-950/20 dark:text-green-300 dark:hover:bg-green-950/35"
           >
             {downloadingBackup ? <RefreshCcw className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-            {downloadingBackup ? "Preparing Backup..." : "Download Full Backup"}
+            {downloadingBackup ? "Preparing Backup..." : "Open Recovery Center"}
           </button>
         </div>
         <p className="mt-3 text-xs font-semibold text-amber-600 dark:text-amber-400">

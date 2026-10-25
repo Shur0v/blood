@@ -224,7 +224,7 @@ export default function AllUserList() {
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+    <div id="controls-users" className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300"><span id="controls-public-profile"/>
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h2 className="text-2xl font-bold">All User Management</h2>

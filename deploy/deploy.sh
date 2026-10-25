@@ -8,6 +8,9 @@ ECOSYSTEM_FILE="${APP_DIR}/ecosystem.config.cjs"
 ENV_FILE="${APP_DIR}/.env"
 
 echo "==> BloodNet production deploy started"
+if [[ -f "${APP_DIR}/src/backend/scripts/recoveryCli.ts" ]]; then
+  npm run --if-present recovery:check-idle
+fi
 
 if [[ ! -f "${ENV_FILE}" ]]; then
   echo "ERROR: ${ENV_FILE} not found. Create it first from .env.example"
@@ -45,12 +48,12 @@ fi
 # Never replace .next or node_modules underneath running HTTP/queue processes.
 # Pause other VPS replicas and scheduled writers in the same maintenance window.
 deployment_failed() {
-  pm2 stop bloodnet bloodnet-prescriptions >/dev/null 2>&1 || true
+  pm2 stop bloodnet bloodnet-prescriptions bloodnet-recovery >/dev/null 2>&1 || true
   echo "ERROR: Deployment stopped. Keep traffic paused; inspect the failed step and the backup before restarting. Do not reset the database or roll back to code that cannot write the new schema." >&2
 }
 trap deployment_failed ERR
 echo "==> Pause application and email queue before replacing runtime files"
-for process in bloodnet bloodnet-prescriptions; do
+for process in bloodnet bloodnet-prescriptions bloodnet-recovery; do
   if pm2 describe "${process}" >/dev/null 2>&1; then
     pm2 stop "${process}"
   fi
@@ -95,7 +98,7 @@ mkdir -p "${APP_DIR}/logs"
 
 echo "==> Restart app with PM2"
 # Recreate stopped entries so stale PM2 DATABASE_URL/secrets cannot override .env.
-for process in bloodnet bloodnet-prescriptions; do
+for process in bloodnet bloodnet-prescriptions bloodnet-recovery; do
   if pm2 describe "${process}" >/dev/null 2>&1; then
     pm2 delete "${process}"
   fi

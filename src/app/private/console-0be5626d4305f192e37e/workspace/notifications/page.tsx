@@ -1,0 +1,1 @@
+import Page from '@/src/components/AdminNotifications';import{requireStaffPage}from'@/src/backend/utils/staffPage';export const dynamic='force-dynamic';export default async function Notifications(){await requireStaffPage('ADMIN','/private/console-0be5626d4305f192e37e/login');return <Page/>;}

@@ -1,0 +1,8 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import {NextResponse} from 'next/server';
+import {withActiveAdmin,requireActiveAdmin} from '@/src/backend/utils/activeAdmin';
+import {boundedBody} from '@/src/backend/utils/boundedBody';
+import {MedicalError,privateHeaders} from '@/src/backend/utils/medicalPrivacy';
+import {readJob,saveJob,jobPath,publicJob} from '@/src/backend/services/recoveryStore';
+export const PUT=withActiveAdmin(async(req:Request,{params}:{params:Promise<{id:string}>})=>{const {id}=await params,admin=await requireActiveAdmin(req),job=readJob(id),offset=Number(req.headers.get('x-upload-offset'));if(job.adminId!==admin.user_id||job.status!=='UPLOADING'||!Number.isSafeInteger(offset)||offset<0||Date.now()-Date.parse(job.createdAt)>24*60*60_000)throw new MedicalError('Upload is not available.',409);const body=await boundedBody(req,4*1024*1024);const file=path.join(jobPath(id),'upload.bloodnet'),lock=path.join(jobPath(id),'upload.lock');let fd:number;if(fs.existsSync(lock)&&Date.now()-fs.statSync(lock).mtimeMs>60000)fs.unlinkSync(lock);try{fd=fs.openSync(lock,'wx',0o600);}catch{throw new MedicalError('An upload chunk is already processing.',409);}try{const size=fs.existsSync(file)?fs.statSync(file).size:0;if(offset!==size)throw new MedicalError('Upload offset changed. Reload the operation before resuming.',409);if(!body.byteLength||size+body.byteLength>(job.uploadSize||0))throw new MedicalError('Upload exceeds its declared size.',413);fs.appendFileSync(file,Buffer.from(body),{mode:0o600});job.bytes=size+body.byteLength;saveJob(job);return NextResponse.json({success:true,data:publicJob(job)},{headers:privateHeaders});}finally{fs.closeSync(fd);fs.unlinkSync(lock);}});

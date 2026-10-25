@@ -3,6 +3,7 @@ import type { NextRequest } from 'next/server';
 import { isAllowedWriteRequest } from './lib/requestSecurity';
 import { isDiscoveryPath } from './lib/discoveryRoutes';
 import { canonicalAliasUrl } from './lib/canonicalOrigin';
+import {readMaintenance,maintenanceAllows,maintenanceHtml} from './lib/maintenanceState.server';
 
 const SUPPORTED_LOCALES = ['en', 'bn', 'ja', 'es', 'de'] as const;
 const DEFAULT_LOCALE = 'en';
@@ -68,6 +69,10 @@ const applySecurityHeaders = (response: NextResponse, isApiRoute: boolean, previ
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  if(readMaintenance().enabled&&!maintenanceAllows(pathname,request.method)){
+    const headers={'Cache-Control':'private, no-store','Retry-After':'60','X-Robots-Tag':'noindex,nofollow','Content-Type':pathname.startsWith('/api/')?'application/json':'text/html; charset=utf-8'};
+    return new NextResponse(pathname.startsWith('/api/')?JSON.stringify({success:false,message:'Software Under Maintenance. Please retry later.'}):maintenanceHtml(),{status:503,headers});
+  }
   const publicOrigin=process.env.NEXT_PUBLIC_BASE_URL||process.env.NEXT_PUBLIC_SITE_URL||(process.env.NODE_ENV==='production'?'https://bloodnet.live':undefined);
   const canonical = canonicalAliasUrl(request.url, request.headers.get('host'), publicOrigin);
   if (canonical && ['GET', 'HEAD'].includes(request.method)) return NextResponse.redirect(canonical, 301);
@@ -118,5 +123,6 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
+  runtime: 'nodejs',
   matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
 };

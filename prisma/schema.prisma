@@ -84,6 +84,7 @@ model PublicDonorProfile {
 }
 
 model AdminUser {
+  NotificationReads AdminNotificationRead[]
   id           String   @id @default(uuid())
   admin_id     String   @unique
   password     String
@@ -662,4 +663,36 @@ model ServiceAvailability {
  live Json?
  public_updated_at DateTime?
  updated_at DateTime @updatedAt
+}
+
+model AdminNotification {
+ quantity Int @default(1)
+ id String @id @default(uuid())
+ type String
+ family String
+ title String
+ detail String
+ country String?
+ city String?
+ href String
+ dedupe_key String @unique
+ reminder Boolean @default(false)
+ occurred_at DateTime @default(now())
+ created_at DateTime @default(now())
+ Reads AdminNotificationRead[]
+ @@index([occurred_at(sort: Desc), id(sort: Desc)])
+ @@index([family, country, occurred_at(sort: Desc)])
+}
+model AdminNotificationRead {
+ notification_id String
+ admin_id String
+ read_at DateTime @default(now())
+ Notification AdminNotification @relation(fields:[notification_id], references:[id], onDelete:Cascade)
+ Admin AdminUser @relation(fields:[admin_id], references:[id], onDelete:Cascade)
+ @@id([notification_id, admin_id])
+ @@index([admin_id])
+}
+model MaintenanceGate {
+ id Int @id @default(1)
+ paused Boolean @default(false)
 }

@@ -1,3 +1,5 @@
+import {randomUUID} from 'node:crypto';
+import {withNotificationBatch} from '@/src/backend/services/adminNotifications';
 import { withActiveAdmin } from '@/src/backend/utils/activeAdmin';
 import { NextResponse } from 'next/server';
 import { Prisma } from '@prisma/client';
@@ -54,7 +56,7 @@ async function handlePOST(req: Request) {
     }
 
     const rows = csvText.split('\n').map(line => line.trim()).filter(line => line.length > 0);
-    
+
     const parsedRows = rows.map(row => {
       const parts = row.split(',').map(p => p.trim());
       return {
@@ -127,6 +129,7 @@ async function handlePOST(req: Request) {
     let failedCount = 0;
     const failures: Array<{ row: string; reason: string }> = [];
 
+    const notificationBatch=randomUUID();
     for (const row of parsedRows) {
       if (!row.name || !row.city || !row.bloodGroup || !row.number) {
         failedCount++;
@@ -155,7 +158,7 @@ async function handlePOST(req: Request) {
       }
 
       try {
-        await getPrisma().manualBloodDonor.create({
+        await withNotificationBatch(notificationBatch,tx=>tx.manualBloodDonor.create({
           data: {
             name: row.name,
             mobile: phoneNumber.number,
@@ -175,7 +178,7 @@ async function handlePOST(req: Request) {
             added_by_admin: auth.session.user_id,
             health_data: { isBulkCsvEntry: true } as Prisma.InputJsonValue,
           }
-        });
+        }));
         createdCount++;
       } catch (error) {
         if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {

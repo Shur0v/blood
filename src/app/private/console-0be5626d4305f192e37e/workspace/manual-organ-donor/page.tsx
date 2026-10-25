@@ -158,7 +158,7 @@ export default function ManualOrganDonorPage() {
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300 max-w-5xl mx-auto">
+    <div id="controls-organs" className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300 max-w-5xl mx-auto">
       <div>
         <h2 className="text-2xl font-bold flex items-center gap-2"><HeartPulse className="text-purple-500"/> Manual Organ Donor Entry</h2>
         <p className="text-sm text-gray-500 mt-1">Register verified individuals to the backend Organ Donor Registry system manually.</p>

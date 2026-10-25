@@ -87,14 +87,16 @@ async function check() {
       const { Prisma } = await import('@prisma/client');
       const permissions = await sql.query(`SELECT tablename FROM pg_tables WHERE schemaname = current_schema() AND tablename = ANY($1::text[]) AND NOT (has_table_privilege(format('%I.%I', schemaname, tablename), 'SELECT') AND has_table_privilege(format('%I.%I', schemaname, tablename), 'INSERT') AND has_table_privilege(format('%I.%I', schemaname, tablename), 'UPDATE') AND has_table_privilege(format('%I.%I', schemaname, tablename), 'DELETE'))`, [Prisma.dmmf.datamodel.models.map(model => model.dbName || model.name)]);
       if (permissions.rowCount) throw new Error('Database safety: application role lacks required table read/write permissions.');
-      // Exercise an application-table write/read without retaining test data.
+      const maintenancePaused=(await sql.query('SELECT paused FROM "MaintenanceGate" WHERE id=1')).rows[0]?.paused===true;
+      // Exercise an application-table write/read, or verify a deliberate maintenance rejection.
       await sql.query('BEGIN');
       try {
         const probeId = randomUUID();
         await sql.query('INSERT INTO "AnalyticsClickLog" (id,page,component,device_type) VALUES ($1,$2,$3,$4)', [probeId, 'deployment-check', 'rollback-probe', 'DESKTOP']);
+        if(maintenancePaused)throw new Error('Database safety: maintenance write guard did not block the deployment probe.');
         const probe = await sql.query('SELECT id FROM "AnalyticsClickLog" WHERE id=$1', [probeId]);
         if (probe.rowCount !== 1) throw new Error('Database safety: database write/read probe failed.');
-      } finally { await sql.query('ROLLBACK'); }
+      } catch(error){if(!(maintenancePaused&&(error as {code?:string}).code==='55000'))throw error;} finally { await sql.query('ROLLBACK'); }
     }
     console.log('Production database checks passed.');
   } finally { await sql.end(); }

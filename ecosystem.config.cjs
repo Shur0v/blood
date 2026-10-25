@@ -1,6 +1,18 @@
 module.exports = {
   apps: [
     {
+      name: 'bloodnet-recovery',
+      cwd: '/var/www/bloodnet',
+      script: 'npm',
+      interpreter: process.env.BLOODNET_NODE_EXECUTABLE || 'node',
+      args: 'run worker:recovery',
+      exec_mode: 'fork', instances: 1, autorestart: true, watch: false,
+      max_memory_restart: '500M', restart_delay: 5000, time: true,
+      env: { NODE_ENV: 'production', PATH: process.env.PATH },
+      out_file: '/var/www/bloodnet/logs/recovery-out.log',
+      error_file: '/var/www/bloodnet/logs/recovery-error.log', merge_logs: true,
+    },
+    {
       name: 'bloodnet',
       cwd: '/var/www/bloodnet',
       script: 'npm',

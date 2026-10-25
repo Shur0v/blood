@@ -1,5 +1,6 @@
 'use client';
 
+import RecoveryCenter from '@/src/components/RecoveryCenter';
 import { useEffect, useState } from 'react';
 import { Card } from '@/src/admin-dashboard/components/common/Card';
 import { Table, TableCell, TableRow } from '@/src/admin-dashboard/components/common/Table';
@@ -55,10 +56,10 @@ export default function SpamMonitorPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6"><RecoveryCenter/>
       <div>
         <h2 className="text-2xl font-bold">Spam & Abuse Monitor</h2>
-        <p className="text-sm text-gray-500 mt-1">Realtime suspicious identity events and admin restriction control.</p>
+        <p className="text-sm text-gray-500 mt-1">Recorded suspicious identity events and admin restriction control.</p>
       </div>
 
       {message && (

@@ -26,7 +26,7 @@ const TRANSFORM_CONFIG: Record<UploadCategory, TransformConfig> = {
   OTHER: { maxWidth: 1280, quality: 82 },
 };
 
-const getR2Client = (): S3Client | null => {
+export const getR2Client = (): S3Client | null => {
   const env = getAppEnv();
   const accountId = env.R2_ACCOUNT_ID;
   const accessKeyId = env.R2_ACCESS_KEY_ID;

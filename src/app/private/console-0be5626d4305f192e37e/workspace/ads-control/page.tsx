@@ -197,7 +197,7 @@ export default function AdsControlPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div id="controls-ads" className="space-y-6">
       <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-[#1a1b23]">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>

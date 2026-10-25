@@ -1,4 +1,5 @@
 import { createHash, randomUUID, timingSafeEqual } from 'node:crypto';
+import {readMaintenance} from '@/src/lib/maintenanceState.server';
 import { z } from 'zod';
 import { getPrisma } from '../config/db';
 import { decryptMedical, encryptMedical, medicalKey, MedicalError } from '../utils/medicalPrivacy';
@@ -81,6 +82,7 @@ export function prescriptionHtml(details: PrescriptionDetails, patientName: stri
 }
 
 export async function deliverPrescriptionEmail(id: string) {
+  if(readMaintenance().enabled)return;
   const prisma = getPrisma();
   const now = new Date();
   const claimed = await prisma.prescription.updateMany({ where: { id, email_status: { not: 'SENT' },
@@ -93,6 +95,7 @@ export async function deliverPrescriptionEmail(id: string) {
     const details = decodePrescription(record);
     const { transporter } = await import('../utils/mailer');
     const html = prescriptionHtml(details, record.User.name);
+    if(readMaintenance().enabled){await prisma.prescription.update({where:{id},data:{email_status:'PENDING',email_locked_until:null}});return;}
     await transporter.sendMail({ from: `"BloodNet" <${process.env.SMTP_USER}>`, to: record.User.email,
       subject: 'Your medical prescription is available', messageId: `<prescription-${record.id}@bloodnet.live>`, html,
       text: `Your prescription is attached and available in your BloodNet medical profile. Doctor: ${details.doctor.name}. Reference: ${details.externalId}.`,
@@ -106,6 +109,7 @@ export async function deliverPrescriptionEmail(id: string) {
 }
 
 export async function flushPrescriptionEmails(limit = 20) {
+  if(readMaintenance().enabled)return;
   const now = new Date();
   const records = await getPrisma().prescription.findMany({ where: { email_status: { not: 'SENT' },
     email_next_attempt_at: { lte: now }, OR: [{ email_locked_until: null }, { email_locked_until: { lt: now } }] },

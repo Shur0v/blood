@@ -121,6 +121,7 @@ before(async () => {
   await sql.query(readFileSync('prisma/migrations/20261025220000_regional_design_controls/migration.sql','utf8'));
   await sql.query(readFileSync('prisma/migrations/20261026080000_homepage_editor/migration.sql','utf8'));
   await sql.query(readFileSync('prisma/migrations/20261026100000_public_content_images/migration.sql','utf8'));
+  await sql.query(readFileSync('prisma/migrations/20261027090000_admin_operations/migration.sql','utf8'));
   const migratedPublication=(await sql.query('SELECT * FROM "PublicDonorProfile" WHERE id=$1',[legacyPublicationId])).rows[0];
   assert.equal(migratedPublication.is_published,false);assert.equal(migratedPublication.bio,legacyBio);assert.equal(migratedPublication.admin_approved_at,null);assert.ok(migratedPublication.consented_at);
 });
@@ -860,11 +861,11 @@ test('every exported administrator and manager API method denies anonymous and o
     for(const method of ['GET','POST','PATCH','PUT','DELETE'])if(typeof handlers[method]==='function'){
       assert.equal((await handlers[method](new Request(url,{method}),{params:Promise.resolve({})})).status,401,`${method} ${url} must deny anonymous access`);
       const request=new Request(url,{method,headers:{authorization:'Bearer '+signToken({user_id:migratedUserId,role:'USER'})}});
-      assert.equal((await handlers[method](request,{params:Promise.resolve({})})).status,403,`${method} ${url} must deny ordinary users`);
+      assert.equal((await handlers[method](request,{params:Promise.resolve({})})).status,url.includes('/recovery/progress/')?401:403,`${method} ${url} must deny ordinary users (progress requires its own scoped token)`);
       checked++;
     }
   }
-  assert.equal(checked,82,'Cover all existing privileged API methods');
+  assert.equal(checked,93,'Cover all existing privileged API methods');
 });
 
 test('verification uploads are encrypted, owner-bound and privately readable by owner or active admin', integration, async () => {
@@ -1470,4 +1471,40 @@ test('slider publication dates track meaningful changes and legacy image replace
  await saveHomepageSlide(input,row.id);await db.homepageContent.update({where:{key:'main'},data:{public_updated_at:old}});const active=await db.homepageSlider.findMany({where:{status:'ACTIVE'},orderBy:[{order:'asc'},{id:'asc'}],select:{id:true}});await reorderHomepageSlides(active.map(item=>item.id));assert.equal((await db.homepageContent.findUniqueOrThrow({where:{key:'main'}})).public_updated_at?.toISOString(),old.toISOString(),'Identical ordering is not a content change');
  await deleteHomepageSlide(row.id);ids.splice(ids.indexOf(row.id),1);assert.ok((await db.homepageContent.findUniqueOrThrow({where:{key:'main'}})).public_updated_at!>old);
  }finally{await db.homepageSlider.deleteMany({where:{id:{in:ids}}});for(const row of original)await db.homepageSlider.update({where:{id:row.id},data:{order:row.order}});if(rootBefore)await db.homepageContent.update({where:{key:'main'},data:{draft:rootBefore.draft,public_updated_at:rootBefore.public_updated_at}});else await db.homepageContent.deleteMany({where:{key:'main'}});}
+});
+
+
+test('administrator notifications commit with data, omit sensitive contents and keep per-admin read state',integration,async()=>{
+ const {GET,PATCH}=await import('../src/app/api/admin/notifications/route');
+ const before=await getPrisma().adminNotification.count();await sql.query('BEGIN');await sql.query('INSERT INTO "Report"(id,target_type,target_id,message) VALUES($1,$2,$3,$4)',[randomUUID(),'USER',randomUUID(),'Sensitive report text never copied']);assert.ok((await sql.query('SELECT COUNT(*)::int AS count FROM "AdminNotification"')).rows[0].count>before);await sql.query('ROLLBACK');assert.equal(await getPrisma().adminNotification.count(),before);
+ const patient=await newPatient();const event=await getPrisma().adminNotification.findFirstOrThrow({where:{type:'account.created',country:'Bangladesh'},orderBy:{created_at:'desc'}});assert.ok(!JSON.stringify(event).includes(patient.email));assert.ok(!JSON.stringify(event).includes(patient.mobile));
+ const url='http://localhost/api/admin/notifications';const headers={authorization:'Bearer '+signToken({user_id:testAdminId,role:'ADMIN'}),'Content-Type':'application/json'};
+ let response=await GET(new Request(url,{headers}));assert.equal(response.status,200);assert.ok((await response.json()).data.items.some((n:any)=>n.id===event.id));assert.equal((await PATCH(new Request(url,{method:'PATCH',headers,body:JSON.stringify({ids:[event.id],read:true})}))).status,200);
+ const other=await getPrisma().adminUser.create({data:{admin_id:randomUUID(),password:'test-only',role:'ADMIN'}});const token=rawSignToken({user_id:other.id,role:'ADMIN',credential_version:staffCredentialVersion(other.id,'test-only')});const otherResponse=await GET(new Request(url,{headers:{authorization:'Bearer '+token}}));assert.equal((await otherResponse.json()).data.items.find((n:any)=>n.id===event.id)?.read,false);assert.equal((await getPrisma().adminNotificationRead.count({where:{notification_id:event.id,admin_id:testAdminId}})),1);
+});
+
+test('publication drafts and no-op writes do not notify, while a committed public update does',integration,async()=>{
+ const {savePublicContent}=await import('../src/backend/services/publicContent');const key='about';const content={heading:'A reviewed public heading',introduction:'A real introduction to the public platform.',sections:[]};const initial=await getPrisma().adminNotification.count({where:{type:{startsWith:'public-content.'}}});await savePublicContent({key,action:'draft',content});assert.equal(await getPrisma().adminNotification.count({where:{type:{startsWith:'public-content.'}}}),initial);await savePublicContent({key,action:'publish',content});assert.equal(await getPrisma().adminNotification.count({where:{type:{startsWith:'public-content.'}}}),initial+1);await savePublicContent({key,action:'publish',content});assert.equal(await getPrisma().adminNotification.count({where:{type:{startsWith:'public-content.'}}}),initial+1);
+});
+
+test('bulk imports aggregate across row transactions and failed rows cannot create notifications',integration,async()=>{
+ const {withNotificationBatch}=await import('../src/backend/services/adminNotifications');const batch=randomUUID();for(let i=0;i<3;i++)await withNotificationBatch(batch,tx=>tx.manualBloodDonor.create({data:{name:'Synthetic import',mobile:randomUUID(),blood_group:'O+',location_city:'Kathmandu',location_country:'Nepal',location_lat:27,location_lng:85,source:'TEST',added_by_admin:testAdminId}}));const rows=await getPrisma().adminNotification.findMany({where:{dedupe_key:{contains:batch}}});assert.equal(rows.length,1);assert.equal(rows[0].quantity,3);
+});
+
+test('maintenance write guard blocks business changes while preserving reads and explicit delivery bookkeeping',integration,async()=>{
+ const patient=await newPatient();await sql.query('UPDATE "MaintenanceGate" SET paused=true WHERE id=1');try{await assert.rejects(sql.query('UPDATE "User" SET name=$1 WHERE id=$2',['Blocked edit',patient.id]),(error:any)=>error.code==='55000');assert.equal((await sql.query('SELECT name FROM "User" WHERE id=$1',[patient.id])).rows[0].name,patient.name);await sql.query('UPDATE "AdminUser" SET last_login=now() WHERE id=$1',[testAdminId]);}finally{await sql.query('UPDATE "MaintenanceGate" SET paused=false WHERE id=1');}
+});
+
+test('manager sessions cannot enter administrator notifications, recovery or maintenance endpoints',integration,async()=>{
+ const db=getPrisma(),manager=await db.adminUser.create({data:{admin_id:randomUUID(),password:'test-only',role:'MANAGER'}}),token=rawSignToken({user_id:manager.id,role:'MANAGER',credential_version:staffCredentialVersion(manager.id,manager.password)});
+ try{for(const file of ['notifications','maintenance','recovery/jobs']){const routes=await import(pathToFileURL(path.resolve('src/app/api/admin',file,'route.ts')).href);for(const method of ['GET','POST','PATCH'])if(routes[method])assert.equal((await routes[method](new Request('http://localhost/api/admin/'+file,{method,headers:{authorization:'Bearer '+token}}))).status,403);}}
+ finally{await db.adminUser.delete({where:{id:manager.id}});}
+});
+
+test('maintenance requires fresh password confirmation and preserves deadlines and recovery locks',integration,async()=>{
+ const fs=await import('node:fs'),os=await import('node:os'),bcrypt=await import('bcryptjs'),{POST,GET}=await import('../src/app/api/admin/maintenance/route'),state=await import('../src/lib/maintenanceState.server');const directory=fs.mkdtempSync(path.join(os.tmpdir(),'bloodnet-admin-controls-')),prior=process.env.BLOODNET_OPERATIONS_DIR,priorPublic=process.env.BLOODNET_PUBLIC_RUNTIME_DIR;
+ process.env.BLOODNET_OPERATIONS_DIR=directory;process.env.BLOODNET_PUBLIC_RUNTIME_DIR=path.join(directory,'runtime');const password='isolated-admin-confirmation',admin=await getPrisma().adminUser.create({data:{admin_id:randomUUID(),password:await bcrypt.hash(password,10),role:'ADMIN'}}),headers={authorization:'Bearer '+rawSignToken({user_id:admin.id,role:'ADMIN',credential_version:staffCredentialVersion(admin.id,admin.password)}),'Content-Type':'application/json'},url='http://localhost/api/admin/maintenance',command=(body:unknown)=>POST(new Request(url,{method:'POST',headers,body:JSON.stringify(body)}));
+ try{assert.equal((await command({action:'start',minutes:30,password:'incorrect-password'})).status,401);assert.equal((await command({action:'start',minutes:10081,password})).status,400);assert.equal((await command({action:'start',minutes:30,password})).status,200);const deadline=state.readMaintenance().deadline;assert.ok((await sql.query('SELECT paused FROM "MaintenanceGate"')).rows[0].paused);await GET(new Request(url,{headers}));assert.equal(state.readMaintenance().deadline,deadline);
+ fs.writeFileSync(path.join(directory,'active.lock'),randomUUID());assert.equal((await command({action:'resume',password})).status,409);fs.unlinkSync(path.join(directory,'active.lock'));state.writeMaintenance({...state.readMaintenance(),failed:true});assert.equal((await command({action:'resume',password})).status,409);state.writeMaintenance({...state.readMaintenance(),failed:false});const probe=mock.method(globalThis,'fetch',async()=>new Response('{}',{status:200}));try{assert.equal((await command({action:'resume',password})).status,200);}finally{probe.mock.restore();}assert.equal(state.readMaintenance().enabled,false);
+ }finally{await sql.query('UPDATE "MaintenanceGate" SET paused=false WHERE id=1');await getPrisma().adminUser.delete({where:{id:admin.id}});if(prior===undefined)delete process.env.BLOODNET_OPERATIONS_DIR;else process.env.BLOODNET_OPERATIONS_DIR=prior;if(priorPublic===undefined)delete process.env.BLOODNET_PUBLIC_RUNTIME_DIR;else process.env.BLOODNET_PUBLIC_RUNTIME_DIR=priorPublic;assert.ok(path.resolve(directory).startsWith(path.resolve(os.tmpdir())+path.sep+'bloodnet-admin-controls-'));fs.rmSync(directory,{recursive:true,force:true});}
 });

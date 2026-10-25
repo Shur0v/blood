@@ -23,7 +23,7 @@ export default function PatientIdVisibilityControl(){
       setMessage(body.data.patientIdVisible?'Patient ID cards are visible in user profiles.':'Patient ID cards are hidden. IDs and prescription delivery remain active.');
     }catch(error){setMessage(error instanceof Error?error.message:'Could not save patient ID visibility.');}finally{setBusy(false);}
   }
-  return <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-[#1a1b23]">
+  return <section id="switch-patient-id" className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-[#1a1b23]">
     <div className="flex flex-wrap items-center justify-between gap-4"><div>
       <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Visible patient ID</h2>
       <p className="mt-2 max-w-xl text-sm leading-6 text-gray-500 dark:text-gray-400">Show or hide the patient ID card in every user profile. Open profiles update automatically. Existing IDs, editing rules and prescription delivery stay active.</p>

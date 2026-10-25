@@ -72,7 +72,7 @@ export default function ManualBloodDonorPage() {
   const [bulkMessage, setBulkMessage] = React.useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [recentEntries, setRecentEntries] = React.useState<ManualBloodDonorRow[]>([]);
   const [bulkRows, setBulkRows] = React.useState<BulkDonorRow[]>(() => Array.from({ length: BULK_DEFAULT_ROWS }, () => createBulkRow()));
-  
+
   // CSV Upload States
   const [csvText, setCsvText] = React.useState('');
   const [isCsvUploading, setIsCsvUploading] = React.useState(false);
@@ -512,12 +512,12 @@ export default function ManualBloodDonorPage() {
     return parsed.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
   };
 
-  // API Integration Note: 
+  // API Integration Note:
   // Form submits to POST /api/admin/donors/manual
   // Table fetches from GET /api/admin/donors/manual?type=blood
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300 max-w-5xl mx-auto">
+    <div id="controls-manual" className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300 max-w-5xl mx-auto">
       <div>
         <h2 className="text-2xl font-bold">Manual Blood Donor Entry</h2>
         <p className="text-sm text-gray-500 mt-1">Add offline or verified institutional donor records directly into the searchable ecosystem.</p>
@@ -538,7 +538,7 @@ export default function ManualBloodDonorPage() {
             className="w-full h-40 bg-gray-50 dark:bg-[#0f1115] border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-red-500 outline-none font-mono placeholder:text-gray-400 disabled:opacity-60"
           />
           <p className="text-xs text-gray-500 font-medium">Ensure exact sequence: Name, Location, Blood Group, Number (local digits only). Each record on a new line.</p>
-          
+
           <div className="flex justify-end">
             <button
               type="submit"
@@ -840,7 +840,7 @@ export default function ManualBloodDonorPage() {
                  <span>{formatDateLabel(formData.lastDonationDate)}</span>
                </button>
             </div>
-            
+
             {/* Health Vitals */}
             <div>
                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Weight (kg) / Height (cm)</label>
@@ -860,7 +860,7 @@ export default function ManualBloodDonorPage() {
                <input type="text" value={formData.hemoglobin} onChange={(e) => setFormData((prev) => ({ ...prev, hemoglobin: e.target.value }))} className="w-full bg-gray-50 dark:bg-[#0f1115] border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2 text-sm outline-none" />
             </div>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
              <div>
                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Known Allergies</label>
