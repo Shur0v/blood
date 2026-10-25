@@ -118,6 +118,7 @@ before(async () => {
   await sql.query(readFileSync('prisma/migrations/20261016210000_admin_donor_publication/migration.sql','utf8'));
   await sql.query(readFileSync('prisma/migrations/20261024090000_patient_id_visibility/migration.sql','utf8'));
   await sql.query(readFileSync('prisma/migrations/20261025090000_regional_city_pages/migration.sql','utf8'));
+  await sql.query(readFileSync('prisma/migrations/20261025220000_regional_design_controls/migration.sql','utf8'));
   const migratedPublication=(await sql.query('SELECT * FROM "PublicDonorProfile" WHERE id=$1',[legacyPublicationId])).rows[0];
   assert.equal(migratedPublication.is_published,false);assert.equal(migratedPublication.bio,legacyBio);assert.equal(migratedPublication.admin_approved_at,null);assert.ok(migratedPublication.consented_at);
 });
@@ -1319,6 +1320,29 @@ test('regional updates enforce publication, country inheritance and public-image
  const {getRegionalPublicationDates}=await import('../src/backend/services/regionalContent');
  assert.ok((await getRegionalPublicationDates()).has(indiaKey),'All enabled countries contribute genuine publication dates');
  }finally{await db.regionalPageContent.deleteMany({where:{key:{in:[countryKey,cityKey,indiaKey]}}});await db.mediaAsset.delete({where:{id:asset.id}});}
+});
+
+test('regional design publication preserves legacy clients, validates colors and tracks meaningful edits',integration,async()=>{
+ const db=getPrisma(),user=await newPatient(),city='Design-'+randomUUID();
+ await db.user.update({where:{id:user.id},data:{location_city:city}});
+ const {saveRegionalContent,getRegionalContent,regionalContentKey}=await import('../src/backend/services/regionalContent');
+ const base={country:'Bangladesh',city,title:'',summary:'',slides:[],published:false};
+ const key=regionalContentKey(base.country,city),design={theme:'india',copy:{introTitle:'Local volunteers in {city}'},hiddenSections:['home5']};
+ try{
+  await saveRegionalContent({...base,design});assert.equal(await getRegionalContent(base.country,city),null,'Draft design must not leak publicly');
+  await saveRegionalContent({...base,design,published:true});assert.equal((await getRegionalContent(base.country,city))?.design?.theme,'india');
+  const date=new Date('2010-01-01');await db.regionalPageContent.update({where:{key},data:{public_updated_at:date}});
+  await saveRegionalContent({...base,title:'A local update',summary:'Existing client description',published:true});
+  assert.equal((await getRegionalContent(base.country,city))?.design?.copy?.introTitle,'Local volunteers in {city}','Older clients preserve the stored design');
+  await db.regionalPageContent.update({where:{key},data:{public_updated_at:date}});
+  await saveRegionalContent({...base,title:'A local update',summary:'Existing client description',published:true});
+  assert.equal((await db.regionalPageContent.findUniqueOrThrow({where:{key}})).public_updated_at?.toISOString(),date.toISOString(),'Identical legacy saves do not bump dates');
+  await saveRegionalContent({...base,design:{...design,layout:'stacked'},published:true});
+  assert.ok((await db.regionalPageContent.findUniqueOrThrow({where:{key}})).public_updated_at!>date);
+  await assert.rejects(saveRegionalContent({...base,design:{colors:{accent:'#ffffff'}},published:true}),/Accent color/);
+  await assert.rejects(saveRegionalContent({...base,design:{hiddenSections:['donors']},published:true}));
+  assert.equal((await getRegionalContent(base.country,city))?.design?.layout,'stacked');
+ }finally{await db.regionalPageContent.delete({where:{key}});}
 });
 
 test('city request visibility defaults off, persists independently and streams to public pages',integration,async()=>{

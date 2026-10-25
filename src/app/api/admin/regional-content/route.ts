@@ -11,4 +11,4 @@ export const GET=withActiveAdmin(async()=>{
  const assets=await getPrisma().mediaAsset.findMany({where:{id:{in:assetIds},category:'SLIDER',mime_type:'image/webp'},select:{id:true,public_url:true}});
  return NextResponse.json({success:true,data:{records,assets,locations:locations.map(row=>({country:row.country,city:row.city}))}},{headers:privateHeaders});
 });
-export const PUT=withActiveAdmin(async(req:Request)=>NextResponse.json({success:true,data:await saveRegionalContent(await securityJson(req,24*1024))},{headers:privateHeaders}));
+export const PUT=withActiveAdmin(async(req:Request)=>NextResponse.json({success:true,data:await saveRegionalContent(await securityJson(req,64*1024))},{headers:privateHeaders}));

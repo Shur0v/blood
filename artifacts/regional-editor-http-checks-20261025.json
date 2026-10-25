@@ -1,0 +1,41 @@
+{
+  "source": "Isolated synthetic preview, not production data.",
+  "checks": [
+    {
+      "path": "/blood/a-positive/chennai",
+      "status": 200,
+      "customization": true
+    },
+    {
+      "path": "/blood/chennai",
+      "status": 200,
+      "customization": true
+    },
+    {
+      "path": "/city/chennai",
+      "status": 200,
+      "customization": true
+    },
+    {
+      "path": "/blood-donors/india/chennai",
+      "status": 200,
+      "customization": true
+    },
+    {
+      "path": "/blood-donors/india/chennai/a-positive",
+      "status": 200,
+      "customization": true
+    },
+    {
+      "path": "/blood/o-negative/chandigarh",
+      "status": 200,
+      "theme": "international"
+    },
+    {
+      "path": "/blood/lahore",
+      "status": 200,
+      "theme": "pakistan"
+    }
+  ],
+  "anonymousEditorStatus": 401
+}

@@ -108,7 +108,7 @@ function MixedDonorBannerCard({ ad, onFail }: { ad: InlineBannerAdUnit; onFail: 
 
 const DONOR_GRID_AD_SLOTS = 4;
 
-export default function Hero({ forcedCountry, initialCity = '', initialGroup = null, headingLevel = 1, presentation = "default", regionalSections = false }: { forcedCountry?: string; initialCity?: string; initialGroup?: string | null; headingLevel?: 1 | 2; presentation?: "default" | "regional"; regionalSections?: boolean }) {
+export default function Hero({ forcedCountry, initialCity = '', initialGroup = null, headingLevel = 1, presentation = "default", regionalSections = false, contentOverride }: { forcedCountry?: string; initialCity?: string; initialGroup?: string | null; headingLevel?: 1 | 2; presentation?: "default" | "regional"; regionalSections?: boolean; contentOverride?: {heading?:string;description?:string} }) {
   const adsConfig = usePublicAds();
   const readServerRenderedDonorTotal = () => {
     if (forcedCountry) return 0;
@@ -403,12 +403,12 @@ export default function Hero({ forcedCountry, initialCity = '', initialGroup = n
               </div>
             </motion.div>
 
-            {presentation==="regional" ? <h2 className="region-search-title">Find a donor.<br/><span>Start nearby.</span></h2> : headingLevel === 1 ? <h1 className="mb-6 text-4xl font-bold tracking-tight text-gray-900 md:text-6xl">
+            {contentOverride?.heading ? (headingLevel===1?<h1 className="mb-6 text-4xl font-bold tracking-tight text-gray-900 md:text-6xl">{contentOverride.heading}</h1>:<h2 className={presentation==="regional"?"region-search-title":"mb-6 text-4xl font-bold tracking-tight text-gray-900 md:text-6xl"}>{contentOverride.heading}</h2>) : presentation==="regional" ? <h2 className="region-search-title">Find a donor.<br/><span>Start nearby.</span></h2> : headingLevel === 1 ? <h1 className="mb-6 text-4xl font-bold tracking-tight text-gray-900 md:text-6xl">
               Every Drop <span className="text-primary-dark">Counts</span>.
             </h1> : <h2 className="mb-6 text-4xl font-bold tracking-tight text-gray-900 md:text-6xl">Every Drop <span className="text-primary-dark">Counts</span>.</h2>}
 
             <p className="mx-auto mb-8 max-w-2xl text-base text-gray-500">
-              {presentation==="regional"?`Search ${initialCity||forcedCountry||"local"} entries by blood group or name. Local matches come first, with broader suggestions when needed. Confirm availability directly.`:"Join our premium community of life-savers. Connect with donors instantly and manage blood stocks with our futuristic medical dashboard."}
+              {contentOverride?.description||(presentation==="regional"?`Search ${initialCity||forcedCountry||"local"} entries by blood group or name. Local matches come first, with broader suggestions when needed. Confirm availability directly.`:"Join our premium community of life-savers. Connect with donors instantly and manage blood stocks with our futuristic medical dashboard.")}
             </p>
 
             <div className="mx-auto w-full max-w-5xl">{discoveryNotice&&<p role="status" className="sr-only">{discoveryNotice}</p>}<DonorBloodFilters activeGroup={activeGroup} onGroupChange={setActiveGroup} searchQuery={searchQuery} onSearchChange={setSearchQuery} placeholder="Search city or donor name…" analyticsPrefix="Blood" /></div>

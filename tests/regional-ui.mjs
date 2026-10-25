@@ -65,6 +65,14 @@ await act(async()=>{const select=document.querySelectorAll('select')[1];select.v
 assert.equal([...document.querySelectorAll('input')].find(el=>el.maxLength===140).value,'');
 await act(async()=>{const select=document.querySelectorAll('select')[0];select.value='India';select.dispatchEvent(new Event('change',{bubbles:true}));});
 assert.equal(document.querySelector('input[type="checkbox"]').disabled,false,'Publishing is available for recorded countries beyond Nepal');
+await act(async()=>{const select=document.querySelectorAll('select')[2];select.value='pakistan';select.dispatchEvent(new Event('change',{bubbles:true}));});
+await act(async()=>{const select=document.querySelectorAll('select')[3];select.value='stacked';select.dispatchEvent(new Event('change',{bubbles:true}));});
+await act(async()=>[...document.querySelectorAll('label')].find(el=>el.textContent.trim()==='Related cities and blood groups').querySelector('input').dispatchEvent(new MouseEvent('click',{bubbles:true})));
+await act(async()=>[...document.querySelectorAll('button')].find(el=>el.textContent==='Add question').dispatchEvent(new MouseEvent('click',{bubbles:true})));
+assert.ok([...document.querySelectorAll('legend')].some(el=>el.textContent==='Question 1'),'Incomplete question rows remain editable without crashing the preview');
+await act(async()=>[...document.querySelectorAll('button')].find(el=>el.textContent==='Remove question').dispatchEvent(new MouseEvent('click',{bubbles:true})));
+await act(async()=>[...document.querySelectorAll('button')].find(el=>el.textContent==='Save regional content').dispatchEvent(new MouseEvent('click',{bubbles:true})));
+assert.equal(updates.at(-1).design.theme,'pakistan');assert.equal(updates.at(-1).design.layout,'stacked');assert.deepEqual(updates.at(-1).design.hiddenSections,['locations']);
 
 await act(async()=>root.render(React.createElement(AuthModal,{key:'login',isOpen:true,initialMode:'login',onClose(){},onSuccess(){}})));
 assert.match(document.querySelector('[role="dialog"]').textContent,/Login to BloodNet/);

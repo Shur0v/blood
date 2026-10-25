@@ -1,4 +1,5 @@
 import { Prisma } from "@prisma/client";
+import { cache } from 'react';
 import { getPrisma } from "@/src/backend/config/db";
 import { BLOOD_GROUPS, type BloodGroup, cityToSlug, organFromSlug, organToSlug } from "@/src/lib/seoRouting";
 import { normalizeOrganName } from "@/src/lib/organCatalog";
@@ -254,7 +255,8 @@ export const getOrganTypesWithData = async () => {
 export const getRelatedBloodGroups = (current: BloodGroup) => BLOOD_GROUPS.filter((group) => group !== current);
 
 // All public surfaces use the same listing sources and geographic definitions.
-export const getPublicBotStats = async () => {
+// Share one snapshot across the layout and regional page in this render only.
+export const getPublicBotStats = cache(async () => {
   const prisma = getPrisma();
   const [counts, locations, manualOrganDonors, activePledges, verifiedOrganRequests, totalRegisteredAccounts] = await Promise.all([
     getActiveBloodDonorCounts(), getDonorLocations(), prisma.manualOrganDonor.count(),
@@ -275,4 +277,4 @@ export const getPublicBotStats = async () => {
     lastUpdated:locations.length?new Date(Math.max(...locations.map(row=>row.updatedAt.getTime()))).toISOString():null,
     generatedAt:new Date().toISOString(),
   };
-};
+});

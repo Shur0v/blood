@@ -1,8 +1,10 @@
+import {cache} from 'react';
 import {getPrisma} from '../config/db';
 import {toLocationSlug} from '../utils/locationSlug';
 import {RegionalContentSchema,REGIONAL_CITY_REVISION,GLOBAL_CITY_REVISION,type PublicRegionalContent} from '@/src/lib/regionalContent';
 import {getDonorLocations} from './donorLocations';
 import {MedicalError} from '../utils/medicalPrivacy';
+import {normalizeRegionalDesign,regionalDesignContrastError} from '@/src/lib/regionalDesign';
 export const regionalContentKey=(country:string,city?:string|null)=>`${toLocationSlug(country)}:${city?toLocationSlug(city):'*'}`;
 type PublicationDates=Map<string,{updatedAt:Date;published:boolean}>;
 export async function getRegionalPublicationDates(){
@@ -29,21 +31,24 @@ export async function saveRegionalContent(input:unknown){
  return getPrisma().$transaction(async tx=>{
   await tx.$queryRaw`SELECT 1 FROM pg_advisory_xact_lock(hashtextextended(${key},0))`;
   const current=await tx.regionalPageContent.findUnique({where:{key}});
-  const changed=!current||current.title!==value.title||current.summary!==value.summary||slideSignature(current.slides)!==slideSignature(value.slides);
+  const design=normalizeRegionalDesign(country,value.design??current?.design??{});
+  const contrastError=regionalDesignContrastError(country,design);
+  if(contrastError)throw new MedicalError(contrastError,400);
+  const changed=!current||current.title!==value.title||current.summary!==value.summary||slideSignature(current.slides)!==slideSignature(value.slides)||slideSignature(current.design)!==slideSignature(design);
   const liveChanged=(Boolean(current?.published)||value.published)&&(current?.published!==value.published||(value.published&&changed));
   const publicDate=liveChanged?{public_updated_at:new Date()}:{};
-  return tx.regionalPageContent.upsert({where:{key},create:{...value,country,city,key,...publicDate},update:{...value,country,city,...publicDate}});
+  return tx.regionalPageContent.upsert({where:{key},create:{...value,design,country,city,key,...publicDate},update:{...value,design,country,city,...publicDate}});
  });
 }
 
-export async function getRegionalContent(country:string,city?:string):Promise<PublicRegionalContent|null>{
+export const getRegionalContent=cache(async function getRegionalContent(country:string,city?:string):Promise<PublicRegionalContent|null>{
  try{
   const records=await getPrisma().regionalPageContent.findMany({where:{key:{in:[regionalContentKey(country,city),regionalContentKey(country)]},published:true}});
   const record=records.find(row=>row.key===regionalContentKey(country,city))||records.find(row=>row.key===regionalContentKey(country));
   if(!record)return null;
-  const value=RegionalContentSchema.safeParse({country:record.country,city:record.city,title:record.title,summary:record.summary,published:true,slides:record.slides});
+  const value=RegionalContentSchema.safeParse({country:record.country,city:record.city,title:record.title,summary:record.summary,published:true,slides:record.slides,design:record.design});
   if(!value.success)return null;
   const assets=await getPrisma().mediaAsset.findMany({where:{id:{in:value.data.slides.map(slide=>slide.assetId)},category:'SLIDER',mime_type:'image/webp'},select:{id:true,public_url:true,width:true,height:true}});
-  return {title:record.title,summary:record.summary,updatedAt:(record.public_updated_at||record.updated_at).toISOString(),slides:value.data.slides.flatMap(slide=>{const asset=assets.find(row=>row.id===slide.assetId);return asset?[{...slide,url:asset.public_url,width:asset.width,height:asset.height}]:[];})};
+  return {title:record.title,summary:record.summary,design:value.data.design,updatedAt:(record.public_updated_at||record.updated_at).toISOString(),slides:value.data.slides.flatMap(slide=>{const asset=assets.find(row=>row.id===slide.assetId);return asset?[{...slide,url:asset.public_url,width:asset.width,height:asset.height}]:[];})};
  }catch{return null;} // Pre-migration build/unavailable optional content must not hide donor search.
-}
+});

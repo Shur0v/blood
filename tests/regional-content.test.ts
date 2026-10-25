@@ -4,6 +4,7 @@ import {RegionalContentSchema} from '../src/lib/regionalContent';
 import {regionalLastModified} from '../src/backend/services/regionalContent';
 import {GLOBAL_CITY_REVISION} from '../src/lib/regionalContent';
 import {getRegionalEdition} from '../src/lib/regionalEdition';
+import {RegionalDesignSchema,REGIONAL_PALETTES,regionalDesignContrastError,regionalCopy,normalizeRegionalDesign} from '../src/lib/regionalDesign';
 const draft={country:'Nepal',city:null,title:'',summary:'',slides:[],published:false};
 test('regional updates distinguish drafts from publishable text and bound gallery size',()=>{
  assert.ok(RegionalContentSchema.safeParse(draft).success);
@@ -32,4 +33,15 @@ test('country editions use real country links and never send other countries to 
   assert.equal(edition.countryPath,path);assert.equal(edition.theme,theme);
   assert.equal(edition.coveragePath,'/network/'+edition.countrySlug);
  }
+});
+test('regional design accepts bounded copy and readable palettes while protecting core sections',()=>{
+ for(const theme of Object.keys(REGIONAL_PALETTES))assert.equal(regionalDesignContrastError('India',{theme:theme as 'india'}),null,theme);
+ assert.ok(RegionalDesignSchema.safeParse({theme:'india',layout:'stacked',copy:{introTitle:'Donors in {city}'},hiddenSections:['home5'],faqs:[{question:'How can I search?',answer:'Use the city and group filters above.'}]}).success);
+ for(const design of [{colors:{accent:'red;display:none'}},{hiddenSections:['donors']},{hiddenSections:['faq','faq']},{registeredAccounts:90000},{copy:{introTitle:'x'.repeat(181)}},{faqs:[{question:'Short',answer:'tiny'}]}])assert.equal(RegionalDesignSchema.safeParse(design).success,false);
+ assert.match(regionalDesignContrastError('India',{colors:{accent:'#ffffff'}})!,/Accent/);
+ assert.match(regionalDesignContrastError('India',{colors:{paper:'#000000'}})!,/light page background/);
+ assert.match(regionalDesignContrastError('India',{colors:{indigo:'#707070'}})!,/Feature panel/);
+ assert.equal(regionalCopy({copy:{introTitle:'{group} volunteers in {city}, {country}'}},'introTitle',{country:'India',city:'Chennai',group:'A+'},'Default'),'A+ volunteers in Chennai, India');
+ assert.equal(regionalCopy(undefined,'joinTitle',{country:'India'},'Original title'),'Original title');
+ assert.deepEqual(normalizeRegionalDesign('India',{theme:'auto',layout:'balanced',spacing:'comfortable',copy:{introTitle:''},hiddenSections:[],faqs:[],colors:{paper:'#FFF8F0'}}),{},'Default-equivalent fields do not create artificial publication edits');
 });

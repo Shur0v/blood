@@ -396,6 +396,7 @@ model RegionalPageContent {
   title      String   @default("")
   summary    String   @default("")
   slides     Json     @default("[]")
+  design     Json     @default("{}")
   published  Boolean  @default(false)
   public_updated_at DateTime?
   updated_at DateTime @updatedAt

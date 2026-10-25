@@ -1,0 +1,29 @@
+[
+  {
+    "cards": 16,
+    "documentWidth": 390,
+    "h1": "A+ donor connections in Chennai",
+    "layout": "stacked",
+    "searchHeading": "Find local support in Chennai",
+    "sections": 10,
+    "width": 390
+  },
+  {
+    "cards": 16,
+    "documentWidth": 768,
+    "h1": "A+ donor connections in Chennai",
+    "layout": "stacked",
+    "searchHeading": "Find local support in Chennai",
+    "sections": 10,
+    "width": 768
+  },
+  {
+    "cards": 16,
+    "documentWidth": 1280,
+    "h1": "A+ donor connections in Chennai",
+    "layout": "stacked",
+    "searchHeading": "Find local support in Chennai",
+    "sections": 10,
+    "width": 1280
+  }
+]

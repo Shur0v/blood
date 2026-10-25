@@ -8,6 +8,8 @@ import { stringifyJsonLd } from '@/src/lib/aiSeo';
 import CityLandingDonorGrid from './CityLandingDonorGrid';
 import RegionalCityExperience from './regional/RegionalCityExperience';
 import {RegionalAuthActions} from './regional/RegionalInteractions';
+import {getRegionalContent} from '@/src/backend/services/regionalContent';
+import {regionalCopy} from '@/src/lib/regionalDesign';
 import { locationCommentary } from '@/src/backend/services/donorResearch';
 
 export type LocationParams = { country: string; city: string };
@@ -32,11 +34,12 @@ export default async function DonorLocationLanding({params,mode,bloodGroup}:{par
   const count = mode === 'blood' ? row.bloodCount : row.organCount;
   const path = donorLocationPath(row, mode)+(bloodGroup?`/${bloodGroupToSlug(bloodGroup)}`:''), url = getPublicBaseUrl() + path;
   const title = `${bloodGroup?bloodGroup+' ':''}${mode === 'blood' ? 'Blood' : 'Organ'} donors in ${row.city}, ${row.country}`;
+  const design=mode==='blood'?(await getRegionalContent(row.country,row.city))?.design:undefined,context={country:row.country,city:row.city,group:bloodGroup};
   const introduction = (
     <section data-region-section={mode==='blood'?'1':undefined} className="mx-auto max-w-7xl px-4 pt-12 pb-8">
       <nav aria-label="Breadcrumb" className="mb-6 flex flex-wrap gap-3 text-sm text-slate-600"><Link href="/">Home</Link><span>/</span><Link href="/cities">Donor locations</Link><span>/ {row.city}, {row.country}</span></nav>
-      <h1 className="text-3xl font-semibold tracking-tight sm:text-5xl">{title}</h1>
-      <p className="mt-5 max-w-3xl text-base leading-8 text-slate-600">{mode==='blood' ? `Search ${count.toLocaleString()} active blood donor entries serving ${row.city}, ${row.country}. Contact volunteers through the donor cards and confirm availability before arranging a hospital visit.` : `Browse ${count.toLocaleString()} active organ donor entries serving ${row.city}, ${row.country}. A pledge expresses willingness; eligibility, consent and matching must be confirmed by licensed transplant professionals.`}</p>
+      <h1 className="text-3xl font-semibold tracking-tight sm:text-5xl">{regionalCopy(design,'introTitle',context,title)}</h1>
+      <p className="mt-5 max-w-3xl text-base leading-8 text-slate-600">{mode==='blood' ? regionalCopy(design,'introText',context,`Search ${count.toLocaleString()} active blood donor entries serving ${row.city}, ${row.country}. Contact volunteers through the donor cards and confirm availability before arranging a hospital visit.`) : `Browse ${count.toLocaleString()} active organ donor entries serving ${row.city}, ${row.country}. A pledge expresses willingness; eligibility, consent and matching must be confirmed by licensed transplant professionals.`}</p>
       <p className="mt-4 text-sm text-slate-600">{mode==='blood' ? `Blood groups represented: ${row.bloodGroups.join(', ') || 'Community blood support'}.` : `Donation categories: ${row.organs.join(', ')}.`}</p>
       <p className="mt-2 text-xs text-slate-500">Directory updated <time dateTime={row.updatedAt.toISOString()}>{row.updatedAt.toISOString().slice(0,10)}</time>. Listings are volunteer entries; availability is not guaranteed.</p>
       <div className="mt-6 flex flex-wrap gap-3"><Link href="/register-donor" className="rounded-full bg-rose-700 px-5 py-3 text-sm font-semibold text-white">Register as a donor</Link>{(mode==='blood'?row.organCount:row.bloodCount)>0&&<Link href={donorLocationPath(row,mode==='blood'?'organ':'blood')} className="rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold">{mode==='blood'?'Organ':'Blood'} donors in {row.city}</Link>}<Link href="/safety-policy" className="rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold">Donation safety</Link></div>

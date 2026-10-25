@@ -14,6 +14,8 @@ import {
 import ManagedNativeAdSlot from "@/src/components/ManagedNativeAdSlot";
 import RegionalCityExperience from './regional/RegionalCityExperience';
 import {RegionalAuthActions} from './regional/RegionalInteractions';
+import {getRegionalContent} from '@/src/backend/services/regionalContent';
+import {regionalCopy} from '@/src/lib/regionalDesign';
 
 const formatDate = (date: Date | null | undefined) =>
   date
@@ -66,6 +68,7 @@ export async function BloodGroupCitySeoPage({ bloodGroup, citySlug }: { bloodGro
 
   const city = donors[0]?.location_city || cityRows[0].city;
   const country = donors[0]?.location_country || cityRows[0].country;
+  const design=(await getRegionalContent(country,city))?.design,context={country,city,group:bloodGroup};
   const localRows = cityRows.filter(row => row.country === country);
   const groupCount = localRows.filter(row => row.blood_group === bloodGroup).reduce((sum, row) => sum + Number(row.total ?? 0), 0);
   const cityTotal = localRows.reduce((sum, row) => sum + Number(row.total ?? 0), 0);
@@ -74,11 +77,9 @@ export async function BloodGroupCitySeoPage({ bloodGroup, citySlug }: { bloodGro
   const introduction = (
       <section data-region-section="1" className="mx-auto max-w-6xl px-4 py-16">
         <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary">{country} blood donor network</p>
-        <h1 className="mt-4 text-4xl font-semibold tracking-normal md:text-6xl">Urgent {bloodGroup} Blood Donors in {city}</h1>
+        <h1 className="mt-4 text-4xl font-semibold tracking-normal md:text-6xl">{regionalCopy(design,'introTitle',context,`Urgent ${bloodGroup} Blood Donors in ${city}`)}</h1>
         <p className="mt-5 max-w-3xl text-lg font-semibold leading-8 text-gray-600">
-          Find active and registered {bloodGroup} blood donors in {city}, {country}. This page is built for
-          families searching for urgent {bloodGroup} blood in {city}, emergency blood donor support, and
-          privacy-safe donor contact options.
+          {regionalCopy(design,'introText',context,`Find active and registered ${bloodGroup} blood donors in ${city}, ${country}. This page is built for families searching for urgent ${bloodGroup} blood in ${city}, emergency blood donor support, and privacy-safe donor contact options.`)}
         </p>
 
         <div className="mt-8 grid gap-4 sm:grid-cols-4">
@@ -151,6 +152,7 @@ export async function CityBloodSeoPage({ citySlug, canonicalPath }: { citySlug: 
 
   const city = rows[0].city;
   const country = rows[0].country;
+  const design=(await getRegionalContent(country,city))?.design,context={country,city};
   const localRows = rows.filter(row=>row.country===country);
   const total = localRows.reduce((sum, row) => sum + Number(row.total ?? 0), 0);
   const available = new Set(localRows.map((row) => row.blood_group));
@@ -162,10 +164,9 @@ export async function CityBloodSeoPage({ citySlug, canonicalPath }: { citySlug: 
   const introduction = (
       <section data-region-section="1" className="mx-auto max-w-6xl px-4 py-16">
         <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary">{country} city donor directory</p>
-        <h1 className="mt-4 text-4xl font-semibold md:text-6xl">Blood Donors in {city}</h1>
+        <h1 className="mt-4 text-4xl font-semibold md:text-6xl">{regionalCopy(design,'introTitle',context,`Blood Donors in ${city}`)}</h1>
         <p className="mt-5 max-w-3xl text-lg font-semibold leading-8 text-gray-600">
-          Search active blood donors in {city} by blood group. This city page shows real donor availability,
-          available blood groups, emergency guidance, and direct links to urgent blood donor pages.
+          {regionalCopy(design,'introText',context,`Search active blood donors in ${city} by blood group. This city page shows real donor availability, available blood groups, emergency guidance, and direct links to urgent blood donor pages.`)}
         </p>
         <div className="mt-8 grid gap-4 sm:grid-cols-3">
           <StatCard label={`Total donors in ${city}`} value={formatCount(total)} />
