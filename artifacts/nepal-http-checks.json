@@ -1,0 +1,78 @@
+{
+  "source": "Synthetic local preview; production database untouched.",
+  "checks": [
+    {
+      "path": "/nepal",
+      "status": 200,
+      "regionalDesign": true,
+      "canonical": "https://bloodnet.live/nepal"
+    },
+    {
+      "path": "/blood/a-positive/kathmandu",
+      "status": 200,
+      "regionalDesign": true,
+      "canonical": "https://bloodnet.live/blood/a-positive/kathmandu"
+    },
+    {
+      "path": "/blood/kathmandu",
+      "status": 200,
+      "regionalDesign": true,
+      "canonical": "https://bloodnet.live/blood/kathmandu"
+    },
+    {
+      "path": "/city/kathmandu",
+      "status": 200,
+      "regionalDesign": true,
+      "canonical": "https://bloodnet.live/city/kathmandu"
+    },
+    {
+      "path": "/blood-donors/nepal/kathmandu",
+      "status": 200,
+      "regionalDesign": true,
+      "canonical": "https://bloodnet.live/blood-donors/nepal/kathmandu"
+    },
+    {
+      "path": "/blood-donors/nepal/kathmandu/a-positive",
+      "status": 200,
+      "regionalDesign": true,
+      "canonical": "https://bloodnet.live/blood-donors/nepal/kathmandu/a-positive"
+    },
+    {
+      "path": "/blood/a-positive/chennai",
+      "status": 200,
+      "regionalDesign": false,
+      "canonical": "https://bloodnet.live/blood/a-positive/chennai"
+    },
+    {
+      "path": "/blog",
+      "status": 200,
+      "regionalDesign": false,
+      "canonical": "https://bloodnet.live/blog"
+    },
+    {
+      "path": "/statistics",
+      "status": 200,
+      "regionalDesign": false,
+      "canonical": "https://bloodnet.live/statistics"
+    },
+    {
+      "path": "/sitemap-location.xml",
+      "status": 200,
+      "regionalDesign": false
+    },
+    {
+      "path": "/sitemap.xml",
+      "status": 200,
+      "regionalDesign": false
+    },
+    {
+      "path": "/",
+      "status": 200,
+      "regionalDesign": false,
+      "canonical": "https://bloodnet.live"
+    }
+  ],
+  "countDefinitionsAgree": true,
+  "anonymousEditorAccessDenied": true,
+  "missingLocationReturns404": true
+}

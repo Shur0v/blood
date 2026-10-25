@@ -117,6 +117,7 @@ before(async () => {
   await sql.query('INSERT INTO "PublicDonorProfile" (id,user_id,slug,is_published,bio,consent_version,consented_at,updated_at) VALUES ($1,$2,$3,true,$4,$5,NOW(),NOW())',[legacyPublicationId,migratedUserId,'migration-review-'+legacyPublicationId,legacyBio,'2026-10-16-v1']);
   await sql.query(readFileSync('prisma/migrations/20261016210000_admin_donor_publication/migration.sql','utf8'));
   await sql.query(readFileSync('prisma/migrations/20261024090000_patient_id_visibility/migration.sql','utf8'));
+  await sql.query(readFileSync('prisma/migrations/20261025090000_regional_city_pages/migration.sql','utf8'));
   const migratedPublication=(await sql.query('SELECT * FROM "PublicDonorProfile" WHERE id=$1',[legacyPublicationId])).rows[0];
   assert.equal(migratedPublication.is_published,false);assert.equal(migratedPublication.bio,legacyBio);assert.equal(migratedPublication.admin_approved_at,null);assert.ok(migratedPublication.consented_at);
 });
@@ -860,7 +861,7 @@ test('every exported administrator and manager API method denies anonymous and o
       checked++;
     }
   }
-  assert.equal(checked,70,'Cover all existing privileged API methods');
+  assert.equal(checked,72,'Cover all existing privileged API methods');
 });
 
 test('verification uploads are encrypted, owner-bound and privately readable by owner or active admin', integration, async () => {
@@ -1281,4 +1282,55 @@ test('country headers stay fast and city enrichment never attaches a different c
   globalThis.fetch=async()=>Response.json({country:{name:'India'},city:{name:'Mumbai'},location:{latitude:19.07,longitude:72.87}});
   const mismatched=await(await detectCountry(new Request('http://localhost/api/location/ip?detail=city',{headers:{'cf-ipcountry':'BD','cf-connecting-ip':'198.51.100.25'}}))).json();assert.deepEqual(mismatched.data,{country:'Bangladesh'});
  }finally{globalThis.fetch=original;}
+});
+
+
+test('regional updates enforce publication, country inheritance and public-image boundaries',integration,async()=>{
+ const db=getPrisma(),user=await newPatient(),city='Regional QA '+randomUUID();
+ await db.user.update({where:{id:user.id},data:{location_country:'Nepal',location_city:city}});
+ const {saveRegionalContent,getRegionalContent,regionalContentKey}=await import('../src/backend/services/regionalContent');
+ const base={country:'Nepal',city:null,title:'A reviewed local update',summary:'Public community information.',slides:[],published:false};
+ const countryKey=regionalContentKey('Nepal'),cityKey=regionalContentKey('Nepal',city);
+ const asset=await db.mediaAsset.create({data:{category:'SLIDER',storage_key:'synthetic/region.webp',public_url:'https://example.invalid/region.webp',mime_type:'image/webp',size_bytes:100,width:1200,height:800}});
+ const slide={assetId:asset.id,alt:'A synthetic community image',caption:'A test image',credit:'Test fixture',sourceUrl:'https://example.invalid/source',eventDate:'2026-10-25'};
+ try{
+ await saveRegionalContent(base);assert.equal(await getRegionalContent('Nepal',city),null);
+ await saveRegionalContent({...base,published:true,slides:[slide]});assert.equal((await getRegionalContent('Nepal',city))?.title,base.title);assert.equal((await getRegionalContent('Nepal',city))?.slides[0].url,asset.public_url);
+ const recordedDate=new Date('2020-01-01');await db.regionalPageContent.update({where:{key:countryKey},data:{public_updated_at:recordedDate}});
+ await saveRegionalContent({...base,published:true,slides:[slide]});assert.equal((await db.regionalPageContent.findUniqueOrThrow({where:{key:countryKey}})).public_updated_at?.toISOString(),recordedDate.toISOString(),'Saving identical JSONB content must not invent an SEO update');
+ await saveRegionalContent({...base,city,title:'Private city draft'});assert.equal((await getRegionalContent('Nepal',city))?.title,base.title);
+ await saveRegionalContent({...base,city,title:'City override',published:true});assert.equal((await getRegionalContent('Nepal',city))?.title,'City override');
+ await saveRegionalContent({...base,city,published:false});assert.equal((await getRegionalContent('Nepal',city))?.title,base.title);
+ const withdrawn=(await db.regionalPageContent.findUniqueOrThrow({where:{key:cityKey}})).public_updated_at;assert.ok(withdrawn);
+ await saveRegionalContent({...base,city,title:'Only a draft edit'});assert.equal((await db.regionalPageContent.findUniqueOrThrow({where:{key:cityKey}})).public_updated_at?.toISOString(),withdrawn.toISOString());
+ await assert.rejects(saveRegionalContent({...base,city:'No such city '+randomUUID()}),/recorded donor coverage/);
+ await assert.rejects(saveRegionalContent({...base,slides:[{...slide,assetId:randomUUID()}]}),/administrator image uploader/);
+ await db.mediaAsset.update({where:{id:asset.id},data:{category:'VERIFICATION',mime_type:'application/x-bloodnet-encrypted-webp'}});
+ await assert.rejects(saveRegionalContent({...base,slides:[slide]}),/administrator image uploader/);
+ assert.equal((await getRegionalContent('Nepal',city))?.slides.length,0);
+ const {GET,PUT}=await import('../src/app/api/admin/regional-content/route');
+ const request=(method:string,body?:unknown)=>new Request('https://bloodnet.test/api/admin/regional-content',{method,headers:{authorization:'Bearer '+signToken({user_id:testAdminId,role:'ADMIN'}),'Content-Type':'application/json'},...(body?{body:JSON.stringify(body)}:{})});
+ assert.equal((await GET(request('GET'))).status,200);assert.equal((await PUT(request('PUT',{...base,published:true}))).status,200);
+ assert.equal((await PUT(request('PUT',{...base,unexpected:true}))).status,400);
+ }finally{await db.regionalPageContent.deleteMany({where:{key:{in:[countryKey,cityKey]}}});await db.mediaAsset.delete({where:{id:asset.id}});}
+});
+
+test('city request visibility defaults off, persists independently and streams to public pages',integration,async()=>{
+ const {GET,PATCH}=await import('../src/app/api/admin/site-controls/route');const {GET:events}=await import('../src/app/api/public/ui-events/route');
+ const request=(body:unknown)=>new Request('https://bloodnet.test/api/admin/site-controls',{method:'PATCH',headers:{authorization:'Bearer '+signToken({user_id:testAdminId,role:'ADMIN'}),'Content-Type':'application/json'},body:JSON.stringify(body)});
+ const before=(await(await GET(new Request('https://bloodnet.test/api/admin/site-controls',{headers:{authorization:'Bearer '+signToken({user_id:testAdminId,role:'ADMIN'})}}))).json()).data;
+ assert.equal(before.cityDonationRequestVisible,false);
+ const signal=new AbortController(),stream=await events(new Request('https://bloodnet.test/api/public/ui-events',{signal:signal.signal})),reader=stream.body!.getReader();
+ const next=async(target:boolean)=>{for(let i=0;i<8;i++){const result=await Promise.race([reader.read(),new Promise<never>((_,reject)=>{const timer=setTimeout(()=>reject(Error('No visibility event')),5000);timer.unref();})]);if(new TextDecoder().decode(result.value).includes('"cityDonationRequestVisible":'+target))return;}assert.fail('Missing visibility value');};
+ try{
+ await next(false);assert.equal((await PATCH(request({cityDonationRequestVisible:true}))).status,200);await next(true);
+ const current=await getPrisma().platformSettings.findFirst({orderBy:[{updated_at:'desc'},{id:'desc'}]});assert.equal(current?.city_donation_request_visible,true);assert.equal(current?.patient_id_visible,before.patientIdVisible);assert.equal(current?.discovery_visible,before.discoveryVisible);
+ assert.equal((await PATCH(request({cityDonationRequestVisible:'yes'}))).status,400);
+ assert.equal((await PATCH(request({cityDonationRequestVisible:false}))).status,200);await next(false);
+ }finally{signal.abort();await reader.cancel();await PATCH(request({cityDonationRequestVisible:false}));}
+});
+
+test('crawler statistics distinguish all accounts from active directory listings',integration,async()=>{
+ const db=getPrisma(),before=await getPublicBotStats(),user=await newPatient();await db.user.update({where:{id:user.id},data:{is_active_donor:false}});
+ const stats=await getPublicBotStats();assert.equal(stats.totalRegisteredAccounts,before.totalRegisteredAccounts+1);assert.equal(stats.activeRegisteredAccounts,before.activeRegisteredAccounts);assert.equal(stats.totalListingCount,before.totalListingCount);assert.equal(stats.totalRegisteredAccounts,await db.user.count());assert.ok(stats.countDefinitions.manualDonorEntries.includes('not platform accounts'));
 });

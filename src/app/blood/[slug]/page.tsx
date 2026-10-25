@@ -1,3 +1,4 @@
+import '@/src/app/regional.css';
 import type { Metadata } from "next";
 import { BloodGroupSeoPage, CityBloodSeoPage } from "@/src/components/ProgrammaticBloodSeoPage";
 import { getBloodGroupSummary, getCityBloodSummary } from "@/src/backend/services/seoData";
@@ -46,5 +47,5 @@ export default async function BloodSlugPage({ params }: { params: Promise<Params
   const normalizedSlug = slug.toLowerCase();
   const bloodGroup = bloodGroupFromSlug(normalizedSlug);
   if (bloodGroup) return <BloodGroupSeoPage bloodGroup={bloodGroup} />;
-  return <CityBloodSeoPage citySlug={normalizedSlug} />;
+  return <CityBloodSeoPage citySlug={normalizedSlug} canonicalPath={`/blood/${normalizedSlug}`} />;
 }

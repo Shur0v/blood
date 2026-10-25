@@ -11,6 +11,7 @@ import {
 import WheelDatePickerModal from "@/src/components/WheelDatePickerModal";
 
 interface AuthModalProps {
+  initialMode?: "register" | "login";
   isOpen: boolean;
   onClose: () => void;
   onSuccess: (user: { id: string; name: string; email: string; role: string }) => void;
@@ -41,9 +42,9 @@ const COUNTRY_OPTIONS: CountryOption[] = getCountries()
   }))
   .sort((a, b) => a.name.localeCompare(b.name));
 
-export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
+export default function AuthModal({ isOpen, onClose, onSuccess, initialMode="register" }: AuthModalProps) {
   const [step, setStep] = useState<"register" | "otp">("register");
-  const [authMode, setAuthMode] = useState<"register" | "login">("register");
+  const [authMode, setAuthMode] = useState<"register" | "login">(initialMode);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [accountNotice,setAccountNotice]=useState("");

@@ -6,6 +6,7 @@ import { bloodGroupToSlug } from '@/src/lib/seoRouting';
 import { getPublicBaseUrl } from '@/src/backend/config/env';
 import { stringifyJsonLd } from '@/src/lib/aiSeo';
 import CityLandingDonorGrid from './CityLandingDonorGrid';
+import RegionalCityExperience from './regional/RegionalCityExperience';
 import Hero from './Hero';
 import DonorDiscoveryPanel from './DonorDiscoveryPanel';
 import { locationCommentary } from '@/src/backend/services/donorResearch';
@@ -30,6 +31,7 @@ export default async function DonorLocationLanding({params,mode,bloodGroup}:{par
   const representedGroups=row?.bloodGroups||[];
   if(row&&bloodGroup){const count=(await getLocationBloodGroupCounts(row.country,row.city))[bloodGroup]||0;row={...row,bloodCount:count,bloodGroups:[bloodGroup]};}
   if (!row || !(mode === 'blood' ? row.bloodCount : row.organCount)) notFound();
+  if(mode==='blood'&&row.country.toLowerCase()==='nepal')return <RegionalCityExperience country={row.country} city={row.city} group={bloodGroup} canonicalPath={donorLocationPath(row,'blood')+(bloodGroup?'/'+bloodGroupToSlug(bloodGroup):'')}/>;
   const count = mode === 'blood' ? row.bloodCount : row.organCount;
   const path = donorLocationPath(row, mode)+(bloodGroup?`/${bloodGroupToSlug(bloodGroup)}`:''), url = getPublicBaseUrl() + path;
   const title = `${bloodGroup?bloodGroup+' ':''}${mode === 'blood' ? 'Blood' : 'Organ'} donors in ${row.city}, ${row.country}`;

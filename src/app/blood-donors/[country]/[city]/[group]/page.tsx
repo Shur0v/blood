@@ -1,3 +1,4 @@
+import '@/src/app/regional.css';
 import { notFound } from 'next/navigation';
 import { bloodGroupFromSlug } from '@/src/lib/seoRouting';
 import DonorLocationLanding,{donorLocationMetadata} from '@/src/components/DonorLocationLanding';

@@ -1,5 +1,7 @@
+import '@/src/app/regional.css';
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import RegionalCityExperience from '@/src/components/regional/RegionalCityExperience';
 import RegionalSeoFooter from '@/src/components/RegionalSeoFooter';
 import DonorLocationDirectory from '@/src/components/DonorLocationDirectory';
 import {getDonorLocations} from '@/src/backend/services/donorLocations';
@@ -39,6 +41,7 @@ export default async function RegionalLandingPage({ params }: { params: Promise<
     notFound();
   }
 
+  if(config.country==='Nepal')return <RegionalCityExperience country="Nepal" canonicalPath="/nepal" title="Nepal blood donor directory"/>;
   const baseUrl = getPublicBaseUrl().replace(/\/$/, "");
   const collectionSchema = {
     "@context": "https://schema.org",

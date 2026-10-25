@@ -2,10 +2,12 @@ import { getPublicBaseUrl } from '@/src/backend/config/env';
 import { getDonorLocations, donorLocationPath } from '@/src/backend/services/donorLocations';
 import { renderUrlSetXml } from '@/src/lib/sitemapXml';
 import { bloodGroupToSlug } from '@/src/lib/seoRouting';
+import {getRegionalPublicationDates,regionalLastModified} from '@/src/backend/services/regionalContent';
 export const dynamic = 'force-dynamic';
 export async function GET() {
   try {
-    const base = getPublicBaseUrl(), rows = await getDonorLocations();
+    const base = getPublicBaseUrl(), [rawRows,dates] = await Promise.all([getDonorLocations(),getRegionalPublicationDates()]);
+    const rows=rawRows.map(row=>({...row,updatedAt:regionalLastModified(row.country,row.city,row.updatedAt,dates)}));
     const urls = rows.flatMap(row => [
       ...(row.bloodCount > 0 ? [{ url: base + donorLocationPath(row,'blood'), lastModified: row.updatedAt }] : []),
       ...(row.organCount > 0 ? [{ url: base + donorLocationPath(row,'organ'), lastModified: row.updatedAt }] : []),

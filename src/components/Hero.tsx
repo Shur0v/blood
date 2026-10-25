@@ -108,7 +108,7 @@ function MixedDonorBannerCard({ ad, onFail }: { ad: InlineBannerAdUnit; onFail: 
 
 const DONOR_GRID_AD_SLOTS = 4;
 
-export default function Hero({ forcedCountry, initialCity = '', initialGroup = null, headingLevel = 1 }: { forcedCountry?: string; initialCity?: string; initialGroup?: string | null; headingLevel?: 1 | 2 }) {
+export default function Hero({ forcedCountry, initialCity = '', initialGroup = null, headingLevel = 1, presentation = "default" }: { forcedCountry?: string; initialCity?: string; initialGroup?: string | null; headingLevel?: 1 | 2; presentation?: "default" | "regional" }) {
   const adsConfig = usePublicAds();
   const readServerRenderedDonorTotal = () => {
     if (forcedCountry) return 0;
@@ -379,7 +379,7 @@ export default function Hero({ forcedCountry, initialCity = '', initialGroup = n
   }, [hasLoadedMoreOnce, inlineBannerAd, hideInlineBanner, donors, activeGroup, normalizedSearch]);
 
   return (
-    <section className="relative flex min-h-screen flex-col items-center justify-center px-4 pt-20 pb-32">
+    <section id={presentation==="regional"?"regional-donor-search":undefined} data-region-section={presentation==="regional"?"2":undefined} className={(presentation==="regional"?"regional-donor-search ":"")+"relative flex min-h-screen flex-col items-center justify-center px-4 pt-20 pb-32"}>
       <div className="absolute top-1/4 left-1/4 hidden h-64 w-64 rounded-full bg-primary-dark/10 blur-[100px] md:block" />
       <div className="absolute bottom-1/4 right-1/4 hidden h-96 w-96 rounded-full bg-primary/5 blur-[120px] md:block" />
 
@@ -389,7 +389,7 @@ export default function Hero({ forcedCountry, initialCity = '', initialGroup = n
         >
           <div className="relative z-10">
             <motion.div
-              className="mb-10 inline-flex flex-col items-center rounded-[8px] bg-gray-900 p-1.5 shadow-2xl"
+              data-region-counter={presentation==="regional"?"true":undefined} className="mb-10 inline-flex flex-col items-center rounded-[8px] bg-gray-900 p-1.5 shadow-2xl"
             >
               <div className="flex min-w-[160px] items-center justify-center rounded-[6px] bg-white py-4">
                 <motion.span className="text-5xl font-semibold tabular-nums tracking-tighter text-gray-900">
@@ -398,17 +398,17 @@ export default function Hero({ forcedCountry, initialCity = '', initialGroup = n
               </div>
               <div className="px-4 py-2">
                 <span className="text-base font-bold lowercase tracking-[2px] text-white">
-                  active donor
+                  {presentation==="regional"?"country entries":"active donor"}
                 </span>
               </div>
             </motion.div>
 
-            {headingLevel === 1 ? <h1 className="mb-6 text-4xl font-bold tracking-tight text-gray-900 md:text-6xl">
+            {presentation==="regional" ? <h2 className="region-search-title">Find a donor.<br/><span>Start nearby.</span></h2> : headingLevel === 1 ? <h1 className="mb-6 text-4xl font-bold tracking-tight text-gray-900 md:text-6xl">
               Every Drop <span className="text-primary-dark">Counts</span>.
             </h1> : <h2 className="mb-6 text-4xl font-bold tracking-tight text-gray-900 md:text-6xl">Every Drop <span className="text-primary-dark">Counts</span>.</h2>}
 
             <p className="mx-auto mb-8 max-w-2xl text-base text-gray-500">
-              Join our premium community of life-savers. Connect with donors instantly and manage blood stocks with our futuristic medical dashboard.
+              {presentation==="regional"?`Search ${initialCity||forcedCountry||"local"} entries by blood group or name. Local matches come first, with broader suggestions when needed. Confirm availability directly.`:"Join our premium community of life-savers. Connect with donors instantly and manage blood stocks with our futuristic medical dashboard."}
             </p>
 
             <div className="mx-auto w-full max-w-5xl">{discoveryNotice&&<p role="status" className="sr-only">{discoveryNotice}</p>}<DonorBloodFilters activeGroup={activeGroup} onGroupChange={setActiveGroup} searchQuery={searchQuery} onSearchChange={setSearchQuery} placeholder="Search city or donor name…" analyticsPrefix="Blood" /></div>
@@ -420,18 +420,18 @@ export default function Hero({ forcedCountry, initialCity = '', initialGroup = n
         </motion.div>
 
         {!viewerGeo.resolved || isInitialDonorLoad || !localReady ? (
-          <div className="mx-auto min-h-[320px] max-w-4xl rounded-[8px] border border-white/40 bg-white/20 p-8 text-center text-sm font-semibold text-gray-700">
+          <div data-region-section={presentation==="regional"?"3":undefined} className="mx-auto min-h-[320px] max-w-4xl rounded-[8px] border border-white/40 bg-white/20 p-8 text-center text-sm font-semibold text-gray-700">
             Loading nearby active donors...
           </div>
         ) : hasNoResults ? (
-          <div className="mx-auto min-h-[320px] max-w-4xl rounded-[8px] border border-white/40 bg-white/20 p-8 text-center text-sm font-semibold text-gray-700">
+          <div data-region-section={presentation==="regional"?"3":undefined} className="mx-auto min-h-[320px] max-w-4xl rounded-[8px] border border-white/40 bg-white/20 p-8 text-center text-sm font-semibold text-gray-700">
             <p>{isDonorApiDown ? 'Donor cards could not be loaded. Please retry.' : `No matching donor entries${viewerGeo.country ? ` in ${viewerGeo.country}` : ''}${normalizedSearch ? ` for “${normalizedSearch}”` : ''}${activeGroup ? ` (${activeGroup})` : ''}.`}</p>
             <button type="button" className="mt-4 rounded-full border border-rose-200 bg-white px-5 py-3 text-sm font-semibold text-rose-700" onClick={() => isDonorApiDown ? setRetryAttempt(value => value + 1) : document.querySelector<HTMLButtonElement>('.donor-discovery-trigger')?.click()}>
               {isDonorApiDown ? 'Retry donor search' : 'Choose another location'}
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div data-region-section={presentation==="regional"?"3":undefined} className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {donors.map((donor, index) => (
               <div key={`slot-${donor.id}`}>
                 {inlineBannerAd && !hideInlineBanner && adInsertIndexes.includes(index) && !failedAdSlots[index] && (
@@ -445,6 +445,10 @@ export default function Hero({ forcedCountry, initialCity = '', initialGroup = n
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: index * 0.05 }}
                   onClick={() => setSelectedDonor(donor)}
+                  data-regional-card={presentation==="regional"?"true":undefined}
+                  role={presentation==="regional"?"button":undefined}
+                  tabIndex={presentation==="regional"?0:undefined}
+                  onKeyDown={presentation==="regional"?(event)=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();setSelectedDonor(donor);}}:undefined}
                   data-analytics-component="Blood Donor Card Open"
                   whileHover={{
                     y: -5,

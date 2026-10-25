@@ -20,11 +20,12 @@ export default function SiteNavShell() {
   useEffect(() => {
     if (navigation) return;
     const controller = new AbortController();
-    void fetch('/api/auth/session', { credentials: 'include', cache: 'no-store', signal: controller.signal })
+    const refresh=()=>{void fetch('/api/auth/session', { credentials: 'include', cache: 'no-store', signal: controller.signal })
       .then(async response => { if (!response.ok) return false; return Boolean((await response.json()).user); })
       .then(value => { if (!controller.signal.aborted) setIsLoggedIn(value); })
-      .catch(() => { /* Navigation stays usable when the session service is unavailable. */ });
-    return () => controller.abort();
+      .catch(() => { /* Navigation stays usable when the session service is unavailable. */ });};
+    refresh();window.addEventListener('bloodnet:session-changed',refresh);
+    return () => {controller.abort();window.removeEventListener('bloodnet:session-changed',refresh);};
   }, [pathname, Boolean(navigation)]);
 
   if (navigation) return <Navbar {...navigation} />;

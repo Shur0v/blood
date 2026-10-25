@@ -1,4 +1,4 @@
-import React from "react";
+import React,{useEffect,useId,useRef} from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { X, Phone, MapPin, Droplet, CalendarDays, Star } from "lucide-react";
 
@@ -36,6 +36,24 @@ const buildDialTarget = (rawPhone: string) => {
 };
 
 export default function DonorModal({ donor, onClose }: DonorModalProps) {
+  const dialogRef=useRef<HTMLDivElement>(null),closeAction=useRef(onClose),headingId=useId();
+  closeAction.current=onClose;
+  useEffect(()=>{
+    if(!donor)return;
+    const previous=document.activeElement instanceof HTMLElement?document.activeElement:null;
+    const dialog=dialogRef.current;
+    dialog?.querySelector<HTMLButtonElement>('button')?.focus();
+    const keyboard=(event:KeyboardEvent)=>{
+      if(event.key==='Escape'){event.preventDefault();closeAction.current();return;}
+      if(event.key!=='Tab'||!dialog)return;
+      const items=Array.from(dialog.querySelectorAll<HTMLElement>('button:not([disabled]),a[href]')).filter(el=>el.tabIndex>=0);
+      const first=items[0],last=items[items.length-1];
+      if(event.shiftKey&&document.activeElement===first){event.preventDefault();last?.focus();}
+      else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first?.focus();}
+    };
+    document.addEventListener('keydown',keyboard);
+    return()=>{document.removeEventListener('keydown',keyboard);if(previous?.isConnected)previous.focus();};
+  },[donor?.name,donor?.phone]);
   if (!donor) return null;
   const isVerified = donor.verificationStatus === "VERIFIED";
   const hasHemoglobin = donor.hemoglobin && donor.hemoglobin.trim().length > 0;
@@ -60,6 +78,10 @@ export default function DonorModal({ donor, onClose }: DonorModalProps) {
 
           {/* Modal Card */}
           <motion.div
+            ref={dialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={headingId}
             initial={{ scale: 0.9, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.9, opacity: 0, y: 20 }}
@@ -67,6 +89,8 @@ export default function DonorModal({ donor, onClose }: DonorModalProps) {
           >
             {/* Close Button */}
             <button
+              type="button"
+              aria-label="Close donor details"
               onClick={onClose}
               className="absolute right-6 top-6 flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition-colors hover:bg-gray-200 hover:text-gray-900"
             >
@@ -80,7 +104,7 @@ export default function DonorModal({ donor, onClose }: DonorModalProps) {
                 {donor.sourceType === "COMMUNITY" ? <Star className="h-8 w-8 fill-white text-white" /> : donor.group}
               </div>
 
-              <h2 className="mb-2 text-2xl font-semibold tracking-tight text-gray-900 uppercase">
+              <h2 id={headingId} className="mb-2 text-2xl font-semibold tracking-tight text-gray-900 uppercase">
                 {donor.name}
               </h2>
               

@@ -16,6 +16,7 @@ import {
   type BloodGroup,
 } from "@/src/lib/seoRouting";
 import ManagedNativeAdSlot from "@/src/components/ManagedNativeAdSlot";
+import RegionalCityExperience from './regional/RegionalCityExperience';
 import Hero from './Hero';
 import DonorDiscoveryPanel from './DonorDiscoveryPanel';
 
@@ -119,6 +120,7 @@ export async function BloodGroupCitySeoPage({ bloodGroup, citySlug }: { bloodGro
 
   const city = donors[0]?.location_city || cityRows[0].city;
   const country = donors[0]?.location_country || cityRows[0].country;
+  if(country.toLowerCase()==='nepal')return <RegionalCityExperience country={country} city={city} group={bloodGroup} canonicalPath={`/blood/${bloodGroupToSlug(bloodGroup)}/${citySlug}`} title={`Urgent ${bloodGroup} Blood Donors in ${city}`}/>;
   const localRows = cityRows.filter(row => row.country === country);
   const groupCount = localRows.filter(row => row.blood_group === bloodGroup).reduce((sum, row) => sum + Number(row.total ?? 0), 0);
   const cityTotal = localRows.reduce((sum, row) => sum + Number(row.total ?? 0), 0);
@@ -284,12 +286,13 @@ export async function BloodGroupSeoPage({ bloodGroup }: { bloodGroup: BloodGroup
   );
 }
 
-export async function CityBloodSeoPage({ citySlug }: { citySlug: string }) {
+export async function CityBloodSeoPage({ citySlug, canonicalPath }: { citySlug: string; canonicalPath?:string }) {
   const rows = await getCityBloodSummary(citySlug);
   if (!rows.length) notFound();
 
   const city = rows[0].city;
   const country = rows[0].country;
+  if(country.toLowerCase()==='nepal')return <RegionalCityExperience country={country} city={city} canonicalPath={canonicalPath||`/city/${citySlug}`} title={`Blood Donors in ${city}`}/>;
   const total = rows.reduce((sum, row) => sum + Number(row.total ?? 0), 0);
   const available = new Set(rows.map((row) => row.blood_group));
   const lastUpdated = rows.reduce<Date | null>((latest, row) => {

@@ -8,6 +8,7 @@ import { REGIONS } from '@/src/lib/regions';
 import { getDonorLocations, type DonorLocation } from '@/src/backend/services/donorLocations';
 
 import {blogPageLastModified,publicBlogUrl} from '@/src/lib/blogDiscovery';
+import {getRegionalPublicationDates,regionalLastModified} from '@/src/backend/services/regionalContent';
 
 export const dynamic = 'force-dynamic';
 
@@ -109,6 +110,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       }));
 
     const cityRoutes = buildCityRoutes(baseUrl, cityRows);
+    const regionalDates=await getRegionalPublicationDates();
+    for(const row of cityRows.filter(row=>row.country.toLowerCase()==='nepal')){
+      const modified=regionalLastModified(row.country,row.city,row.updatedAt,regionalDates);
+      for(const route of [...staticRoutes,...cityRoutes]){
+        const value=route.url===baseUrl+'/nepal'?regionalLastModified(row.country,undefined,row.updatedAt,regionalDates):route.url===baseUrl+`/blood-donors/nepal/${cityToSlug(row.city)}`?modified:null;
+        if(value)route.lastModified=new Date(Math.max(value.getTime(),new Date(route.lastModified||0).getTime()));
+      }
+    }
     const seenRoutes = new Set<string>();
     const addRoute = (routes: MetadataRoute.Sitemap, url: string, lastModified: Date | null | undefined, priority = 0.8) => {
       if (seenRoutes.has(url)) return;
@@ -126,9 +135,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       const groupSlug = bloodGroupToSlug(row.blood_group);
       const citySlug = cityToSlug(row.city);
       if (!groupSlug || !citySlug) continue;
-      addRoute(programmaticRoutes, `${baseUrl}/blood/${citySlug}`, row.updated_at, 0.85);
-      addRoute(programmaticRoutes, `${baseUrl}/city/${citySlug}`, row.updated_at, 0.9);
-      addRoute(programmaticRoutes, `${baseUrl}/blood/${groupSlug}/${citySlug}`, row.updated_at, 0.85);
+      const modified=regionalLastModified(row.country,row.city,row.updated_at,regionalDates);
+      addRoute(programmaticRoutes, `${baseUrl}/blood/${citySlug}`, modified, 0.85);
+      addRoute(programmaticRoutes, `${baseUrl}/city/${citySlug}`, modified, 0.9);
+      addRoute(programmaticRoutes, `${baseUrl}/blood/${groupSlug}/${citySlug}`, modified, 0.85);
       const shortcut = countryToShortcut(row.country);
       if (shortcut) addRoute(programmaticRoutes, `${baseUrl}/${shortcut}`, row.updated_at, 0.9);
     }

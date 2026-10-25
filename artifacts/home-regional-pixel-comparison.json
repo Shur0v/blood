@@ -1,0 +1,21 @@
+{
+  "note": "Illustrative screenshots contain different frames of the existing animated counter and background. These raw pixel counts are not a static-layout regression result.",
+  "staticLayoutAndStyleMeasurementsMatch": true,
+  "rawPixelCounts": [
+    {
+      "width": 390,
+      "pixelsChanged": 22390,
+      "totalPixels": 329160
+    },
+    {
+      "width": 768,
+      "pixelsChanged": 646204,
+      "totalPixels": 786432
+    },
+    {
+      "width": 1280,
+      "pixelsChanged": 792106,
+      "totalPixels": 921600
+    }
+  ]
+}

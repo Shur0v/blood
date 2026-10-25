@@ -1,3 +1,4 @@
+import '@/src/app/regional.css';
 import type { Metadata } from "next";
 import { CityBloodSeoPage } from "@/src/components/ProgrammaticBloodSeoPage";
 import { getCityBloodSummary } from "@/src/backend/services/seoData";

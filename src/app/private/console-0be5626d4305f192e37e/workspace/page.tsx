@@ -4,6 +4,8 @@ import React from 'react';
 import Link from 'next/link';
 import { Card } from '@/src/admin-dashboard/components/common/Card';
 import { Badge } from '@/src/admin-dashboard/components/common/Badge';
+import RegionalContentEditor from '@/src/components/RegionalContentEditor';
+import CityRequestVisibilityControl from '@/src/components/CityRequestVisibilityControl';
 import PatientIdVisibilityControl from '@/src/components/PatientIdVisibilityControl';
 import {
   Users, UserCheck, UserMinus, HeartPulse,
@@ -140,6 +142,8 @@ export default function DashboardOverview() {
       </div>
 
       <PatientIdVisibilityControl />
+      <CityRequestVisibilityControl />
+      <RegionalContentEditor />
       {error&&<p role="alert" className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">{error} {hasLoaded?'Showing the last successful update.':''}</p>}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         {KPIS.map((kpi, idx) => {

@@ -256,20 +256,22 @@ export const getRelatedBloodGroups = (current: BloodGroup) => BLOOD_GROUPS.filte
 // All public surfaces use the same listing sources and geographic definitions.
 export const getPublicBotStats = async () => {
   const prisma = getPrisma();
-  const [counts, locations, manualOrganDonors, activePledges, verifiedOrganRequests] = await Promise.all([
+  const [counts, locations, manualOrganDonors, activePledges, verifiedOrganRequests, totalRegisteredAccounts] = await Promise.all([
     getActiveBloodDonorCounts(), getDonorLocations(), prisma.manualOrganDonor.count(),
     prisma.organPledge.count({where:{is_active:true,User:{is_active_donor:true}}}),
-    prisma.organRequest.count({where:{status:'VERIFIED'}}),
+    prisma.organRequest.count({where:{status:'VERIFIED'}}), prisma.user.count(),
   ]);
   return {
-    schemaVersion:2,
+    schemaVersion:3,
     // Retain established fields, with their literal registered-account meaning.
     registeredUsers:counts.registered, registeredDonors:counts.registered,
+    totalRegisteredAccounts, activeRegisteredAccounts:counts.registered,
     registeredAccounts:counts.registered, manualDonorEntries:counts.manual, communityListings:counts.community,
     activeBloodDonors:counts.total, totalListingCount:counts.total,
     organDonorEntries:manualOrganDonors+activePledges, verifiedOrganRequests,
     activeCountries:new Set(locations.map(row=>row.country.toLowerCase())).size, activeCities:locations.length,
-    publicCountingPolicy:'Active registered accounts, manual donor entries and community organisation listings are counted once per source listing, not once per service city. Community listings are not a headcount of individuals. Geographic coverage includes participating blood and organ entries. Counts are not completed donations or available blood units.',
+    countDefinitions:{totalRegisteredAccounts:'All platform user accounts, including inactive accounts.',activeRegisteredAccounts:'Registered accounts currently marked active donors.',manualDonorEntries:'Active manually maintained individual donor listings; these are not platform accounts.',communityListings:'Active community or organisation listings; these are not a count of people.',totalListingCount:'Sum of active registered accounts, manual entries and community listings, counted once per source record.'},
+    publicCountingPolicy:'Registered account totals count platform user accounts. The directory total combines active registered accounts, manual donor entries and community organisation listings. Each source listing is counted once, not once per service city. Community listings are not a headcount of individuals. Geographic coverage includes participating blood and organ entries. Counts are not completed donations or available blood units.',
     lastUpdated:locations.length?new Date(Math.max(...locations.map(row=>row.updatedAt.getTime()))).toISOString():null,
     generatedAt:new Date().toISOString(),
   };

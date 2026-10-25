@@ -1,3 +1,4 @@
+import '@/src/app/regional.css';
 import DonorLocationLanding, { donorLocationMetadata, type LocationParams } from '@/src/components/DonorLocationLanding';
 
 export const dynamic = "force-dynamic";
