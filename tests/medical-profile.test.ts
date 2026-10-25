@@ -119,6 +119,7 @@ before(async () => {
   await sql.query(readFileSync('prisma/migrations/20261024090000_patient_id_visibility/migration.sql','utf8'));
   await sql.query(readFileSync('prisma/migrations/20261025090000_regional_city_pages/migration.sql','utf8'));
   await sql.query(readFileSync('prisma/migrations/20261025220000_regional_design_controls/migration.sql','utf8'));
+  await sql.query(readFileSync('prisma/migrations/20261026080000_homepage_editor/migration.sql','utf8'));
   const migratedPublication=(await sql.query('SELECT * FROM "PublicDonorProfile" WHERE id=$1',[legacyPublicationId])).rows[0];
   assert.equal(migratedPublication.is_published,false);assert.equal(migratedPublication.bio,legacyBio);assert.equal(migratedPublication.admin_approved_at,null);assert.ok(migratedPublication.consented_at);
 });
@@ -862,7 +863,7 @@ test('every exported administrator and manager API method denies anonymous and o
       checked++;
     }
   }
-  assert.equal(checked,72,'Cover all existing privileged API methods');
+  assert.equal(checked,74,'Cover all existing privileged API methods');
 });
 
 test('verification uploads are encrypted, owner-bound and privately readable by owner or active admin', integration, async () => {
@@ -1363,4 +1364,36 @@ test('city request visibility defaults off, persists independently and streams t
 test('crawler statistics distinguish all accounts from active directory listings',integration,async()=>{
  const db=getPrisma(),before=await getPublicBotStats(),user=await newPatient();await db.user.update({where:{id:user.id},data:{is_active_donor:false}});
  const stats=await getPublicBotStats();assert.equal(stats.totalRegisteredAccounts,before.totalRegisteredAccounts+1);assert.equal(stats.activeRegisteredAccounts,before.activeRegisteredAccounts);assert.equal(stats.totalListingCount,before.totalListingCount);assert.equal(stats.totalRegisteredAccounts,await db.user.count());assert.ok(stats.countDefinitions.manualDonorEntries.includes('not platform accounts'));
+});
+
+
+test('homepage editor drafts are private, publication persists and restores without touching regional content',integration,async()=>{
+ const db=getPrisma();const {GET,PUT}=await import('../src/app/api/admin/homepage-content/route');
+ const {getHomepageContent,getHomepagePublicationDate}=await import('../src/backend/services/homepageContent');
+ const request=(action:string,config:unknown,role='ADMIN')=>new Request('https://bloodnet.test/api/admin/homepage-content',{method:'PUT',headers:{authorization:'Bearer '+signToken({user_id:testAdminId,role}),'Content-Type':'application/json'},body:JSON.stringify({action,config})});
+ const regionalBefore=await db.regionalPageContent.findMany();
+ try{
+  assert.equal(await getHomepageContent(),null);
+  assert.equal((await PUT(request('draft',{copy:{heroHeading:'Local connections, shared hope.'},hiddenSections:['mobile']}))).status,200);
+  assert.equal(await getHomepageContent(),null,'Draft must not leak into public rendering');
+  assert.equal(await getHomepagePublicationDate(),undefined);
+  const draft=await db.homepageContent.findUniqueOrThrow({where:{key:'main'}});
+  assert.equal((await PUT(request('publish',draft.draft))).status,200);
+  assert.equal((await getHomepageContent())?.copy.heroHeading,'Local connections, shared hope.');
+  const date=new Date('2010-01-01');await db.homepageContent.update({where:{key:'main'},data:{public_updated_at:date}});
+  assert.equal((await PUT(request('draft',{copy:{heroHeading:'A private next revision.'}}))).status,200);
+  assert.equal((await getHomepageContent())?.copy.heroHeading,'Local connections, shared hope.');
+  assert.equal((await getHomepagePublicationDate())?.toISOString(),date.toISOString(),'Draft does not invent a public date');
+  await PUT(request('publish',draft.draft));
+  assert.equal((await getHomepagePublicationDate())?.toISOString(),date.toISOString(),'Identical publication is a no-op for sitemap date');
+  assert.equal((await PUT(request('publish',{hiddenSections:['hero']}))).status,400);
+  const manager=await db.adminUser.create({data:{admin_id:randomUUID(),role:'MANAGER',password:'test-only'}});
+  try{const token=rawSignToken({user_id:manager.id,role:'MANAGER',credential_version:staffCredentialVersion(manager.id,manager.password)});assert.equal((await PUT(new Request('https://bloodnet.test/api/admin/homepage-content',{method:'PUT',headers:{authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({action:'publish',config:{}})}))).status,403);}finally{await db.adminUser.delete({where:{id:manager.id}});}
+  const response=await GET(new Request('https://bloodnet.test/api/admin/homepage-content',{headers:{authorization:'Bearer '+signToken({user_id:testAdminId,role:'ADMIN'})}}));
+  assert.equal(response.status,200);assert.match(response.headers.get('cache-control')||'',/no-store/);
+  assert.equal((await PUT(request('restore',{}))).status,200);
+  assert.deepEqual(await getHomepageContent(),{copy:{},hiddenSections:[]});
+  assert.ok((await getHomepagePublicationDate())!>date);
+  assert.deepEqual(await db.regionalPageContent.findMany(),regionalBefore);
+ }finally{await db.homepageContent.deleteMany({where:{key:'main'}});}
 });

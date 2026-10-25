@@ -9,6 +9,7 @@ import { getDonorLocations, type DonorLocation } from '@/src/backend/services/do
 
 import {blogPageLastModified,publicBlogUrl} from '@/src/lib/blogDiscovery';
 import {getRegionalPublicationDates,regionalLastModified} from '@/src/backend/services/regionalContent';
+import {getHomepagePublicationDate} from '@/src/backend/services/homepageContent';
 
 export const dynamic = 'force-dynamic';
 
@@ -50,7 +51,7 @@ const buildCityRoutes = (baseUrl: string, rows: DonorLocation[]) => {
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = getPublicBaseUrl();
   const staticRoutes: MetadataRoute.Sitemap = [
-    { url: `${baseUrl}/`, changeFrequency: 'daily', priority: 1 },
+    { url: `${baseUrl}/`, changeFrequency: 'daily', priority: 1, lastModified:await getHomepagePublicationDate() },
     { url: `${baseUrl}/us`, changeFrequency: 'daily', priority: 0.85 },
     { url: `${baseUrl}/blood`, changeFrequency: 'daily', priority: 0.9 },
     { url: `${baseUrl}/organ`, changeFrequency: 'daily', priority: 0.9 },

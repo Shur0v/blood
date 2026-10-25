@@ -633,3 +633,11 @@ model Prescription {
   @@index([user_id, issued_at(sort: Desc), id(sort: Desc)])
   @@index([email_status, email_next_attempt_at])
 }
+
+model HomepageContent {
+ key String @id
+ draft Json @default("{}")
+ live Json?
+ public_updated_at DateTime?
+ updated_at DateTime @updatedAt
+}

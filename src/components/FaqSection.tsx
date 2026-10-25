@@ -1,5 +1,6 @@
 "use client";
 
+import {HomeText} from './HomepageContentContext';
 import { useEffect, useState } from "react";
 import { motion } from "motion/react";
 import { ChevronDown, HelpCircle } from "lucide-react";
@@ -62,8 +63,8 @@ export default function FaqSection() {
         <div className="grid gap-8 p-6 sm:p-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-14 lg:p-14">
           <div>
             <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-rose-200 bg-white px-3 py-1.5 text-xs font-semibold tracking-wide text-rose-700"><HelpCircle className="h-4 w-4 shrink-0" /> Here to help</p>
-            <h2 id="faq-heading" className="text-3xl font-bold leading-tight tracking-tight sm:text-4xl">Frequently asked<br className="hidden lg:block" /> questions.</h2>
-            <p className="mt-4 max-w-sm text-sm leading-7 text-slate-600 sm:text-base">Quick answers about donation, safety, and platform rules.</p>
+            <h2 id="faq-heading" className="text-3xl font-bold leading-tight tracking-tight sm:text-4xl"><HomeText name="faqTitle">Frequently asked<br className="hidden lg:block" /> questions.</HomeText></h2>
+            <p className="mt-4 max-w-sm text-sm leading-7 text-slate-600 sm:text-base"><HomeText name="faqText">Quick answers about donation, safety, and platform rules.</HomeText></p>
           </div>
           <div className="min-w-0 space-y-3">
             {items.map((item) => {

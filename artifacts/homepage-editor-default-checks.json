@@ -1,0 +1,107 @@
+{
+  "390": {
+    "measurements": [
+      {
+        "background": "rgba(255, 255, 255, 0.4)",
+        "color": "rgb(16, 24, 40)",
+        "font": "16px",
+        "h": 726,
+        "tag": "DIV",
+        "w": 358,
+        "x": 16,
+        "y": 80
+      },
+      {
+        "background": "rgba(0, 0, 0, 0)",
+        "color": "oklch(0.21 0.034 264.665)",
+        "font": "36px",
+        "h": 80,
+        "tag": "H1",
+        "w": 276,
+        "x": 57,
+        "y": 293
+      },
+      {
+        "background": "rgb(255, 255, 255)",
+        "color": "oklch(0.208 0.042 265.755)",
+        "font": "16px",
+        "h": 48,
+        "tag": "INPUT",
+        "w": 276,
+        "x": 57,
+        "y": 717
+      }
+    ],
+    "overflow": false
+  },
+  "768": {
+    "measurements": [
+      {
+        "background": "rgba(255, 255, 255, 0.4)",
+        "color": "rgb(16, 24, 40)",
+        "font": "16px",
+        "h": 578,
+        "tag": "DIV",
+        "w": 736,
+        "x": 16,
+        "y": 80
+      },
+      {
+        "background": "rgba(0, 0, 0, 0)",
+        "color": "oklch(0.21 0.034 264.665)",
+        "font": "60px",
+        "h": 60,
+        "tag": "H1",
+        "w": 654,
+        "x": 57,
+        "y": 293
+      },
+      {
+        "background": "rgb(255, 255, 255)",
+        "color": "oklch(0.208 0.042 265.755)",
+        "font": "16px",
+        "h": 48,
+        "tag": "INPUT",
+        "w": 654,
+        "x": 57,
+        "y": 569
+      }
+    ],
+    "overflow": false
+  },
+  "1280": {
+    "measurements": [
+      {
+        "background": "rgba(255, 255, 255, 0.4)",
+        "color": "rgb(16, 24, 40)",
+        "font": "16px",
+        "h": 578,
+        "tag": "DIV",
+        "w": 896,
+        "x": 192,
+        "y": 80
+      },
+      {
+        "background": "rgba(0, 0, 0, 0)",
+        "color": "oklch(0.21 0.034 264.665)",
+        "font": "60px",
+        "h": 60,
+        "tag": "H1",
+        "w": 814,
+        "x": 233,
+        "y": 293
+      },
+      {
+        "background": "rgb(255, 255, 255)",
+        "color": "oklch(0.208 0.042 265.755)",
+        "font": "16px",
+        "h": 48,
+        "tag": "INPUT",
+        "w": 814,
+        "x": 233,
+        "y": 569
+      }
+    ],
+    "overflow": false
+  }
+}

@@ -1,3 +1,4 @@
+import {HomeText} from './HomepageContentContext';
 import React from "react";
 import { motion } from "motion/react";
 import { UserPlus, Search, HeartPulse } from "lucide-react";
@@ -30,7 +31,7 @@ export default function ProcessSteps() {
           viewport={{ once: true }}
           className="text-4xl font-semibold tracking-tight text-gray-900 uppercase"
         >
-          How it Works
+          <HomeText name="processTitle">How it Works</HomeText>
         </motion.h2>
         <div className="mt-2 h-1.5 w-24 bg-primary mx-auto rounded-full" />
       </div>

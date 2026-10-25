@@ -1,0 +1,22 @@
+[
+  {
+    "path": "/",
+    "status": 200
+  },
+  {
+    "path": "/india",
+    "status": 200
+  },
+  {
+    "path": "/blood/a-positive/chennai",
+    "status": 200
+  },
+  {
+    "path": "/sitemap-main.xml",
+    "status": 200
+  },
+  {
+    "path": "/api/admin/homepage-content",
+    "status": 401
+  }
+]

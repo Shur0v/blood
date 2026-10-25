@@ -1,3 +1,4 @@
+import {HomeText} from './HomepageContentContext';
 import { motion } from "motion/react";
 
 interface CTAProps {
@@ -17,11 +18,11 @@ export default function CTA({ onSignUpClick, showSignUpButton = true }: CTAProps
         <div className="relative z-10 flex flex-col items-center justify-between gap-12 md:flex-row">
           <div className="max-w-2xl">
             <h2 className="mb-6 text-5xl font-bold tracking-tight md:text-6xl">
-              Donate an Organ <br />
-              <span className="text-white/80">Become a donor now</span>
+              <HomeText name="ctaTitle">Donate an Organ </HomeText><br />
+              <span className="text-white/80"><HomeText name="ctaSubtitle">Become a donor now</HomeText></span>
             </h2>
             <p className="text-xl text-white/70">
-              Your contribution can change the world. Join our premium network of life-savers today.
+              <HomeText name="ctaText">Your contribution can change the world. Join our premium network of life-savers today.</HomeText>
             </p>
           </div>
 
@@ -32,7 +33,7 @@ export default function CTA({ onSignUpClick, showSignUpButton = true }: CTAProps
               onClick={onSignUpClick}
               className="group relative overflow-hidden rounded-[8px] bg-white px-12 py-6 text-xl font-bold text-primary-dark shadow-2xl transition-all"
             >
-              <span className="relative z-10">Sign Up Now</span>
+              <span className="relative z-10"><HomeText name="ctaButton">Sign Up Now</HomeText></span>
               <div className="absolute inset-0 -z-10 translate-y-full bg-primary-dark/10 transition-transform group-hover:translate-y-0" />
               
               {/* Glossy Reflection Effect */}

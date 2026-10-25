@@ -1,3 +1,4 @@
+import {HomeText} from './HomepageContentContext';
 import { motion, useReducedMotion } from "motion/react";
 import { ArrowUpRight, HeartHandshake } from "lucide-react";
 
@@ -28,11 +29,11 @@ export default function DonorReminder({ onSignUpClick, showSignUpButton = true }
               </p>
             </div>
             <h2 id="donor-reminder-heading" className="max-w-3xl text-[28px] font-semibold leading-[1.2] tracking-tight text-slate-900 sm:text-4xl lg:text-[42px]">
-              Register to donate today.{" "}
-              <span className="mt-3 block text-xl font-medium leading-[1.4] tracking-normal text-slate-700 sm:text-2xl lg:text-[28px]">Tomorrow, someone near you may be waiting for the blood only you can give.</span>
+              <HomeText name="reminderTitle">Register to donate today.</HomeText>{" "}
+              <span className="mt-3 block text-xl font-medium leading-[1.4] tracking-normal text-slate-700 sm:text-2xl lg:text-[28px]"><HomeText name="reminderSubtitle">Tomorrow, someone near you may be waiting for the blood only you can give.</HomeText></span>
             </h2>
             <p className="mt-5 max-w-2xl text-sm leading-7 text-slate-600 sm:text-base">
-              A few minutes now can become the reason a parent, friend, or neighbour gets another morning with their family.
+              <HomeText name="reminderText">A few minutes now can become the reason a parent, friend, or neighbour gets another morning with their family.</HomeText>
             </p>
           </div>
 
@@ -44,7 +45,7 @@ export default function DonorReminder({ onSignUpClick, showSignUpButton = true }
               onClick={onSignUpClick}
               className="group inline-flex min-h-14 w-full items-center justify-between gap-6 rounded-full bg-slate-900 py-2 pl-6 pr-2 text-sm font-semibold text-white shadow-lg shadow-slate-900/10 transition-colors hover:bg-rose-800 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-rose-700 lg:w-auto lg:min-w-48"
             >
-              Register Now
+              <HomeText name="reminderButton">Register Now</HomeText>
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/10"><ArrowUpRight aria-hidden="true" className="h-5 w-5" /></span>
             </motion.button>
           )}

@@ -1,9 +1,11 @@
 import { HomeExperience } from "@/src/components/HomeExperience";
 import DonorLocationDirectory from '@/src/components/DonorLocationDirectory';
 
+import {getHomepageContent} from '@/src/backend/services/homepageContent';
+
 // The modal directory must reflect current database entries, not a build-time snapshot.
 export const dynamic = 'force-dynamic';
 
-export default function HomePage() {
-  return <HomeExperience locationDirectory={<DonorLocationDirectory limit={24}/>}/>;
+export default async function HomePage() {
+  return <HomeExperience homepageContent={await getHomepageContent()} locationDirectory={<DonorLocationDirectory limit={24}/>}/>;
 }

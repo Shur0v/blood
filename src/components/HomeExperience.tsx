@@ -5,6 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import {HomepageContentProvider,HomeSectionVisibility} from './HomepageContentContext';
+import type {HomepageConfig} from '@/src/lib/homepageContent';
 import { HomeNavigationRegistration } from './SiteNavigationProvider';
 import {openFreshHome} from '../lib/homeNavigation';
 import { motion, useScroll, useSpring } from "motion/react";
@@ -132,7 +134,8 @@ const readCachedJson = <T,>(key: string): T | null => {
   }
 };
 
-export function HomeExperience({ forcedCountry, locationDirectory, regionalFooter }: { forcedCountry?: string; locationDirectory?: React.ReactNode; regionalFooter?:React.ReactNode } = {}) {
+export function HomeExperience({ forcedCountry, locationDirectory, regionalFooter, homepageContent=null }: { homepageContent?: HomepageConfig|null;
+ forcedCountry?: string; locationDirectory?: React.ReactNode; regionalFooter?:React.ReactNode } = {}) {
   const pathname = usePathname();
   const router = useRouter();
   const profileIntentHandledRef = useRef(false);
@@ -472,27 +475,27 @@ export function HomeExperience({ forcedCountry, locationDirectory, regionalFoote
         )}
 
         {!isProfileView && currentPage === "home" && (
-          <>
-            <Hero forcedCountry={forcedCountry} />
+          <HomepageContentProvider value={homepageContent}>
+            <Hero forcedCountry={forcedCountry} contentOverride={homepageContent?{heading:homepageContent.copy.heroHeading,description:homepageContent.copy.heroDescription}:undefined} />
             <div className="mx-auto mt-2 w-full max-w-7xl px-4">
               <ManagedNativeAdSlot slotKey="native-ad-1" />
             </div>
-            <div><ProcessSteps /></div>
-            <div><DonorReminder onSignUpClick={() => setIsAuthModalOpen(true)} showSignUpButton={!sessionUser} /></div>
-            <div><ImageSlider /></div>
-            <div><MedicalAidFund /></div>
-            <div><AboutBloodNet onTermsClick={() => handlePageChange("terms-conditions")} /></div>
-            <div><FloatingDonorTags forcedCountry={forcedCountry}/></div>
-            <div><ImpactData /></div>
-            <div><RequestOrgan /></div>
-            <div><Testimonials /></div>
-            <div><UserReports /></div>
-            <div><MobilePreview /></div>
-            <div><FaqSection /></div>
-            <div><CTA onSignUpClick={() => setIsAuthModalOpen(true)} showSignUpButton={!sessionUser} /></div>
-            <div><SocialMedia /></div>
-            <div><ContactUsSection /></div>
-          </>
+            <HomeSectionVisibility name="process"><div><ProcessSteps /></div></HomeSectionVisibility>
+            <HomeSectionVisibility name="reminder"><div><DonorReminder onSignUpClick={() => setIsAuthModalOpen(true)} showSignUpButton={!sessionUser} /></div></HomeSectionVisibility>
+            <HomeSectionVisibility name="slider"><div><ImageSlider /></div></HomeSectionVisibility>
+            <HomeSectionVisibility name="fund"><div><MedicalAidFund /></div></HomeSectionVisibility>
+            <HomeSectionVisibility name="about"><div><AboutBloodNet onTermsClick={() => handlePageChange("terms-conditions")} /></div></HomeSectionVisibility>
+            <HomeSectionVisibility name="activity"><div><FloatingDonorTags forcedCountry={forcedCountry}/></div></HomeSectionVisibility>
+            <HomeSectionVisibility name="impact"><div><ImpactData /></div></HomeSectionVisibility>
+            <HomeSectionVisibility name="organRequest"><div><RequestOrgan /></div></HomeSectionVisibility>
+            <HomeSectionVisibility name="stories"><div><Testimonials /></div></HomeSectionVisibility>
+            <HomeSectionVisibility name="reports"><div><UserReports /></div></HomeSectionVisibility>
+            <HomeSectionVisibility name="mobile"><div><MobilePreview /></div></HomeSectionVisibility>
+            <HomeSectionVisibility name="faq"><div><FaqSection /></div></HomeSectionVisibility>
+            <HomeSectionVisibility name="cta"><div><CTA onSignUpClick={() => setIsAuthModalOpen(true)} showSignUpButton={!sessionUser} /></div></HomeSectionVisibility>
+            <HomeSectionVisibility name="social"><div><SocialMedia /></div></HomeSectionVisibility>
+            <HomeSectionVisibility name="contact"><div><ContactUsSection /></div></HomeSectionVisibility>
+          </HomepageContentProvider>
         )}
 
         {!isProfileView && currentPage === "organ" && (

@@ -1,3 +1,4 @@
+import {HomeText} from './HomepageContentContext';
 import { motion, useReducedMotion } from "motion/react";
 import { ArrowUpRight, HeartPulse, Network, Scale, ShieldCheck, Target, UsersRound } from "lucide-react";
 
@@ -25,10 +26,10 @@ export default function AboutBloodNet({ onTermsClick }: AboutBloodNetProps) {
         <div className="relative grid gap-6 px-6 pb-8 pt-10 sm:px-10 sm:pt-14 lg:grid-cols-[1.3fr_1fr] lg:items-end lg:gap-16 lg:px-14">
           <div>
             <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-rose-200 bg-white px-3 py-1.5 text-xs font-semibold tracking-wide text-rose-700"><span className="h-1.5 w-1.5 rounded-full bg-rose-600" /> About BloodNet</p>
-            <h2 id="about-bloodnet-title" className="max-w-2xl text-3xl font-bold leading-[1.12] tracking-tight sm:text-4xl lg:text-5xl">A trusted network.<br /><span className="text-rose-700">A shared hope.</span></h2>
-            <p className="mt-4 max-w-lg text-base font-medium leading-7 text-slate-700">Building the world&apos;s most trusted blood and organ donor network.</p>
+            <h2 id="about-bloodnet-title" className="max-w-2xl text-3xl font-bold leading-[1.12] tracking-tight sm:text-4xl lg:text-5xl"><HomeText name="aboutTitle">A trusted network.<br /><span className="text-rose-700">A shared hope.</span></HomeText></h2>
+            <p className="mt-4 max-w-lg text-base font-medium leading-7 text-slate-700"><HomeText name="aboutSubtitle">Building the world&apos;s most trusted blood and organ donor network.</HomeText></p>
           </div>
-          <p className="max-w-xl text-sm leading-7 text-slate-600 sm:text-base">BloodNet exists to make urgent donor discovery faster, safer, and easier to coordinate. We are building a lawful matching platform where willing donors, recipients, and care teams can find the right support by location, blood group, organ need, and availability.</p>
+          <p className="max-w-xl text-sm leading-7 text-slate-600 sm:text-base"><HomeText name="aboutText">BloodNet exists to make urgent donor discovery faster, safer, and easier to coordinate. We are building a lawful matching platform where willing donors, recipients, and care teams can find the right support by location, blood group, organ need, and availability.</HomeText></p>
         </div>
         <div className="relative grid grid-cols-2 gap-3 px-6 sm:px-10 md:grid-cols-4 lg:px-14">
           {values.map(({ icon: Icon, label, detail }) => (

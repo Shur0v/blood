@@ -1,10 +1,13 @@
 import { getPublicBaseUrl } from "@/src/backend/config/env";
 import { renderUrlSetXml } from "@/src/lib/sitemapXml";
+import {getHomepagePublicationDate} from '@/src/backend/services/homepageContent';
+
+export const dynamic='force-dynamic';
 
 export async function GET() {
   const baseUrl = getPublicBaseUrl();
   return renderUrlSetXml([
-    { url: `${baseUrl}/` },
+    { url: `${baseUrl}/`, lastModified:await getHomepagePublicationDate() },
     { url: `${baseUrl}/blood` },
     { url: `${baseUrl}/organ` },
     { url: `${baseUrl}/blog` },
