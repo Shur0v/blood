@@ -1290,7 +1290,7 @@ test('regional updates enforce publication, country inheritance and public-image
  await db.user.update({where:{id:user.id},data:{location_country:'Nepal',location_city:city}});
  const {saveRegionalContent,getRegionalContent,regionalContentKey}=await import('../src/backend/services/regionalContent');
  const base={country:'Nepal',city:null,title:'A reviewed local update',summary:'Public community information.',slides:[],published:false};
- const countryKey=regionalContentKey('Nepal'),cityKey=regionalContentKey('Nepal',city);
+ const countryKey=regionalContentKey('Nepal'),cityKey=regionalContentKey('Nepal',city),indiaKey=regionalContentKey('India',city);
  const asset=await db.mediaAsset.create({data:{category:'SLIDER',storage_key:'synthetic/region.webp',public_url:'https://example.invalid/region.webp',mime_type:'image/webp',size_bytes:100,width:1200,height:800}});
  const slide={assetId:asset.id,alt:'A synthetic community image',caption:'A test image',credit:'Test fixture',sourceUrl:'https://example.invalid/source',eventDate:'2026-10-25'};
  try{
@@ -1312,7 +1312,13 @@ test('regional updates enforce publication, country inheritance and public-image
  const request=(method:string,body?:unknown)=>new Request('https://bloodnet.test/api/admin/regional-content',{method,headers:{authorization:'Bearer '+signToken({user_id:testAdminId,role:'ADMIN'}),'Content-Type':'application/json'},...(body?{body:JSON.stringify(body)}:{})});
  assert.equal((await GET(request('GET'))).status,200);assert.equal((await PUT(request('PUT',{...base,published:true}))).status,200);
  assert.equal((await PUT(request('PUT',{...base,unexpected:true}))).status,400);
- }finally{await db.regionalPageContent.deleteMany({where:{key:{in:[countryKey,cityKey]}}});await db.mediaAsset.delete({where:{id:asset.id}});}
+ await db.user.update({where:{id:user.id},data:{location_country:'India'}});
+ assert.equal((await PUT(request('PUT',{...base,country:'India',city,title:'India city update',published:true}))).status,200);
+ assert.equal((await getRegionalContent('India',city))?.title,'India city update');
+ assert.equal((await getRegionalContent('Nepal',city))?.title,base.title,'Country content cannot leak across editions');
+ const {getRegionalPublicationDates}=await import('../src/backend/services/regionalContent');
+ assert.ok((await getRegionalPublicationDates()).has(indiaKey),'All enabled countries contribute genuine publication dates');
+ }finally{await db.regionalPageContent.deleteMany({where:{key:{in:[countryKey,cityKey,indiaKey]}}});await db.mediaAsset.delete({where:{id:asset.id}});}
 });
 
 test('city request visibility defaults off, persists independently and streams to public pages',integration,async()=>{

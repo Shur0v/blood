@@ -1,5 +1,6 @@
 import {z} from 'zod';
 // Significant page-template update; never replace with a request/build timestamp.
+export const GLOBAL_CITY_REVISION='2026-10-25T15:49:01Z';
 export const REGIONAL_CITY_REVISION='2026-10-25T09:22:00Z';
 export const RegionalContentSchema=z.object({
   country:z.string().trim().min(1).max(100), city:z.string().trim().max(120).nullable().default(null),

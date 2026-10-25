@@ -34,7 +34,7 @@ globalThis.fetch=async(url,init={})=>{
  }
  if(String(url)==='/api/admin/regional-content'){
   if(init.method==='PUT'){updates.push(JSON.parse(init.body));return Response.json({success:true,data:{...updates.at(-1),key:'nepal:*'}});}
-  return Response.json({success:true,data:{records:[record],assets:[{id:first.assetId,public_url:first.url}],locations:[{country:'Nepal',city:'Kathmandu'},{country:'Nepal',city:'Pokhara'}]}});
+  return Response.json({success:true,data:{records:[record],assets:[{id:first.assetId,public_url:first.url}],locations:[{country:'Nepal',city:'Kathmandu'},{country:'Nepal',city:'Pokhara'},{country:'India',city:'Chennai'}]}});
  }
  if(String(url)==='/api/uploads/image')return Response.json({success:true,data:{id:'00000000-0000-4000-8000-000000000003',url:'https://example.invalid/new.webp'}});
  return Response.json({success:true,data:{country:'Nepal'}});
@@ -63,6 +63,8 @@ await act(async()=>[...document.querySelectorAll('button')].find(el=>el.textCont
 assert.equal(updates.length,1);assert.equal(updates[0].key,undefined);assert.equal(updates[0].published,true);
 await act(async()=>{const select=document.querySelectorAll('select')[1];select.value='Pokhara';select.dispatchEvent(new Event('change',{bubbles:true}));});
 assert.equal([...document.querySelectorAll('input')].find(el=>el.maxLength===140).value,'');
+await act(async()=>{const select=document.querySelectorAll('select')[0];select.value='India';select.dispatchEvent(new Event('change',{bubbles:true}));});
+assert.equal(document.querySelector('input[type="checkbox"]').disabled,false,'Publishing is available for recorded countries beyond Nepal');
 
 await act(async()=>root.render(React.createElement(AuthModal,{key:'login',isOpen:true,initialMode:'login',onClose(){},onSuccess(){}})));
 assert.match(document.querySelector('[role="dialog"]').textContent,/Login to BloodNet/);

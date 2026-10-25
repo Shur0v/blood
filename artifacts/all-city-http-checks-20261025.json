@@ -1,0 +1,1227 @@
+{
+  "source": "Isolated synthetic fixtures; production untouched.",
+  "checks": [
+    {
+      "path": "/city/chennai",
+      "country": "India",
+      "city": "Chennai",
+      "group": "All",
+      "status": 200,
+      "canonical": "https://bloodnet.live/city/chennai"
+    },
+    {
+      "path": "/blood-donors/india/chennai",
+      "country": "India",
+      "city": "Chennai",
+      "group": "All",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/india/chennai"
+    },
+    {
+      "path": "/blood/chennai",
+      "country": "India",
+      "city": "Chennai",
+      "group": "All",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/chennai"
+    },
+    {
+      "path": "/blood-donors/india/chennai/o-positive",
+      "country": "India",
+      "city": "Chennai",
+      "group": "O+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/india/chennai/o-positive"
+    },
+    {
+      "path": "/blood/o-positive/chennai",
+      "country": "India",
+      "city": "Chennai",
+      "group": "O+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/o-positive/chennai"
+    },
+    {
+      "path": "/blood/o-negative/chennai",
+      "country": "India",
+      "city": "Chennai",
+      "group": "O-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/o-negative/chennai"
+    },
+    {
+      "path": "/blood-donors/india/chennai/o-negative",
+      "country": "India",
+      "city": "Chennai",
+      "group": "O-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/india/chennai/o-negative"
+    },
+    {
+      "path": "/blood-donors/india/chennai/a-positive",
+      "country": "India",
+      "city": "Chennai",
+      "group": "A+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/india/chennai/a-positive"
+    },
+    {
+      "path": "/blood/a-positive/chennai",
+      "country": "India",
+      "city": "Chennai",
+      "group": "A+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/a-positive/chennai"
+    },
+    {
+      "path": "/blood-donors/india/chennai/a-negative",
+      "country": "India",
+      "city": "Chennai",
+      "group": "A-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/india/chennai/a-negative"
+    },
+    {
+      "path": "/blood/a-negative/chennai",
+      "country": "India",
+      "city": "Chennai",
+      "group": "A-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/a-negative/chennai"
+    },
+    {
+      "path": "/blood/b-positive/chennai",
+      "country": "India",
+      "city": "Chennai",
+      "group": "B+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/b-positive/chennai"
+    },
+    {
+      "path": "/blood-donors/india/chennai/b-positive",
+      "country": "India",
+      "city": "Chennai",
+      "group": "B+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/india/chennai/b-positive"
+    },
+    {
+      "path": "/blood-donors/india/chennai/b-negative",
+      "country": "India",
+      "city": "Chennai",
+      "group": "B-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/india/chennai/b-negative"
+    },
+    {
+      "path": "/blood/b-negative/chennai",
+      "country": "India",
+      "city": "Chennai",
+      "group": "B-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/b-negative/chennai"
+    },
+    {
+      "path": "/blood-donors/india/chennai/ab-positive",
+      "country": "India",
+      "city": "Chennai",
+      "group": "AB+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/india/chennai/ab-positive"
+    },
+    {
+      "path": "/blood/ab-negative/chennai",
+      "country": "India",
+      "city": "Chennai",
+      "group": "AB-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/ab-negative/chennai"
+    },
+    {
+      "path": "/blood/ab-positive/chennai",
+      "country": "India",
+      "city": "Chennai",
+      "group": "AB+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/ab-positive/chennai"
+    },
+    {
+      "path": "/blood-donors/india/chennai/ab-negative",
+      "country": "India",
+      "city": "Chennai",
+      "group": "AB-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/india/chennai/ab-negative"
+    },
+    {
+      "path": "/blood/chandigarh",
+      "country": "India",
+      "city": "Chandigarh",
+      "group": "All",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/chandigarh"
+    },
+    {
+      "path": "/city/chandigarh",
+      "country": "India",
+      "city": "Chandigarh",
+      "group": "All",
+      "status": 200,
+      "canonical": "https://bloodnet.live/city/chandigarh"
+    },
+    {
+      "path": "/blood-donors/india/chandigarh",
+      "country": "India",
+      "city": "Chandigarh",
+      "group": "All",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/india/chandigarh"
+    },
+    {
+      "path": "/blood/o-positive/chandigarh",
+      "country": "India",
+      "city": "Chandigarh",
+      "group": "O+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/o-positive/chandigarh"
+    },
+    {
+      "path": "/blood-donors/india/chandigarh/o-positive",
+      "country": "India",
+      "city": "Chandigarh",
+      "group": "O+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/india/chandigarh/o-positive"
+    },
+    {
+      "path": "/blood-donors/india/chandigarh/o-negative",
+      "country": "India",
+      "city": "Chandigarh",
+      "group": "O-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/india/chandigarh/o-negative"
+    },
+    {
+      "path": "/blood/o-negative/chandigarh",
+      "country": "India",
+      "city": "Chandigarh",
+      "group": "O-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/o-negative/chandigarh"
+    },
+    {
+      "path": "/blood/a-positive/chandigarh",
+      "country": "India",
+      "city": "Chandigarh",
+      "group": "A+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/a-positive/chandigarh"
+    },
+    {
+      "path": "/blood-donors/india/chandigarh/a-negative",
+      "country": "India",
+      "city": "Chandigarh",
+      "group": "A-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/india/chandigarh/a-negative"
+    },
+    {
+      "path": "/blood-donors/india/chandigarh/a-positive",
+      "country": "India",
+      "city": "Chandigarh",
+      "group": "A+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/india/chandigarh/a-positive"
+    },
+    {
+      "path": "/blood/a-negative/chandigarh",
+      "country": "India",
+      "city": "Chandigarh",
+      "group": "A-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/a-negative/chandigarh"
+    },
+    {
+      "path": "/blood-donors/india/chandigarh/b-positive",
+      "country": "India",
+      "city": "Chandigarh",
+      "group": "B+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/india/chandigarh/b-positive"
+    },
+    {
+      "path": "/blood/b-positive/chandigarh",
+      "country": "India",
+      "city": "Chandigarh",
+      "group": "B+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/b-positive/chandigarh"
+    },
+    {
+      "path": "/blood/b-negative/chandigarh",
+      "country": "India",
+      "city": "Chandigarh",
+      "group": "B-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/b-negative/chandigarh"
+    },
+    {
+      "path": "/blood-donors/india/chandigarh/b-negative",
+      "country": "India",
+      "city": "Chandigarh",
+      "group": "B-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/india/chandigarh/b-negative"
+    },
+    {
+      "path": "/blood/ab-positive/chandigarh",
+      "country": "India",
+      "city": "Chandigarh",
+      "group": "AB+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/ab-positive/chandigarh"
+    },
+    {
+      "path": "/blood-donors/india/chandigarh/ab-positive",
+      "country": "India",
+      "city": "Chandigarh",
+      "group": "AB+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/india/chandigarh/ab-positive"
+    },
+    {
+      "path": "/blood/ab-negative/chandigarh",
+      "country": "India",
+      "city": "Chandigarh",
+      "group": "AB-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/ab-negative/chandigarh"
+    },
+    {
+      "path": "/blood-donors/india/chandigarh/ab-negative",
+      "country": "India",
+      "city": "Chandigarh",
+      "group": "AB-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/india/chandigarh/ab-negative"
+    },
+    {
+      "path": "/blood/banda",
+      "country": "India",
+      "city": "Banda",
+      "group": "All",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/banda"
+    },
+    {
+      "path": "/city/banda",
+      "country": "India",
+      "city": "Banda",
+      "group": "All",
+      "status": 200,
+      "canonical": "https://bloodnet.live/city/banda"
+    },
+    {
+      "path": "/blood-donors/india/banda",
+      "country": "India",
+      "city": "Banda",
+      "group": "All",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/india/banda"
+    },
+    {
+      "path": "/blood/o-positive/banda",
+      "country": "India",
+      "city": "Banda",
+      "group": "O+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/o-positive/banda"
+    },
+    {
+      "path": "/blood/o-negative/banda",
+      "country": "India",
+      "city": "Banda",
+      "group": "O-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/o-negative/banda"
+    },
+    {
+      "path": "/blood-donors/india/banda/o-positive",
+      "country": "India",
+      "city": "Banda",
+      "group": "O+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/india/banda/o-positive"
+    },
+    {
+      "path": "/blood-donors/india/banda/o-negative",
+      "country": "India",
+      "city": "Banda",
+      "group": "O-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/india/banda/o-negative"
+    },
+    {
+      "path": "/blood-donors/india/banda/a-positive",
+      "country": "India",
+      "city": "Banda",
+      "group": "A+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/india/banda/a-positive"
+    },
+    {
+      "path": "/blood/a-positive/banda",
+      "country": "India",
+      "city": "Banda",
+      "group": "A+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/a-positive/banda"
+    },
+    {
+      "path": "/blood/a-negative/banda",
+      "country": "India",
+      "city": "Banda",
+      "group": "A-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/a-negative/banda"
+    },
+    {
+      "path": "/blood-donors/india/banda/a-negative",
+      "country": "India",
+      "city": "Banda",
+      "group": "A-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/india/banda/a-negative"
+    },
+    {
+      "path": "/blood-donors/india/banda/b-positive",
+      "country": "India",
+      "city": "Banda",
+      "group": "B+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/india/banda/b-positive"
+    },
+    {
+      "path": "/blood/b-positive/banda",
+      "country": "India",
+      "city": "Banda",
+      "group": "B+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/b-positive/banda"
+    },
+    {
+      "path": "/blood-donors/india/banda/b-negative",
+      "country": "India",
+      "city": "Banda",
+      "group": "B-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/india/banda/b-negative"
+    },
+    {
+      "path": "/blood/b-negative/banda",
+      "country": "India",
+      "city": "Banda",
+      "group": "B-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/b-negative/banda"
+    },
+    {
+      "path": "/blood/ab-positive/banda",
+      "country": "India",
+      "city": "Banda",
+      "group": "AB+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/ab-positive/banda"
+    },
+    {
+      "path": "/blood-donors/india/banda/ab-positive",
+      "country": "India",
+      "city": "Banda",
+      "group": "AB+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/india/banda/ab-positive"
+    },
+    {
+      "path": "/blood-donors/india/banda/ab-negative",
+      "country": "India",
+      "city": "Banda",
+      "group": "AB-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/india/banda/ab-negative"
+    },
+    {
+      "path": "/blood/ab-negative/banda",
+      "country": "India",
+      "city": "Banda",
+      "group": "AB-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/ab-negative/banda"
+    },
+    {
+      "path": "/city/odisha",
+      "country": "India",
+      "city": "Odisha",
+      "group": "All",
+      "status": 200,
+      "canonical": "https://bloodnet.live/city/odisha"
+    },
+    {
+      "path": "/blood/odisha",
+      "country": "India",
+      "city": "Odisha",
+      "group": "All",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/odisha"
+    },
+    {
+      "path": "/blood-donors/india/odisha",
+      "country": "India",
+      "city": "Odisha",
+      "group": "All",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/india/odisha"
+    },
+    {
+      "path": "/blood-donors/india/odisha/o-positive",
+      "country": "India",
+      "city": "Odisha",
+      "group": "O+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/india/odisha/o-positive"
+    },
+    {
+      "path": "/blood/o-positive/odisha",
+      "country": "India",
+      "city": "Odisha",
+      "group": "O+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/o-positive/odisha"
+    },
+    {
+      "path": "/blood/o-negative/odisha",
+      "country": "India",
+      "city": "Odisha",
+      "group": "O-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/o-negative/odisha"
+    },
+    {
+      "path": "/blood-donors/india/odisha/o-negative",
+      "country": "India",
+      "city": "Odisha",
+      "group": "O-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/india/odisha/o-negative"
+    },
+    {
+      "path": "/blood-donors/india/odisha/a-positive",
+      "country": "India",
+      "city": "Odisha",
+      "group": "A+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/india/odisha/a-positive"
+    },
+    {
+      "path": "/blood/a-positive/odisha",
+      "country": "India",
+      "city": "Odisha",
+      "group": "A+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/a-positive/odisha"
+    },
+    {
+      "path": "/blood-donors/india/odisha/a-negative",
+      "country": "India",
+      "city": "Odisha",
+      "group": "A-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/india/odisha/a-negative"
+    },
+    {
+      "path": "/blood/a-negative/odisha",
+      "country": "India",
+      "city": "Odisha",
+      "group": "A-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/a-negative/odisha"
+    },
+    {
+      "path": "/blood/b-positive/odisha",
+      "country": "India",
+      "city": "Odisha",
+      "group": "B+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/b-positive/odisha"
+    },
+    {
+      "path": "/blood-donors/india/odisha/b-positive",
+      "country": "India",
+      "city": "Odisha",
+      "group": "B+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/india/odisha/b-positive"
+    },
+    {
+      "path": "/blood-donors/india/odisha/b-negative",
+      "country": "India",
+      "city": "Odisha",
+      "group": "B-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/india/odisha/b-negative"
+    },
+    {
+      "path": "/blood/b-negative/odisha",
+      "country": "India",
+      "city": "Odisha",
+      "group": "B-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/b-negative/odisha"
+    },
+    {
+      "path": "/blood-donors/india/odisha/ab-positive",
+      "country": "India",
+      "city": "Odisha",
+      "group": "AB+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/india/odisha/ab-positive"
+    },
+    {
+      "path": "/blood/ab-positive/odisha",
+      "country": "India",
+      "city": "Odisha",
+      "group": "AB+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/ab-positive/odisha"
+    },
+    {
+      "path": "/blood/ab-negative/odisha",
+      "country": "India",
+      "city": "Odisha",
+      "group": "AB-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/ab-negative/odisha"
+    },
+    {
+      "path": "/blood-donors/india/odisha/ab-negative",
+      "country": "India",
+      "city": "Odisha",
+      "group": "AB-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/india/odisha/ab-negative"
+    },
+    {
+      "path": "/blood/lahore",
+      "country": "Pakistan",
+      "city": "Lahore",
+      "group": "All",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/lahore"
+    },
+    {
+      "path": "/city/lahore",
+      "country": "Pakistan",
+      "city": "Lahore",
+      "group": "All",
+      "status": 200,
+      "canonical": "https://bloodnet.live/city/lahore"
+    },
+    {
+      "path": "/blood-donors/pakistan/lahore",
+      "country": "Pakistan",
+      "city": "Lahore",
+      "group": "All",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/pakistan/lahore"
+    },
+    {
+      "path": "/blood-donors/pakistan/lahore/o-positive",
+      "country": "Pakistan",
+      "city": "Lahore",
+      "group": "O+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/pakistan/lahore/o-positive"
+    },
+    {
+      "path": "/blood/o-positive/lahore",
+      "country": "Pakistan",
+      "city": "Lahore",
+      "group": "O+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/o-positive/lahore"
+    },
+    {
+      "path": "/blood-donors/pakistan/lahore/o-negative",
+      "country": "Pakistan",
+      "city": "Lahore",
+      "group": "O-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/pakistan/lahore/o-negative"
+    },
+    {
+      "path": "/blood/o-negative/lahore",
+      "country": "Pakistan",
+      "city": "Lahore",
+      "group": "O-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/o-negative/lahore"
+    },
+    {
+      "path": "/blood/a-positive/lahore",
+      "country": "Pakistan",
+      "city": "Lahore",
+      "group": "A+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/a-positive/lahore"
+    },
+    {
+      "path": "/blood-donors/pakistan/lahore/a-positive",
+      "country": "Pakistan",
+      "city": "Lahore",
+      "group": "A+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/pakistan/lahore/a-positive"
+    },
+    {
+      "path": "/blood-donors/pakistan/lahore/a-negative",
+      "country": "Pakistan",
+      "city": "Lahore",
+      "group": "A-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/pakistan/lahore/a-negative"
+    },
+    {
+      "path": "/blood/a-negative/lahore",
+      "country": "Pakistan",
+      "city": "Lahore",
+      "group": "A-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/a-negative/lahore"
+    },
+    {
+      "path": "/blood-donors/pakistan/lahore/b-positive",
+      "country": "Pakistan",
+      "city": "Lahore",
+      "group": "B+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/pakistan/lahore/b-positive"
+    },
+    {
+      "path": "/blood/b-positive/lahore",
+      "country": "Pakistan",
+      "city": "Lahore",
+      "group": "B+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/b-positive/lahore"
+    },
+    {
+      "path": "/blood/b-negative/lahore",
+      "country": "Pakistan",
+      "city": "Lahore",
+      "group": "B-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/b-negative/lahore"
+    },
+    {
+      "path": "/blood-donors/pakistan/lahore/b-negative",
+      "country": "Pakistan",
+      "city": "Lahore",
+      "group": "B-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/pakistan/lahore/b-negative"
+    },
+    {
+      "path": "/blood-donors/pakistan/lahore/ab-positive",
+      "country": "Pakistan",
+      "city": "Lahore",
+      "group": "AB+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/pakistan/lahore/ab-positive"
+    },
+    {
+      "path": "/blood/ab-positive/lahore",
+      "country": "Pakistan",
+      "city": "Lahore",
+      "group": "AB+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/ab-positive/lahore"
+    },
+    {
+      "path": "/blood-donors/pakistan/lahore/ab-negative",
+      "country": "Pakistan",
+      "city": "Lahore",
+      "group": "AB-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/pakistan/lahore/ab-negative"
+    },
+    {
+      "path": "/blood/ab-negative/lahore",
+      "country": "Pakistan",
+      "city": "Lahore",
+      "group": "AB-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/ab-negative/lahore"
+    },
+    {
+      "path": "/blood/dhaka",
+      "country": "Bangladesh",
+      "city": "Dhaka",
+      "group": "All",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/dhaka"
+    },
+    {
+      "path": "/blood-donors/bangladesh/dhaka",
+      "country": "Bangladesh",
+      "city": "Dhaka",
+      "group": "All",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/bangladesh/dhaka"
+    },
+    {
+      "path": "/city/dhaka",
+      "country": "Bangladesh",
+      "city": "Dhaka",
+      "group": "All",
+      "status": 200,
+      "canonical": "https://bloodnet.live/city/dhaka"
+    },
+    {
+      "path": "/blood/o-positive/dhaka",
+      "country": "Bangladesh",
+      "city": "Dhaka",
+      "group": "O+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/o-positive/dhaka"
+    },
+    {
+      "path": "/blood-donors/bangladesh/dhaka/o-positive",
+      "country": "Bangladesh",
+      "city": "Dhaka",
+      "group": "O+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/bangladesh/dhaka/o-positive"
+    },
+    {
+      "path": "/blood-donors/bangladesh/dhaka/o-negative",
+      "country": "Bangladesh",
+      "city": "Dhaka",
+      "group": "O-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/bangladesh/dhaka/o-negative"
+    },
+    {
+      "path": "/blood/o-negative/dhaka",
+      "country": "Bangladesh",
+      "city": "Dhaka",
+      "group": "O-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/o-negative/dhaka"
+    },
+    {
+      "path": "/blood-donors/bangladesh/dhaka/a-positive",
+      "country": "Bangladesh",
+      "city": "Dhaka",
+      "group": "A+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/bangladesh/dhaka/a-positive"
+    },
+    {
+      "path": "/blood/a-negative/dhaka",
+      "country": "Bangladesh",
+      "city": "Dhaka",
+      "group": "A-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/a-negative/dhaka"
+    },
+    {
+      "path": "/blood/a-positive/dhaka",
+      "country": "Bangladesh",
+      "city": "Dhaka",
+      "group": "A+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/a-positive/dhaka"
+    },
+    {
+      "path": "/blood-donors/bangladesh/dhaka/b-positive",
+      "country": "Bangladesh",
+      "city": "Dhaka",
+      "group": "B+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/bangladesh/dhaka/b-positive"
+    },
+    {
+      "path": "/blood-donors/bangladesh/dhaka/a-negative",
+      "country": "Bangladesh",
+      "city": "Dhaka",
+      "group": "A-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/bangladesh/dhaka/a-negative"
+    },
+    {
+      "path": "/blood/b-positive/dhaka",
+      "country": "Bangladesh",
+      "city": "Dhaka",
+      "group": "B+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/b-positive/dhaka"
+    },
+    {
+      "path": "/blood/b-negative/dhaka",
+      "country": "Bangladesh",
+      "city": "Dhaka",
+      "group": "B-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/b-negative/dhaka"
+    },
+    {
+      "path": "/blood-donors/bangladesh/dhaka/b-negative",
+      "country": "Bangladesh",
+      "city": "Dhaka",
+      "group": "B-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/bangladesh/dhaka/b-negative"
+    },
+    {
+      "path": "/blood/ab-positive/dhaka",
+      "country": "Bangladesh",
+      "city": "Dhaka",
+      "group": "AB+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/ab-positive/dhaka"
+    },
+    {
+      "path": "/blood-donors/bangladesh/dhaka/ab-positive",
+      "country": "Bangladesh",
+      "city": "Dhaka",
+      "group": "AB+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/bangladesh/dhaka/ab-positive"
+    },
+    {
+      "path": "/blood-donors/bangladesh/dhaka/ab-negative",
+      "country": "Bangladesh",
+      "city": "Dhaka",
+      "group": "AB-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/bangladesh/dhaka/ab-negative"
+    },
+    {
+      "path": "/blood/ab-negative/dhaka",
+      "country": "Bangladesh",
+      "city": "Dhaka",
+      "group": "AB-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/ab-negative/dhaka"
+    },
+    {
+      "path": "/city/kathmandu",
+      "country": "Nepal",
+      "city": "Kathmandu",
+      "group": "All",
+      "status": 200,
+      "canonical": "https://bloodnet.live/city/kathmandu"
+    },
+    {
+      "path": "/blood-donors/nepal/kathmandu",
+      "country": "Nepal",
+      "city": "Kathmandu",
+      "group": "All",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/nepal/kathmandu"
+    },
+    {
+      "path": "/blood/kathmandu",
+      "country": "Nepal",
+      "city": "Kathmandu",
+      "group": "All",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/kathmandu"
+    },
+    {
+      "path": "/blood-donors/nepal/kathmandu/o-positive",
+      "country": "Nepal",
+      "city": "Kathmandu",
+      "group": "O+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/nepal/kathmandu/o-positive"
+    },
+    {
+      "path": "/blood/o-positive/kathmandu",
+      "country": "Nepal",
+      "city": "Kathmandu",
+      "group": "O+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/o-positive/kathmandu"
+    },
+    {
+      "path": "/blood/o-negative/kathmandu",
+      "country": "Nepal",
+      "city": "Kathmandu",
+      "group": "O-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/o-negative/kathmandu"
+    },
+    {
+      "path": "/blood-donors/nepal/kathmandu/o-negative",
+      "country": "Nepal",
+      "city": "Kathmandu",
+      "group": "O-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/nepal/kathmandu/o-negative"
+    },
+    {
+      "path": "/blood-donors/nepal/kathmandu/a-positive",
+      "country": "Nepal",
+      "city": "Kathmandu",
+      "group": "A+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/nepal/kathmandu/a-positive"
+    },
+    {
+      "path": "/blood/a-positive/kathmandu",
+      "country": "Nepal",
+      "city": "Kathmandu",
+      "group": "A+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/a-positive/kathmandu"
+    },
+    {
+      "path": "/blood-donors/nepal/kathmandu/a-negative",
+      "country": "Nepal",
+      "city": "Kathmandu",
+      "group": "A-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/nepal/kathmandu/a-negative"
+    },
+    {
+      "path": "/blood/a-negative/kathmandu",
+      "country": "Nepal",
+      "city": "Kathmandu",
+      "group": "A-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/a-negative/kathmandu"
+    },
+    {
+      "path": "/blood/b-positive/kathmandu",
+      "country": "Nepal",
+      "city": "Kathmandu",
+      "group": "B+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/b-positive/kathmandu"
+    },
+    {
+      "path": "/blood-donors/nepal/kathmandu/b-positive",
+      "country": "Nepal",
+      "city": "Kathmandu",
+      "group": "B+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/nepal/kathmandu/b-positive"
+    },
+    {
+      "path": "/blood-donors/nepal/kathmandu/b-negative",
+      "country": "Nepal",
+      "city": "Kathmandu",
+      "group": "B-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/nepal/kathmandu/b-negative"
+    },
+    {
+      "path": "/blood/b-negative/kathmandu",
+      "country": "Nepal",
+      "city": "Kathmandu",
+      "group": "B-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/b-negative/kathmandu"
+    },
+    {
+      "path": "/blood-donors/nepal/kathmandu/ab-positive",
+      "country": "Nepal",
+      "city": "Kathmandu",
+      "group": "AB+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/nepal/kathmandu/ab-positive"
+    },
+    {
+      "path": "/blood/ab-positive/kathmandu",
+      "country": "Nepal",
+      "city": "Kathmandu",
+      "group": "AB+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/ab-positive/kathmandu"
+    },
+    {
+      "path": "/blood/ab-negative/kathmandu",
+      "country": "Nepal",
+      "city": "Kathmandu",
+      "group": "AB-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/ab-negative/kathmandu"
+    },
+    {
+      "path": "/blood-donors/nepal/kathmandu/ab-negative",
+      "country": "Nepal",
+      "city": "Kathmandu",
+      "group": "AB-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/nepal/kathmandu/ab-negative"
+    },
+    {
+      "path": "/city/nairobi",
+      "country": "Kenya",
+      "city": "Nairobi",
+      "group": "All",
+      "status": 200,
+      "canonical": "https://bloodnet.live/city/nairobi"
+    },
+    {
+      "path": "/blood/nairobi",
+      "country": "Kenya",
+      "city": "Nairobi",
+      "group": "All",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/nairobi"
+    },
+    {
+      "path": "/blood-donors/kenya/nairobi",
+      "country": "Kenya",
+      "city": "Nairobi",
+      "group": "All",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/kenya/nairobi"
+    },
+    {
+      "path": "/blood-donors/kenya/nairobi/o-positive",
+      "country": "Kenya",
+      "city": "Nairobi",
+      "group": "O+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/kenya/nairobi/o-positive"
+    },
+    {
+      "path": "/blood/o-positive/nairobi",
+      "country": "Kenya",
+      "city": "Nairobi",
+      "group": "O+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/o-positive/nairobi"
+    },
+    {
+      "path": "/blood-donors/kenya/nairobi/o-negative",
+      "country": "Kenya",
+      "city": "Nairobi",
+      "group": "O-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/kenya/nairobi/o-negative"
+    },
+    {
+      "path": "/blood/o-negative/nairobi",
+      "country": "Kenya",
+      "city": "Nairobi",
+      "group": "O-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/o-negative/nairobi"
+    },
+    {
+      "path": "/blood/a-positive/nairobi",
+      "country": "Kenya",
+      "city": "Nairobi",
+      "group": "A+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/a-positive/nairobi"
+    },
+    {
+      "path": "/blood-donors/kenya/nairobi/a-positive",
+      "country": "Kenya",
+      "city": "Nairobi",
+      "group": "A+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/kenya/nairobi/a-positive"
+    },
+    {
+      "path": "/blood-donors/kenya/nairobi/a-negative",
+      "country": "Kenya",
+      "city": "Nairobi",
+      "group": "A-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/kenya/nairobi/a-negative"
+    },
+    {
+      "path": "/blood/a-negative/nairobi",
+      "country": "Kenya",
+      "city": "Nairobi",
+      "group": "A-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/a-negative/nairobi"
+    },
+    {
+      "path": "/blood-donors/kenya/nairobi/b-positive",
+      "country": "Kenya",
+      "city": "Nairobi",
+      "group": "B+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/kenya/nairobi/b-positive"
+    },
+    {
+      "path": "/blood/b-positive/nairobi",
+      "country": "Kenya",
+      "city": "Nairobi",
+      "group": "B+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/b-positive/nairobi"
+    },
+    {
+      "path": "/blood/b-negative/nairobi",
+      "country": "Kenya",
+      "city": "Nairobi",
+      "group": "B-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/b-negative/nairobi"
+    },
+    {
+      "path": "/blood-donors/kenya/nairobi/b-negative",
+      "country": "Kenya",
+      "city": "Nairobi",
+      "group": "B-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/kenya/nairobi/b-negative"
+    },
+    {
+      "path": "/blood-donors/kenya/nairobi/ab-positive",
+      "country": "Kenya",
+      "city": "Nairobi",
+      "group": "AB+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/kenya/nairobi/ab-positive"
+    },
+    {
+      "path": "/blood/ab-positive/nairobi",
+      "country": "Kenya",
+      "city": "Nairobi",
+      "group": "AB+",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/ab-positive/nairobi"
+    },
+    {
+      "path": "/blood-donors/kenya/nairobi/ab-negative",
+      "country": "Kenya",
+      "city": "Nairobi",
+      "group": "AB-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood-donors/kenya/nairobi/ab-negative"
+    },
+    {
+      "path": "/blood/ab-negative/nairobi",
+      "country": "Kenya",
+      "city": "Nairobi",
+      "group": "AB-",
+      "status": 200,
+      "canonical": "https://bloodnet.live/blood/ab-negative/nairobi"
+    }
+  ],
+  "anonymousEditorStatus": 401,
+  "missingCityStatus": 404,
+  "sitemaps": [
+    "/sitemap.xml",
+    "/sitemap-location.xml"
+  ]
+}

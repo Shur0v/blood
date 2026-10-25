@@ -111,10 +111,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     const cityRoutes = buildCityRoutes(baseUrl, cityRows);
     const regionalDates=await getRegionalPublicationDates();
-    for(const row of cityRows.filter(row=>row.country.toLowerCase()==='nepal')){
+    for(const row of cityRows){
       const modified=regionalLastModified(row.country,row.city,row.updatedAt,regionalDates);
       for(const route of [...staticRoutes,...cityRoutes]){
-        const value=route.url===baseUrl+'/nepal'?regionalLastModified(row.country,undefined,row.updatedAt,regionalDates):route.url===baseUrl+`/blood-donors/nepal/${cityToSlug(row.city)}`?modified:null;
+        const value=route.url===baseUrl+'/nepal'&&row.country.toLowerCase()==='nepal'?regionalLastModified(row.country,undefined,row.updatedAt,regionalDates):route.url===baseUrl+`/blood-donors/${toLocationSlug(row.country)}/${cityToSlug(row.city)}`?modified:null;
         if(value)route.lastModified=new Date(Math.max(value.getTime(),new Date(route.lastModified||0).getTime()));
       }
     }

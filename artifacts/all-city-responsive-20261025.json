@@ -1,0 +1,200 @@
+[
+  {
+    "path": "/blood/a-positive/chennai",
+    "background": "rgb(255, 248, 240)",
+    "cards": 16,
+    "city": "Chennai",
+    "documentWidth": 390,
+    "group": "A+",
+    "sections": 11,
+    "theme": "india",
+    "width": 390
+  },
+  {
+    "path": "/blood/a-positive/chennai",
+    "background": "rgb(255, 248, 240)",
+    "cards": 16,
+    "city": "Chennai",
+    "documentWidth": 768,
+    "group": "A+",
+    "sections": 11,
+    "theme": "india",
+    "width": 768
+  },
+  {
+    "path": "/blood/a-positive/chennai",
+    "background": "rgb(255, 248, 240)",
+    "cards": 16,
+    "city": "Chennai",
+    "documentWidth": 1280,
+    "group": "A+",
+    "sections": 11,
+    "theme": "india",
+    "width": 1280
+  },
+  {
+    "path": "/blood/o-negative/chandigarh",
+    "background": "rgb(255, 248, 240)",
+    "cards": 16,
+    "city": "Chandigarh",
+    "documentWidth": 390,
+    "group": "O-",
+    "sections": 11,
+    "theme": "india",
+    "width": 390
+  },
+  {
+    "path": "/blood/o-negative/chandigarh",
+    "background": "rgb(255, 248, 240)",
+    "cards": 16,
+    "city": "Chandigarh",
+    "documentWidth": 768,
+    "group": "O-",
+    "sections": 11,
+    "theme": "india",
+    "width": 768
+  },
+  {
+    "path": "/blood/o-negative/chandigarh",
+    "background": "rgb(255, 248, 240)",
+    "cards": 16,
+    "city": "Chandigarh",
+    "documentWidth": 1280,
+    "group": "O-",
+    "sections": 11,
+    "theme": "india",
+    "width": 1280
+  },
+  {
+    "path": "/blood/lahore",
+    "background": "rgb(243, 248, 245)",
+    "cards": 16,
+    "city": "Lahore",
+    "documentWidth": 390,
+    "group": "All groups",
+    "sections": 11,
+    "theme": "pakistan",
+    "width": 390
+  },
+  {
+    "path": "/blood/lahore",
+    "background": "rgb(243, 248, 245)",
+    "cards": 16,
+    "city": "Lahore",
+    "documentWidth": 768,
+    "group": "All groups",
+    "sections": 11,
+    "theme": "pakistan",
+    "width": 768
+  },
+  {
+    "path": "/blood/lahore",
+    "background": "rgb(243, 248, 245)",
+    "cards": 16,
+    "city": "Lahore",
+    "documentWidth": 1280,
+    "group": "All groups",
+    "sections": 11,
+    "theme": "pakistan",
+    "width": 1280
+  },
+  {
+    "path": "/blood/o-positive/dhaka",
+    "background": "rgb(245, 248, 244)",
+    "cards": 16,
+    "city": "Dhaka",
+    "documentWidth": 390,
+    "group": "O+",
+    "sections": 11,
+    "theme": "bangladesh",
+    "width": 390
+  },
+  {
+    "path": "/blood/o-positive/dhaka",
+    "background": "rgb(245, 248, 244)",
+    "cards": 16,
+    "city": "Dhaka",
+    "documentWidth": 768,
+    "group": "O+",
+    "sections": 11,
+    "theme": "bangladesh",
+    "width": 768
+  },
+  {
+    "path": "/blood/o-positive/dhaka",
+    "background": "rgb(245, 248, 244)",
+    "cards": 16,
+    "city": "Dhaka",
+    "documentWidth": 1280,
+    "group": "O+",
+    "sections": 11,
+    "theme": "bangladesh",
+    "width": 1280
+  },
+  {
+    "path": "/blood/o-positive/kathmandu",
+    "background": "rgb(248, 245, 238)",
+    "cards": 16,
+    "city": "Kathmandu",
+    "documentWidth": 390,
+    "group": "O+",
+    "sections": 11,
+    "theme": "nepal",
+    "width": 390
+  },
+  {
+    "path": "/blood/o-positive/kathmandu",
+    "background": "rgb(248, 245, 238)",
+    "cards": 16,
+    "city": "Kathmandu",
+    "documentWidth": 768,
+    "group": "O+",
+    "sections": 11,
+    "theme": "nepal",
+    "width": 768
+  },
+  {
+    "path": "/blood/o-positive/kathmandu",
+    "background": "rgb(248, 245, 238)",
+    "cards": 16,
+    "city": "Kathmandu",
+    "documentWidth": 1280,
+    "group": "O+",
+    "sections": 11,
+    "theme": "nepal",
+    "width": 1280
+  },
+  {
+    "path": "/blood/nairobi",
+    "background": "rgb(245, 246, 251)",
+    "cards": 16,
+    "city": "Nairobi",
+    "documentWidth": 390,
+    "group": "All groups",
+    "sections": 11,
+    "theme": "international",
+    "width": 390
+  },
+  {
+    "path": "/blood/nairobi",
+    "background": "rgb(245, 246, 251)",
+    "cards": 16,
+    "city": "Nairobi",
+    "documentWidth": 768,
+    "group": "All groups",
+    "sections": 11,
+    "theme": "international",
+    "width": 768
+  },
+  {
+    "path": "/blood/nairobi",
+    "background": "rgb(245, 246, 251)",
+    "cards": 16,
+    "city": "Nairobi",
+    "documentWidth": 1280,
+    "group": "All groups",
+    "sections": 11,
+    "theme": "international",
+    "width": 1280
+  }
+]

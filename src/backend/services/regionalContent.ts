@@ -1,18 +1,18 @@
 import {getPrisma} from '../config/db';
 import {toLocationSlug} from '../utils/locationSlug';
-import {RegionalContentSchema,REGIONAL_CITY_REVISION,type PublicRegionalContent} from '@/src/lib/regionalContent';
+import {RegionalContentSchema,REGIONAL_CITY_REVISION,GLOBAL_CITY_REVISION,type PublicRegionalContent} from '@/src/lib/regionalContent';
 import {getDonorLocations} from './donorLocations';
 import {MedicalError} from '../utils/medicalPrivacy';
 export const regionalContentKey=(country:string,city?:string|null)=>`${toLocationSlug(country)}:${city?toLocationSlug(city):'*'}`;
 type PublicationDates=Map<string,{updatedAt:Date;published:boolean}>;
 export async function getRegionalPublicationDates(){
- try{return new Map((await getPrisma().regionalPageContent.findMany({where:{public_updated_at:{not:null},country:{equals:'Nepal',mode:'insensitive'}},select:{key:true,public_updated_at:true,published:true}})).map(row=>[row.key,{updatedAt:row.public_updated_at!,published:row.published}])) as PublicationDates;}
+ try{return new Map((await getPrisma().regionalPageContent.findMany({where:{public_updated_at:{not:null}},select:{key:true,public_updated_at:true,published:true}})).map(row=>[row.key,{updatedAt:row.public_updated_at!,published:row.published}])) as PublicationDates;}
  catch{return new Map() as PublicationDates;}
 }
 export function regionalLastModified(country:string,city:string|undefined,original:Date,dates:PublicationDates){
- if(country.toLowerCase()!=='nepal')return original;
+ if(!city&&country.toLowerCase()!=='nepal')return original;
  const cityDate=dates.get(regionalContentKey(country,city)),countryDate=dates.get(regionalContentKey(country));
- return new Date(Math.max(original.getTime(),new Date(REGIONAL_CITY_REVISION).getTime(),cityDate?.updatedAt.getTime()||0,cityDate?.published?0:countryDate?.updatedAt.getTime()||0));
+ return new Date(Math.max(original.getTime(),new Date(city?GLOBAL_CITY_REVISION:REGIONAL_CITY_REVISION).getTime(),cityDate?.updatedAt.getTime()||0,cityDate?.published?0:countryDate?.updatedAt.getTime()||0));
 }
 const slideSignature=(slides:unknown)=>JSON.stringify(slides,(_key,value)=>value&&typeof value==='object'&&!Array.isArray(value)?Object.fromEntries(Object.entries(value).sort(([a],[b])=>a.localeCompare(b))):value);
 
@@ -23,7 +23,6 @@ export async function saveRegionalContent(input:unknown){
  const location=locations.find(row=>toLocationSlug(row.country)===toLocationSlug(value.country)&&(!value.city||toLocationSlug(row.city)===toLocationSlug(value.city)));
  if(!location)throw new MedicalError('Choose a country and city with recorded donor coverage.',400);
  const country=location.country,city=value.city?location.city:null,key=regionalContentKey(country,city);
- if(country.toLowerCase()!=='nepal'&&value.published)throw new MedicalError('Nepal is the first live regional edition. Save other countries as drafts until their edition is enabled.',400);
  const ids=[...new Set(value.slides.map(slide=>slide.assetId))];
  const assets=await getPrisma().mediaAsset.findMany({where:{id:{in:ids},category:'SLIDER',mime_type:'image/webp'},select:{id:true}});
  if(assets.length!==ids.length)throw new MedicalError('Use regional images uploaded with the administrator image uploader.',400);
