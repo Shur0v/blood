@@ -1,4 +1,5 @@
 'use client';
+import {useNotificationPage} from '@/src/components/NotificationFocus';
 
 import ManagedImagePicker from '@/src/components/ManagedImagePicker';
 import type {PublicImagePlacement} from '@/src/lib/publicImages';
@@ -45,6 +46,8 @@ const countWords = (value: string) =>
     .filter(Boolean).length;
 
 export default function WriteBlogPage() {
+ const notificationRequestSequence=React.useRef(0);
+ useNotificationPage('Blog',page=>void loadBlogs(page));
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [slug, setSlug] = useState('');
@@ -73,6 +76,7 @@ export default function WriteBlogPage() {
   const wordCount = useMemo(() => countWords(content), [content]);
 
   const loadBlogs = async (targetPage: number = 1) => {
+ const ticket=++notificationRequestSequence.current;
     setLoadingTable(true);
     const res = await fetch(`/api/admin/blogs?page=${targetPage}&limit=20`, {
       method: 'GET',
@@ -80,6 +84,7 @@ export default function WriteBlogPage() {
       cache: 'no-store',
     });
     const payload = await res.json();
+ if(ticket!==notificationRequestSequence.current)return;
     if (!res.ok || !payload.success) {
       setRows([]);
       setLoadingTable(false);
@@ -307,7 +312,7 @@ export default function WriteBlogPage() {
         </div>
         <Table headers={['Title', 'Slug', 'Status', 'Words', 'Updated', 'Actions']}>
           {rows.map((row) => (
-            <TableRow key={row.id}>
+            <TableRow data-notification-pending={loadingTable?'true':'false'} data-notification-target={'Blog:'+row.id} key={row.id}>
               <TableCell className="font-semibold">{row.title}</TableCell>
               <TableCell>{row.slug || 'N/A'}</TableCell>
               <TableCell>

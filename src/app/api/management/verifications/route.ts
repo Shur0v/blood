@@ -79,7 +79,7 @@ async function handleGET(req: Request) {
             },
           },
         },
-        orderBy: { created_at: 'desc' },
+        orderBy: [{ created_at: 'desc' },{id:'desc'}],
         skip: (page - 1) * limit,
         take: limit,
       }),

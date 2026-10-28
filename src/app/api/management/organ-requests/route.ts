@@ -69,13 +69,13 @@ async function handleGET(req: Request) {
     const [requests, total, pendingCount] = await Promise.all([
       prisma.organRequest.findMany({
         where,
-        orderBy: { created_at: 'desc' },
+        orderBy: [{ created_at: 'desc' },{id:'desc'}],
         skip: (page - 1) * limit,
         take: limit,
         include: {
           Attachments: {
             select: { file_url: true },
-            orderBy: { created_at: 'desc' },
+            orderBy: [{ created_at: 'desc' },{id:'desc'}],
           },
         },
       }),

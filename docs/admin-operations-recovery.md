@@ -131,3 +131,13 @@ Run `npm run test:operations` for archive/guide/maintenance units. The database 
 When PostgreSQL data resides on a different filesystem, configure `BLOODNET_DATABASE_VOLUME_PATH` to an accessible directory on that filesystem. Preflight checks its free-space metadata as well as operation-storage capacity. It never needs permission to read raw database files.
 
 The local rehearsal does not certify production Nginx, role/storage permissions, disk or external SMTP/providers. Repeat a restoration rehearsal against an isolated copy of the actual VPS environment before enabling production restore.
+
+## Notification destinations and highlighting
+
+Reviewed 29 October 2026 (Asia/Dhaka), source baseline 8be6801.
+
+Opening a notification card, icon or title marks that notification read for the current administrator and opens its exact administration destination. The normal list page is located using stable ordering, conflicting filters are cleared, and the target scrolls into view with three 800 ms amber pulses. Reduced-motion preferences replace animation with a static highlight. Read failures offer retry without blocking navigation. There is no recurring notification fetch.
+
+New events store allowlisted record references only. Explicit bulk imports open collection summaries. Historical initial reminders and prescription retry references are recovered only from retained exact IDs; old registrations without IDs cannot identify an exact row and say so. Deleted targets show an unavailable notice. Editors reveal the selected country/city/page without saving or publishing. Medical notifications show operational metadata only, never clinical contents or attachments. Administrator verification and organ-review routes reuse the existing workflows; manager permissions and menus remain unchanged.
+
+This release adds one nullable notification target column and replaces the event trigger through an additive migration. Deploy normally; no new VPS secrets or Nginx changes are required. Existing recovery setup and disabled-restore settings stay in place.

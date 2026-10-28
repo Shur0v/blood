@@ -280,7 +280,7 @@ export default function SliderManagerPage() {
               <div className="space-y-3">
                 {slides.map((slide) => (
                   <div
-                    key={slide.id}
+                    data-notification-target={'HomepageSlider:'+slide.id} key={slide.id}
                     draggable
                     onDragStart={() => setDraggingId(slide.id)}
                     onDragOver={(event) => event.preventDefault()}

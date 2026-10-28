@@ -1,4 +1,5 @@
 'use client';
+import {useNotificationPage} from '@/src/components/NotificationFocus';
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Table, TableRow, TableCell } from '@/src/admin-dashboard/components/common/Table';
@@ -54,6 +55,8 @@ const mapVerificationStatus = (status: string): 'Full' | 'Pending' | 'Unverified
 };
 
 export default function AllUserList() {
+ const notificationRequestSequence=React.useRef(0);
+  useNotificationPage('User',page=>{setSearchQuery('');setBloodFilter('All Blood Groups');setCountryFilter('All Countries');setCurrentPage(page);});
   const [users, setUsers] = useState<DashboardUser[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [bloodFilter, setBloodFilter] = useState('All Blood Groups');
@@ -80,6 +83,7 @@ export default function AllUserList() {
   }, [users]);
 
   const fetchUsers = useCallback(async () => {
+ const ticket=++notificationRequestSequence.current;
     setIsLoading(true);
     try {
       const params = new URLSearchParams({
@@ -95,6 +99,7 @@ export default function AllUserList() {
         cache: 'no-store',
       });
       const payload = await res.json();
+ if(ticket!==notificationRequestSequence.current)return;
 
       if (!res.ok || !payload.success) {
         setUsers([]);
@@ -140,9 +145,7 @@ export default function AllUserList() {
     void fetchUsers();
   }, [fetchUsers]);
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery, countryFilter, bloodFilter]);
+
 
   const openUserProfile = async (userId: string) => {
     profileRequest.current?.abort();
@@ -239,7 +242,7 @@ export default function AllUserList() {
             type="text"
             placeholder="Search by name, ID, city, email..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => (setSearchQuery(e.target.value),setCurrentPage(1))}
             className="w-full bg-gray-50 dark:bg-[#0f1115] border border-gray-200 dark:border-gray-700 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
           />
         </div>
@@ -247,7 +250,7 @@ export default function AllUserList() {
         <div className="flex items-center gap-2">
           <select
             value={bloodFilter}
-            onChange={(e) => setBloodFilter(e.target.value)}
+            onChange={(e) => (setBloodFilter(e.target.value),setCurrentPage(1))}
             className="bg-white dark:bg-[#0f1115] border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300"
           >
             {BLOOD_GROUPS.map((group) => (
@@ -256,7 +259,7 @@ export default function AllUserList() {
           </select>
           <select
             value={countryFilter}
-            onChange={(e) => setCountryFilter(e.target.value)}
+            onChange={(e) => (setCountryFilter(e.target.value),setCurrentPage(1))}
             className="hidden sm:block bg-white dark:bg-[#0f1115] border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300"
           >
             {countryOptions.map((country) => (
@@ -273,7 +276,7 @@ export default function AllUserList() {
         {publicationError&&<p role="alert" className="mb-4 rounded-xl bg-rose-50 p-4 text-sm text-rose-800">{publicationError}</p>}
         <Table headers={['User', 'Location', 'Contact Details', 'Status / Verification', 'Last Donated', 'Created', 'Actions']}>
           {users.map((user) => (
-            <TableRow key={user.id}>
+            <TableRow data-notification-pending={isLoading?'true':'false'} data-notification-target={'User:'+user.id} key={user.id}>
               <TableCell>
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-500/20 text-red-600 font-bold flex items-center justify-center shrink-0 border border-red-200 dark:border-red-500/30">

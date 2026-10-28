@@ -19,7 +19,7 @@ export default function HomepageContentEditor(){
   try{const response=await fetch('/api/admin/homepage-content',{method:'PUT',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,config:value})}),body=await response.json();if(!response.ok||!body.success)throw Error(body.message||'Could not save homepage settings.');setValue(normalizeHomepageConfig(body.data.draft));setMessage(action==='draft'?'Draft saved. The public homepage has not changed.':action==='restore'?'Original homepage restored.':'Homepage published. New homepage visits show your changes.');}
   catch(error){setMessage(error instanceof Error?error.message:'Saving failed.');}finally{setBusy(false);}
  }
- return <details id="editor-homepage" className="rounded-2xl border border-gray-200 bg-white p-6 text-slate-900 shadow-sm dark:border-gray-800 dark:bg-[#1a1b23] dark:text-slate-100" onToggle={event=>{if(event.currentTarget.open)void load();}}>
+ return <details id="editor-homepage" data-notification-pending={loaded?'false':'true'} className="rounded-2xl border border-gray-200 bg-white p-6 text-slate-900 shadow-sm dark:border-gray-800 dark:bg-[#1a1b23] dark:text-slate-100" onToggle={event=>{if(event.currentTarget.open)void load();}}>
   <summary className="cursor-pointer text-lg font-semibold">Homepage editor</summary>
   <p className="mt-3 text-sm leading-6 text-slate-500 dark:text-slate-400">Edit the main homepage separately from regional pages. Blank text keeps the original styled content. Donor search, statistics, navigation and account access keep their live behavior.</p>
   {loaded&&<fieldset disabled={busy} className="mt-6 space-y-6 disabled:opacity-60">

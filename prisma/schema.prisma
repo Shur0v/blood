@@ -666,6 +666,7 @@ model ServiceAvailability {
 }
 
 model AdminNotification {
+ target Json?
  quantity Int @default(1)
  id String @id @default(uuid())
  type String

@@ -38,7 +38,7 @@ async function handleGET(req: Request) {
 
   const [rows, total] = await Promise.all([
     prisma.authRiskEvent.findMany({
-      orderBy: { created_at: 'desc' },
+      orderBy: [{ created_at: 'desc' },{id:'desc'}],
       skip: (page - 1) * limit,
       take: limit,
       include: {

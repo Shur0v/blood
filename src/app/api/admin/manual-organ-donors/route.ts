@@ -53,11 +53,11 @@ async function handleGET(req: Request) {
     return auth.error;
   }
 
-  const recent = await getPrisma().manualOrganDonor.findMany({
-    orderBy: { created_at: 'desc' },
-    take: 20,
-  });
-  return NextResponse.json({ success: true, data: recent });
+  const page=Number(new URL(req.url).searchParams.get('page')||1);
+  if(!Number.isSafeInteger(page)||page<1||page>1000000)return NextResponse.json({success:false,message:'Invalid page.'},{status:400});
+  const db=getPrisma();
+  const [recent,total]=await Promise.all([db.manualOrganDonor.findMany({orderBy:[{created_at:'desc'},{id:'desc'}],skip:(page-1)*20,take:20}),db.manualOrganDonor.count()]);
+  return NextResponse.json({success:true,data:recent,pagination:{page,limit:20,total,totalPages:Math.max(1,Math.ceil(total/20))}});
 }
 
 async function handlePOST(req: Request) {

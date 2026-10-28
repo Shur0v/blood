@@ -1,19 +1,20 @@
 "use client";
+import {useNotificationPage} from '@/src/components/NotificationFocus';
 
 import React, { useState, useEffect } from "react";
-import { 
-  Heart, 
-  DollarSign, 
-  Activity, 
-  TrendingUp, 
-  Search, 
-  Filter, 
-  CheckCircle, 
-  XCircle, 
-  Clock, 
-  FileText, 
-  Hospital, 
-  Mail, 
+import {
+  Heart,
+  DollarSign,
+  Activity,
+  TrendingUp,
+  Search,
+  Filter,
+  CheckCircle,
+  XCircle,
+  Clock,
+  FileText,
+  Hospital,
+  Mail,
   Phone,
   Eye,
   Edit3,
@@ -39,6 +40,7 @@ const parseStoredUrls = (raw?: string | null): string[] => {
 };
 
 export default function FinancialRequestsPage() {
+ useNotificationPage('MedicalAidRequest',()=>setSearchQuery(''));
   const [requests, setRequests] = useState<any[]>([]);
   const [stats, setStats] = useState({
     total_raised: 13500,
@@ -51,7 +53,7 @@ export default function FinancialRequestsPage() {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
-  
+
   // Edit Stats Modal State
   const [isEditingStats, setIsEditingStats] = useState(false);
   const [editFormData, setEditFormData] = useState({ ...stats });
@@ -193,7 +195,7 @@ export default function FinancialRequestsPage() {
       <div className="flex flex-col md:flex-row justify-between md:items-end gap-4">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
-            <Heart className="h-6 w-6 text-rose-500 fill-rose-500" /> 
+            <Heart className="h-6 w-6 text-rose-500 fill-rose-500" />
             Donation & Aid Management
           </h1>
           <p className="text-sm text-gray-500 mt-1 font-medium">
@@ -201,7 +203,7 @@ export default function FinancialRequestsPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <button 
+          <button
             onClick={() => setIsEditingStats(true)}
             className="bg-white dark:bg-[#1a1b23] border border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-xl text-sm font-bold shadow-sm hover:bg-gray-50 transition-all flex items-center gap-2"
           >
@@ -260,19 +262,19 @@ export default function FinancialRequestsPage() {
 
       {/* Patient Requests List & Verification Panel */}
       <div className="bg-white dark:bg-[#1a1b23] border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm overflow-hidden">
-        
+
         {/* Table Header / Toolbar */}
         <div className="p-4 md:p-6 border-b border-gray-100 dark:border-gray-800 flex flex-col md:flex-row justify-between gap-4">
           <div>
             <h2 className="text-lg font-bold text-gray-900 dark:text-white">Pending Medical Aid Appeals</h2>
             <p className="text-xs text-gray-500 mt-1">Review cases submitted from the homepage donation form.</p>
           </div>
-          
+
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <input 
-              type="text" 
-              placeholder="Search by patient or ID..." 
+            <input
+              type="text"
+              placeholder="Search by patient or ID..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9 pr-4 py-2 w-full md:w-64 border border-gray-200 dark:border-gray-800 rounded-xl text-sm bg-gray-50 dark:bg-[#0f1115] focus:outline-none focus:ring-2 focus:ring-rose-500/20"
@@ -294,7 +296,7 @@ export default function FinancialRequestsPage() {
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
               {requests.filter(r => r.patient_name.toLowerCase().includes(searchQuery.toLowerCase()) || r.id.toLowerCase().includes(searchQuery.toLowerCase())).map((req) => (
-                <tr key={req.id} className="hover:bg-gray-50 dark:hover:bg-[#0f1115]/50 transition-colors">
+                <tr data-notification-target={'MedicalAidRequest:'+req.id} key={req.id} className="hover:bg-gray-50 dark:hover:bg-[#0f1115]/50 transition-colors">
                   <td className="px-6 py-4">
                     <div className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
                       {req.patient_name}
@@ -328,7 +330,7 @@ export default function FinancialRequestsPage() {
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="inline-flex items-center gap-2">
-                      <button 
+                      <button
                         onClick={() => setSelectedRequest(req)}
                         className="inline-flex items-center gap-2 bg-white dark:bg-[#1a1b23] border border-gray-200 dark:border-gray-700 shadow-sm px-3 py-1.5 rounded-lg text-xs font-bold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                       >
@@ -369,7 +371,7 @@ export default function FinancialRequestsPage() {
               onClick={() => setSelectedRequest(null)}
               className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             />
-            
+
             <motion.div
               initial={{ scale: 0.95, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -477,7 +479,7 @@ export default function FinancialRequestsPage() {
                   <Trash2 size={16} />
                   {deletingRequestId === selectedRequest.id ? "Deleting..." : "Delete Request"}
                 </button>
-                <button 
+                <button
                   onClick={() => setSelectedRequest(null)}
                   className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors rounded-xl"
                 >
@@ -485,13 +487,13 @@ export default function FinancialRequestsPage() {
                 </button>
                 {selectedRequest.status === 'PENDING' && (
                   <>
-                    <button 
+                    <button
                       onClick={() => handleStatusChange(selectedRequest.id, 'REJECTED')}
                       className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-red-600 bg-red-50 hover:bg-red-100 transition-colors rounded-xl flex items-center gap-2"
                     >
                       <XCircle size={16}/> Reject & Ban
                     </button>
-                    <button 
+                    <button
                       onClick={() => handleStatusChange(selectedRequest.id, 'APPROVED')}
                       className="px-8 py-3 text-xs font-semibold uppercase tracking-wide text-white bg-green-600 hover:bg-green-700 transition-colors rounded-xl flex items-center gap-2 shadow-lg shadow-green-500/30"
                     >
@@ -514,7 +516,7 @@ export default function FinancialRequestsPage() {
         )}
       </AnimatePresence>
 
-      
+
       {/* Edit Global Stats Modal */}
       <AnimatePresence>
         {isEditingStats && (
@@ -526,7 +528,7 @@ export default function FinancialRequestsPage() {
               onClick={() => !isSaving && setIsEditingStats(false)}
               className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             />
-            
+
             <motion.div
               initial={{ scale: 0.95, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -543,7 +545,7 @@ export default function FinancialRequestsPage() {
               <div className="space-y-4 mb-8">
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wide text-gray-500 mb-1">Total Raised ($)</label>
-                  <input 
+                  <input
                     type="number"
                     value={editFormData.total_raised}
                     onChange={e => setEditFormData({...editFormData, total_raised: Number(e.target.value)})}
@@ -552,7 +554,7 @@ export default function FinancialRequestsPage() {
                 </div>
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wide text-gray-500 mb-1">Total Spent ($)</label>
-                  <input 
+                  <input
                     type="number"
                     value={editFormData.total_spent}
                     onChange={e => setEditFormData({...editFormData, total_spent: Number(e.target.value)})}
@@ -562,7 +564,7 @@ export default function FinancialRequestsPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-bold uppercase tracking-wide text-gray-500 mb-1">Completed Ops</label>
-                    <input 
+                    <input
                       type="number"
                       value={editFormData.completed_ops}
                       onChange={e => setEditFormData({...editFormData, completed_ops: Number(e.target.value)})}
@@ -571,7 +573,7 @@ export default function FinancialRequestsPage() {
                   </div>
                   <div>
                     <label className="block text-xs font-bold uppercase tracking-wide text-gray-500 mb-1">Uncompleted Ops</label>
-                    <input 
+                    <input
                       type="number"
                       value={editFormData.uncompleted_ops}
                       onChange={e => setEditFormData({...editFormData, uncompleted_ops: Number(e.target.value)})}
@@ -581,7 +583,7 @@ export default function FinancialRequestsPage() {
                 </div>
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wide text-gray-500 mb-1">Weekly Donors (People)</label>
-                  <input 
+                  <input
                     type="number"
                     value={editFormData.weekly_donors}
                     onChange={e => setEditFormData({...editFormData, weekly_donors: Number(e.target.value)})}
@@ -600,14 +602,14 @@ export default function FinancialRequestsPage() {
               </div>
 
               <div className="flex gap-3">
-                <button 
+                <button
                   disabled={isSaving}
                   onClick={() => setIsEditingStats(false)}
                   className="flex-1 px-4 py-3 border border-gray-200 dark:border-gray-800 rounded-xl text-sm font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                 >
                   Cancel
                 </button>
-                <button 
+                <button
                   disabled={isSaving}
                   onClick={handleSaveStats}
                   className="flex-1 px-4 py-3 bg-rose-600 hover:bg-rose-700 rounded-xl text-sm font-bold text-white transition-colors flex items-center justify-center gap-2 shadow-lg shadow-rose-500/20"

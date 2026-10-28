@@ -1,4 +1,5 @@
 'use client';
+import {useNotificationPage,useNotificationFocus} from '@/src/components/NotificationFocus';
 
 import React, { useEffect, useState } from 'react';
 import { Table, TableRow, TableCell } from '@/src/dashboard/user-management/components/Table';
@@ -37,6 +38,8 @@ const toApiStatus = (status: 'Approved' | 'Rejected'): RequestStatus => {
 };
 
 export default function OrganRequestPage() {
+ const requestSequence=React.useRef(0);
+ useNotificationPage('OrganRequest',page=>{setFilterStatus('');setSearchInput('');setSearch('');setCurrentPage(page);});
   const [requests, setRequests] = useState<OrganRequestItem[]>([]);
   const [selectedRequest, setSelectedRequest] = useState<OrganRequestItem | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -49,6 +52,7 @@ export default function OrganRequestPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if(searchInput.trim()===search)return;
     const timeout = setTimeout(() => {
       setCurrentPage(1);
       setSearch(searchInput.trim());
@@ -57,6 +61,7 @@ export default function OrganRequestPage() {
   }, [searchInput]);
 
   const loadRequests = async (page: number, status: string, searchTerm: string) => {
+ const ticket=++requestSequence.current;
     setLoading(true);
     try {
       const params = new URLSearchParams({
@@ -75,7 +80,7 @@ export default function OrganRequestPage() {
         credentials: 'include',
         cache: 'no-store',
       });
-      const payload = await res.json();
+      const payload = await res.json();if(ticket!==requestSequence.current)return;
       if (!res.ok || !payload.success) {
         setRequests([]);
         setTotalPages(1);
@@ -202,7 +207,7 @@ export default function OrganRequestPage() {
         </div>
         <Table headers={['Request ID', 'Patient Name', 'Blood Group', 'Location', 'Organ Type', 'Date', 'Status', 'Actions']}>
           {requests.map((req) => (
-            <TableRow key={req.id}>
+            <TableRow data-notification-target={'OrganRequest:'+req.id} key={req.id}>
               <TableCell className="font-medium">{req.id.slice(0, 8)}</TableCell>
               <TableCell>{req.name}</TableCell>
               <TableCell>

@@ -40,7 +40,7 @@ async function handleGET(req: Request) {
   const [recent, total] = await Promise.all([
     getPrisma().communityDonor.findMany({
       where,
-      orderBy: { created_at: 'desc' },
+      orderBy: [{ created_at: 'desc' },{id:'desc'}],
       skip,
       take: limit,
     }),

@@ -1,3 +1,5 @@
+import {randomUUID} from 'node:crypto';
+import {withNotificationBatch} from '@/src/backend/services/adminNotifications';
 import { withActiveAdmin } from '@/src/backend/utils/activeAdmin';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
@@ -89,12 +91,11 @@ async function handleGET(req: Request) {
     return auth.error;
   }
 
-  const recent = await getPrisma().manualBloodDonor.findMany({
-    orderBy: { created_at: 'desc' },
-    take: 20,
-  });
-
-  return NextResponse.json({ success: true, data: recent });
+  const page=Number(new URL(req.url).searchParams.get('page')||1);
+  if(!Number.isSafeInteger(page)||page<1||page>1000000)return NextResponse.json({success:false,message:'Invalid page.'},{status:400});
+  const db=getPrisma();
+  const [recent,total]=await Promise.all([db.manualBloodDonor.findMany({orderBy:[{created_at:'desc'},{id:'desc'}],skip:(page-1)*20,take:20}),db.manualBloodDonor.count()]);
+  return NextResponse.json({success:true,data:recent,pagination:{page,limit:20,total,totalPages:Math.max(1,Math.ceil(total/20))}});
 }
 
 async function handlePOST(req: Request) {
@@ -113,6 +114,7 @@ async function handlePOST(req: Request) {
       }
 
       const payload = parsedBulk.data;
+      const notificationBatch=randomUUID();
       const source = payload.source || 'Bulk Manual Entry';
       const isActiveDonor = payload.availabilityStatus !== 'INACTIVE_UNAVAILABLE';
       const failures: Array<{ rowIndex: number; name: string; mobile: string; reason: string }> = [];
@@ -169,7 +171,7 @@ async function handlePOST(req: Request) {
         }
 
         try {
-          const created = await getPrisma().manualBloodDonor.create({
+          const created = await withNotificationBatch(notificationBatch,tx=>tx.manualBloodDonor.create({
             data: {
               name,
               email: null,
@@ -196,7 +198,7 @@ async function handlePOST(req: Request) {
                 isBulkEntry: true,
               }) as Prisma.InputJsonValue,
             },
-          });
+          }));
 
           createdIds.push(created.id);
         } catch (error) {

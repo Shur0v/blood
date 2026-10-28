@@ -93,7 +93,7 @@ export default function ThemeControlPage() {
   const downloadFullBackup = async () => { window.location.assign('/private/console-0be5626d4305f192e37e/workspace/spam-monitor#recovery-center'); };
 
   return (
-    <div id="controls-theme" className="space-y-6">
+    <div id="controls-theme" data-notification-target="section:theme" className="space-y-6">
       <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-[#1a1b23]">
         <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
           <div>

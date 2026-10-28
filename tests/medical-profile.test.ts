@@ -122,6 +122,7 @@ before(async () => {
   await sql.query(readFileSync('prisma/migrations/20261026080000_homepage_editor/migration.sql','utf8'));
   await sql.query(readFileSync('prisma/migrations/20261026100000_public_content_images/migration.sql','utf8'));
   await sql.query(readFileSync('prisma/migrations/20261027090000_admin_operations/migration.sql','utf8'));
+  await sql.query(readFileSync('prisma/migrations/20261029090000_notification_targets/migration.sql','utf8'));
   const migratedPublication=(await sql.query('SELECT * FROM "PublicDonorProfile" WHERE id=$1',[legacyPublicationId])).rows[0];
   assert.equal(migratedPublication.is_published,false);assert.equal(migratedPublication.bio,legacyBio);assert.equal(migratedPublication.admin_approved_at,null);assert.ok(migratedPublication.consented_at);
 });
@@ -865,7 +866,7 @@ test('every exported administrator and manager API method denies anonymous and o
       checked++;
     }
   }
-  assert.equal(checked,93,'Cover all existing privileged API methods');
+  assert.equal(checked,94,'Cover all existing privileged API methods');
 });
 
 test('verification uploads are encrypted, owner-bound and privately readable by owner or active admin', integration, async () => {
@@ -1507,4 +1508,73 @@ test('maintenance requires fresh password confirmation and preserves deadlines a
  try{assert.equal((await command({action:'start',minutes:30,password:'incorrect-password'})).status,401);assert.equal((await command({action:'start',minutes:10081,password})).status,400);assert.equal((await command({action:'start',minutes:30,password})).status,200);const deadline=state.readMaintenance().deadline;assert.ok((await sql.query('SELECT paused FROM "MaintenanceGate"')).rows[0].paused);await GET(new Request(url,{headers}));assert.equal(state.readMaintenance().deadline,deadline);
  fs.writeFileSync(path.join(directory,'active.lock'),randomUUID());assert.equal((await command({action:'resume',password})).status,409);fs.unlinkSync(path.join(directory,'active.lock'));state.writeMaintenance({...state.readMaintenance(),failed:true});assert.equal((await command({action:'resume',password})).status,409);state.writeMaintenance({...state.readMaintenance(),failed:false});const probe=mock.method(globalThis,'fetch',async()=>new Response('{}',{status:200}));try{assert.equal((await command({action:'resume',password})).status,200);}finally{probe.mock.restore();}assert.equal(state.readMaintenance().enabled,false);
  }finally{await sql.query('UPDATE "MaintenanceGate" SET paused=false WHERE id=1');await getPrisma().adminUser.delete({where:{id:admin.id}});if(prior===undefined)delete process.env.BLOODNET_OPERATIONS_DIR;else process.env.BLOODNET_OPERATIONS_DIR=prior;if(priorPublic===undefined)delete process.env.BLOODNET_PUBLIC_RUNTIME_DIR;else process.env.BLOODNET_PUBLIC_RUNTIME_DIR=priorPublic;assert.ok(path.resolve(directory).startsWith(path.resolve(os.tmpdir())+path.sep+'bloodnet-admin-controls-'));fs.rmSync(directory,{recursive:true,force:true});}
+});
+
+
+test('notification targets retain each registration in one transaction and locate older users on the normal page',integration,async()=>{
+ const db=getPrisma(),{resolveNotificationDestination}=await import('../src/backend/services/notificationDestinations');
+ const older=await newPatient();await db.user.update({where:{id:older.id},data:{created_at:new Date('1990-01-01')}});
+ const taken=new Set((await db.user.findMany({select:{profile_code:true}})).map(row=>row.profile_code));const codes=Array.from({length:100},(_,i)=>'Q'+i.toString(36).toUpperCase().padStart(3,'0')).filter(code=>!taken.has(code));
+ const rows=await db.$transaction(async tx=>Promise.all(Array.from({length:43},(_,i)=>tx.user.create({data:{profile_code:codes[i],location_lat:13,location_lng:80,name:'Synthetic focus '+i,email:randomUUID()+'@example.invalid',mobile:randomUUID(),blood_group:'B+',location_city:'Chennai',location_country:'India',created_at:new Date('2020-01-01')}}))));
+ const events=await db.adminNotification.findMany({where:{type:'account.created'},orderBy:{created_at:'desc'}});
+ for(const row of rows)assert.ok(events.some(event=>(event.target as any)?.id===row.id),'Every row retains its own event');
+ const event=events.find(event=>(event.target as any)?.id===older.id)!;assert.ok(event);
+ const destination=await resolveNotificationDestination(event.id);assert.equal(destination.target?.id,older.id);assert.equal(destination.target?.kind,'User');assert.ok(destination.page!>=3);
+ const {GET}=await import('../src/app/api/admin/users/route');const response=await GET(adminAnalyticsRequest('/api/admin/users?page='+destination.page+'&limit=20'));assert.equal(response.status,200);assert.ok((await response.json()).data.some((row:any)=>row.id===older.id));
+ const serialized=JSON.stringify(destination);assert.ok(!serialized.includes(older.email));assert.ok(!serialized.includes(older.mobile));
+});
+
+test('notification destinations reject other roles and safely handle legacy, deleted, and bulk references',integration,async()=>{
+ const db=getPrisma(),{resolveNotificationDestination}=await import('../src/backend/services/notificationDestinations'),{GET}=await import('../src/app/api/admin/notifications/[id]/destination/route');
+ const legacy=await db.adminNotification.create({data:{type:'account.created',family:'registration',title:'Historical registration',detail:'Legacy reference',href:'/private/console-0be5626d4305f192e37e/workspace/users',dedupe_key:randomUUID()}});
+ const old=await resolveNotificationDestination(legacy.id);assert.equal(old.status,'legacy');assert.match(old.message!,/Exact record reference unavailable/);assert.equal(old.marker,undefined);
+ assert.equal((await GET(new Request('http://localhost/api/admin/notifications/'+legacy.id+'/destination'),{params:Promise.resolve({id:legacy.id})})).status,401);
+ const patient=await newPatient();assert.equal((await GET(new Request('http://localhost/api/admin/notifications/'+legacy.id+'/destination',{headers:{authorization:'Bearer '+rawSignToken({user_id:patient.id,role:'USER'})}}),{params:Promise.resolve({id:legacy.id})})).status,403);
+ const manager=await db.adminUser.create({data:{admin_id:randomUUID(),password:'test-only',role:'MANAGER'}});const token=rawSignToken({user_id:manager.id,role:'MANAGER',credential_version:staffCredentialVersion(manager.id,manager.password)});
+ assert.equal((await GET(new Request('http://localhost/api/admin/notifications/'+legacy.id+'/destination',{headers:{authorization:'Bearer '+token}}),{params:Promise.resolve({id:legacy.id})})).status,403);
+ assert.equal((await GET(adminAnalyticsRequest('/api/admin/notifications/not-valid/destination'),{params:Promise.resolve({id:'not-valid'})})).status,400);
+ const report=await db.report.create({data:{target_type:'USER',target_id:patient.id,message:'Private report details'}});const event=await db.adminNotification.findFirstOrThrow({where:{target:{path:['id'],equals:report.id}}});await db.report.delete({where:{id:report.id}});const removed=await resolveNotificationDestination(event.id);assert.equal(removed.status,'missing');assert.equal(removed.marker,undefined);
+ const batch=randomUUID(),{withNotificationBatch}=await import('../src/backend/services/adminNotifications');for(let i=0;i<2;i++)await withNotificationBatch(batch,tx=>tx.manualBloodDonor.create({data:{name:'Synthetic bulk focus',mobile:randomUUID(),blood_group:'O+',location_city:'Dhaka',location_country:'Bangladesh',location_lat:23,location_lng:90,source:'TEST',added_by_admin:testAdminId}}));
+ const summary=await db.adminNotification.findFirstOrThrow({where:{dedupe_key:{contains:batch}}});assert.equal(summary.quantity,2);assert.equal(summary.target,null);assert.equal((await resolveNotificationDestination(summary.id)).status,'collection');await db.adminUser.delete({where:{id:manager.id}});
+});
+
+test('notification destinations cover requests, editors, exact settings and privacy-safe medical status',integration,async()=>{
+ const db=getPrisma(),{resolveNotificationDestination}=await import('../src/backend/services/notificationDestinations'),user=await newPatient();
+ const report=await db.report.create({data:{target_type:'USER',target_id:user.id,message:'Confidential message'}});
+ const verification=await db.verificationDocument.create({data:{user_id:user.id,document_type:'OTHER',asset_url:'private:never-public'}});
+ const record=await db.medicalReport.create({data:{user_id:user.id,payload:encryptMedical(Buffer.from(JSON.stringify({title:'Never expose this diagnosis'})),'notification-fixture'),record_kind:'REPORT'}});
+ const faq=await db.faqItem.create({data:{question:'Synthetic focus question',answer:'Synthetic answer'}});
+ const region=await db.regionalPageContent.upsert({where:{key:'focus-region'},create:{key:'focus-region',country:'Nepal',city:'Kathmandu',published:true},update:{published:true,title:'Focus region'}});
+ const publicPage=await db.publicPageContent.upsert({where:{key:'contact'},create:{key:'contact',live:{heading:'Synthetic public contact'}},update:{live:{heading:'Synthetic public contact'}}});
+ for(const [row,kind,path]of [[report,'Report','/reports'],[verification,'VerificationDocument','/verify-request'],[record,'MedicalReport','/medical-operations'],[faq,'FaqItem','/faq'],[region,'RegionalPageContent',''],[publicPage,'PublicPageContent','']] as const){const id='id'in row?row.id:row.key;const event=await db.adminNotification.findFirstOrThrow({where:{target:{path:['id'],equals:id}},orderBy:{created_at:'desc'}});const destination=await resolveNotificationDestination(event.id);assert.equal(destination.status,'found');assert.equal(destination.target?.kind,kind);assert.ok(destination.href.endsWith(path));assert.ok(!JSON.stringify(destination).includes('Never expose'));assert.ok(!JSON.stringify(destination).includes('private:never-public'));assert.ok(!JSON.stringify(destination).includes('Confidential'));if(kind==='RegionalPageContent'){assert.equal(destination.target?.country,'Nepal');assert.equal(destination.target?.city,'Kathmandu');}if(kind==='MedicalReport')assert.equal(destination.operation?.status,'REPORT');}
+ const settings=await db.platformSettings.findFirstOrThrow();await db.platformSettings.update({where:{id:settings.id},data:{discovery_visible:!settings.discovery_visible}});const event=await db.adminNotification.findFirstOrThrow({where:{type:'settings.updated'},orderBy:{created_at:'desc'}});const destination=await resolveNotificationDestination(event.id);assert.ok(destination.href.endsWith('/ads-control'));assert.equal(destination.section,'switch-discovery');
+});
+
+
+test('every transactional event family resolves a retained record and blog rank follows update order',integration,async()=>{
+ const db=getPrisma(),{ADMIN_EVENT_CATALOG}=await import('../src/lib/adminNotifications'),{resolveNotificationDestination}=await import('../src/backend/services/notificationDestinations'),{recordAdminEvent}=await import('../src/backend/services/adminNotifications');
+ await db.medicalAidRequest.create({data:{patient_name:'Synthetic patient',hospital_name:'Synthetic hospital',amount_required:100,email:'synthetic@example.invalid',phone:'TEST',medical_note:'Private fixture details'}});
+ await db.restrictedIdentity.create({data:{reason:'Synthetic restriction',created_by_admin:testAdminId}});
+ await db.serviceAvailability.create({data:{key:'focus-service',country:'Nepal',city:'Kathmandu',live:{booking:null,contact:null}}});
+ await db.homepageSlider.create({data:{title:'Synthetic destination slide',image_url:'https://example.invalid/slide.webp',status:'ACTIVE'}});
+ await db.manualOrganDonor.create({data:{name:'Synthetic organ entry',mobile:randomUUID(),organ_type:'Kidney',location_country:'Nepal',location_city:'Kathmandu',location_lat:27,location_lng:85,source:'TEST',added_by_admin:testAdminId}});
+ for(const event of ADMIN_EVENT_CATALOG){const delegate=(db as any)[event.table[0].toLowerCase()+event.table.slice(1)],keyed=['HomepageContent','PublicPageContent','ServiceAvailability','RegionalPageContent'].includes(event.table);const row=await delegate.findFirst({where:event.table==='CommunityDonor'?{is_active:true}:{},select:{[keyed?'key':'id']:true}});assert.ok(row,'A real fixture exists for '+event.table);const notification=await recordAdminEvent({type:event.type+'.test',family:event.family,title:'Synthetic reference',detail:'Operational test only',dedupeKey:randomUUID(),target:{kind:event.table,id:row[keyed?'key':'id']}});const result=await resolveNotificationDestination(notification.id);assert.equal(result.status,'found',event.table);assert.ok(result.marker||result.section,event.table);}
+ const target=await db.blog.create({data:{title:'Synthetic older updated blog',content:'Synthetic content',author_id:testAdminId,status:'PUBLISHED',created_at:new Date('2025-01-01'),updated_at:new Date('1990-01-01')}});
+ await db.blog.createMany({data:Array.from({length:25},(_,i)=>({title:'Synthetic surrounding article '+i,content:'Synthetic content',author_id:testAdminId,status:'PUBLISHED',created_at:new Date('1980-01-01'),updated_at:new Date('2020-01-01')}))});
+ const notification=await db.adminNotification.findFirstOrThrow({where:{target:{path:['id'],equals:target.id}}});const destination=await resolveNotificationDestination(notification.id);assert.ok(destination.page!>=2);const {GET}=await import('../src/app/api/admin/blogs/route');const response=await GET(adminAnalyticsRequest('/api/admin/blogs?page='+destination.page+'&limit=20'));assert.ok((await response.json()).data.some((row:any)=>row.id===target.id));
+});
+
+
+test('recovery notifications locate retained jobs beyond the recent list without authorizing recovery actions',integration,async()=>{
+ const fs=await import('node:fs'),os=await import('node:os'),directory=fs.mkdtempSync(path.join(os.tmpdir(),'bloodnet-notification-jobs-')),prior=process.env.BLOODNET_OPERATIONS_DIR;process.env.BLOODNET_OPERATIONS_DIR=directory;
+ try{const {saveJob}=await import('../src/backend/services/recoveryStore'),{recordAdminEvent}=await import('../src/backend/services/adminNotifications'),{resolveNotificationDestination}=await import('../src/backend/services/notificationDestinations');const id=randomUUID();for(let i=0;i<32;i++)saveJob({id:i===0?id:randomUUID(),adminId:testAdminId,kind:'backup',status:'READY',stage:'Synthetic test package',createdAt:i===0?'2000-01-01T00:00:00Z':new Date().toISOString(),updatedAt:new Date().toISOString()});const event=await recordAdminEvent({type:'recovery.backup.ready',family:'recovery',title:'Synthetic backup ready',detail:'Test only',dedupeKey:randomUUID(),target:{kind:'RecoveryJob',id}});const result=await resolveNotificationDestination(event.id);assert.equal(result.status,'found');assert.equal(result.marker,'RecoveryJob:'+id);const {GET}=await import('../src/app/api/admin/recovery/jobs/route');const response=await GET(adminAnalyticsRequest('/api/admin/recovery/jobs?notification='+event.id));assert.equal(response.status,200);const payload=await response.json();assert.ok(payload.data.jobs.some((job:any)=>job.id===id));assert.equal(payload.data.restoreEnabled,false);const maintenance=await recordAdminEvent({type:'maintenance.start',family:'recovery',title:'Synthetic maintenance',detail:'Test only',dedupeKey:randomUUID(),target:{kind:'Maintenance',id:'current'}});assert.equal((await resolveNotificationDestination(maintenance.id)).section,'recovery-center');}
+ finally{if(prior===undefined)delete process.env.BLOODNET_OPERATIONS_DIR;else process.env.BLOODNET_OPERATIONS_DIR=prior;assert.ok(path.resolve(directory).startsWith(path.resolve(os.tmpdir())+path.sep+'bloodnet-notification-jobs-'));fs.rmSync(directory,{recursive:true,force:true});}
+});
+
+
+test('bulk manual donor forms emit one targeted collection summary rather than per-row notifications',integration,async()=>{
+ const db=getPrisma(),before=new Set((await db.adminNotification.findMany({select:{id:true}})).map(row=>row.id)),{POST}=await import('../src/app/api/admin/manual-blood-donors/route');
+ const city={city:'Dhaka',country:'Bangladesh',formatted_location:'Dhaka, Bangladesh',latitude:23.81,longitude:90.41,provider_place_id:'notification-bulk-test'},location={...city,token:signLocationProof(city)};
+ const bulkDonors=[1,2].map(i=>({name:'Synthetic batch donor '+i,bloodGroup:'O+',location,phone:{country_name:'Bangladesh',country_code:'BD',dial_code:'+880',local_phone_number:'191234568'+i,full_phone_number:'+880191234568'+i}}));
+ const response=await POST(new Request('http://localhost/api/admin/manual-blood-donors',{method:'POST',headers:{authorization:'Bearer '+signToken({user_id:testAdminId,role:'ADMIN'}),'Content-Type':'application/json'},body:JSON.stringify({bulkDonors})}));const payload=await response.json();assert.equal(payload.data?.createdCount,2,JSON.stringify(payload));const added=(await db.adminNotification.findMany({where:{type:'manual-blood.created'}})).filter(row=>!before.has(row.id));assert.equal(added.length,1);assert.equal(added[0].quantity,2);assert.equal(added[0].target,null);
 });

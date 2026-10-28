@@ -1,4 +1,5 @@
 'use client';
+import {useNotificationPage} from '@/src/components/NotificationFocus';
 
 import { useEffect, useState } from 'react';
 import { Card } from '@/src/admin-dashboard/components/common/Card';
@@ -15,6 +16,7 @@ type FaqItem = {
 const emptyDraft = { question: '', answer: '', sortOrder: 0, isActive: true };
 
 export default function FaqManagerPage() {
+ useNotificationPage('FaqItem',()=>{setSearch('');setVisibility('all');});
   const [search, setSearch] = useState('');
   const [visibility, setVisibility] = useState('all');
   const [items, setItems] = useState<FaqItem[]>([]);
@@ -132,7 +134,7 @@ export default function FaqManagerPage() {
     <form onSubmit={event=>{event.preventDefault();void createFaq();}}><fieldset disabled={creating} className="min-w-0 space-y-5"><label className={labelClass}>Question<input required minLength={8} maxLength={300} aria-label="New FAQ question" value={draft.question} onChange={e=>setDraft(prev=>({...prev,question:e.target.value}))} placeholder="What would a donor like to know?" className={fieldClass}/></label><label className={labelClass}>Answer<textarea required minLength={12} maxLength={5000} rows={6} aria-label="New FAQ answer" value={draft.answer} onChange={e=>setDraft(prev=>({...prev,answer:e.target.value}))} placeholder="Write a clear, practical answer…" className={fieldClass}/></label><div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2"><label className={labelClass}>Display order<input type="number" min={0} max={9999} value={draft.sortOrder} onChange={e=>setDraft(prev=>({...prev,sortOrder:Number(e.target.value||0)}))} className={fieldClass}/><span className="mt-1 block text-[11px] font-normal text-slate-500 dark:text-slate-400">Lower numbers appear first.</span></label><label className="flex min-h-12 items-center gap-3 self-center rounded-xl border border-slate-200 px-3 py-3 text-sm dark:border-slate-700"><input type="checkbox" checked={draft.isActive} onChange={e=>setDraft(prev=>({...prev,isActive:e.target.checked}))} className="h-4 w-4 accent-rose-600"/>Publish on website</label></div><button type="submit" className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-5 text-sm font-semibold text-white transition-colors hover:bg-rose-700 disabled:opacity-60 dark:bg-rose-500 dark:hover:bg-rose-600"><Plus size={17}/>{creating?'Creating…':'Add FAQ'}</button></fieldset></form></Card>
     <section id="controls-faq" className="min-w-0 space-y-4" aria-labelledby="faq-library-heading"><div><h3 id="faq-library-heading" className="text-lg font-semibold">Your answer library</h3><p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{visible.length} of {items.length} questions · open a question to edit</p></div><div className="flex flex-wrap gap-3"><label className="relative min-w-0 flex-1 basis-full sm:basis-0"><Search size={16} className="pointer-events-none absolute left-3 top-4 text-slate-400"/><input type="search" aria-label="Search FAQ questions and answers" value={search} onChange={e=>setSearch(e.target.value)} placeholder="Find a question or answer" className={fieldClass+' mt-0 pl-10'}/></label><select aria-label="FAQ visibility" value={visibility} onChange={e=>setVisibility(e.target.value)} className={fieldClass+' mt-0 sm:w-auto'}><option value="all">All statuses</option><option value="active">Published</option><option value="hidden">Hidden</option></select></div>
     {loading?<p role="status" className="p-5 text-sm text-slate-500 dark:text-slate-400">Loading your questions…</p>:!visible.length?<div className="rounded-2xl border border-dashed border-slate-300 p-8 text-center dark:border-slate-700"><CircleHelp size={24} className="mx-auto mb-3 text-rose-500"/><p className="text-sm text-slate-500 dark:text-slate-400">{items.length?'No questions match these filters.':'Your first helpful answer starts here.'}</p></div>:null}
-    {items.map(item=><div key={item.id} hidden={!visible.some(row=>row.id===item.id)}><FaqEditorRow item={item} onSave={saveFaq} onDelete={deleteFaq} saving={savingId===item.id} deleting={deletingId===item.id}/></div>)}
+    {items.map(item=><div data-notification-target={'FaqItem:'+item.id} key={item.id} hidden={!visible.some(row=>row.id===item.id)}><FaqEditorRow item={item} onSave={saveFaq} onDelete={deleteFaq} saving={savingId===item.id} deleting={deletingId===item.id}/></div>)}
     </section></div></div>;
 }
 

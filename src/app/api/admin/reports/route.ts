@@ -69,7 +69,7 @@ async function handleGET(req: Request) {
     const [rows, total, totalOpen, resolvedTodayRows, categoryRows] = await Promise.all([
       prisma.report.findMany({
         where,
-        orderBy: { created_at: 'desc' },
+        orderBy: [{ created_at: 'desc' },{id:'desc'}],
         skip: (page - 1) * limit,
         take: limit,
       }),

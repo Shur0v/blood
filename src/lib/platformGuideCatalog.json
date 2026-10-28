@@ -41,7 +41,7 @@
     "methods": [
       "GET"
     ],
-    "sha256": "8d768ceeb93691b1d7bd3fb8bd9cfd7d06d729507c19252ac0626fcf84a33b17"
+    "sha256": "5c2a9728a146835a892400a5d52d1f6f43159a0800319b499092389e4b01db9e"
   },
   {
     "kind": "api",
@@ -111,7 +111,7 @@
       "GET",
       "POST"
     ],
-    "sha256": "e8ba312ab4a976e98b2aacc8c4515a8c5b249bed4722267e5e2a3252c3f93a44"
+    "sha256": "0aacdd55b43d83578b584a2fe6f6e6db7af36281112324564b95cfebceff3bd5"
   },
   {
     "kind": "api",
@@ -134,7 +134,7 @@
       "GET",
       "DELETE"
     ],
-    "sha256": "235182b01cbec7e278636c5f0af1fe4d56966cbb153260320ce00279f21022f7"
+    "sha256": "9213cc9946bce989bd3ae6e6e695fe29b256ca79df4c51d082ae903120dc1a8d"
   },
   {
     "kind": "api",
@@ -261,7 +261,7 @@
       "GET",
       "POST"
     ],
-    "sha256": "6c9f97c963790f3f7c77eb023b9356dcd0b4b49bbc325ec42549117fd1af68b9"
+    "sha256": "52a721afd58eaf2b65b298fd15b754d25fe0855f6013aa1d79e915978d590580"
   },
   {
     "kind": "api",
@@ -274,7 +274,7 @@
       "POST",
       "DELETE"
     ],
-    "sha256": "e91746ee7b2f9af4e97d3745e5b2e94ed8077614f233167cc473e7c3592c0814"
+    "sha256": "f3b170c2cc58e5b3a9a8d59563b5431f9470e316339c9cc395801244d1ff0ce9"
   },
   {
     "kind": "api",
@@ -298,7 +298,7 @@
       "POST",
       "DELETE"
     ],
-    "sha256": "90d3e8437078dd3901f2a82c1cb475469d74a94cd31e4178a5b8fbf9beb46df3"
+    "sha256": "c063c1b3eb9614a16daa0c63e81a97970ee97fbdb48d96e34a12337f1d757bc8"
   },
   {
     "kind": "api",
@@ -321,7 +321,18 @@
       "GET",
       "PATCH"
     ],
-    "sha256": "e8aae683a2dadc6044d2f6fbf6d401dd3ccbf2d56021f970c62eb69d82ed8ba8"
+    "sha256": "96d3f8c8d9dd2708ef7516fba3534ebce3ff121cba5cf2647c6fa5e65545a238"
+  },
+  {
+    "kind": "api",
+    "name": "/api/admin/notifications/[id]/destination",
+    "flow": "notifications",
+    "access": "Administrator",
+    "source": "src/app/api/admin/notifications/[id]/destination/route.ts",
+    "methods": [
+      "GET"
+    ],
+    "sha256": "85fe83329525f8d742d08be1c4b62fcb931a1275cb67bdfaecdd0728c25b808e"
   },
   {
     "kind": "api",
@@ -392,7 +403,7 @@
       "GET",
       "POST"
     ],
-    "sha256": "b433f69b466c3040c37aa9f4a100a546f4639002e78bf253b2774bec8592d3e0"
+    "sha256": "646b0502a0500dec5ae2e2b48f90337d4418c7b3dc82b599dd182f21e7a207a0"
   },
   {
     "kind": "api",
@@ -461,7 +472,7 @@
       "GET",
       "PATCH"
     ],
-    "sha256": "2cbc9e696b1577f2db88d323da67db42e95b5e54bdb6131e91a2b1fb6ed1bd9a"
+    "sha256": "e6023be23d63f2ba5fc938c19e04224d883fd3b9ebe089ce53c4fc1e1ef06b9f"
   },
   {
     "kind": "api",
@@ -508,7 +519,7 @@
     "methods": [
       "GET"
     ],
-    "sha256": "1be710a9e12d3278bf14ab073f6c9df5413dc91ba0022c3a241d5a7feff28443"
+    "sha256": "0a0148c7a1b35f599e3b54aa44bfdc201abaf2f591526cff33cd4b8e7a02783c"
   },
   {
     "kind": "api",
@@ -780,7 +791,7 @@
       "PATCH",
       "DELETE"
     ],
-    "sha256": "a024e3b8fd97d0f3e210a8277ae7981619a4a7f5748839d88955b31b3fda5b6d"
+    "sha256": "660e1b233bb903ddf9a34a81db858cc1746efe5081d5d7402c9072fc2b3070fe"
   },
   {
     "kind": "api",
@@ -804,7 +815,7 @@
       "GET",
       "PATCH"
     ],
-    "sha256": "d1eea7b3acd60bf6ae350bfc744eaf0d89d41a8cae4d890cc8737398e06fc694"
+    "sha256": "27555a8dfd694a02ec207efdb51fdbc95ce3841de803d5f9684b0ba10e1abac7"
   },
   {
     "kind": "api",
@@ -1195,7 +1206,7 @@
     "access": "Server-managed; record-level publication/authorization",
     "source": "prisma/schema.prisma",
     "methods": [],
-    "sha256": "b505dd6cfac759ab6c244ce2e0f4378b8562513a76c542cc9dd093eeb8fec743"
+    "sha256": "edce00461194fe856a89ca4a6037e141323c9cc400706e478c0592cef116a193"
   },
   {
     "kind": "model",
@@ -1699,7 +1710,7 @@
     "access": "Reviewed supporting implementation",
     "source": "src/backend/scripts/recoveryCli.ts",
     "methods": [],
-    "sha256": "13c32566d5044eb63de9c665d82197773626bb852a9105e7224bfc89babec346"
+    "sha256": "1e8f97e70860462b960421d1d76d251150d285e54b3c25461559798c9b05b9ac"
   },
   {
     "kind": "module",
@@ -1708,7 +1719,7 @@
     "access": "Reviewed supporting implementation",
     "source": "src/backend/scripts/recoveryWorker.ts",
     "methods": [],
-    "sha256": "56ac88cc45f601d88ea577d05032f2c9bfaee12386016d066367a228628e56b8"
+    "sha256": "587bf74f99a8b1570b4f59334d2d123b159999965a2b4de94de27e5ac0a22ff5"
   },
   {
     "kind": "module",
@@ -1726,7 +1737,7 @@
     "access": "Reviewed supporting implementation",
     "source": "src/components/AdminNotifications.tsx",
     "methods": [],
-    "sha256": "0941286222edb12c9b8eafcba916b09addd9babced19ef59b12abac1b6bd4a8d"
+    "sha256": "e5e211a59adc5e2aed629f1aef394a06ef9dd17c173700c90d60194c9d820ab9"
   },
   {
     "kind": "module",
@@ -1735,7 +1746,7 @@
     "access": "Reviewed supporting implementation",
     "source": "src/components/AdminWorkspaceShell.tsx",
     "methods": [],
-    "sha256": "9e1c7c71550b5ed3fabf881997cd6935fe8cd574ba782995f93bc7c527a2e32b"
+    "sha256": "adc9a870bbff0872d7242b9db699919efa442cf4452556ff932039aeabd1f703"
   },
   {
     "kind": "module",
@@ -1753,7 +1764,7 @@
     "access": "Reviewed supporting implementation",
     "source": "src/components/HomepageContentEditor.tsx",
     "methods": [],
-    "sha256": "143462dc0e64de0ff747a9406f3461d51f30241a170546ed20f3cd5a3ae2ed1d"
+    "sha256": "c06a165410f3d38b000cf2560b9bd79f967f77a1c6996edfd7fa5752df204237"
   },
   {
     "kind": "module",
@@ -1775,6 +1786,15 @@
   },
   {
     "kind": "module",
+    "name": "src/components/NotificationFocus.tsx",
+    "flow": "notifications",
+    "access": "Reviewed supporting implementation",
+    "source": "src/components/NotificationFocus.tsx",
+    "methods": [],
+    "sha256": "e032de8a37577909f44ad458ccb5a167f8530ad392932aa5a64da67197ce3854"
+  },
+  {
+    "kind": "module",
     "name": "src/components/ProfileIdentityCard.tsx",
     "flow": "profile",
     "access": "Reviewed supporting implementation",
@@ -1789,7 +1809,7 @@
     "access": "Reviewed supporting implementation",
     "source": "src/components/PublicContentEditor.tsx",
     "methods": [],
-    "sha256": "a6cb86b46167b85fd56e3865a70baf0d08176760c4c0655fa5a6dad1573f5f73"
+    "sha256": "bdf00da510a88af1c36e78df06d0fc4867a1fd74efd6f04147b9a12b749b0138"
   },
   {
     "kind": "module",
@@ -1816,7 +1836,7 @@
     "access": "Reviewed supporting implementation",
     "source": "src/components/RegionalContentEditor.tsx",
     "methods": [],
-    "sha256": "bba22940c5ed9daf7cd2be58b3370339795c9c46d0c5790486bef4672d5397a7"
+    "sha256": "55b5005b98e2133a673cf4fa7986bd57cb066ad9fc8fb2b5caa3c7b0aa02d6f5"
   },
   {
     "kind": "module",
@@ -1907,6 +1927,15 @@
     "source": "src/lib/maintenanceState.server.ts",
     "methods": [],
     "sha256": "6e26c16feba60cc14b0439e7194745a08a428d70afe9827996d9a2ce57ef1a70"
+  },
+  {
+    "kind": "module",
+    "name": "src/lib/notificationTargets.ts",
+    "flow": "notifications",
+    "access": "Reviewed supporting implementation",
+    "source": "src/lib/notificationTargets.ts",
+    "methods": [],
+    "sha256": "685924d3c69725180c97e4f479dc2e2b9e933deab191741cea548d8b0a8eefbe"
   },
   {
     "kind": "module",
@@ -2527,7 +2556,7 @@
     "access": "Administrator",
     "source": "src/app/private/console-0be5626d4305f192e37e/workspace/page.tsx",
     "methods": [],
-    "sha256": "a44a1671b787a8f3341fe3eadf290c169a8d627ae952b8e6e798a7f796dd5b00"
+    "sha256": "47ee1a176c9bf32c588ad98eb518ab6fd92257318b5a66d0bb996397d1ba81d2"
   },
   {
     "kind": "page",
@@ -2563,7 +2592,7 @@
     "access": "Administrator",
     "source": "src/app/private/console-0be5626d4305f192e37e/workspace/faq/page.tsx",
     "methods": [],
-    "sha256": "cdb38c95b4cef6e6b1ec9ec8201cf770660cb079eae94dc0f2db66017c0c3832"
+    "sha256": "344872b57c0d11ba60bb53900f12f240c8446fc2818a1cf54ee70e59eab6633d"
   },
   {
     "kind": "page",
@@ -2572,7 +2601,7 @@
     "access": "Administrator",
     "source": "src/app/private/console-0be5626d4305f192e37e/workspace/financial-requests/page.tsx",
     "methods": [],
-    "sha256": "3b7ff4cd9119289466b84118a48533317b51b8b020a1b2a5a84e791ad80e0fcd"
+    "sha256": "9aacaf9f1a9c50a12536378976b50ee263cbf2de58bce819812422e222a2419a"
   },
   {
     "kind": "page",
@@ -2599,7 +2628,7 @@
     "access": "Administrator",
     "source": "src/app/private/console-0be5626d4305f192e37e/workspace/manual-blood-donor/page.tsx",
     "methods": [],
-    "sha256": "7ac79520ae23c999628efa0079d87e4d92ca6c4a03088d58794028cb59b6738d"
+    "sha256": "baa45cbf52c46992e1e31f923726d45c04fe336fd64430f1e072eb4756a92ae6"
   },
   {
     "kind": "page",
@@ -2608,7 +2637,7 @@
     "access": "Administrator",
     "source": "src/app/private/console-0be5626d4305f192e37e/workspace/manual-organ-donor/page.tsx",
     "methods": [],
-    "sha256": "61bf4e85d8fcd896296bda85a1f615bc5f9b32db75434c7ea8d132d3b64bd5b3"
+    "sha256": "847a7502dd32211ce22e16a390838d259700180403aef81a7120ffee6898b954"
   },
   {
     "kind": "page",
@@ -2617,7 +2646,7 @@
     "access": "Administrator",
     "source": "src/app/private/console-0be5626d4305f192e37e/workspace/medical-operations/page.tsx",
     "methods": [],
-    "sha256": "d847375f2768d75df66e3821d444fd4444ad0310333722191043c171c18a5839"
+    "sha256": "f1820a4088b3e3d1c21177adecb421f152d6ee035231f2f2e2906d16310a3c0a"
   },
   {
     "kind": "page",
@@ -2630,12 +2659,21 @@
   },
   {
     "kind": "page",
+    "name": "/private/console-0be5626d4305f192e37e/workspace/organ-request",
+    "flow": "moderation",
+    "access": "Administrator",
+    "source": "src/app/private/console-0be5626d4305f192e37e/workspace/organ-request/page.tsx",
+    "methods": [],
+    "sha256": "e86ce27881e5351dbe2d5c3570068f85733bb310e99a43a75c1710964e00ec88"
+  },
+  {
+    "kind": "page",
     "name": "/private/console-0be5626d4305f192e37e/workspace/policy",
     "flow": "appearance",
     "access": "Administrator",
     "source": "src/app/private/console-0be5626d4305f192e37e/workspace/policy/page.tsx",
     "methods": [],
-    "sha256": "078f82a35943ab322d574f6213c065a7a3848e2c250a1041a5894e5aa413489a"
+    "sha256": "93b66178e2bb0f233de1f5eded5cd80b03106e09e807c4529814f0d3ec1ed8a5"
   },
   {
     "kind": "page",
@@ -2653,7 +2691,7 @@
     "access": "Administrator",
     "source": "src/app/private/console-0be5626d4305f192e37e/workspace/reports/page.tsx",
     "methods": [],
-    "sha256": "2851932770c7e218d03e7193cdc32b6aa22e101567392a406706d1d342357062"
+    "sha256": "c18599432dee02c2fb5600da281243cd00cf760c30c0719fe0624da582efee6e"
   },
   {
     "kind": "page",
@@ -2662,7 +2700,7 @@
     "access": "Administrator",
     "source": "src/app/private/console-0be5626d4305f192e37e/workspace/slider-manager/page.tsx",
     "methods": [],
-    "sha256": "13ee83e338c6577fec3f4ee3ed5c6ffe0c356b69bf417eed09dfbb4c4a8983f4"
+    "sha256": "f528e3d90ddfe65d9ab041af6b59324a439f2676a58eadb20750c509ff2be6e0"
   },
   {
     "kind": "page",
@@ -2671,7 +2709,7 @@
     "access": "Administrator",
     "source": "src/app/private/console-0be5626d4305f192e37e/workspace/spam-monitor/page.tsx",
     "methods": [],
-    "sha256": "e539c72c2c1f3bea942fb5f7727525675f3159d9baf1f26c6fa836c2fc56698a"
+    "sha256": "f5160f637c5fd4892659d492668a2e03387bad066804b36082c2912c9886d1bd"
   },
   {
     "kind": "page",
@@ -2680,7 +2718,7 @@
     "access": "Administrator",
     "source": "src/app/private/console-0be5626d4305f192e37e/workspace/theme-control/page.tsx",
     "methods": [],
-    "sha256": "e7396b46b29a8797d7f51c46265fceffb58d677ee4f50284ff2534028c099e3c"
+    "sha256": "f2fce4abcadba1ef4a06b22671dad85273b2e8e7df10e3651a0542889dea2826"
   },
   {
     "kind": "page",
@@ -2689,7 +2727,16 @@
     "access": "Administrator",
     "source": "src/app/private/console-0be5626d4305f192e37e/workspace/users/page.tsx",
     "methods": [],
-    "sha256": "c33b6f0b87b919ba90fa85cd7edce4ebf5b720c297f3d0c168381724463cf447"
+    "sha256": "b1b3c44d8d49baf23bee88f0627d73101b53348bcc85e8482d58fa0931cf5e19"
+  },
+  {
+    "kind": "page",
+    "name": "/private/console-0be5626d4305f192e37e/workspace/verify-request",
+    "flow": "moderation",
+    "access": "Administrator",
+    "source": "src/app/private/console-0be5626d4305f192e37e/workspace/verify-request/page.tsx",
+    "methods": [],
+    "sha256": "00794d8a0085706313eb751d6731a04885b74dfa784fab14e132120fb86e1d7e"
   },
   {
     "kind": "page",
@@ -2698,7 +2745,7 @@
     "access": "Administrator",
     "source": "src/app/private/console-0be5626d4305f192e37e/workspace/write-blog/page.tsx",
     "methods": [],
-    "sha256": "f90ea994183223ab6961911304029cd41dbec2daa242a2f67ad0cd60e91ee33b"
+    "sha256": "fef2951c976f38e3e30ae6978337996c388aeca1d88bf5b31f1257ccdc0d86c0"
   },
   {
     "kind": "page",
@@ -2743,7 +2790,7 @@
     "access": "Staff queues",
     "source": "src/app/private/operations-1c0fdec8fcca3f8ad2e6/workspace/organ-request/page.tsx",
     "methods": [],
-    "sha256": "1004f046524bf255da7f0037a7c9e7159704d5a65a8dda587abdb12577157f2c"
+    "sha256": "37ca48c7c33ab0f445f71c745c16f2c0ae6c61384b794899748df43fcf36f14d"
   },
   {
     "kind": "page",
@@ -2757,11 +2804,11 @@
   {
     "kind": "page",
     "name": "/private/operations-1c0fdec8fcca3f8ad2e6/workspace/verify-request",
-    "flow": "platform",
+    "flow": "moderation",
     "access": "Staff queues",
     "source": "src/app/private/operations-1c0fdec8fcca3f8ad2e6/workspace/verify-request/page.tsx",
     "methods": [],
-    "sha256": "ca5e7bff00c39c0f13733805fd7db5b349bfc05b7ce909dab94ff784df80faab"
+    "sha256": "cd7a32c0ad2ba55e63af7f293610cbd10c6b2b3c2d512747d7c0bb86a8202a7f"
   },
   {
     "kind": "page",
@@ -3031,7 +3078,7 @@
     "access": "Internal server module",
     "source": "src/backend/services/adminNotifications.ts",
     "methods": [],
-    "sha256": "d760f5b3437c244591c319b9f5ea211309348511e302e0d6ff536bf41d5e4cfc"
+    "sha256": "a8c606fbb04fa9ee9163f6ea27f34e9fc4f68ffa1014b5931cf8264e5e24edfc"
   },
   {
     "kind": "service",
@@ -3185,6 +3232,15 @@
     "source": "src/backend/services/medicalStorageSetup.ts",
     "methods": [],
     "sha256": "21370cd020f5447a4c4d4a333ab1df621547c7b853a80cf5d12c6cc2afa825d7"
+  },
+  {
+    "kind": "service",
+    "name": "notificationDestinations",
+    "flow": "notifications",
+    "access": "Internal server module",
+    "source": "src/backend/services/notificationDestinations.ts",
+    "methods": [],
+    "sha256": "6e8ffef8ac4c41d4e7f8c2aa0b6e681375c60a815a733fcb45d891e23131ae78"
   },
   {
     "kind": "service",

@@ -1,4 +1,5 @@
 'use client';
+import {useNotificationPage,useNotificationFocus} from '@/src/components/NotificationFocus';
 
 import React, { useEffect, useState } from 'react';
 import { Card } from '@/src/dashboard/user-management/components/Card';
@@ -32,6 +33,8 @@ const toLabelStatus = (status: VerificationStatus): 'Pending' | 'Approved' | 'Re
 };
 
 export default function VerifyRequestPage() {
+ const requestSequence=React.useRef(0);
+ useNotificationPage('VerificationDocument',page=>{setFilterStatus('');setCurrentPage(page);});
   const [requests, setRequests] = useState<VerificationItem[]>([]);
   const [selectedRequest, setSelectedRequest] = useState<VerificationItem | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -42,6 +45,7 @@ export default function VerifyRequestPage() {
   const [loading, setLoading] = useState(true);
 
   const loadRequests = async (page: number, statusFilter?: string) => {
+ const ticket=++requestSequence.current;
     setLoading(true);
     try {
       const params = new URLSearchParams({
@@ -57,7 +61,7 @@ export default function VerifyRequestPage() {
         credentials: 'include',
         cache: 'no-store',
       });
-      const payload = await res.json();
+      const payload = await res.json();if(ticket!==requestSequence.current)return;
 
       if (!res.ok || !payload.success) {
         setRequests([]);
@@ -136,7 +140,7 @@ export default function VerifyRequestPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {requests.map((req) => (
-          <Card key={req.id} onClick={() => { setSelectedRequest(req); setIsModalOpen(true); }} className="group">
+          <Card data-notification-target={'VerificationDocument:'+req.id} key={req.id} onClick={() => { setSelectedRequest(req); setIsModalOpen(true); }} className="group">
             <div className="flex justify-between items-start mb-4">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-full bg-[var(--bg-app)] border-2 border-[var(--primary)]/20 flex items-center justify-center overflow-hidden">

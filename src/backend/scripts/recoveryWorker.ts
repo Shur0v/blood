@@ -54,11 +54,11 @@ async function main(){
    if(raw.enabled&&!raw.lock&&!raw.failed&&Date.parse(raw.deadline)<=Date.now()){
     await (await import('../config/db')).getPrisma().$executeRaw`UPDATE "MaintenanceGate" SET paused=false WHERE id=1`;
     state.writeMaintenance({...raw,enabled:false});
-    await recordAdminEvent({type:'maintenance.expired',family:'recovery',title:'Maintenance ended automatically',detail:'The deadline passed with no recovery lock.',dedupeKey:'maintenance:expired:'+raw.deadline});
+    await recordAdminEvent({target:{kind:'Maintenance',id:'current'},type:'maintenance.expired',family:'recovery',title:'Maintenance ended automatically',detail:'The deadline passed with no recovery lock.',dedupeKey:'maintenance:expired:'+raw.deadline});
    }
   }catch{}
   for(const job of store.allJobs().filter(j=>['READY','FAILED','SUCCEEDED'].includes(j.status)&&!j.notified))try{
-   await recordAdminEvent({type:'recovery.'+job.kind+'.'+job.status.toLowerCase(),family:'recovery',title:job.kind+' operation '+job.status.toLowerCase(),detail:job.stage,occurredAt:new Date(job.updatedAt),dedupeKey:'recovery:'+job.id+':'+job.status,href:'/private/console-0be5626d4305f192e37e/workspace/spam-monitor'});store.saveJob({...job,notified:true});
+   await recordAdminEvent({target:{kind:'RecoveryJob',id:job.id},type:'recovery.'+job.kind+'.'+job.status.toLowerCase(),family:'recovery',title:job.kind+' operation '+job.status.toLowerCase(),detail:job.stage,occurredAt:new Date(job.updatedAt),dedupeKey:'recovery:'+job.id+':'+job.status,href:'/private/console-0be5626d4305f192e37e/workspace/spam-monitor'});store.saveJob({...job,notified:true});
   }catch{}
   await new Promise(resolve=>setTimeout(resolve,5000));
  }

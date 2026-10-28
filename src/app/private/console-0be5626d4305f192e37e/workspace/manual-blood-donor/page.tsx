@@ -1,4 +1,5 @@
 'use client';
+import {useNotificationPage} from '@/src/components/NotificationFocus';
 
 import React from 'react';
 import { Card } from '@/src/admin-dashboard/components/common/Card';
@@ -59,6 +60,10 @@ const createBulkRow = (): BulkDonorRow => ({
 });
 
 export default function ManualBloodDonorPage() {
+ const recentRequest=React.useRef(0),communityRequest=React.useRef(0);
+ const [manualPage,setManualPage]=React.useState(1),[manualTotal,setManualTotal]=React.useState(0);
+ useNotificationPage('ManualBloodDonor',page=>void loadRecentEntries(page));
+ useNotificationPage('CommunityDonor',page=>{setCommunitySearch('');setCommunityCurrentPage(page);});
   const [selectedLocation, setSelectedLocation] = React.useState<LocationSuggestion | null>(null);
   const [phoneValue, setPhoneValue] = React.useState<PhoneFieldValue>(emptyPhoneValue());
   const [isPhoneValid, setIsPhoneValid] = React.useState(false);
@@ -316,30 +321,32 @@ export default function ManualBloodDonorPage() {
     }
   };
 
-  const loadRecentEntries = React.useCallback(async () => {
+  const loadRecentEntries = React.useCallback(async (page = 1) => {
+ const ticket=++recentRequest.current;
     try {
       const res = await fetch('/api/admin/manual-blood-donors', {
         method: 'GET',
         credentials: 'include',
         cache: 'no-store',
       });
-      const payload = await res.json();
+      const payload = await res.json();if(ticket!==recentRequest.current)return;
       if (!res.ok || !payload.success) {
         return;
       }
-      setRecentEntries(payload.data || []);
+      setRecentEntries(payload.data || []);setManualPage(payload.pagination?.page||page);setManualTotal(payload.pagination?.total||0);
     } catch (error) {
       // silent load failure
     }
   }, []);
 
-  const loadCommunityEntries = React.useCallback(async (page = 1) => {
+  const loadCommunityEntries = React.useCallback(async (page = 1, clearSearch=false) => {
+ const ticket=++communityRequest.current;
     try {
       const params = new URLSearchParams({
         page: String(page),
         limit: String(COMMUNITY_PAGE_SIZE),
       });
-      if (communitySearch.trim()) {
+      if (!clearSearch && communitySearch.trim()) {
         params.set('search', communitySearch.trim());
       }
       const res = await fetch(`/api/admin/community-donors?${params.toString()}`, {
@@ -347,7 +354,7 @@ export default function ManualBloodDonorPage() {
         credentials: 'include',
         cache: 'no-store',
       });
-      const payload = await res.json();
+      const payload = await res.json();if(ticket!==communityRequest.current)return;
       if (!res.ok || !payload.success) return;
       setCommunityEntries(payload.data || []);
       setCommunityCurrentPage(payload?.pagination?.page || page);
@@ -420,15 +427,14 @@ export default function ManualBloodDonorPage() {
 
   React.useEffect(() => {
     void loadRecentEntries();
-    void loadCommunityEntries(1);
-  }, [loadRecentEntries, loadCommunityEntries]);
+  }, [loadRecentEntries]);
 
   React.useEffect(() => {
     const timer = window.setTimeout(() => {
-      void loadCommunityEntries(1);
-    }, 250);
+      void loadCommunityEntries(communityCurrentPage);
+    }, communitySearch?250:0);
     return () => window.clearTimeout(timer);
-  }, [communitySearch, loadCommunityEntries]);
+  }, [communityCurrentPage, communitySearch, loadCommunityEntries]);
 
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this manual donor record?')) {
@@ -956,7 +962,7 @@ export default function ManualBloodDonorPage() {
               </TableRow>
             ) : (
               recentEntries.map((row) => (
-                <TableRow key={row.id}>
+                <TableRow data-notification-target={'ManualBloodDonor:'+row.id} key={row.id}>
                   <TableCell className="font-semibold">{row.id.slice(0, 8).toUpperCase()}</TableCell>
                   <TableCell>{row.name}</TableCell>
                   <TableCell><Badge type="danger">{row.blood_group}</Badge></TableCell>
@@ -977,15 +983,8 @@ export default function ManualBloodDonorPage() {
               ))
             )}
           </Table>
-          {communityEntries.length > 0 && (
-            <Pagination
-              currentPage={communityCurrentPage}
-              totalPages={communityTotalPages}
-              totalItems={communityTotalItems}
-              pageSize={COMMUNITY_PAGE_SIZE}
-              onPageChange={(page) => void loadCommunityEntries(page)}
-            />
-          )}
+<Pagination currentPage={manualPage} totalPages={Math.max(1,Math.ceil(manualTotal/20))} totalItems={manualTotal} pageSize={20} onPageChange={page=>void loadRecentEntries(page)}/>
+
         </div>
       </div>
 
@@ -998,7 +997,7 @@ export default function ManualBloodDonorPage() {
               <input
                 type="text"
                 value={communitySearch}
-                onChange={(e) => setCommunitySearch(e.target.value)}
+                onChange={(e) => {setCommunitySearch(e.target.value);setCommunityCurrentPage(1);}}
                 placeholder="Search org, city, country, contact, mobile"
                 className="h-9 w-[320px] rounded-lg border border-gray-200 bg-gray-50 pl-9 pr-3 text-sm text-gray-900 outline-none transition focus:border-red-400 dark:border-gray-700 dark:bg-[#0f1115] dark:text-gray-100"
               />
@@ -1027,7 +1026,7 @@ export default function ManualBloodDonorPage() {
               </TableRow>
             ) : (
               communityEntries.map((row) => (
-                <TableRow key={row.id}>
+                <TableRow data-notification-target={'CommunityDonor:'+row.id} key={row.id}>
                   <TableCell className="font-semibold">{row.id.slice(0, 8).toUpperCase()}</TableCell>
                   <TableCell>{row.organization_name}</TableCell>
                   <TableCell>{row.contact_person || '-'}</TableCell>
@@ -1047,6 +1046,15 @@ export default function ManualBloodDonorPage() {
               ))
             )}
           </Table>
+          {communityEntries.length > 0 && (
+            <Pagination
+              currentPage={communityCurrentPage}
+              totalPages={communityTotalPages}
+              totalItems={communityTotalItems}
+              pageSize={COMMUNITY_PAGE_SIZE}
+              onPageChange={setCommunityCurrentPage}
+            />
+          )}
         </div>
       </div>
     </div>

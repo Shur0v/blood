@@ -1,5 +1,6 @@
 'use client';
 
+import {useNotificationEditor} from '@/src/components/NotificationFocus';
 import React, { useMemo, useState } from 'react';
 import { Card } from '@/src/admin-dashboard/components/common/Card';
 import { Scale, Save, AlertTriangle, CheckCircle2, FileText, Shield, Globe, Mail, Phone, MapPin, Type } from 'lucide-react';
@@ -73,6 +74,7 @@ export default function PolicyUpdatePage() {
   const [activePolicy, setActivePolicy] = useState<PolicyKey>('terms');
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+ const focus=useNotificationEditor('Policy',!isLoading,()=>{const value:Record<string,PolicyKey>={TERMS_OF_SERVICE:'terms',PRIVACY_SUMMARY:'privacySummary',PRIVACY_POLICY_FULL:'privacyFull'};setActivePolicy(value[focus?.operation?.status||'']||'terms');});
 
   React.useEffect(() => {
     const controller = new AbortController();
@@ -158,7 +160,7 @@ export default function PolicyUpdatePage() {
       const result = await res.json();
       if (!res.ok || !result.success) {
         console.error('[PolicyPage] save failed', { status: res.status, result });
-        
+
         // Handle specific Zod validation errors
         if (result.errors && result.errors.fieldErrors) {
           const fieldErrors = Object.entries(result.errors.fieldErrors)
@@ -180,7 +182,7 @@ export default function PolicyUpdatePage() {
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+    <div id="policy-manager" data-notification-pending={isLoading?'true':'false'} className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h2 className="text-2xl font-bold flex items-center gap-2">
@@ -203,7 +205,7 @@ export default function PolicyUpdatePage() {
 
       <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
         <div className="xl:col-span-3 space-y-6">
-          <Card className="p-0 overflow-hidden">
+          <div id="notification-policy" data-notification-pending={isLoading?'true':'false'}><Card className="p-0 overflow-hidden">
             <div className="p-4 border-b border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/10">
               <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Policy Section</p>
               <div className="flex flex-wrap gap-2">
@@ -273,9 +275,9 @@ export default function PolicyUpdatePage() {
                 </div>
               </div>
             </div>
-          </Card>
+          </Card></div>
 
-          <Card className="p-0 overflow-hidden">
+          <div id="notification-footer" data-notification-pending={isLoading?'true':'false'}><Card className="p-0 overflow-hidden">
             <div className="p-4 border-b border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/10">
               <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">Footer Contact Information</p>
             </div>
@@ -329,7 +331,7 @@ export default function PolicyUpdatePage() {
                 />
               </div>
             </div>
-          </Card>
+          </Card></div>
 
           <Card className="p-0 overflow-hidden">
             <div className="p-4 border-b border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/10">

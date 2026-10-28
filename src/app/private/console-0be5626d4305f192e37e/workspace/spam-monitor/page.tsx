@@ -1,5 +1,7 @@
 'use client';
 
+import {NotificationOperationTarget,useNotificationPage} from '@/src/components/NotificationFocus';
+import {Pagination} from '@/src/admin-dashboard/components/common/Pagination';
 import RecoveryCenter from '@/src/components/RecoveryCenter';
 import { useEffect, useState } from 'react';
 import { Card } from '@/src/admin-dashboard/components/common/Card';
@@ -17,6 +19,8 @@ interface RiskItem {
 }
 
 export default function SpamMonitorPage() {
+ const [page,setPage]=useState(1),[total,setTotal]=useState(0);
+ useNotificationPage('AuthRiskEvent',next=>setPage(next));
   const [rows, setRows] = useState<RiskItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
@@ -24,7 +28,7 @@ export default function SpamMonitorPage() {
   const loadRows = async () => {
     try {
       setLoading(true);
-      const res = await fetch('/api/admin/abuse/suspicious-users?page=1&limit=20', {
+      const res = await fetch(`/api/admin/abuse/suspicious-users?page=${page}&limit=20`, {
         method: 'GET',
         credentials: 'include',
         cache: 'no-store',
@@ -34,7 +38,7 @@ export default function SpamMonitorPage() {
         setRows([]);
         return;
       }
-      setRows(payload.data || []);
+      setRows(payload.data || []);setTotal(payload.pagination?.total||0);
     } finally {
       setLoading(false);
     }
@@ -42,7 +46,7 @@ export default function SpamMonitorPage() {
 
   useEffect(() => {
     void loadRows();
-  }, []);
+  }, [page]);
 
   const restrictUser = async (userId: string | null) => {
     if (!userId) return;
@@ -56,7 +60,7 @@ export default function SpamMonitorPage() {
   };
 
   return (
-    <div className="space-y-6"><RecoveryCenter/>
+    <div className="space-y-6"><RecoveryCenter/><NotificationOperationTarget kinds={['RestrictedIdentity']}/>
       <div>
         <h2 className="text-2xl font-bold">Spam & Abuse Monitor</h2>
         <p className="text-sm text-gray-500 mt-1">Recorded suspicious identity events and admin restriction control.</p>
@@ -68,11 +72,11 @@ export default function SpamMonitorPage() {
         </div>
       )}
 
-      <Card title="Suspicious Users (Latest 20)">
+      <Card title="Suspicious Users">
         <Table headers={['User', 'Event', 'Reason', 'Risk', 'Date', 'Actions']}>
           {!loading &&
             rows.map((row) => (
-              <TableRow key={row.id}>
+              <TableRow data-notification-target={'AuthRiskEvent:'+row.id} key={row.id}>
                 <TableCell>
                   <div className="font-semibold">{row.userName}</div>
                   <div className="text-xs text-gray-500">{row.userEmail}</div>
@@ -93,7 +97,7 @@ export default function SpamMonitorPage() {
                 </TableCell>
               </TableRow>
             ))}
-        </Table>
+        </Table><Pagination currentPage={page} totalPages={Math.max(1,Math.ceil(total/20))} totalItems={total} pageSize={20} onPageChange={setPage}/>
         {!loading && rows.length === 0 && (
           <p className="py-6 text-sm text-gray-500">No suspicious events found.</p>
         )}

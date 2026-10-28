@@ -40,7 +40,7 @@
     "recovery:check-idle": "tsx src/backend/scripts/recoveryCli.ts check-idle",
     "recovery:operator": "tsx src/backend/scripts/recoveryCli.ts",
     "test:operations": "tsx --test tests/admin-operations.test.ts tests/recovery-roundtrip.test.ts tests/recovery-worker.test.ts",
-    "test:operations-ui": "tsx tests/admin-operations-ui.mjs"
+    "test:operations-ui": "tsx tests/admin-operations-ui.mjs && tsx tests/notification-focus-ui.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1034.0",

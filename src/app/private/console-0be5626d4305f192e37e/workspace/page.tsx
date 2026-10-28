@@ -127,7 +127,7 @@ export default function DashboardOverview() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div id="notification-overview" className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-rose-600 dark:text-rose-300">Network workspace</p><h2 className="mt-2 text-3xl font-semibold tracking-tight">A clearer view of your community.</h2>

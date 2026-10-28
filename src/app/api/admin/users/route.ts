@@ -60,7 +60,7 @@ async function handleGET(req: Request) {
     const [users, total] = await Promise.all([
       prisma.user.findMany({
         where,
-        orderBy: { created_at: 'desc' },
+        orderBy: [{ created_at: 'desc' },{id:'desc'}],
         skip: (page - 1) * limit,
         take: limit,
       }),

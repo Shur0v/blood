@@ -1,6 +1,8 @@
 'use client';
+import {useNotificationPage} from '@/src/components/NotificationFocus';
 
 import React from 'react';
+import {Pagination} from '@/src/admin-dashboard/components/common/Pagination';
 import { Card } from '@/src/admin-dashboard/components/common/Card';
 import { Table, TableRow, TableCell } from '@/src/admin-dashboard/components/common/Table';
 import { Badge } from '@/src/admin-dashboard/components/common/Badge';
@@ -22,6 +24,9 @@ interface ManualOrganDonorRow {
 }
 
 export default function ManualOrganDonorPage() {
+ const recentRequest=React.useRef(0);
+ const [manualPage,setManualPage]=React.useState(1),[manualTotal,setManualTotal]=React.useState(0);
+ useNotificationPage('ManualOrganDonor',page=>void loadRecentEntries(page));
   const [selectedLocation, setSelectedLocation] = React.useState<LocationSuggestion | null>(null);
   const [phoneValue, setPhoneValue] = React.useState<PhoneFieldValue>(emptyPhoneValue());
   const [isPhoneValid, setIsPhoneValid] = React.useState(false);
@@ -43,18 +48,19 @@ export default function ManualOrganDonorPage() {
     setSelectedOrgans((prev) => (prev.includes(organ) ? prev.filter((item) => item !== organ) : [...prev, organ]));
   };
 
-  const loadRecentEntries = React.useCallback(async () => {
+  const loadRecentEntries = React.useCallback(async (page = 1) => {
+ const ticket=++recentRequest.current;
     try {
-      const res = await fetch('/api/admin/manual-organ-donors', {
+      const res = await fetch(`/api/admin/manual-organ-donors?page=${page}`, {
         method: 'GET',
         credentials: 'include',
         cache: 'no-store',
       });
-      const payload = await res.json();
+      const payload = await res.json();if(ticket!==recentRequest.current)return;
       if (!res.ok || !payload.success) {
         return;
       }
-      setRecentEntries(payload.data || []);
+      setRecentEntries(payload.data || []);setManualPage(payload.pagination?.page||page);setManualTotal(payload.pagination?.total||0);
     } catch {
       // silent
     }
@@ -286,7 +292,7 @@ export default function ManualOrganDonorPage() {
               </TableRow>
             ) : (
               recentEntries.map((row) => (
-                <TableRow key={row.id}>
+                <TableRow data-notification-target={'ManualOrganDonor:'+row.id} key={row.id}>
                   <TableCell className="font-semibold text-purple-600 dark:text-purple-400">{row.id.slice(0, 8).toUpperCase()}</TableCell>
                   <TableCell>{row.name}</TableCell>
                   <TableCell>
@@ -312,6 +318,7 @@ export default function ManualOrganDonorPage() {
               ))
             )}
           </Table>
+<Pagination currentPage={manualPage} totalPages={Math.max(1,Math.ceil(manualTotal/20))} totalItems={manualTotal} pageSize={20} onPageChange={page=>void loadRecentEntries(page)}/>
         </div>
       </div>
     </div>

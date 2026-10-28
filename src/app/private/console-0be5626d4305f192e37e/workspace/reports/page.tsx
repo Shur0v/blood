@@ -1,4 +1,5 @@
 'use client';
+import {useNotificationPage} from '@/src/components/NotificationFocus';
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { Table, TableRow, TableCell } from '@/src/admin-dashboard/components/common/Table';
@@ -34,6 +35,8 @@ interface ReportsMeta {
 const PAGE_SIZE = 20;
 
 export default function ReportsPage() {
+ const notificationRequestSequence=React.useRef(0);
+ useNotificationPage('Report',page=>setCurrentPage(page));
   const [reports, setReports] = useState<ReportRow[]>([]);
   const [selectedReport, setSelectedReport] = useState<ReportRow | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -58,6 +61,7 @@ export default function ReportsPage() {
   }, []);
 
   const loadReports = async () => {
+ const ticket=++notificationRequestSequence.current;
     setIsLoading(true);
     try {
       const params = new URLSearchParams({
@@ -70,6 +74,7 @@ export default function ReportsPage() {
         cache: 'no-store',
       });
       const payload = await res.json();
+ if(ticket!==notificationRequestSequence.current)return;
       if (!res.ok || !payload.success) {
         setReports([]);
         setMeta({ totalOpen: 0, resolvedToday: 0, highPriority: 0, topCategory: 'N/A' });
@@ -163,7 +168,7 @@ export default function ReportsPage() {
       <div className="border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.04)] bg-white dark:bg-[#1a1b23]">
         <Table headers={['Report Info', 'Reporter', 'Target', 'Details', 'Priority & Status', 'Actions']}>
           {reports.map((report) => (
-            <TableRow key={report.id} onClick={() => { setSelectedReport(report); setIsModalOpen(true); }}>
+            <TableRow data-notification-pending={isLoading?'true':'false'} data-notification-target={'Report:'+report.id} key={report.id} onClick={() => { setSelectedReport(report); setIsModalOpen(true); }}>
               <TableCell>
                 <span className="font-semibold">{report.id.slice(0, 8)}</span>
                 <p className="text-xs text-gray-500 mt-0.5">{report.date}</p>
