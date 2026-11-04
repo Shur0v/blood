@@ -1,3 +1,4 @@
+import { lockPrimaryLocation, neighborhoodReset } from '@/src/backend/services/ServiceCityService';
 import { changeLoginEmailsInTransaction } from '@/src/backend/services/loginEmails';
 import { MedicalError } from '@/src/backend/utils/medicalPrivacy';
 import { withActiveAdmin } from '@/src/backend/utils/activeAdmin';
@@ -135,9 +136,10 @@ async function handlePATCH(req: Request, context: { params: Promise<{ userId: st
   try {
     const updated = await prisma.$transaction(async (tx) => {
       if(payload.email!==undefined)await changeLoginEmailsInTransaction(tx,userId,{action:'replacePrimary',email:payload.email},getSessionFromRequest(req)!.user_id);
+      const location = await lockPrimaryLocation(tx, userId);
       const nextUser = await tx.user.update({
         where: { id: userId },
-        data: updateData,
+        data: { ...updateData, ...neighborhoodReset(location, payload.city, payload.country) },
       });
 
       if (payload.organs !== undefined) {

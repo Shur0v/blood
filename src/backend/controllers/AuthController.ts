@@ -1,3 +1,4 @@
+import { neighborhoodsEnabled } from '../services/neighborhoods';
 import { findLoginUser, normalizeLoginEmail } from '../services/loginEmails';
 import { NextResponse } from 'next/server';
 import { AuthService } from '../services/AuthService';
@@ -237,7 +238,7 @@ export class AuthController {
             locationProof.provider_place_id === item.provider_place_id &&
             locationProof.registrationArea?.name === item.registrationArea?.name &&
             locationProof.registrationArea?.placeId === item.registrationArea?.placeId &&
-            (!item.registrationArea || (index === 0 && process.env.SIGNUP_NEIGHBORHOODS_ENABLED === 'true'));
+            (!item.registrationArea || (index === 0 && neighborhoodsEnabled()));
 
           if (!matches) {
             return { ok: false as const, error: 'Location payload mismatch. Please select from suggestions only.' };

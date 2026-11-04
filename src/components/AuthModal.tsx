@@ -26,6 +26,7 @@ interface LocationSuggestion {
   provider_place_id: string;
   token: string;
   registrationArea?: { name: string; placeId: string };
+  state?: string;
 }
 
 interface CountryOption {
@@ -158,8 +159,8 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode="reg
     }
 
     let cancelled = false;
+    const controller = new AbortController();
     const timer = setTimeout(async () => {
-      const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 10000);
       try {
         setIsFetchingLocations(true);
@@ -200,6 +201,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode="reg
 
     return () => {
       cancelled = true;
+      controller.abort();
       clearTimeout(timer);
     };
   }, [locationInput, authMode, minCharsReached, selectingPrimary]);
@@ -545,7 +547,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode="reg
                               className="w-full text-left rounded-xl px-3 py-2.5 transition bg-transparent hover:bg-slate-100"
                             >
                               <p className="text-sm font-semibold text-slate-900">{item.registrationArea ? `${item.registrationArea.name}, ${item.city}, ${item.country}` : item.city}</p>
-                              <p className="text-xs text-slate-600">{item.registrationArea ? "Neighborhood" : item.country}</p>
+                              <p className="text-xs text-slate-600">{item.registrationArea ? ["Neighborhood", item.state].filter(Boolean).join(" · ") : [item.state, item.country].filter(Boolean).join(", ")}</p>
                             </button>
                           ))}
                         </div>

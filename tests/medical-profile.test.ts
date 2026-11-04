@@ -1614,12 +1614,13 @@ test('signup area lookup verifies city hierarchy, uses city coordinates, and pre
  try{
   for(const name of ['Badda','Rampura','Banasree','Komolapur']){
    const {data}=await (await lookup(name)).json();
-   assert.equal(data.length,2);
+   assert.ok(data.length >= 2);
+   data.sort((a:any,b:any)=>Number(b.registrationArea?.placeId === 'area-'+name+'-Dhaka')-Number(a.registrationArea?.placeId === 'area-'+name+'-Dhaka'));
    assert.deepEqual(data[0].registrationArea,{name,placeId:'area-'+name+'-Dhaka'});
    assert.equal(data[0].latitude,city.lat);
    assert.equal(data[0].provider_place_id,'dhaka-city');
    assert.deepEqual(verifyLocationProof(data[0].token)?.registrationArea,data[0].registrationArea);
-   assert.equal(data[1].registrationArea,undefined);
+   assert.ok(data.some((row:any)=>!row.registrationArea && row.city==='Dhaka'));
   }
   for(const [area,index] of Object.entries(overseas)){
    const {data}=await (await lookup(area)).json();
@@ -1630,7 +1631,7 @@ test('signup area lookup verifies city hierarchy, uses city coordinates, and pre
   const duplicate=(await (await lookup('Central')).json()).data.filter((item:any)=>item.registrationArea);
   assert.deepEqual(duplicate.map((item:any)=>item.city),['Dhaka','Mumbai']);
   parentAvailable=false;
-  assert.ok((await (await lookup('Badda')).json()).data.every((row:any)=>!row.registrationArea));
+  assert.ok((await (await lookup('Badda')).json()).data.every((row:any)=>!row.registrationArea || row.registrationArea.placeId.startsWith('bloodnet:')));
   process.env.SIGNUP_NEIGHBORHOODS_ENABLED='false';
   const before=calls;
   assert.ok((await (await lookup('Dhaka')).json()).data.every((row:any)=>!row.registrationArea));
@@ -1669,4 +1670,70 @@ test('OTP saves only a verified primary area while donor matching and service ci
   assert.ok(JSON.parse(body).data.some((row:any)=>row.id===stored.id&&row.location_city==='Dhaka'));
   assert.ok(!body.includes('registration_area'));assert.ok(!body.includes('fixture-badda'));
  }finally{send.mock.restore();if(prior===undefined)delete process.env.SIGNUP_NEIGHBORHOODS_ENABLED;else process.env.SIGNUP_NEIGHBORHOODS_ENABLED=prior;}
+});
+
+test('owner neighborhood editing preserves city data, rejects invalid selections, and clears with primary city changes', integration, async () => {
+  const { GET, PATCH } = await import('../src/app/api/users/me/neighborhood/route');
+  const { PATCH: updateProfile } = await import('../src/app/api/users/me/profile/route');
+  const { DELETE: removeCity } = await import('../src/app/api/users/me/service-cities/[cityId]/route');
+  const user = await newPatient(), other = await newPatient(), db = getPrisma();
+  const prior = process.env.NEIGHBORHOODS_ENABLED;
+  process.env.NEIGHBORHOODS_ENABLED = 'true';
+  const token = signToken({ user_id: user.id, role: 'USER' });
+  const headers = { authorization: 'Bearer ' + token, 'content-type': 'application/json' };
+  const url = 'http://localhost/api/users/me/neighborhood';
+  const payload = { city: 'Dhaka', country: 'Bangladesh', formatted_location: 'Dhaka, Bangladesh', latitude: 23.8103, longitude: 90.4125, provider_place_id: 'fallback-dhaka-bangladesh', registrationArea: { name: 'South Badda', placeId: 'bloodnet:bd:dhaka:south-badda' } };
+  const save = (body: unknown, extra = {}) => PATCH(new Request(url, { method: 'PATCH', headers: { ...headers, ...extra }, body: JSON.stringify(body) }));
+  try {
+    const before = await db.user.findUniqueOrThrow({ where: { id: user.id } });
+    assert.equal((await save({ token: signLocationProof(payload) })).status, 200);
+    let stored = await db.user.findUniqueOrThrow({ where: { id: user.id } });
+    assert.equal(stored.registration_area, 'South Badda');
+    for (const key of ['location_city', 'location_country', 'location_lat', 'location_lng', 'place_id'] as const) assert.equal(stored[key], before[key]);
+    assert.equal((await db.user.findUniqueOrThrow({ where: { id: other.id } })).registration_area, null);
+    // A city update holding the row lock wins before a waiting neighborhood save.
+    let unlocked!: () => void, ready!: () => void;
+    const gate = new Promise<void>(resolve => { unlocked = resolve; });
+    const locked = new Promise<void>(resolve => { ready = resolve; });
+    const changing = db.$transaction(async tx => {
+      await tx.$queryRaw`SELECT id FROM "User" WHERE id = ${user.id} FOR UPDATE`;
+      ready();
+      await gate;
+      await tx.user.update({ where: { id: user.id }, data: { location_city: 'Other city', registration_area: null, registration_area_place_id: null } });
+    });
+    await locked;
+    const waitingSave = save({ token: signLocationProof(payload) });
+    unlocked();
+    await changing;
+    assert.equal((await waitingSave).status, 409);
+    await db.user.update({ where: { id: user.id }, data: { location_city: 'Dhaka' } });
+    await save({ token: signLocationProof(payload) });
+
+    assert.equal((await (await GET(new Request(url, { headers }))).json()).data.neighborhood, 'South Badda');
+    assert.equal((await save({ token: signLocationProof({ ...payload, city: 'Lahore', country: 'Pakistan' }) })).status, 409);
+    assert.equal((await save({ token: signLocationProof(payload) + 'tamper' })).status, 400);
+    assert.equal((await save({ clear: true }, { origin: 'https://evil.invalid' })).status, 403);
+    assert.equal((await save({ clear: true, userId: other.id })).status, 400);
+    const jwt = (await import('jsonwebtoken')).default;
+    assert.equal((await save({ token: jwt.sign({ type: 'location_proof', ...payload }, process.env.JWT_SECRET!, { expiresIn: -1 }) })).status, 400);
+    assert.equal((await save({ clear: true })).status, 200);
+    assert.equal((await db.user.findUniqueOrThrow({ where: { id: user.id } })).registration_area, null);
+    await save({ token: signLocationProof(payload) });
+    assert.equal((await updateProfile(new Request('http://localhost/api/users/me/profile', { method: 'PATCH', headers, body: JSON.stringify({ city: 'Chattogram' }) }))).status, 200);
+    stored = await db.user.findUniqueOrThrow({ where: { id: user.id } });
+    assert.equal(stored.registration_area, null);
+    assert.equal((await save({ token: signLocationProof(payload) })).status, 409);
+    await db.user.update({ where: { id: user.id }, data: { location_city: 'Dhaka' } });
+    await save({ token: signLocationProof(payload) });
+    const first = await db.userServiceCity.create({ data: { user_id: user.id, city: 'Dhaka', country: 'Bangladesh', formatted_location: 'Dhaka, Bangladesh', lat: 23.81, lng: 90.41, provider_place_id: 'dhaka-fixture', locked_until: new Date(0), created_at: new Date('2020-01-01') } });
+    await db.userServiceCity.create({ data: { user_id: user.id, city: 'Kathmandu', country: 'Nepal', formatted_location: 'Kathmandu, Nepal', lat: 27.7, lng: 85.3, provider_place_id: 'kathmandu-fixture', locked_until: new Date(0) } });
+    const removed = await removeCity(new Request('http://localhost/api/users/me/service-cities/' + first.id, { method: 'DELETE', headers }), { params: Promise.resolve({ cityId: first.id }) });
+    assert.equal(removed.status, 200);
+    assert.equal((await removed.json()).data.length, 1);
+    stored = await db.user.findUniqueOrThrow({ where: { id: user.id } });
+    assert.equal(stored.location_city, 'Kathmandu');
+    assert.equal(stored.registration_area, null);
+    process.env.NEIGHBORHOODS_ENABLED = 'false';
+    assert.equal((await save({ clear: true })).status, 409);
+  } finally { if (prior === undefined) delete process.env.NEIGHBORHOODS_ENABLED; else process.env.NEIGHBORHOODS_ENABLED = prior; }
 });

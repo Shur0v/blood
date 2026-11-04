@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { ADMIN_ROLES, getSessionFromRequest, USER_ROLE } from '@/src/backend/utils/session';
 import { getPrisma } from '@/src/backend/config/db';
-import { listServiceCities, syncLegacyLocationFromFirstCity } from '@/src/backend/services/ServiceCityService';
+import { lockPrimaryLocation, listServiceCities, syncLegacyLocationFromFirstCity } from '@/src/backend/services/ServiceCityService';
 
 const ensureUserSession = (req: Request) => {
   const session = getSessionFromRequest(req);
@@ -31,35 +31,38 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ cityI
   }
 
   const prisma = getPrisma();
-  const row = await prisma.userServiceCity.findFirst({
-    where: {
-      id: cityId,
-      user_id: auth.session.user_id,
-    },
-  });
-
-  if (!row) {
-    return NextResponse.json({ success: false, message: 'City not found.' }, { status: 404 });
-  }
-
-  if (row.locked_until.getTime() > Date.now()) {
-    const msLeft = row.locked_until.getTime() - Date.now();
-    const remainingDays = Math.ceil(msLeft / (24 * 60 * 60 * 1000));
-    return NextResponse.json(
-      {
-        success: false,
-        message: `City is locked. You can remove city after ${remainingDays} day(s).`,
-        meta: { remainingDays },
+  return prisma.$transaction(async tx => {
+    await lockPrimaryLocation(tx, auth.session.user_id);
+    const row = await tx.userServiceCity.findFirst({
+      where: {
+        id: cityId,
+        user_id: auth.session.user_id,
       },
-      { status: 409 },
-    );
-  }
+    });
 
-  await prisma.userServiceCity.delete({
-    where: { id: cityId },
+    if (!row) {
+      return NextResponse.json({ success: false, message: 'City not found.' }, { status: 404 });
+    }
+
+    if (row.locked_until.getTime() > Date.now()) {
+      const msLeft = row.locked_until.getTime() - Date.now();
+      const remainingDays = Math.ceil(msLeft / (24 * 60 * 60 * 1000));
+      return NextResponse.json(
+        {
+          success: false,
+          message: `City is locked. You can remove city after ${remainingDays} day(s).`,
+          meta: { remainingDays },
+        },
+        { status: 409 },
+      );
+    }
+
+    await tx.userServiceCity.delete({
+      where: { id: cityId },
+    });
+
+    await syncLegacyLocationFromFirstCity(auth.session.user_id, tx);
+    const data = await listServiceCities(auth.session.user_id, tx);
+    return NextResponse.json({ success: true, data });
   });
-
-  await syncLegacyLocationFromFirstCity(auth.session.user_id);
-  const data = await listServiceCities(auth.session.user_id);
-  return NextResponse.json({ success: true, data });
 }

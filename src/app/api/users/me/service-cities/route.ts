@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { ADMIN_ROLES, getSessionFromRequest, USER_ROLE } from '@/src/backend/utils/session';
 import { verifyLocationProof } from '@/src/backend/utils/locationProof';
 import { getPrisma } from '@/src/backend/config/db';
-import { MAX_SERVICE_CITIES, buildLockedUntil, listServiceCities, syncLegacyLocationFromFirstCity } from '@/src/backend/services/ServiceCityService';
+import { MAX_SERVICE_CITIES, lockPrimaryLocation, buildLockedUntil, listServiceCities, syncLegacyLocationFromFirstCity } from '@/src/backend/services/ServiceCityService';
 
 const ServiceCitySchema = z.object({
   city: z.string().min(1).max(120),
@@ -68,35 +68,23 @@ export async function POST(req: Request) {
   }
 
   const prisma = getPrisma();
-  const existingCount = await prisma.userServiceCity.count({
-    where: { user_id: auth.session.user_id },
-  });
-
-  if (existingCount >= MAX_SERVICE_CITIES) {
-    return NextResponse.json(
-      { success: false, message: `Maximum ${MAX_SERVICE_CITIES} cities allowed per account.` },
-      { status: 400 },
-    );
-  }
-
   try {
-    await prisma.userServiceCity.create({
-      data: {
-        user_id: auth.session.user_id,
-        city: payload.city,
-        country: payload.country,
-        formatted_location: payload.formatted_location,
-        lat: payload.latitude,
-        lng: payload.longitude,
-        provider_place_id: payload.provider_place_id,
-        locked_until: buildLockedUntil(),
-      },
+    await prisma.$transaction(async tx => {
+      await lockPrimaryLocation(tx, auth.session.user_id);
+      const existingCount = await tx.userServiceCity.count({ where: { user_id: auth.session.user_id } });
+      if (existingCount >= MAX_SERVICE_CITIES) throw new Error('CITY_LIMIT');
+      await tx.userServiceCity.create({ data: {
+        user_id: auth.session.user_id, city: payload.city, country: payload.country,
+        formatted_location: payload.formatted_location, lat: payload.latitude, lng: payload.longitude,
+        provider_place_id: payload.provider_place_id, locked_until: buildLockedUntil(),
+      } });
+      await syncLegacyLocationFromFirstCity(auth.session.user_id, tx);
     });
   } catch (error) {
-    return NextResponse.json({ success: false, message: 'City already exists for this account.' }, { status: 409 });
+    const limitReached = error instanceof Error && error.message === 'CITY_LIMIT';
+    return NextResponse.json({ success: false, message: limitReached
+      ? `Maximum ${MAX_SERVICE_CITIES} cities allowed per account.` : 'City already exists for this account.' }, { status: limitReached ? 400 : 409 });
   }
-
-  await syncLegacyLocationFromFirstCity(auth.session.user_id);
   const data = await listServiceCities(auth.session.user_id);
   return NextResponse.json({ success: true, data, meta: { maxCities: MAX_SERVICE_CITIES } });
 }

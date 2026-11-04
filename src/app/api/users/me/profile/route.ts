@@ -1,3 +1,4 @@
+import { lockPrimaryLocation, neighborhoodReset } from '@/src/backend/services/ServiceCityService';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getPrisma } from '@/src/backend/config/db';
@@ -124,9 +125,12 @@ export async function PATCH(req: Request) {
   if (payload.isActiveDonor !== undefined) updateData.is_active_donor = payload.isActiveDonor;
   if (payload.lastDonationDate !== undefined) updateData.last_donation_date = payload.lastDonationDate ? new Date(payload.lastDonationDate) : null;
 
-  const updated = await prisma.user.update({
-    where: { id: auth.session.user_id },
-    data: updateData,
+  const updated = await prisma.$transaction(async tx => {
+    const location = await lockPrimaryLocation(tx, auth.session.user_id);
+    return tx.user.update({
+      where: { id: auth.session.user_id },
+      data: { ...updateData, ...neighborhoodReset(location, payload.city, payload.country) },
+    });
   });
 
   if (payload.isActiveDonor !== undefined && payload.isActiveDonor !== existing.is_active_donor) {

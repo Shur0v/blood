@@ -1,3 +1,4 @@
+import NeighborhoodEditor from './NeighborhoodEditor';
 import React, { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -648,6 +649,7 @@ export default function UnifiedDashboard({
                     <p className="text-xs font-semibold tracking-wide text-slate-600">Manage Service Cities</p>
                     <p className="text-xs font-bold text-slate-600">{serviceCities?.length ?? 0}/5</p>
                   </div>
+                  {mode === "self" && <NeighborhoodEditor key={profile.id} userId={profile.id} revision={JSON.stringify([profile.id, profile.city, profile.country, serviceCities?.map(city => city.id)])} />}
                   <div className="mb-3 flex flex-wrap gap-2">
                     {(serviceCities || []).map((city, idx) => (
                       <span key={city.id} className="inline-flex items-center gap-2 rounded-full border border-border/10 bg-white px-3 py-1 text-xs font-semibold text-slate-700">

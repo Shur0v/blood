@@ -532,7 +532,7 @@
       "PATCH",
       "DELETE"
     ],
-    "sha256": "225fa16f40d071ead269f5bdd83f8c7f71ef186d2a0ef6fb984ffe191c729de9"
+    "sha256": "56aaa41c756c0e0b5f6a54c2ccafcbaf5a294b615c99a02ef8c3f2e3c2c3feb6"
   },
   {
     "kind": "api",
@@ -765,7 +765,7 @@
     "methods": [
       "GET"
     ],
-    "sha256": "d2391b9ee70200228aee426c6b07fda61fc38d755ecacaac7a36b9a5f925d752"
+    "sha256": "f781fa93945a81077a2dc6b6839c74f63c92c3451d619dfd45ae8d4948e7b1ec"
   },
   {
     "kind": "api",
@@ -1107,6 +1107,18 @@
   },
   {
     "kind": "api",
+    "name": "/api/users/me/neighborhood",
+    "flow": "registration",
+    "access": "Account owner or guarded audit",
+    "source": "src/app/api/users/me/neighborhood/route.ts",
+    "methods": [
+      "GET",
+      "PATCH"
+    ],
+    "sha256": "79d9f8c7a66b20a44cdf711a7d4af59375b2ba683dd7e79273e813bdbd6f9337"
+  },
+  {
+    "kind": "api",
     "name": "/api/users/me/organs",
     "flow": "admin-users",
     "access": "Account owner or guarded audit",
@@ -1150,7 +1162,7 @@
       "GET",
       "PATCH"
     ],
-    "sha256": "fca6ae2d758ca1f58f1935453ae7d9d0a83b1c1865a82351389503cab10a91fd"
+    "sha256": "a4d4820f1fb6dccef3caf2210cb032074a69a2b3a881a5d91688bce6aadca57e"
   },
   {
     "kind": "api",
@@ -1186,7 +1198,7 @@
       "GET",
       "POST"
     ],
-    "sha256": "b64bba9fa5d1e2afeaf3d054b5d55406d971f0460f350689cad96c265107f0e3"
+    "sha256": "d8da64e5d3f390357c700c48012676f8a685f2f7d4b7a60f7ffb63f8c8ea853b"
   },
   {
     "kind": "api",
@@ -1197,7 +1209,7 @@
     "methods": [
       "DELETE"
     ],
-    "sha256": "29822a905955829d15d6a067f897934c37ea751efcf3f1a13dbd9a17febb3c77"
+    "sha256": "905e8adc830dfbed978c6177a2c32fa844719424282811baa8373f590b1b1948"
   },
   {
     "kind": "api",
@@ -1622,7 +1634,7 @@
     "access": "Reviewed supporting implementation",
     "source": "deploy/nginx/bloodnet-static.conf",
     "methods": [],
-    "sha256": "395b1287448e3b74b8ac5309e3e9089a5f4e51d36917e11452f4b1b0c7418f94"
+    "sha256": "54e5e94ee80a94c5aecb749914417e5a36d6df9cd22fd7567c70621d981da26a"
   },
   {
     "kind": "module",
@@ -1712,7 +1724,7 @@
     "access": "Reviewed supporting implementation",
     "source": "src/backend/controllers/AuthController.ts",
     "methods": [],
-    "sha256": "e88e94f755502ef6ad072f3e9657f7e0cfb68a681bb9acc88a95783440669817"
+    "sha256": "704aae9902cda5a26482798ff151d681b0d4953be5f81fdda90ddbddd741903a"
   },
   {
     "kind": "module",
@@ -1788,6 +1800,15 @@
   },
   {
     "kind": "module",
+    "name": "src/components/AuthModal.tsx",
+    "flow": "registration",
+    "access": "Reviewed supporting implementation",
+    "source": "src/components/AuthModal.tsx",
+    "methods": [],
+    "sha256": "8b61d0f5a14c50511bb8dafe01b9043f49767a9b0bee7aafda60194274070c07"
+  },
+  {
+    "kind": "module",
     "name": "src/components/Hero.tsx",
     "flow": "donor-search",
     "access": "Reviewed supporting implementation",
@@ -1821,6 +1842,15 @@
     "source": "src/components/ManagedImagePicker.tsx",
     "methods": [],
     "sha256": "de5d1c12dcabaebcb36f95a23a46af2e747217928fa4950dd0da157078688865"
+  },
+  {
+    "kind": "module",
+    "name": "src/components/NeighborhoodEditor.tsx",
+    "flow": "registration",
+    "access": "Reviewed supporting implementation",
+    "source": "src/components/NeighborhoodEditor.tsx",
+    "methods": [],
+    "sha256": "5d1e0ed9f584b6f03e76dde9c5ad3e966d7d26a1d2cf8dd0ed9d6bf205e5dfad"
   },
   {
     "kind": "module",
@@ -3273,6 +3303,15 @@
   },
   {
     "kind": "service",
+    "name": "neighborhoods",
+    "flow": "registration",
+    "access": "Internal server module",
+    "source": "src/backend/services/neighborhoods.ts",
+    "methods": [],
+    "sha256": "92f2cdaf9201e8931cc5baa0b6ae191cedcb6eaeac42ffc7f605a32f5aa840e5"
+  },
+  {
+    "kind": "service",
     "name": "notificationDestinations",
     "flow": "notifications",
     "access": "Internal server module",
@@ -3431,7 +3470,7 @@
     "access": "Internal server module",
     "source": "src/backend/services/ServiceCityService.ts",
     "methods": [],
-    "sha256": "6fc7a709624a94c4637fe20992da813189cc91af7ac93773ecf54215c338ed14"
+    "sha256": "1da240ffbb6375f251abc40eddd5259633c5d21debbfc2cb722ff4d79320843b"
   },
   {
     "kind": "service",
