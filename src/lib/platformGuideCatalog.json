@@ -1613,7 +1613,16 @@
     "access": "Reviewed supporting implementation",
     "source": "deploy/deploy.sh",
     "methods": [],
-    "sha256": "e0eb755703fb3ca260db093253f994d7327e6d5f90345f8d477e99b8409678b2"
+    "sha256": "b7a274e0b51b585fecf621769fabca1bdd734f744e96025b7fe0cafeda8c23c5"
+  },
+  {
+    "kind": "module",
+    "name": "deploy/nginx/bloodnet-static.conf",
+    "flow": "deployment",
+    "access": "Reviewed supporting implementation",
+    "source": "deploy/nginx/bloodnet-static.conf",
+    "methods": [],
+    "sha256": "395b1287448e3b74b8ac5309e3e9089a5f4e51d36917e11452f4b1b0c7418f94"
   },
   {
     "kind": "module",
@@ -1622,7 +1631,7 @@
     "access": "Reviewed supporting implementation",
     "source": "deploy/nginx/bloodnet.live.conf",
     "methods": [],
-    "sha256": "ee0eb84a95ee7da57175cadd30ec60299f8c962174a4c3d4b033e2c8db68ca8e"
+    "sha256": "cd5bdb9da37a8ff36abd0421311ab0fcbcdf5f32a04c607d3920a9650211c119"
   },
   {
     "kind": "module",
@@ -1631,7 +1640,16 @@
     "access": "Reviewed supporting implementation",
     "source": "deploy/PRODUCTION_CHECKLIST.md",
     "methods": [],
-    "sha256": "4820e9f77100165c34a730db794e82df6f033d89144553e5d25f0326c7dc8da2"
+    "sha256": "3831c94821aa400795f54dc1ecd30211729336da03e38bbe8e208aa0297b9db1"
+  },
+  {
+    "kind": "module",
+    "name": "deploy/static-assets.mjs",
+    "flow": "deployment",
+    "access": "Reviewed supporting implementation",
+    "source": "deploy/static-assets.mjs",
+    "methods": [],
+    "sha256": "b362176ac39708c499d7ce89d587c2e41689482a221154c4c7e734cefdcea882"
   },
   {
     "kind": "module",
@@ -1641,6 +1659,15 @@
     "source": "docs/hostinger-migration-sources.md",
     "methods": [],
     "sha256": "ada6846fed488ffeb6fa31895efd3d8831d33378dfc096e30a35e49705dbac47"
+  },
+  {
+    "kind": "module",
+    "name": "docs/static-asset-rollout.md",
+    "flow": "deployment",
+    "access": "Reviewed supporting implementation",
+    "source": "docs/static-asset-rollout.md",
+    "methods": [],
+    "sha256": "b9e87c8c6d92ff45e5fecee774c327016076782833950948d1a6fde07f96e521"
   },
   {
     "kind": "module",

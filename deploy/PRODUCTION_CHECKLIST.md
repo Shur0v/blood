@@ -30,7 +30,12 @@ Set production values including:
 - DB/JWT/SMTP/GEOAPIFY and media vars.
 
 ## 4) Nginx config
+For an existing VPS, follow the [static asset rollout guide](../docs/static-asset-rollout.md) to seed the archive and add the snippet to the existing HTTPS server block. Do not overwrite a working Certbot configuration.
+
+For a new server, install the snippet before validating the supplied server configuration:
 ```bash
+sudo install -d -m 755 /var/lib/bloodnet-static
+sudo install -m 644 /var/www/bloodnet/deploy/nginx/bloodnet-static.conf /etc/nginx/snippets/bloodnet-static.conf
 sudo cp /var/www/bloodnet/deploy/nginx/bloodnet.live.conf /etc/nginx/sites-available/bloodnet.live
 sudo ln -s /etc/nginx/sites-available/bloodnet.live /etc/nginx/sites-enabled/bloodnet.live
 sudo nginx -t

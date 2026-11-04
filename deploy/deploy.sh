@@ -19,7 +19,7 @@ fi
 
 cd "${APP_DIR}"
 
-for tool in git node npm pm2 curl pg_dump pg_restore tar; do
+for tool in git node npm pm2 curl pg_dump pg_restore tar flock; do
   if ! command -v "${tool}" >/dev/null 2>&1; then
     echo "ERROR: Required deployment tool ${tool} is missing; existing services were not stopped." >&2
     exit 1
@@ -45,6 +45,21 @@ if command -v systemctl >/dev/null 2>&1; then
   systemctl is-active --quiet postgresql || systemctl restart postgresql
 fi
 
+mkdir -p -m 755 /var/lib/bloodnet-static
+exec 9>/var/lib/bloodnet-static/.deploy.lock
+flock -n 9 || { echo "ERROR: Another BloodNet deployment is active." >&2; exit 1; }
+
+DEPLOY_COMMIT="$(git rev-parse origin/main)"
+ASSET_SCRIPT="$(mktemp --suffix=.mjs)"
+trap 'rm -f -- "${ASSET_SCRIPT}"' EXIT
+git show "${DEPLOY_COMMIT}:deploy/static-assets.mjs" > "${ASSET_SCRIPT}"
+echo "==> Verify the HTTPS asset route before stopping the application"
+node "${ASSET_SCRIPT}" probe
+if [[ -f .next/BUILD_ID || -d .next/static ]]; then
+  echo "==> Retain the current build assets"
+  node "${ASSET_SCRIPT}" publish
+fi
+
 # Never replace .next or node_modules underneath running HTTP/queue processes.
 # Pause other VPS replicas and scheduled writers in the same maintenance window.
 deployment_failed() {
@@ -64,9 +79,8 @@ if [[ -d "${APP_DIR}/public/uploads" ]]; then
   (umask 077; mkdir -p /var/backups/bloodnet; tar -czf "/var/backups/bloodnet/uploads-$(date -u +%Y%m%dT%H%M%SZ).tar.gz" -C "${APP_DIR}/public" uploads)
 fi
 
-echo "==> Fetch latest code"
-git fetch origin
-git reset --hard origin/main
+echo "==> Check out the verified deployment revision"
+git reset --hard "${DEPLOY_COMMIT}"
 
 echo "==> Install dependencies"
 # Prisma migration/build tooling and the supervised tsx worker are required on VPS.
@@ -85,7 +99,9 @@ echo "==> Back up existing data"
 npm run db:backup -- /var/backups/bloodnet
 
 echo "==> Build before changing the database"
+export BLOODNET_DEPLOYMENT_ID="${DEPLOY_COMMIT:0:12}-$(node -p 'require("node:crypto").randomUUID()')"
 npm run build
+node "${ASSET_SCRIPT}" publish
 
 echo "==> Apply additive database migrations"
 npx prisma migrate deploy
@@ -108,8 +124,15 @@ pm2 start "${ECOSYSTEM_FILE}" --update-env
 echo "==> Verify running application health"
 curl --fail --silent --show-error --retry 10 --retry-connrefused --retry-delay 2 --connect-timeout 3 --max-time 5 http://127.0.0.1:3000/api/health >/dev/null
 
+echo "==> Verify homepage styles and scripts through the HTTPS origin"
+if ! node "${ASSET_SCRIPT}" verify; then
+  echo "ERROR: Asset verification failed. BloodNet is running; inspect the HTTPS asset route before retrying. No assets were pruned." >&2
+  exit 1
+fi
+
 echo "==> Save PM2 process list"
 pm2 save
+node "${ASSET_SCRIPT}" prune || echo "Static cleanup failed; retained assets were left available for review." >&2
 
 echo "==> Notify Google of blog sitemaps when Search Console credentials are configured"
 if ! npm run seo:notify-blogs -- --optional; then

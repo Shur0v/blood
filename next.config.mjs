@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  deploymentId: process.env.BLOODNET_DEPLOYMENT_ID || undefined,
   async headers(){return [{source:'/uploads/slider/:path*',headers:[{key:'Cache-Control',value:'public, max-age=31536000, immutable'}]}];},
   poweredByHeader: false,
   images: {
