@@ -1,4 +1,8 @@
 import jwt from 'jsonwebtoken';
+import { z } from 'zod';
+
+export const RegistrationAreaSchema = z.object({ name: z.string().trim().min(1).max(120), placeId: z.string().min(1).max(256) }).strict();
+export type RegistrationArea = z.infer<typeof RegistrationAreaSchema>;
 
 const getSecret = (): string => {
   const secret = process.env.JWT_SECRET;
@@ -15,6 +19,7 @@ export interface LocationSelectionPayload {
   latitude: number;
   longitude: number;
   provider_place_id: string;
+  registrationArea?: RegistrationArea;
 }
 
 interface LocationProofTokenPayload extends LocationSelectionPayload {
@@ -45,6 +50,7 @@ export const verifyLocationProof = (token: string): LocationProofTokenPayload | 
       return null;
     }
 
+    if (decoded.registrationArea !== undefined && !RegistrationAreaSchema.safeParse(decoded.registrationArea).success) return null;
     return decoded as LocationProofTokenPayload;
   } catch (error) {
     return null;

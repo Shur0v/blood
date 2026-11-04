@@ -758,6 +758,17 @@
   },
   {
     "kind": "api",
+    "name": "/api/location/signup",
+    "flow": "countries",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/api/location/signup/route.ts",
+    "methods": [
+      "GET"
+    ],
+    "sha256": "d2391b9ee70200228aee426c6b07fda61fc38d755ecacaac7a36b9a5f925d752"
+  },
+  {
+    "kind": "api",
     "name": "/api/management/active-donors",
     "flow": "moderation",
     "access": "Staff queues",
@@ -1566,7 +1577,7 @@
     "access": "Server-managed; record-level publication/authorization",
     "source": "prisma/schema.prisma",
     "methods": [],
-    "sha256": "bd3986a289dfed7e74b849b68ea2887e3c2f1da970ecea1c7b9b5e550e05ecf7"
+    "sha256": "48e2efb2b868f5e90015e6f15bd784a5b7d47e8208c33748e07d454c9a6b8798"
   },
   {
     "kind": "model",
@@ -1674,7 +1685,7 @@
     "access": "Reviewed supporting implementation",
     "source": "src/backend/controllers/AuthController.ts",
     "methods": [],
-    "sha256": "a2c7e881019e79626b72fa2403b78208c7edaa820b6a396c1766737e3043efef"
+    "sha256": "e88e94f755502ef6ad072f3e9657f7e0cfb68a681bb9acc88a95783440669817"
   },
   {
     "kind": "module",

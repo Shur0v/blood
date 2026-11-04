@@ -21,6 +21,8 @@ model User {
   location_city       String
   location_country    String
   location_formatted  String?
+  registration_area String?
+  registration_area_place_id String?
   location_lat        Float
   location_lng        Float
   place_id            String?

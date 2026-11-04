@@ -4,7 +4,7 @@ import { AuthService } from '../services/AuthService';
 import { UserRepository } from '../repositories/UserRepository';
 import { sendOtpEmail } from '../utils/mailer';
 import { signToken } from '../utils/jwt';
-import { verifyLocationProof } from '../utils/locationProof';
+import { RegistrationAreaSchema, verifyLocationProof } from '../utils/locationProof';
 import { validateStructuredPhone } from '../utils/phone';
 import { MAX_SERVICE_CITIES, buildLockedUntil } from '../services/ServiceCityService';
 import { ensureNotRestricted, getFingerprintHash, getIpHash, recordRiskEvent } from '../utils/risk';
@@ -52,6 +52,7 @@ const VerifyOtpSchema = z.object({
     longitude: z.number(),
     provider_place_id: z.string().min(1),
     token: z.string().min(1),
+    registrationArea: RegistrationAreaSchema.optional(),
   }).optional(),
   locations: z.array(z.object({
     city: z.string().min(1),
@@ -61,6 +62,7 @@ const VerifyOtpSchema = z.object({
     longitude: z.number(),
     provider_place_id: z.string().min(1),
     token: z.string().min(1),
+    registrationArea: RegistrationAreaSchema.optional(),
   })).max(MAX_SERVICE_CITIES).optional(),
   deviceFingerprint: z.string().min(6).max(512).optional(),
 });
@@ -220,10 +222,10 @@ export class AuthController {
           return NextResponse.json({ error: `Maximum ${MAX_SERVICE_CITIES} cities allowed.` }, { status: 400 });
         }
 
-        const validatedLocations = submittedLocations.map((item) => {
+        const validatedLocations = submittedLocations.map((item, index) => {
           const locationProof = verifyLocationProof(item.token);
           if (!locationProof) {
-            return { ok: false as const, error: 'Invalid location proof token. Please reselect your city.' };
+            return { ok: false as const, error: 'Your location selection expired or could not be verified. Please select it again.' };
           }
 
           const matches =
@@ -232,7 +234,10 @@ export class AuthController {
             locationProof.formatted_location === item.formatted_location &&
             locationProof.latitude === item.latitude &&
             locationProof.longitude === item.longitude &&
-            locationProof.provider_place_id === item.provider_place_id;
+            locationProof.provider_place_id === item.provider_place_id &&
+            locationProof.registrationArea?.name === item.registrationArea?.name &&
+            locationProof.registrationArea?.placeId === item.registrationArea?.placeId &&
+            (!item.registrationArea || (index === 0 && process.env.SIGNUP_NEIGHBORHOODS_ENABLED === 'true'));
 
           if (!matches) {
             return { ok: false as const, error: 'Location payload mismatch. Please select from suggestions only.' };
@@ -243,7 +248,7 @@ export class AuthController {
 
         const invalid = validatedLocations.find((item) => !item.ok);
         if (invalid && !invalid.ok) {
-          return NextResponse.json({ error: invalid.error }, { status: 400 });
+          return NextResponse.json({ error: invalid.error, code: 'LOCATION_RESELECT_REQUIRED' }, { status: 400 });
         }
 
         const readyLocations = validatedLocations
@@ -289,6 +294,8 @@ export class AuthController {
               location_lat: firstLocation.latitude,
               location_lng: firstLocation.longitude,
               place_id: firstLocation.provider_place_id,
+              registration_area: firstLocation.registrationArea?.name,
+              registration_area_place_id: firstLocation.registrationArea?.placeId,
               health_data: {
                 location_formatted: firstLocation.formatted_location,
                 location_provider: 'geoapify',

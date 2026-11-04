@@ -25,6 +25,7 @@ interface LocationSuggestion {
   longitude: number;
   provider_place_id: string;
   token: string;
+  registrationArea?: { name: string; placeId: string };
 }
 
 interface CountryOption {
@@ -81,6 +82,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode="reg
   const maxDobDate = new Date();
   maxDobDate.setFullYear(maxDobDate.getFullYear() - 18);
   const minDobDate = new Date(currentYear - 100, 0, 1);
+  const selectingPrimary = selectedLocations.length === 0;
   const minCharsReached = locationInput.trim().length >= 2;
   const normalizedCountrySearch = countrySearch.trim().toLowerCase();
   const filteredCountryOptions = COUNTRY_OPTIONS.filter((item) => {
@@ -161,7 +163,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode="reg
       const timeout = setTimeout(() => controller.abort(), 10000);
       try {
         setIsFetchingLocations(true);
-        const res = await fetch(`/api/location/cities?text=${encodeURIComponent(locationInput.trim())}`, {
+        const res = await fetch(`/api/location/${selectingPrimary ? "signup" : "cities"}?text=${encodeURIComponent(locationInput.trim())}`, {
           method: "GET",
           cache: "no-store",
           signal: controller.signal,
@@ -200,7 +202,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode="reg
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [locationInput, authMode, minCharsReached]);
+  }, [locationInput, authMode, minCharsReached, selectingPrimary]);
 
   const isRegisterSubmitDisabled =
     authMode === "register" &&
@@ -331,7 +333,8 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode="reg
       if (!res.ok) {
         setErrorMsg(data.error || data.message || "Invalid or expired OTP code.");
         setAccountIssue(data.code || "");
-        if (['EMAIL_ALREADY_REGISTERED', 'PHONE_ALREADY_REGISTERED', 'ACCOUNT_NOT_FOUND'].includes(data.code)) {
+        if (data.code === 'LOCATION_RESELECT_REQUIRED') setSelectedLocations([]);
+        if (['EMAIL_ALREADY_REGISTERED', 'PHONE_ALREADY_REGISTERED', 'ACCOUNT_NOT_FOUND', 'LOCATION_RESELECT_REQUIRED'].includes(data.code)) {
           setStep('register');
           setOtp(["", "", "", "", "", ""]);
         }
@@ -470,15 +473,16 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode="reg
                 {authMode === "register" && (
                   <>
                     <div className="space-y-2">
-                      <label htmlFor="auth-city" className="text-xs font-semibold tracking-wide text-slate-600">Location (City only)</label>
+                      <label htmlFor="auth-city" className="text-xs font-semibold tracking-wide text-slate-600">{selectingPrimary ? "Primary location" : "Additional service city"}</label>
                       <div className="relative">
                         <MapPin className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500" />
                         <input
                           type="text"
                           id="auth-city"
-                          placeholder="Search your city"
+                          placeholder={selectingPrimary ? "Search your primary location" : "Search your city"}
                           value={locationInput}
                           onChange={(e) => {
+                            setLocationSuggestions([]);
                             setLocationInput(e.target.value);
                           }}
                           className={`w-full rounded-2xl border bg-slate-50 py-4 pl-12 pr-20 text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-1 ${
@@ -495,7 +499,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode="reg
                         <div className="mt-2 flex flex-wrap gap-2">
                           {selectedLocations.map((item) => (
                             <span key={item.provider_place_id} className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800">
-                              {item.city}, {item.country}
+                              {item.registrationArea ? item.registrationArea.name + ", " : ""}{item.city}, {item.country}
                               <button
                                 type="button"
                                 onClick={() => {
@@ -528,7 +532,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode="reg
                                 setLocationSuggestions([]);
                                 setLocationLookupError("");
                                 setSelectedLocations((prev) => {
-                                  if (prev.some((loc) => loc.provider_place_id === item.provider_place_id)) {
+                                  if ((item.registrationArea && prev.length > 0) || prev.some((loc) => loc.provider_place_id === item.provider_place_id)) {
                                     return prev;
                                   }
                                   if (prev.length >= MAX_CITIES) {
@@ -540,15 +544,15 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode="reg
                               }}
                               className="w-full text-left rounded-xl px-3 py-2.5 transition bg-transparent hover:bg-slate-100"
                             >
-                              <p className="text-sm font-semibold text-slate-900">{item.city}</p>
-                              <p className="text-xs text-slate-600">{item.country}</p>
+                              <p className="text-sm font-semibold text-slate-900">{item.registrationArea ? `${item.registrationArea.name}, ${item.city}, ${item.country}` : item.city}</p>
+                              <p className="text-xs text-slate-600">{item.registrationArea ? "Neighborhood" : item.country}</p>
                             </button>
                           ))}
                         </div>
                       )}
 
                       {minCharsReached && !isFetchingLocations && locationSuggestions.length === 0 && (
-                        <p className="text-xs font-medium text-slate-500">No city-only matches found.</p>
+                        <p className="text-xs font-medium text-slate-500">{selectingPrimary ? "No matches found. Try searching for your city." : "No city matches found."}</p>
                       )}
                     </div>
 

@@ -123,6 +123,11 @@ before(async () => {
   await sql.query(readFileSync('prisma/migrations/20261026100000_public_content_images/migration.sql','utf8'));
   await sql.query(readFileSync('prisma/migrations/20261027090000_admin_operations/migration.sql','utf8'));
   await sql.query(readFileSync('prisma/migrations/20261029090000_notification_targets/migration.sql','utf8'));
+  const usersBeforeNeighborhoods = (await sql.query('SELECT to_jsonb(u) AS record FROM "User" u ORDER BY id')).rows;
+  const citiesBeforeNeighborhoods = (await sql.query('SELECT to_jsonb(c) AS record FROM "UserServiceCity" c ORDER BY id')).rows;
+  await sql.query(readFileSync('prisma/migrations/20261105090000_signup_neighborhood/migration.sql','utf8'));
+  assert.deepEqual((await sql.query("SELECT to_jsonb(u) - 'registration_area' - 'registration_area_place_id' AS record FROM \"User\" u ORDER BY id")).rows, usersBeforeNeighborhoods);
+  assert.deepEqual((await sql.query('SELECT to_jsonb(c) AS record FROM "UserServiceCity" c ORDER BY id')).rows, citiesBeforeNeighborhoods);
   const migratedPublication=(await sql.query('SELECT * FROM "PublicDonorProfile" WHERE id=$1',[legacyPublicationId])).rows[0];
   assert.equal(migratedPublication.is_published,false);assert.equal(migratedPublication.bio,legacyBio);assert.equal(migratedPublication.admin_approved_at,null);assert.ok(migratedPublication.consented_at);
 });
@@ -179,7 +184,7 @@ test('migration backfills a reserved ID and preserves existing UUIDs', integrati
   assert.equal((await getPrisma().profileIdentifier.findUniqueOrThrow({where:{code:'0000'}})).user_id,migratedUserId);
   for (const [table,rows] of Object.entries(existingRows)) {
     const escaped = table.replace(/"/g, '""');
-    const expression = table === 'User' ? "to_jsonb(t) - 'profile_code' - 'profile_code_changed_at'" : 'to_jsonb(t)';
+    const expression = table === 'User' ? "to_jsonb(t) - 'profile_code' - 'profile_code_changed_at' - 'registration_area' - 'registration_area_place_id'" : 'to_jsonb(t)';
     const actual = (await sql.query(`SELECT COALESCE(jsonb_agg(${expression} ORDER BY (${expression})::text), '[]'::jsonb) AS rows FROM "${escaped}" t`)).rows[0].rows;
     assert.deepEqual(actual,rows,`Existing ${table} data must be preserved exactly`);
   }
@@ -977,7 +982,7 @@ test('a new account completes request, OTP verification and profile session with
  const args=send.mock.calls[0].arguments as unknown as Array<{html:string}>;const otp=args[0].html.match(/>\s*(\d{6})\s*</)?.[1];assert.ok(otp);
  const response=await AuthController.verifyOtp(authRequest('verify',{...registrationPayload(email,mobile),otp,phone:{country_name:'Bangladesh',country_code:'BD',dial_code:'+880',local_phone_number:'1993456789',full_phone_number:mobile}}));
  assert.equal(response.status,200);const data=await response.json();assert.match(response.headers.get('set-cookie')||'',/bloodnet_session=/);
- const stored=await getPrisma().user.findUniqueOrThrow({where:{email}});assert.equal(stored.id,data.user.id);assert.equal(stored.mobile,mobile);assert.equal(stored.phone_country_code,'BD');assert.equal(await getPrisma().userServiceCity.count({where:{user_id:stored.id}}),1);
+ const stored=await getPrisma().user.findUniqueOrThrow({where:{email}});assert.equal(stored.id,data.user.id);assert.equal(stored.mobile,mobile);assert.equal(stored.phone_country_code,'BD');assert.equal(stored.registration_area,null);assert.equal(await getPrisma().userServiceCity.count({where:{user_id:stored.id}}),1);
  assert.equal(await getPrisma().otpVerification.findUnique({where:{email}}),null);
  }finally{send.mock.restore();}
 });
@@ -1577,4 +1582,91 @@ test('bulk manual donor forms emit one targeted collection summary rather than p
  const city={city:'Dhaka',country:'Bangladesh',formatted_location:'Dhaka, Bangladesh',latitude:23.81,longitude:90.41,provider_place_id:'notification-bulk-test'},location={...city,token:signLocationProof(city)};
  const bulkDonors=[1,2].map(i=>({name:'Synthetic batch donor '+i,bloodGroup:'O+',location,phone:{country_name:'Bangladesh',country_code:'BD',dial_code:'+880',local_phone_number:'191234568'+i,full_phone_number:'+880191234568'+i}}));
  const response=await POST(new Request('http://localhost/api/admin/manual-blood-donors',{method:'POST',headers:{authorization:'Bearer '+signToken({user_id:testAdminId,role:'ADMIN'}),'Content-Type':'application/json'},body:JSON.stringify({bulkDonors})}));const payload=await response.json();assert.equal(payload.data?.createdCount,2,JSON.stringify(payload));const added=(await db.adminNotification.findMany({where:{type:'manual-blood.created'}})).filter(row=>!before.has(row.id));assert.equal(added.length,1);assert.equal(added[0].quantity,2);assert.equal(added[0].target,null);
+});
+
+
+test('signup area lookup verifies city hierarchy, uses city coordinates, and preserves city fallback', async()=>{
+ const {GET}=await import('../src/app/api/location/signup/route');
+ const {verifyLocationProof}=await import('../src/backend/utils/locationProof');
+ const prior=process.env.SIGNUP_NEIGHBORHOODS_ENABLED,key=process.env.GEOAPIFY_API_KEY;
+ process.env.SIGNUP_NEIGHBORHOODS_ENABLED='true';process.env.GEOAPIFY_API_KEY='fixture-only';
+ const city={city:'Dhaka',country:'Bangladesh',country_code:'bd',place_id:'dhaka-city',result_type:'city',state:'Dhaka Division',lat:23.81,lon:90.41};
+ const cities=[city,...([
+  ['Mumbai','India','in','Maharashtra',19.07,72.87],
+  ['Lahore','Pakistan','pk','Punjab',31.55,74.34],
+  ['Kathmandu','Nepal','np','Bagmati',27.71,85.32],
+ ] as const).map(([name,country,country_code,state,lat,lon])=>({city:name,country,country_code,state,lat,lon,place_id:'city-'+name,result_type:'city'}))];
+ const overseas:Record<string,number>={Bandra:1,Gulberg:2,Thamel:3};
+ let parentAvailable=true, calls=0;
+ const provider=mock.method(globalThis,'fetch',async(input:URL|string)=>{
+  calls++;const url=new URL(input);assert.equal(url.hostname,'api.geoapify.com');
+  const query=url.searchParams.get('text')||'';
+  if(url.searchParams.get('type')==='city'){
+    const parent=url.searchParams.has('filter');
+    const matching=cities.find(row=>query.startsWith(row.city))||city;
+    if(parent)assert.equal(url.searchParams.get('filter'),'countrycode:'+matching.country_code);
+    return Response.json({results:!parent||parentAvailable?[matching]:[{...matching,country_code:'xx'}]});
+  }
+  const parents=query==='Central'?[city,cities[1]]:[cities[overseas[query]||0]];
+  return Response.json({results:[...parents.map(parent=>({...parent,place_id:'area-'+query+'-'+parent.city,result_type:'suburb',address_line1:query,lat:23.77,lon:90.45})),{...city,place_id:'house',result_type:'building',address_line1:'Private address'}]});
+ });
+ const lookup=(name:string)=>GET(new Request('http://localhost/api/location/signup?text='+encodeURIComponent(name)));
+ try{
+  for(const name of ['Badda','Rampura','Banasree','Komolapur']){
+   const {data}=await (await lookup(name)).json();
+   assert.equal(data.length,2);
+   assert.deepEqual(data[0].registrationArea,{name,placeId:'area-'+name+'-Dhaka'});
+   assert.equal(data[0].latitude,city.lat);
+   assert.equal(data[0].provider_place_id,'dhaka-city');
+   assert.deepEqual(verifyLocationProof(data[0].token)?.registrationArea,data[0].registrationArea);
+   assert.equal(data[1].registrationArea,undefined);
+  }
+  for(const [area,index] of Object.entries(overseas)){
+   const {data}=await (await lookup(area)).json();
+   assert.equal(data[0].city,cities[index].city);
+   assert.equal(data[0].country,cities[index].country);
+   assert.equal(data[0].latitude,cities[index].lat);
+  }
+  const duplicate=(await (await lookup('Central')).json()).data.filter((item:any)=>item.registrationArea);
+  assert.deepEqual(duplicate.map((item:any)=>item.city),['Dhaka','Mumbai']);
+  parentAvailable=false;
+  assert.ok((await (await lookup('Badda')).json()).data.every((row:any)=>!row.registrationArea));
+  process.env.SIGNUP_NEIGHBORHOODS_ENABLED='false';
+  const before=calls;
+  assert.ok((await (await lookup('Dhaka')).json()).data.every((row:any)=>!row.registrationArea));
+  assert.equal(calls,before+1);
+ }finally{provider.mock.restore();if(prior===undefined)delete process.env.SIGNUP_NEIGHBORHOODS_ENABLED;else process.env.SIGNUP_NEIGHBORHOODS_ENABLED=prior;if(key===undefined)delete process.env.GEOAPIFY_API_KEY;else process.env.GEOAPIFY_API_KEY=key;}
+});
+
+test('OTP saves only a verified primary area while donor matching and service cities stay city-based',integration,async()=>{
+ const {AuthController}=await import('../src/backend/controllers/AuthController');
+ const {transporter}=await import('../src/backend/utils/mailer');
+ const send=mock.method(transporter,'sendMail',async()=>({messageId:'fixture-only'}));
+ const prior=process.env.SIGNUP_NEIGHBORHOODS_ENABLED;process.env.SIGNUP_NEIGHBORHOODS_ENABLED='true';
+ try{
+  const email=randomUUID()+'@example.invalid',mobile='+8801993456793';
+  assert.equal((await AuthController.requestOtp(authRequest('request',{mode:'register',email,mobile}))).status,200);
+  const otp=(send.mock.calls[0].arguments as unknown as Array<{html:string}>)[0].html.match(/>\s*(\d{6})\s*</)?.[1];assert.ok(otp);
+  const payload=registrationPayload(email,mobile);
+  const {token:cityToken,...city}=payload.locations[0];
+  const selected={...city,registrationArea:{name:'Badda',placeId:'fixture-badda'}};
+  const proof=signLocationProof(selected);
+  const submit=(locations:unknown[])=>AuthController.verifyOtp(authRequest('verify',{...payload,otp,locations}));
+  const jwt=(await import('jsonwebtoken')).default;
+  const expired=jwt.sign({type:'location_proof',...selected},process.env.JWT_SECRET!,{expiresIn:-1});
+  assert.equal((await submit([{...selected,token:expired}])).status,400);
+  assert.equal((await submit([{...selected,registrationArea:{...selected.registrationArea,name:'Rampura'},token:proof}])).status,400);
+  assert.equal((await submit([{...city,token:proof}])).status,400);
+  assert.equal((await submit([{...city,token:cityToken},{...selected,token:proof}])).status,400);
+  assert.equal((await submit([{...selected,token:proof}])).status,200);
+  const db=getPrisma(),stored=await db.user.findUniqueOrThrow({where:{email}});
+  assert.equal(stored.registration_area,'Badda');assert.equal(stored.registration_area_place_id,'fixture-badda');
+  assert.equal(stored.location_city,'Dhaka');assert.equal(stored.location_lat,city.latitude);assert.equal(stored.location_lng,city.longitude);
+  const service=await db.userServiceCity.findFirstOrThrow({where:{user_id:stored.id}});
+  assert.equal(service.city,'Dhaka');assert.equal(service.provider_place_id,city.provider_place_id);
+  const res=await publicBloodDonors(new Request('http://localhost/api/public/donors?country=Bangladesh&search=Dhaka&bloodGroup=O-&limit=16'));
+  assert.equal(res.status,200);const body=await res.text();
+  assert.ok(JSON.parse(body).data.some((row:any)=>row.id===stored.id&&row.location_city==='Dhaka'));
+  assert.ok(!body.includes('registration_area'));assert.ok(!body.includes('fixture-badda'));
+ }finally{send.mock.restore();if(prior===undefined)delete process.env.SIGNUP_NEIGHBORHOODS_ENABLED;else process.env.SIGNUP_NEIGHBORHOODS_ENABLED=prior;}
 });
