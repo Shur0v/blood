@@ -1,3 +1,4 @@
+import {listPublishedUsaAreas,usaContent} from './usaContent';
 import {getHomepageContent} from './homepageContent';
 import {getPrisma} from '../config/db';
 import {getPublicBaseUrl} from '../config/env';
@@ -20,6 +21,7 @@ export async function imageSitemap(){
  function regional(page:string,row:typeof regions[number]|undefined){const design=row?.design as {hiddenSections?:string[]}|undefined;if(design?.hiddenSections?.includes('gallery'))return;if(row&&Array.isArray(row.slides))for(const value of row.slides){if(value&&typeof value==='object'&&!Array.isArray(value)&&typeof value.assetId==='string')bind(page,value.assetId);}}
  for(const row of locations.filter(row=>row.bloodCount>0)){const record=slidesFor(row.country,row.city);regional(base+donorLocationPath(row,'blood'),record);for(const group of row.bloodGroups){const {bloodGroupToSlug}=await import('@/src/lib/seoRouting');const slug=bloodGroupToSlug(group);if(slug)regional(base+donorLocationPath(row,'blood')+'/'+slug,record);}}
  for(const country of [...new Set(locations.filter(row=>row.bloodCount>0).map(row=>row.country))])if(REGIONS.some(region=>region.country===country))regional(base+getRegionalEdition(country).countryPath,slidesFor(country));
+ for(const area of [undefined,...await listPublishedUsaAreas()]){const content=await usaContent(area);if(content.regional?.design?.hiddenSections?.includes('gallery'))continue;for(const image of content.config.images||[])if(!image.decorative)bind(base+(area?.path||'/us'),image.assetId);}
  const assets=await db.mediaAsset.findMany({where:{id:{in:[...new Set([...ids.values()].flatMap(set=>[...set]))]},category:{in:['SLIDER','BLOG']},mime_type:'image/webp'},select:{id:true,public_url:true}});
  for(const [page,values] of ids){const set=pages.get(page)||new Set<string>();for(const id of values){const asset=assets.find(row=>row.id===id);if(asset)set.add(new URL(asset.public_url,base).href);}if(set.size)pages.set(page,set);}
  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">${[...pages].map(([page,images])=>`<url><loc>${escape(page)}</loc>${[...images].slice(0,1000).map(url=>`<image:image><image:loc>${escape(url)}</image:loc></image:image>`).join('')}</url>`).join('')}</urlset>`;

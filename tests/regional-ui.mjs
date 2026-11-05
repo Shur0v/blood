@@ -56,7 +56,7 @@ assert.equal(document.activeElement.getAttribute('aria-label'),'Close donor deta
 await act(async()=>document.dispatchEvent(new dom.window.KeyboardEvent('keydown',{key:'Escape',bubbles:true})));
 assert.equal(closed,1);
 await act(async()=>root.render(React.createElement(Editor)));
-await act(async()=>{const details=document.querySelector('details');details.open=true;details.dispatchEvent(new Event('toggle',{bubbles:true}));});
+await act(async()=>{const details=document.querySelector('#editor-regional');details.open=true;details.dispatchEvent(new Event('toggle',{bubbles:true}));});
 assert.ok([...document.querySelectorAll('input')].some(el=>el.value===record.title),'Load the existing country update, rather than a blank draft');
 assert.equal(document.querySelector('img').src,first.url);
 await act(async()=>[...document.querySelectorAll('button')].find(el=>el.textContent==='Save regional content').dispatchEvent(new MouseEvent('click',{bubbles:true})));

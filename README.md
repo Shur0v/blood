@@ -154,6 +154,8 @@ Medical/deployment integration tests require `TEST_DATABASE_URL` pointing to a *
 
 ## Production operations
 
+The [USA edition guide](docs/usa-edition.md) documents its country/state/city publishing controls, honest coverage definitions, validation and staged release. See the [USA component and content inventory](docs/usa-content-review.md) for the fixed launch recipes and reviewed resources.
+
 Fresh local setup is not a production upgrade procedure. Existing deployments use the [VPS checklist](deploy/PRODUCTION_CHECKLIST.md), [database deployment audit](DATABASE_DEPLOYMENT_AUDIT.md), and [supervised recovery guide](docs/admin-operations-recovery.md).
 
 The established VPS entry point is `bash ./deploy-prod.sh`. Review the runbook before invoking it: it updates the checkout, manages services, backs up data, builds and applies migrations. Preserve the database, encryption key, JWT secret and required private files. Supervise the prescription worker alongside the web application. Rehearse restoration on isolated infrastructure before enabling recovery operations. Historical successful test reports do not replace current deployment and restore verification.

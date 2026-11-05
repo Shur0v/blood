@@ -116,7 +116,7 @@ test('real deploy preserves every legacy table, matches Prisma, and survives rec
         const route = '/api/' + file.replace(/\\/g, '/').replace('/route.ts', '');
         const { GET } = await import(pathToFileURL(path.resolve('src/app/api', file)).href);
         const admin = route.startsWith('/api/admin/') || route.startsWith('/api/management/');
-        const request = new Request(`https://example.invalid${route}`, { headers: { authorization: `Bearer ${signToken({ user_id: admin ? ids.AdminUser : ids.User, role: admin ? 'ADMIN' : 'USER',...(admin?{credential_version}:{}) })}` } });
+        const request = new Request(`https://example.invalid${route}${route==='/api/public/height-unit'?'?country=Bangladesh':''}`, { headers: { authorization: `Bearer ${signToken({ user_id: admin ? ids.AdminUser : ids.User, role: admin ? 'ADMIN' : 'USER',...(admin?{credential_version}:{}) })}` } });
         const response = await GET(request);
         if(response.headers.get('Content-Type')?.includes('text/event-stream'))await response.body?.cancel();
         const expectedStatus=route==='/api/users/me/public-profile'?403:route==='/api/admin/database-backup'?410:200;

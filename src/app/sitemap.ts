@@ -1,3 +1,4 @@
+import {listPublishedUsaAreas,getUsaPublication} from '@/src/backend/services/usaContent';
 import {getPublicPageDates} from '@/src/backend/services/publicContent';
 import { MetadataRoute } from 'next';
 import { getPrisma } from '@/src/backend/config/db';
@@ -93,6 +94,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   for(const entry of staticRoutes){const date=contentDates.get(new URL(entry.url).pathname.slice(1));if(date)entry.lastModified=date;}
+  for(const area of await listPublishedUsaAreas())staticRoutes.push({url:baseUrl+area.path,lastModified:area.modified||undefined,changeFrequency:'weekly',priority:.6});
+  const usaPublication=await getUsaPublication('country');const usRoute=staticRoutes.find(row=>row.url===baseUrl+'/us');if(usRoute&&usaPublication?.modified)usRoute.lastModified=usaPublication.modified;
   try {
     const prisma = getPrisma();
     const [blogs, cityRows, bloodRows, organTypes, organDonors, organRequests] = await Promise.all([

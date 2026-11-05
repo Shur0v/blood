@@ -355,7 +355,7 @@
     "methods": [
       "GET"
     ],
-    "sha256": "1ec328a4c732b9203cfbc4b9f88295bdb7020bae2433a4a064e7de74a53656d3"
+    "sha256": "2e55433dea4262d5ba568798567b8fab3058a5b333dcc62df01f62cb46c7e60f"
   },
   {
     "kind": "api",
@@ -521,6 +521,18 @@
       "PUT"
     ],
     "sha256": "d504f80506f7e3851ae6accc95d14059af5a5c4181e01a08a7454b3d5a1e4bad"
+  },
+  {
+    "kind": "api",
+    "name": "/api/admin/us-content",
+    "flow": "regional",
+    "access": "Administrator",
+    "source": "src/app/api/admin/us-content/route.ts",
+    "methods": [
+      "GET",
+      "PUT"
+    ],
+    "sha256": "aaca4f7de79049e275e1cc4b2db08371554f7b28e2f2ce1d0597c0d396349ead"
   },
   {
     "kind": "api",
@@ -1628,6 +1640,15 @@
   },
   {
     "kind": "model",
+    "name": "UsaEditorialPage",
+    "flow": "regional",
+    "access": "Server-managed; record-level publication/authorization",
+    "source": "prisma/schema.prisma",
+    "methods": [],
+    "sha256": "d7b40f1e9acbda79d899f871fb5d48f59a9aafddcf761f19773e5fffee36b183"
+  },
+  {
+    "kind": "model",
     "name": "User",
     "flow": "profile",
     "access": "Server-managed; record-level publication/authorization",
@@ -1768,7 +1789,7 @@
     "access": "Reviewed supporting implementation",
     "source": "src/app/layout.tsx",
     "methods": [],
-    "sha256": "cde9673e0e15a19839facaa7f87b32dc6903dee73995545f5fb5cb13c20b9390"
+    "sha256": "af7dd4665c4f8a04767deaa9c2a8e2c625bd73596e1819a83544f1e17399349a"
   },
   {
     "kind": "module",
@@ -1778,6 +1799,15 @@
     "source": "src/app/pakistan.css",
     "methods": [],
     "sha256": "19bbdb7397a58bed15e9a29bb14da140d380c5c6e90d318f8bc2ed6159439922"
+  },
+  {
+    "kind": "module",
+    "name": "src/app/usa.css",
+    "flow": "regional",
+    "access": "Reviewed supporting implementation",
+    "source": "src/app/usa.css",
+    "methods": [],
+    "sha256": "06d998912aa7f67cd4867ec517cc5d09196ec65ff4a8c5bd8dc0d2c05af911ed"
   },
   {
     "kind": "module",
@@ -1795,7 +1825,7 @@
     "access": "Reviewed supporting implementation",
     "source": "src/backend/controllers/AuthController.ts",
     "methods": [],
-    "sha256": "0425a9d3d71f94444be0a2bfad18911df302c1b788691cf13ee8c7b4e263b726"
+    "sha256": "fa70ba4fb8ba27f342737efeccc6e01375ba125299a16e2c4002238333b89335"
   },
   {
     "kind": "module",
@@ -1903,7 +1933,7 @@
     "access": "Reviewed supporting implementation",
     "source": "src/components/Hero.tsx",
     "methods": [],
-    "sha256": "5cff3d754dcc24cadb524ffff5ef8e2d99373f886d9d9d28c9e6300b2d62cde3"
+    "sha256": "a309c300c41f84363da6e6e69efc8b080c803916f384b9c055d85f101e92147c"
   },
   {
     "kind": "module",
@@ -2047,7 +2077,7 @@
     "access": "Reviewed supporting implementation",
     "source": "src/components/regional/RegionalCityExperience.tsx",
     "methods": [],
-    "sha256": "1067f5022b2ec6395b220284357516560700ffbb4dfa8de564cc33da45a7d4dd"
+    "sha256": "024c8e20ed6aedbf45083eb0dd5c2c632210a4147b0d0ca91db6c401ad40f9d0"
   },
   {
     "kind": "module",
@@ -2056,7 +2086,7 @@
     "access": "Reviewed supporting implementation",
     "source": "src/components/RegionalContentEditor.tsx",
     "methods": [],
-    "sha256": "55b5005b98e2133a673cf4fa7986bd57cb066ad9fc8fb2b5caa3c7b0aa02d6f5"
+    "sha256": "ba0623d1ac01604852d010afa29d441ecc470ce2b299e527ef3e175725ab9bf1"
   },
   {
     "kind": "module",
@@ -2065,7 +2095,7 @@
     "access": "Reviewed supporting implementation",
     "source": "src/components/RegionalDesignEditor.tsx",
     "methods": [],
-    "sha256": "471141873c86f038bf3c47da91ef96804981b7aab4e27919f29bf6c5dda3583c"
+    "sha256": "5b7dac01aab0a835a28e246c6c929c2715fb5462d6982d7223250884496a4927"
   },
   {
     "kind": "module",
@@ -2075,6 +2105,42 @@
     "source": "src/components/SiteNavShell.tsx",
     "methods": [],
     "sha256": "85a2cbec344a4d4e226986cf7ff59c616267df5a81c2287c1c5d0e5c5b0a9083"
+  },
+  {
+    "kind": "module",
+    "name": "src/components/usa/UsaEditor.tsx",
+    "flow": "regional",
+    "access": "Reviewed supporting implementation",
+    "source": "src/components/usa/UsaEditor.tsx",
+    "methods": [],
+    "sha256": "57c3f53c136b6f617d42bfe6bf6818beb2c3333959a708d5345f8d1326ef9898"
+  },
+  {
+    "kind": "module",
+    "name": "src/components/usa/UsaExperience.tsx",
+    "flow": "regional",
+    "access": "Reviewed supporting implementation",
+    "source": "src/components/usa/UsaExperience.tsx",
+    "methods": [],
+    "sha256": "1a0f9289096a91b413298db628fcf06cbb39a053cc506a4435995c8e241cf9d7"
+  },
+  {
+    "kind": "module",
+    "name": "src/components/usa/UsaLocalSections.tsx",
+    "flow": "regional",
+    "access": "Reviewed supporting implementation",
+    "source": "src/components/usa/UsaLocalSections.tsx",
+    "methods": [],
+    "sha256": "8b7e6460b5c878986f186af7466f77ff74487e32412ef1e0436fb81a5e23cc7e"
+  },
+  {
+    "kind": "module",
+    "name": "src/components/usa/UsaMainSections.tsx",
+    "flow": "regional",
+    "access": "Reviewed supporting implementation",
+    "source": "src/components/usa/UsaMainSections.tsx",
+    "methods": [],
+    "sha256": "1dd969a27a8c5bf5014ad58b5afac75bf41c2d3f970d090d10d641a41fd3731e"
   },
   {
     "kind": "module",
@@ -2227,7 +2293,34 @@
     "access": "Reviewed supporting implementation",
     "source": "src/lib/regionalDesign.ts",
     "methods": [],
-    "sha256": "07fc828aeffaf94528263faab32d3fe8a61c29f6450cc5b4b6e1703fb707c833"
+    "sha256": "a666c2a27f39d270668fd4316454f3dbe8a555459d25f3b5a267c4bfdd1e28d7"
+  },
+  {
+    "kind": "module",
+    "name": "src/lib/usaEdition.ts",
+    "flow": "regional",
+    "access": "Reviewed supporting implementation",
+    "source": "src/lib/usaEdition.ts",
+    "methods": [],
+    "sha256": "2153ad8965de3e4262400f128a55b41ac020316996d17c05ca68289e8cc20bf3"
+  },
+  {
+    "kind": "module",
+    "name": "src/lib/usaGeography.ts",
+    "flow": "regional",
+    "access": "Reviewed supporting implementation",
+    "source": "src/lib/usaGeography.ts",
+    "methods": [],
+    "sha256": "d946da182f2661f19bbf848660523016904fc5667dbe600e9d2d05b65cd06eda"
+  },
+  {
+    "kind": "module",
+    "name": "src/lib/usaLocalContent.ts",
+    "flow": "regional",
+    "access": "Reviewed supporting implementation",
+    "source": "src/lib/usaLocalContent.ts",
+    "methods": [],
+    "sha256": "877d7667dfb4fe0530ddab03777c47c37e2c4d58ae2b049c4d5e451f2b2e0345"
   },
   {
     "kind": "page",
@@ -2641,7 +2734,7 @@
     "access": "Public or endpoint-specific guard",
     "source": "src/app/network/[country]/page.tsx",
     "methods": [],
-    "sha256": "29ce265bb08c89b8d04c3951402c793c2e9c6ab57ffba459c817b0b8c4a666c7"
+    "sha256": "0646ded205d068cb510455bf76607ef68e9f7f84c5e33b2dbacc499d5130efef"
   },
   {
     "kind": "page",
@@ -3298,7 +3391,7 @@
     "access": "Public or endpoint-specific guard",
     "source": "src/app/sitemap-regions.xml/route.ts",
     "methods": [],
-    "sha256": "a53e0c48900fb62c154ca7d8ff015af2ab159d1009c5e68d3b98c2b8d31dff60"
+    "sha256": "e0b2478c10788262cff905e773d2e65c95ce1339c3b15fe2c8ba5457da6f9f42"
   },
   {
     "kind": "page",
@@ -3352,7 +3445,25 @@
     "access": "Public or endpoint-specific guard",
     "source": "src/app/us/page.tsx",
     "methods": [],
-    "sha256": "fdc59be2f925031e2f3e81e0a007050b2c8ffbbbdd4cac63acc0d7c2366ff10e"
+    "sha256": "2f5d40df9303b005a0b91e968b950002bc37f219128e583c440e01023a2698d4"
+  },
+  {
+    "kind": "page",
+    "name": "/us/[kind]/[slug]",
+    "flow": "platform",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/us/[kind]/[slug]/page.tsx",
+    "methods": [],
+    "sha256": "6e036a6b8fcc9f63a774cd35a406bd83ca3df7faa03f58316da432aa7275427f"
+  },
+  {
+    "kind": "page",
+    "name": "/us/preview/[areaId]",
+    "flow": "platform",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/us/preview/[areaId]/page.tsx",
+    "methods": [],
+    "sha256": "464a9991dc33a1bc21005164485af6ae00075350c22c413173303f401d213e2b"
   },
   {
     "kind": "page",
@@ -3478,7 +3589,7 @@
     "access": "Internal server module",
     "source": "src/backend/services/imageSitemap.ts",
     "methods": [],
-    "sha256": "beba75ed87d36dda25393ce449795da8c07d750de7080164f4deab6dc303bdc9"
+    "sha256": "f73c75536bafc42d8841d7bf0f174b6882572ddded4445e904b273ea38c74965"
   },
   {
     "kind": "service",
@@ -3640,7 +3751,7 @@
     "access": "Internal server module",
     "source": "src/backend/services/publicImages.ts",
     "methods": [],
-    "sha256": "c3734a47c80b19c6a1aae0d406efa1a7536b93ae77d711ce3e0c2e16585e6e0b"
+    "sha256": "1bd8ede0f3b26b42587f8d3fcdc6a6b7139672ffa14259f758880fe1d8e73b04"
   },
   {
     "kind": "service",
@@ -3776,5 +3887,14 @@
     "source": "src/backend/services/uiControls.ts",
     "methods": [],
     "sha256": "0d93cbd2f79b0047bc6b814131b1b373fecd6ef48123d42c71e8aad3e36d2e2f"
+  },
+  {
+    "kind": "service",
+    "name": "usaContent",
+    "flow": "regional",
+    "access": "Internal server module",
+    "source": "src/backend/services/usaContent.ts",
+    "methods": [],
+    "sha256": "3f541112454ee91921798d12ec1e2a00e874c4a44533e6ae08ddd7497cbdc378"
   }
 ]

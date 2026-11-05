@@ -44,7 +44,9 @@
     "test:operations-ui": "tsx tests/admin-operations-ui.mjs && tsx tests/notification-focus-ui.mjs",
     "location:check": "tsx src/backend/scripts/checkLocationSearch.ts",
     "test:india-ui": "tsx tests/india-edition-ui.mjs",
-    "test:pakistan-ui": "tsx tests/pakistan-edition-ui.mjs"
+    "test:pakistan-ui": "tsx tests/pakistan-edition-ui.mjs",
+    "test:usa": "tsx --test tests/usa-edition.test.ts",
+    "test:usa-ui": "tsx tests/usa-editor-ui.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1034.0",

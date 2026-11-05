@@ -108,7 +108,7 @@ function MixedDonorBannerCard({ ad, onFail }: { ad: InlineBannerAdUnit; onFail: 
 
 const DONOR_GRID_AD_SLOTS = 4;
 
-export default function Hero({ forcedCountry, initialCity = '', initialGroup = null, headingLevel = 1, presentation = "default", regionalSections = false, contentOverride }: { forcedCountry?: string; initialCity?: string; initialGroup?: string | null; headingLevel?: 1 | 2; presentation?: "default" | "regional"; regionalSections?: boolean; contentOverride?: {heading?:string;description?:string} }) {
+export default function Hero({ forcedCountry, initialCity = '', initialGroup = null, headingLevel = 1, presentation = "default", regionalSections = false, contentOverride, usaEdition=false, usaResults }: { forcedCountry?: string; initialCity?: string; initialGroup?: string | null; headingLevel?: 1 | 2; presentation?: "default" | "regional"; regionalSections?: boolean; usaEdition?:boolean; usaResults?:{title?:string;text?:string;variant?:string}; contentOverride?: {heading?:string;description?:string} }) {
   const adsConfig = usePublicAds();
   const readServerRenderedDonorTotal = () => {
     if (forcedCountry) return 0;
@@ -380,7 +380,7 @@ export default function Hero({ forcedCountry, initialCity = '', initialGroup = n
   }, [hasLoadedMoreOnce, inlineBannerAd, hideInlineBanner, donors, activeGroup, normalizedSearch]);
 
   return (
-    <section id={regionalSections||presentation==="regional"?"regional-donor-search":undefined} data-region-section={regionalSections||presentation==="regional"?"2":undefined} className={(presentation==="regional"?"regional-donor-search ":"")+"relative flex min-h-screen flex-col items-center justify-center px-4 pt-20 pb-32"}>
+    <section data-us-component={usaEdition?"search":undefined} id={regionalSections||presentation==="regional"?"regional-donor-search":undefined} data-region-section={regionalSections||presentation==="regional"?"2":undefined} className={(presentation==="regional"?"regional-donor-search ":"")+"relative flex min-h-screen flex-col items-center justify-center px-4 pt-20 pb-32"}>
       <div className="absolute top-1/4 left-1/4 hidden h-64 w-64 rounded-full bg-primary-dark/10 blur-[100px] md:block" />
       <div className="absolute bottom-1/4 right-1/4 hidden h-96 w-96 rounded-full bg-primary/5 blur-[120px] md:block" />
 
@@ -399,7 +399,7 @@ export default function Hero({ forcedCountry, initialCity = '', initialGroup = n
               </div>
               <div className="px-4 py-2">
                 <span className="text-base font-bold lowercase tracking-[2px] text-white">
-                  {presentation==="regional"?(forcedCountry?.toLowerCase()==="pakistan"&&!initialCity?"worldwide entries":"country entries"):"active donor"}
+                  {presentation==="regional"?(usaEdition?"worldwide entries":forcedCountry?.toLowerCase()==="pakistan"&&!initialCity?"worldwide entries":"country entries"):"active donor"}
                 </span>
               </div>
             </motion.div>
@@ -421,18 +421,19 @@ export default function Hero({ forcedCountry, initialCity = '', initialGroup = n
         </motion.div>
 
         {!viewerGeo.resolved || isInitialDonorLoad || !localReady ? (
-          <div data-region-section={regionalSections||presentation==="regional"?"3":undefined} data-pakistan-section={forcedCountry?.toLowerCase()==="pakistan"&&presentation==="regional"?"4":undefined} className="mx-auto min-h-[320px] max-w-4xl rounded-[8px] border border-white/40 bg-white/20 p-8 text-center text-sm font-semibold text-gray-700">
+          <div data-us-component={usaEdition?"results":undefined} data-us-result-variant={usaEdition?usaResults?.variant:undefined} data-region-section={regionalSections||presentation==="regional"?"3":undefined} data-pakistan-section={forcedCountry?.toLowerCase()==="pakistan"&&presentation==="regional"?"4":undefined} className="mx-auto min-h-[320px] max-w-4xl rounded-[8px] border border-white/40 bg-white/20 p-8 text-center text-sm font-semibold text-gray-700">
             Loading nearby active donors...
           </div>
         ) : hasNoResults ? (
-          <div data-region-section={regionalSections||presentation==="regional"?"3":undefined} data-pakistan-section={forcedCountry?.toLowerCase()==="pakistan"&&presentation==="regional"?"4":undefined} className="mx-auto min-h-[320px] max-w-4xl rounded-[8px] border border-white/40 bg-white/20 p-8 text-center text-sm font-semibold text-gray-700">
+          <div data-us-component={usaEdition?"results":undefined} data-us-result-variant={usaEdition?usaResults?.variant:undefined} data-region-section={regionalSections||presentation==="regional"?"3":undefined} data-pakistan-section={forcedCountry?.toLowerCase()==="pakistan"&&presentation==="regional"?"4":undefined} className="mx-auto min-h-[320px] max-w-4xl rounded-[8px] border border-white/40 bg-white/20 p-8 text-center text-sm font-semibold text-gray-700">
             <p>{isDonorApiDown ? 'Donor cards could not be loaded. Please retry.' : `No matching donor entries${viewerGeo.country ? ` in ${viewerGeo.country}` : ''}${normalizedSearch ? ` for “${normalizedSearch}”` : ''}${activeGroup ? ` (${activeGroup})` : ''}.`}</p>
             <button type="button" className="mt-4 rounded-full border border-rose-200 bg-white px-5 py-3 text-sm font-semibold text-rose-700" onClick={() => isDonorApiDown ? setRetryAttempt(value => value + 1) : document.querySelector<HTMLButtonElement>('.donor-discovery-trigger')?.click()}>
               {isDonorApiDown ? 'Retry donor search' : 'Choose another location'}
             </button>
           </div>
         ) : (
-          <div data-india-donor-grid={indiaEdition?'true':undefined} data-region-section={regionalSections||presentation==="regional"?"3":undefined} data-pakistan-section={forcedCountry?.toLowerCase()==="pakistan"&&presentation==="regional"?"4":undefined} className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div data-india-donor-grid={indiaEdition?'true':undefined} data-us-component={usaEdition?"results":undefined} data-us-result-variant={usaEdition?usaResults?.variant:undefined} data-region-section={regionalSections||presentation==="regional"?"3":undefined} data-pakistan-section={forcedCountry?.toLowerCase()==="pakistan"&&presentation==="regional"?"4":undefined} className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {usaEdition&&(usaResults?.title||usaResults?.text)&&<header className="col-span-full us-results-heading">{usaResults.title&&<h2>{usaResults.title}</h2>}{usaResults.text&&<p>{usaResults.text}</p>}</header>}
             {donors.map((donor, index) => (
               <div key={`slot-${donor.id}`}>
                 {inlineBannerAd && !hideInlineBanner && adInsertIndexes.includes(index) && !failedAdSlots[index] && (
@@ -446,6 +447,7 @@ export default function Hero({ forcedCountry, initialCity = '', initialGroup = n
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: index * 0.05 }}
                   onClick={() => setSelectedDonor(donor)}
+                  data-usa-source={usaEdition?donor.sourceType:undefined}
                   data-regional-card={presentation==="regional"?"true":undefined}
                   role={regionalSections||presentation==="regional"?"button":undefined}
                   tabIndex={regionalSections||presentation==="regional"?0:undefined}
@@ -469,7 +471,7 @@ export default function Hero({ forcedCountry, initialCity = '', initialGroup = n
                     </div>
 
                     <div className="ml-3 flex flex-1 flex-col overflow-hidden">
-                      <h3 className="truncate text-sm font-bold tracking-tight text-gray-900">{donor.name}</h3>
+                      <h3 className="truncate text-sm font-bold tracking-tight text-gray-900">{donor.name}</h3>{usaEdition&&<span className="us-source-label">{donor.sourceType==="COMMUNITY"?"Organization listing":donor.sourceType==="MANUAL"?"Manual individual entry":"Registered account"}</span>}
                       <div className="mt-0.5 flex flex-col text-[10px] font-medium text-gray-600">
                         <span className="truncate">{donor.maskedPhone}</span>
                         <span className="truncate opacity-70">{donor.location}</span>
@@ -511,7 +513,7 @@ export default function Hero({ forcedCountry, initialCity = '', initialGroup = n
         </div>
       </div>
 
-      <DonorModal donor={localReady ? selectedDonor : null} onClose={() => setSelectedDonor(null)} />
+      <DonorModal entryLabelsOnly={usaEdition} donor={localReady ? selectedDonor : null} onClose={() => setSelectedDonor(null)} />
     </section>
   );
 }

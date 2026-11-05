@@ -15,6 +15,7 @@ interface Donor {
 
 interface DonorModalProps {
   donor: Donor | null;
+  entryLabelsOnly?:boolean;
   onClose: () => void;
 }
 
@@ -35,7 +36,7 @@ const buildDialTarget = (rawPhone: string) => {
   return trimmed;
 };
 
-export default function DonorModal({ donor, onClose }: DonorModalProps) {
+export default function DonorModal({ donor, onClose, entryLabelsOnly=false }: DonorModalProps) {
   const dialogRef=useRef<HTMLDivElement>(null),closeAction=useRef(onClose),headingId=useId();
   closeAction.current=onClose;
   useEffect(()=>{
@@ -115,6 +116,7 @@ export default function DonorModal({ donor, onClose }: DonorModalProps) {
                 </div>
               </div>
 
+              {entryLabelsOnly&&donor.sourceType==='COMMUNITY'&&<p className="mb-5 text-sm leading-6 text-slate-600">Organization listing. This record is not an individual donor, blood inventory, accreditation or implied BloodNet partnership.</p>}
               {(hasHemoglobin || formattedLastDonationDate) && (
                 <div className="mb-6 flex flex-col gap-2 rounded-2xl bg-white/60 px-4 py-3 text-left">
                   {hasHemoglobin && (
@@ -147,7 +149,7 @@ export default function DonorModal({ donor, onClose }: DonorModalProps) {
 
               {isVerified && (
                 <p className="mt-6 text-xs font-bold uppercase tracking-wide text-gray-400">
-                  Verified Life Saver
+                  {entryLabelsOnly?'Platform entry reviewed · availability not confirmed':'Verified Life Saver'}
                 </p>
               )}
             </div>

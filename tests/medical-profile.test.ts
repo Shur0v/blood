@@ -131,6 +131,10 @@ before(async () => {
   assert.deepEqual((await sql.query('SELECT to_jsonb(c) AS record FROM "UserServiceCity" c ORDER BY id')).rows, citiesBeforeNeighborhoods);
   await sql.query(readFileSync('prisma/migrations/20261105120000_service_city_neighborhoods/migration.sql','utf8'));
   await sql.query(readFileSync('prisma/migrations/20261105150000_location_management/migration.sql','utf8'));
+  const beforeUsa=(await sql.query('SELECT to_jsonb(u) AS row FROM "User" u ORDER BY id')).rows;
+  await sql.query(readFileSync('prisma/migrations/20261106090000_usa_editorial_pages/migration.sql','utf8'));
+  assert.deepEqual((await sql.query('SELECT to_jsonb(u) AS row FROM "User" u ORDER BY id')).rows,beforeUsa);
+  assert.equal((await sql.query('SELECT count(*)::int AS n FROM "UsaEditorialPage"')).rows[0].n,0,'No automatic area publication');
   assert.deepEqual((await sql.query("SELECT to_jsonb(c) - 'neighborhood_name' - 'neighborhood_place_id' AS record FROM \"UserServiceCity\" c ORDER BY id")).rows, citiesBeforeNeighborhoods);
   const migratedPublication=(await sql.query('SELECT * FROM "PublicDonorProfile" WHERE id=$1',[legacyPublicationId])).rows[0];
   assert.equal(migratedPublication.is_published,false);assert.equal(migratedPublication.bio,legacyBio);assert.equal(migratedPublication.admin_approved_at,null);assert.ok(migratedPublication.consented_at);
@@ -875,7 +879,7 @@ test('every exported administrator and manager API method denies anonymous and o
       checked++;
     }
   }
-  assert.equal(checked,96,'Cover all existing privileged API methods');
+  assert.equal(checked,98,'Cover all existing privileged API methods, including USA editorial GET and PUT');
 });
 
 test('verification uploads are encrypted, owner-bound and privately readable by owner or active admin', integration, async () => {
@@ -1842,4 +1846,62 @@ test('service neighborhoods persist through signup and explicit edits without ch
     send.mock.restore();
     if (old === undefined) delete process.env.NEIGHBORHOODS_ENABLED; else process.env.NEIGHBORHOODS_ENABLED = old;
   }
+});
+
+
+test('USA editorial publication preserves drafts, validates areas, blocks unauthorized access and excludes withdrawn pages',integration,async()=>{
+ const {GET,PUT}=await import('../src/app/api/admin/us-content/route');
+ const {saveUsaContent,getUsaPublication,listPublishedUsaAreas}=await import('../src/backend/services/usaContent');
+ const {USA_AREAS}=await import('../src/lib/usaEdition');const area=USA_AREAS[1],db=getPrisma();
+ const request=(body:unknown,token=signToken({user_id:testAdminId,role:'ADMIN'}),origin='http://localhost')=>new Request('http://localhost/api/admin/us-content',{method:'PUT',headers:{authorization:'Bearer '+token,'Content-Type':'application/json',origin},body:JSON.stringify(body)});
+ assert.equal((await GET(new Request('http://localhost/api/admin/us-content'))).status,401);
+ const user=await newPatient();assert.equal((await GET(patientRequest('http://localhost/api/admin/us-content',user.id))).status,403);
+ const manager=await db.adminUser.create({data:{admin_id:randomUUID(),password:'test-only',role:'MANAGER'}});
+ const managerToken=rawSignToken({user_id:manager.id,role:'MANAGER',credential_version:staffCredentialVersion(manager.id,'test-only')});
+ assert.equal((await GET(new Request('http://localhost/api/admin/us-content',{headers:{authorization:'Bearer '+managerToken}}))).status,403);
+ assert.equal((await PUT(request({areaId:area.id,action:'draft',config:{}},undefined,'https://evil.invalid'))).status,403);
+ const initialEvents=await db.adminNotification.count({where:{type:'usa.editorial.published'}});
+ await sql.query('UPDATE "MaintenanceGate" SET paused=true WHERE id=1');
+ try{await assert.rejects(sql.query('INSERT INTO "UsaEditorialPage" (area_id,updated_at) VALUES ($1,now())',[area.id]),(error:any)=>error.code==='55000');}
+ finally{await sql.query('UPDATE "MaintenanceGate" SET paused=false WHERE id=1');}
+ await saveUsaContent({areaId:area.id,action:'draft',config:{title:'Private synthetic draft'}});
+ assert.equal(await getUsaPublication(area.id),null);assert.ok(!(await listPublishedUsaAreas()).some(row=>row.id===area.id));
+ assert.equal(await db.adminNotification.count({where:{type:'usa.editorial.published'}}),initialEvents);
+ await assert.rejects(()=>saveUsaContent({areaId:area.id,action:'publish',config:{}}),/context/);
+ const config={title:'Reviewed Las Vegas guide',editorialNote:area.context,recipe:area.recipe};
+ const published=await saveUsaContent({areaId:area.id,action:'publish',config});
+ assert.equal((await getUsaPublication(area.id))?.config.title,config.title);
+ await saveUsaContent({areaId:area.id,action:'draft',config:{...config,title:'Unpublished replacement'}});
+ assert.equal((await getUsaPublication(area.id))?.config.title,config.title,'Saving a draft never replaces live content');
+ const same=await saveUsaContent({areaId:area.id,action:'publish',config});assert.equal(same.public_updated_at?.toISOString(),published.public_updated_at?.toISOString());
+ await saveUsaContent({areaId:area.id,action:'withdraw',config});assert.equal(await getUsaPublication(area.id),null);
+ await saveUsaContent({areaId:area.id,action:'restore',config:{}});assert.equal(await getUsaPublication(area.id),null,'Restore does not silently publish an area');
+ await assert.rejects(()=>saveUsaContent({areaId:area.id,action:'draft',config:{images:[{assetId:randomUUID(),alt:'A private medical document',caption:'',decorative:false}]}}),/managed public image/);
+ await db.usaEditorialPage.deleteMany();
+});
+
+test('USA coverage separates organizations, deduplicates service cities and rejects same-name geography',integration,async()=>{
+ const {getUsaCoverage}=await import('../src/backend/services/usaContent');const {usaArea}=await import('../src/lib/usaEdition');const db=getPrisma();
+ const primary=await db.user.create({data:{profile_code:'USQ1',name:'Synthetic USA user',email:randomUUID()+'@example.invalid',mobile:randomUUID(),blood_group:'A+',location_city:'Los Angeles',location_country:'United States',location_lat:34.052,location_lng:-118.244}});
+ const now=new Date();for(const [city,lat,lng]of [['Los Angeles',34.052,-118.244],['San Diego',32.715,-117.157]] as const)await db.userServiceCity.create({data:{user_id:primary.id,city,country:'United States',formatted_location:city+', United States',lat,lng,provider_place_id:'fixture-'+city,locked_until:now}});
+ const organization=await db.communityDonor.create({data:{organization_name:'USA synthetic '+randomUUID(),mobile:randomUUID(),location_city:'Las Vegas',location_country:'United States',location_lat:36.175,location_lng:-115.137,source:'Synthetic test',added_by_admin:'fixture'}});
+ const wrong=await db.communityDonor.create({data:{organization_name:'New Mexico synthetic '+randomUUID(),mobile:randomUUID(),location_city:'Las Vegas',location_country:'United States',location_lat:35.59,location_lng:-105.22,source:'Synthetic test',added_by_admin:'fixture'}});
+ const california=await getUsaCoverage(usaArea('california'));assert.equal(california.registered,1);assert.equal(california.organizations,0);
+ const vegas=await getUsaCoverage(usaArea('las-vegas'));assert.equal(vegas.registered,0);assert.equal(vegas.organizations,1);assert.equal(vegas.unresolved,1);
+ await db.communityDonor.deleteMany({where:{id:{in:[organization.id,wrong.id]}}});await db.user.delete({where:{id:primary.id}});
+});
+
+
+test('USA registration completion is counted once without identifiers or medical contents',integration,async()=>{
+ const {AuthController}=await import('../src/backend/controllers/AuthController');const db=getPrisma();
+ const email=randomUUID()+'@example.invalid';const mobile='+12025550101';await new AuthService().storeOTP(email,'123456');
+ const location={city:'Las Vegas',country:'United States',formatted_location:'Las Vegas, United States',latitude:36.175,longitude:-115.137,provider_place_id:'geonames:5506956'};
+ const payload={...registrationPayload(email,mobile),locations:[{...location,token:signLocationProof(location)}]};
+ const before=await db.analyticsClickLog.count({where:{component:'USA Registration Completed'}});
+ const response=await AuthController.verifyOtp(authRequest('verify',payload));assert.equal(response.status,200,await response.clone().text());
+ assert.equal(await db.analyticsClickLog.count({where:{component:'USA Registration Completed'}}),before+1);
+ const row=await db.analyticsClickLog.findFirstOrThrow({where:{component:'USA Registration Completed'},orderBy:{created_at:'desc'}});
+ assert.equal(row.page,'us');assert.equal(row.component,'USA Registration Completed');assert.ok(!JSON.stringify(row).includes(email));assert.ok(!JSON.stringify(row).includes(mobile));
+ assert.equal((await AuthController.verifyOtp(authRequest('verify',payload))).status,401);
+ assert.equal(await db.analyticsClickLog.count({where:{component:'USA Registration Completed'}}),before+1);
 });

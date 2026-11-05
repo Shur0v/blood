@@ -116,9 +116,10 @@ export default function CityLandingDonorGrid({ mode, city, country, bloodGroup }
               onClick={() => setSelectedDonor(card)}
               data-india-organ-card={country.toLowerCase()==='india'?'true':undefined}
               data-pakistan-organ-card={country.toLowerCase()==='pakistan'?'true':undefined}
-              role={['india','pakistan'].includes(country.toLowerCase())?'button':undefined}
-              tabIndex={['india','pakistan'].includes(country.toLowerCase())?0:undefined}
-              onKeyDown={['india','pakistan'].includes(country.toLowerCase())?event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();setSelectedDonor(card);}}:undefined}
+              data-usa-organ-card={country.toLowerCase()==='united states'?'true':undefined}
+              role={['india','pakistan','united states'].includes(country.toLowerCase())?'button':undefined}
+              tabIndex={['india','pakistan','united states'].includes(country.toLowerCase())?0:undefined}
+              onKeyDown={['india','pakistan','united states'].includes(country.toLowerCase())?event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();setSelectedDonor(card);}}:undefined}
               className="group relative flex cursor-pointer items-center gap-3 overflow-hidden rounded-[8px] border border-white/40 bg-white/30 p-2 pr-4 shadow-card backdrop-blur-2xl transition-all duration-300 hover:border-primary-dark/40 hover:shadow-card"
             >
               <div className="absolute inset-0 rounded-[8px] ring-1 ring-inset ring-white/50" />

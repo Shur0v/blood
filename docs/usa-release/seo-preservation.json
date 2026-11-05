@@ -1,0 +1,92 @@
+[
+  {
+    "route": "/network/united-states",
+    "metadata": true,
+    "structuredData": true,
+    "content": true,
+    "links": true
+  },
+  {
+    "route": "/",
+    "metadata": true,
+    "structuredData": true,
+    "content": true,
+    "links": true
+  },
+  {
+    "route": "/india",
+    "metadata": true,
+    "structuredData": true,
+    "content": true,
+    "links": true
+  },
+  {
+    "route": "/nepal",
+    "metadata": true,
+    "structuredData": true,
+    "content": true,
+    "links": true
+  },
+  {
+    "route": "/bangladesh",
+    "metadata": true,
+    "structuredData": true,
+    "content": true,
+    "links": true
+  },
+  {
+    "route": "/pakistan",
+    "metadata": true,
+    "structuredData": true,
+    "content": true,
+    "links": true
+  },
+  {
+    "route": "/blood/lahore",
+    "status": 404
+  },
+  {
+    "route": "/blood/a-positive/lahore",
+    "status": 404
+  },
+  {
+    "route": "/blood-donors/pakistan/lahore",
+    "status": 404
+  },
+  {
+    "route": "/blood-donors/pakistan/lahore/a-positive",
+    "status": 404
+  },
+  {
+    "route": "/organ-donors/pakistan/lahore",
+    "status": 404
+  },
+  {
+    "route": "/network/pakistan",
+    "metadata": true,
+    "structuredData": true,
+    "content": true,
+    "links": true
+  },
+  {
+    "route": "/blood/chennai",
+    "metadata": true,
+    "structuredData": true,
+    "content": true,
+    "links": true
+  },
+  {
+    "route": "/blood/kathmandu",
+    "metadata": true,
+    "structuredData": true,
+    "content": true,
+    "links": true
+  },
+  {
+    "route": "/blood/dhaka",
+    "metadata": true,
+    "structuredData": true,
+    "content": true,
+    "links": true
+  }
+]

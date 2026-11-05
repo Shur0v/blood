@@ -326,6 +326,8 @@ export class AuthController {
           });
 
           await tx.profileIdentifier.update({ where: { code: profileCode }, data: { user_id: created.id } });
+          // Aggregate USA account creation only; no patient or contact identifiers enter analytics.
+          if(firstLocation.country.trim().toLowerCase()==='united states')await tx.analyticsClickLog.create({data:{page:'us',component:'USA Registration Completed',device_type:'server'}});
           await tx.userServiceCity.createMany({
             data: readyLocations.map((item, index) => ({
               user_id: created.id,
