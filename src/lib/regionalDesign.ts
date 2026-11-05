@@ -17,6 +17,7 @@ const copyShape=Object.fromEntries(REGIONAL_COPY_FIELDS.map(([key,,limit])=>[key
 export const REGIONAL_OPTIONAL_SECTIONS=[['gallery','Regional images'],['locations','Related cities and blood groups'],['faq','Frequently asked questions'],['guidance','Guidance and related reading'],['join','Registration invitation'],['home5','First homepage invitation'],['home9','Second homepage invitation'],['home12','Closing homepage invitation']] as const;
 export type RegionalSectionKey=typeof REGIONAL_OPTIONAL_SECTIONS[number][0];
 export const RegionalDesignSchema=z.object({
+ heightUnit:z.enum(['cm','in']).optional(),
  theme:z.enum(['auto','nepal','india','pakistan','bangladesh','international']).optional(),
  layout:z.enum(['balanced','stacked']).optional(),spacing:z.enum(['comfortable','compact']).optional(),
  colors:z.object({paper:z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),ink:z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),accent:z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),indigo:z.string().regex(/^#[0-9a-fA-F]{6}$/).optional()}).strict().optional(),
@@ -27,6 +28,7 @@ export const RegionalDesignSchema=z.object({
 export type RegionalDesign=z.infer<typeof RegionalDesignSchema>;
 export function normalizeRegionalDesign(country:string,input:unknown):RegionalDesign{
  const value=RegionalDesignSchema.parse(input),result:RegionalDesign={};
+ if(value.heightUnit)result.heightUnit=value.heightUnit;
  if(value.theme&&value.theme!=='auto'&&value.theme!==getRegionalEdition(country).theme)result.theme=value.theme;
  if(value.layout==='stacked')result.layout=value.layout;
  if(value.spacing==='compact')result.spacing=value.spacing;

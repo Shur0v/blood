@@ -55,6 +55,8 @@ See [regional editing](docs/regional-dashboard-editor-20261025.md), [Nepal prese
 
 Account location selection has an administrator **Location Management** page for detailed/city-only choices, countrywide/current-district scope, nearby ranking, spelling suggestions and labels. See the [location workflow and deployment notes](docs/location-management.md).
 
+Profile height defaults to inches in Asia and centimetres elsewhere. Administrators can publish country/city preferences in the regional editor; saved measurements remain in centimetres. See [regional height units](docs/profile-height-units.md).
+
 ## Medical profiles
 
 Patients can maintain a four-character profile identifier, upload reports and prescriptions, attach supported images/PDFs, and browse a dated history with category, date and text filters. Patient-uploaded prescriptions remain distinct from prescriptions delivered by an integrated provider. Upload processing includes file validation, image optimization and retry/idempotency support.

@@ -30,6 +30,7 @@ import { ORGAN_CATALOG, normalizeOrganList } from "../lib/organCatalog";
 import ProfileIdentityCard from "./ProfileIdentityCard";
 import MedicalRecordsPanel from "./MedicalRecordsPanel";
 import PublicProfileSettings from './PublicProfileSettings';
+import {defaultHeightUnit, formatHeight, heightFromCm, heightToCm, type HeightUnit} from '@/src/lib/heightUnits';
 
 const VACCINES = ["COVID-19", "HBV", "BCG", "Influenza", "MMR", "Polio", "Tetanus"];
 const ALLERGIES = ["Peanuts", "Penicillin", "Latex", "Pollen", "Dust", "None"];
@@ -88,6 +89,25 @@ export default function UnifiedDashboard({
   const [height, setHeight] = useState(170);
   const [heightTouched, setHeightTouched] = useState(false);
   const [heightUnknown, setHeightUnknown] = useState(false);
+  const [regionalHeightUnit, setRegionalHeightUnit] = useState<HeightUnit | null>(null);
+  const heightUnit = regionalHeightUnit ?? defaultHeightUnit(profile?.country || '');
+  useEffect(() => {
+    const controller = new AbortController();
+    let current = true;
+    setRegionalHeightUnit(null);
+    const refresh = async () => {
+      if (!profile?.country) return;
+      try {
+        const query = new URLSearchParams({country: profile.country, city: profile.city});
+        const response = await fetch('/api/public/height-unit?' + query, {cache:'no-store', signal:controller.signal});
+        const body = await response.json();
+        if (current && response.ok && (body.data?.unit === 'cm' || body.data?.unit === 'in')) setRegionalHeightUnit(body.data.unit);
+      } catch { /* Regional defaults remain available during a connection failure. */ }
+    };
+    void refresh();
+    window.addEventListener('focus', refresh);
+    return () => { current = false; controller.abort(); window.removeEventListener('focus', refresh); };
+  }, [profile?.country, profile?.city]);
   const [hemoglobin, setHemoglobin] = useState(14.5);
   const [hemoglobinTouched, setHemoglobinTouched] = useState(false);
   const [hemoglobinUnknown, setHemoglobinUnknown] = useState(false);
@@ -734,24 +754,24 @@ export default function UnifiedDashboard({
 
               {/* Status Switch Integrated into Header */}
               <div className="flex justify-center md:justify-start">
-                <div className="flex items-center gap-4 rounded-3xl border border-border/5 bg-glass px-5 py-2.5 shadow-sm backdrop-blur-md">
-                  <span className={`text-xs font-semibold uppercase tracking-wide ${isReady ? "text-green-600" : "text-primary"}`}>
+                <div className="flex max-w-full flex-wrap items-center justify-center gap-3 rounded-3xl border border-border/5 bg-glass px-4 py-2.5 shadow-sm backdrop-blur-md">
+                  <span className={`whitespace-nowrap text-xs font-semibold uppercase tracking-wide ${isReady ? "text-green-600" : "text-primary"}`}>
                     Status: {isReady ? "Active" : "Inactive"}
                   </span>
                   <button
                     aria-label="Available to donate"
                     aria-pressed={isReady}
                     onClick={() => onToggleReady(!isReady)}
-                    className={`relative flex h-8 w-24 items-center rounded-full p-1 transition-all duration-500 md:max-lg:h-10 md:max-lg:w-36 ${
+                    className={`relative flex h-10 w-40 shrink-0 items-center rounded-full p-1 transition-all duration-500 ${
                       isReady
                         ? "bg-green-500 shadow-card"
                         : "bg-primary/10 ring-1 ring-primary/20"
                     }`}
                   >
-                    <div className={`absolute left-3 text-[10px] md:max-lg:text-sm md:max-lg:tracking-normal font-semibold uppercase tracking-wider transition-opacity duration-300 ${isReady ? "opacity-100 text-white" : "opacity-0"}`}>
+                    <div aria-hidden="true" className={`absolute left-3 right-10 whitespace-nowrap text-center text-xs font-semibold uppercase tracking-wide transition-opacity duration-300 ${isReady ? "opacity-100 text-white" : "opacity-0"}`}>
                       Available
                     </div>
-                    <div className={`absolute right-3 text-[10px] md:max-lg:text-sm md:max-lg:tracking-normal font-semibold uppercase tracking-wider transition-opacity duration-300 ${!isReady ? "opacity-100 text-primary" : "opacity-0"}`}>
+                    <div aria-hidden="true" className={`absolute left-10 right-3 whitespace-nowrap text-center text-xs font-semibold uppercase tracking-wide transition-opacity duration-300 ${!isReady ? "opacity-100 text-primary" : "opacity-0"}`}>
                       Unavailable
                     </div>
                     <motion.div
@@ -884,18 +904,21 @@ export default function UnifiedDashboard({
                     <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
                       <span className="text-xs font-semibold tracking-wide text-slate-600">Height Overview</span>
                       <span className={`text-xl font-semibold transition-colors ${(!heightTouched || heightUnknown) ? "text-slate-600" : "text-primary"}`}>
-                        {!heightTouched ? "--" : heightUnknown ? "Not set" : `${height} cm`}
+                        {!heightTouched ? "--" : heightUnknown ? "Not set" : formatHeight(height, heightUnit)}
                       </span>
                     </div>
                     <input
                       type="range"
-                      min="100"
-                      max="250"
-                      value={height}
+                      aria-label={`Body height in ${heightUnit === 'in' ? 'inches' : 'centimetres'}`}
+                      aria-valuetext={formatHeight(height, heightUnit)}
+                      min={heightUnit === 'in' ? 39.4 : 100}
+                      max={heightUnit === 'in' ? 98.4 : 250}
+                      step={heightUnit === 'in' ? 0.1 : 1}
+                      value={heightFromCm(height, heightUnit)}
                       onChange={(e) => {
                         setHeightTouched(true);
                         setHeightUnknown(false);
-                        setHeight(parseInt(e.target.value));
+                        setHeight(heightToCm(Number(e.target.value), heightUnit));
                       }}
                       className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-text/10 accent-primary"
                     />

@@ -1358,6 +1358,27 @@ test('regional design publication preserves legacy clients, validates colors and
  }finally{await db.regionalPageContent.delete({where:{key}});}
 });
 
+test('published height preferences inherit by country, override by city and ignore drafts',integration,async()=>{
+ const db=getPrisma(),user=await newPatient(),city='Height-'+randomUUID();
+ await db.user.update({where:{id:user.id},data:{location_city:city}});
+ const {saveRegionalContent,getRegionalHeightUnit,regionalContentKey}=await import('../src/backend/services/regionalContent');
+ const country='Bangladesh',key=regionalContentKey(country),cityKey=regionalContentKey(country,city);
+ const previous=await db.regionalPageContent.findUnique({where:{key}});
+ const base={country,city:null,title:'',summary:'',slides:[],published:true,design:{heightUnit:'cm'}};
+ try{
+  await saveRegionalContent(base);assert.equal(await getRegionalHeightUnit(country,city),'cm');
+  await saveRegionalContent({...base,city,published:false,design:{heightUnit:'in'}});assert.equal(await getRegionalHeightUnit(country,city),'cm');
+  await saveRegionalContent({...base,city,design:{heightUnit:'in'}});assert.equal(await getRegionalHeightUnit(country,city),'in');
+  await saveRegionalContent({...base,city,design:{layout:'stacked'}});assert.equal(await getRegionalHeightUnit(country,city),'cm');
+  const {GET}=await import('../src/app/api/public/height-unit/route');
+  assert.equal((await (await GET(new Request('https://bloodnet.test/api/public/height-unit?country=Bangladesh&city='+city))).json()).data.unit,'cm');
+  assert.equal((await GET(new Request('https://bloodnet.test/api/public/height-unit?country='))).status,400);
+ }finally{
+  await db.regionalPageContent.deleteMany({where:{key:{in:[key,cityKey]}}});
+  if(previous)await db.regionalPageContent.create({data:previous});
+ }
+});
+
 test('city request visibility defaults off, persists independently and streams to public pages',integration,async()=>{
  const {GET,PATCH}=await import('../src/app/api/admin/site-controls/route');const {GET:events}=await import('../src/app/api/public/ui-events/route');
  const request=(body:unknown)=>new Request('https://bloodnet.test/api/admin/site-controls',{method:'PATCH',headers:{authorization:'Bearer '+signToken({user_id:testAdminId,role:'ADMIN'}),'Content-Type':'application/json'},body:JSON.stringify(body)});

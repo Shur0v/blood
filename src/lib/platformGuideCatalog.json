@@ -930,6 +930,17 @@
   },
   {
     "kind": "api",
+    "name": "/api/public/height-unit",
+    "flow": "regional",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/api/public/height-unit/route.ts",
+    "methods": [
+      "GET"
+    ],
+    "sha256": "6a1bd2c81dc3ee9e35995b49b06e258016766dafe9c6c33bcefa6f608a78a804"
+  },
+  {
+    "kind": "api",
     "name": "/api/public/homepage-slides",
     "flow": "slider",
     "access": "Public or endpoint-specific guard",
@@ -1986,6 +1997,15 @@
   },
   {
     "kind": "module",
+    "name": "src/components/RegionalDesignEditor.tsx",
+    "flow": "regional",
+    "access": "Reviewed supporting implementation",
+    "source": "src/components/RegionalDesignEditor.tsx",
+    "methods": [],
+    "sha256": "4a70a9ce5a66fcacfadc1bc455d67801e10a26e1a1f05cade620a71a980884b0"
+  },
+  {
+    "kind": "module",
     "name": "src/components/SiteNavShell.tsx",
     "flow": "navigation",
     "access": "Reviewed supporting implementation",
@@ -2067,6 +2087,15 @@
   },
   {
     "kind": "module",
+    "name": "src/lib/heightUnits.ts",
+    "flow": "regional",
+    "access": "Reviewed supporting implementation",
+    "source": "src/lib/heightUnits.ts",
+    "methods": [],
+    "sha256": "07024ffe406776a27faaa2fc4391298bf19b44b8e8c63ef9e9db30dd45f574d1"
+  },
+  {
+    "kind": "module",
     "name": "src/lib/homeNavigation.ts",
     "flow": "navigation",
     "access": "Reviewed supporting implementation",
@@ -2127,6 +2156,15 @@
     "source": "src/lib/publicServices.ts",
     "methods": [],
     "sha256": "6b96ea8ebeef81b6ec6483832aa94332583e4559fb11b3eff97cc2ae33368d07"
+  },
+  {
+    "kind": "module",
+    "name": "src/lib/regionalDesign.ts",
+    "flow": "regional",
+    "access": "Reviewed supporting implementation",
+    "source": "src/lib/regionalDesign.ts",
+    "methods": [],
+    "sha256": "b1e2ec8282b29a4b02b6a5b897f20cd1b0a0a1c36705218aafe84e8afca792a0"
   },
   {
     "kind": "page",
@@ -3593,7 +3631,7 @@
     "access": "Internal server module",
     "source": "src/backend/services/regionalContent.ts",
     "methods": [],
-    "sha256": "30f0e4d2e5905f51423fc5c6d4d7506a4b425ed45bf3c433a211c2a7ebf491fd"
+    "sha256": "f0bb283c499a6e1566afafe02561b2655ec28e915fa7210450df41395b1962ee"
   },
   {
     "kind": "service",

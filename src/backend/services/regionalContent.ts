@@ -6,7 +6,17 @@ import {RegionalContentSchema,REGIONAL_CITY_REVISION,GLOBAL_CITY_REVISION,type P
 import {getDonorLocations} from './donorLocations';
 import {MedicalError} from '../utils/medicalPrivacy';
 import {normalizeRegionalDesign,regionalDesignContrastError} from '@/src/lib/regionalDesign';
+import {defaultHeightUnit, type HeightUnit} from '@/src/lib/heightUnits';
 export const regionalContentKey=(country:string,city?:string|null)=>`${toLocationSlug(country)}:${city?toLocationSlug(city):'*'}`;
+
+export async function getRegionalHeightUnit(country:string,city?:string):Promise<HeightUnit>{
+ const records=await getPrisma().regionalPageContent.findMany({where:{key:{in:[regionalContentKey(country,city),regionalContentKey(country)]},published:true},select:{key:true,design:true}});
+ for(const key of [regionalContentKey(country,city),regionalContentKey(country)]){
+  const design=records.find(row=>row.key===key)?.design;
+  if(design&&typeof design==='object'&&!Array.isArray(design)&&(design.heightUnit==='cm'||design.heightUnit==='in'))return design.heightUnit;
+ }
+ return defaultHeightUnit(country);
+}
 type PublicationDates=Map<string,{updatedAt:Date;published:boolean}>;
 export async function getRegionalPublicationDates(){
  try{const db=getPrisma();const [regions,services]=await Promise.all([db.regionalPageContent.findMany({where:{public_updated_at:{not:null}},select:{key:true,public_updated_at:true,published:true}}),db.serviceAvailability.findMany({where:{public_updated_at:{not:null}},select:{key:true,public_updated_at:true,live:true}}).catch(()=>[])]);return new Map([...regions.map(row=>[row.key,{updatedAt:row.public_updated_at!,published:row.published}] as const),...services.map(row=>['service:'+row.key,{updatedAt:row.public_updated_at!,published:row.live!==null}] as const)]) as PublicationDates;}

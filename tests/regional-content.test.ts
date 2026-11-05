@@ -5,6 +5,18 @@ import {regionalLastModified} from '../src/backend/services/regionalContent';
 import {GLOBAL_CITY_REVISION} from '../src/lib/regionalContent';
 import {getRegionalEdition} from '../src/lib/regionalEdition';
 import {RegionalDesignSchema,REGIONAL_PALETTES,regionalDesignContrastError,regionalCopy,normalizeRegionalDesign} from '../src/lib/regionalDesign';
+import {defaultHeightUnit,heightFromCm,heightToCm,formatHeight} from '../src/lib/heightUnits';
+
+test('regional height units preserve centimetres and provide Asian inch defaults',()=>{
+ for(const country of ['Bangladesh','India','Nepal','Pakistan','Japan','United Arab Emirates'])assert.equal(defaultHeightUnit(country),'in');
+ for(const country of ['France','United Kingdom','United States','United States of America',''])assert.equal(defaultHeightUnit(country),'cm');
+ assert.equal(heightToCm(66,'in'),167.64);
+ assert.equal(heightFromCm(167.64,'in'),66);
+ assert.equal(formatHeight(167.64,'in'),'66 in (5 ft 6 in)');
+ assert.equal(formatHeight(182,'cm'),'182 cm');
+ assert.deepEqual(normalizeRegionalDesign('Bangladesh',{heightUnit:'cm'}),{heightUnit:'cm'});
+ assert.equal(RegionalDesignSchema.safeParse({heightUnit:'feet'}).success,false);
+});
 const draft={country:'Nepal',city:null,title:'',summary:'',slides:[],published:false};
 test('regional updates distinguish drafts from publishable text and bound gallery size',()=>{
  assert.ok(RegionalContentSchema.safeParse(draft).success);
