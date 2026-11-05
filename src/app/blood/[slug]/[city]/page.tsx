@@ -1,4 +1,5 @@
 import '@/src/app/regional.css';
+import {usaDirectorySearchCopy} from '@/src/lib/usaSeo';
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { BloodGroupCitySeoPage } from "@/src/components/ProgrammaticBloodSeoPage";
@@ -31,6 +32,10 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
     const country = donors[0].location_country;
     const path = `/blood/${slug.toLowerCase()}/${city.toLowerCase()}`;
     const url = `${getPublicBaseUrl().replace(/\/$/, "")}${path}`;
+    if(country.toLowerCase()==='united states'){
+      const copy=usaDirectorySearchCopy(locationCity,'blood',bloodGroup);
+      return {...copy,alternates:{canonical:path},robots:{index:true,follow:true},openGraph:{...copy,url,type:'website'},twitter:{...copy,card:'summary_large_image'}};
+    }
     return {
       title: `Urgent ${bloodGroup} Blood Donors in ${locationCity} | Find Active Donors`,
       description: `Find registered ${bloodGroup} blood donors in ${locationCity}, ${country}. Search active blood donors by city and blood group for urgent emergency support.`,

@@ -1,0 +1,146 @@
+{
+  "reviewed": "2026-11-06",
+  "basis": "Editorial search intent; no search-volume or ranking estimates",
+  "areas": [
+    {
+      "route": "/us/states/california",
+      "primary": "blood donor directory in California",
+      "supporting": [
+        "register as a blood donor in California",
+        "blood donor contacts in California",
+        "free private medical profile",
+        "blood donation eligibility guidance"
+      ]
+    },
+    {
+      "route": "/us/cities/las-vegas",
+      "primary": "blood donor directory in Las Vegas, NV",
+      "supporting": [
+        "register as a blood donor in Las Vegas",
+        "blood donor contacts in Las Vegas",
+        "free private medical profile",
+        "blood donation eligibility guidance"
+      ]
+    },
+    {
+      "route": "/us/cities/los-angeles",
+      "primary": "blood donor directory in Los Angeles, CA",
+      "supporting": [
+        "register as a blood donor in Los Angeles",
+        "blood donor contacts in Los Angeles",
+        "free private medical profile",
+        "blood donation eligibility guidance"
+      ]
+    },
+    {
+      "route": "/us/cities/san-francisco",
+      "primary": "blood donor directory in San Francisco, CA",
+      "supporting": [
+        "register as a blood donor in San Francisco",
+        "blood donor contacts in San Francisco",
+        "free private medical profile",
+        "blood donation eligibility guidance"
+      ]
+    },
+    {
+      "route": "/us/cities/san-diego",
+      "primary": "blood donor directory in San Diego, CA",
+      "supporting": [
+        "register as a blood donor in San Diego",
+        "blood donor contacts in San Diego",
+        "free private medical profile",
+        "blood donation eligibility guidance"
+      ]
+    },
+    {
+      "route": "/us/cities/new-york-city",
+      "primary": "blood donor directory in New York City, NY",
+      "supporting": [
+        "register as a blood donor in New York City",
+        "blood donor contacts in New York City",
+        "free private medical profile",
+        "blood donation eligibility guidance"
+      ]
+    },
+    {
+      "route": "/us/cities/chicago",
+      "primary": "blood donor directory in Chicago, IL",
+      "supporting": [
+        "register as a blood donor in Chicago",
+        "blood donor contacts in Chicago",
+        "free private medical profile",
+        "blood donation eligibility guidance"
+      ]
+    },
+    {
+      "route": "/us/cities/houston",
+      "primary": "blood donor directory in Houston, TX",
+      "supporting": [
+        "register as a blood donor in Houston",
+        "blood donor contacts in Houston",
+        "free private medical profile",
+        "blood donation eligibility guidance"
+      ]
+    },
+    {
+      "route": "/us/cities/dallas",
+      "primary": "blood donor directory in Dallas, TX",
+      "supporting": [
+        "register as a blood donor in Dallas",
+        "blood donor contacts in Dallas",
+        "free private medical profile",
+        "blood donation eligibility guidance"
+      ]
+    },
+    {
+      "route": "/us/cities/miami",
+      "primary": "blood donor directory in Miami, FL",
+      "supporting": [
+        "register as a blood donor in Miami",
+        "blood donor contacts in Miami",
+        "free private medical profile",
+        "blood donation eligibility guidance"
+      ]
+    },
+    {
+      "route": "/us/cities/atlanta",
+      "primary": "blood donor directory in Atlanta, GA",
+      "supporting": [
+        "register as a blood donor in Atlanta",
+        "blood donor contacts in Atlanta",
+        "free private medical profile",
+        "blood donation eligibility guidance"
+      ]
+    },
+    {
+      "route": "/us/cities/seattle",
+      "primary": "blood donor directory in Seattle, WA",
+      "supporting": [
+        "register as a blood donor in Seattle",
+        "blood donor contacts in Seattle",
+        "free private medical profile",
+        "blood donation eligibility guidance"
+      ]
+    },
+    {
+      "route": "/us/cities/boston",
+      "primary": "blood donor directory in Boston, MA",
+      "supporting": [
+        "register as a blood donor in Boston",
+        "blood donor contacts in Boston",
+        "free private medical profile",
+        "blood donation eligibility guidance"
+      ]
+    },
+    {
+      "route": "/us/cities/phoenix",
+      "primary": "blood donor directory in Phoenix, AZ",
+      "supporting": [
+        "register as a blood donor in Phoenix",
+        "blood donor contacts in Phoenix",
+        "free private medical profile",
+        "blood donation eligibility guidance"
+      ]
+    }
+  ]
+}

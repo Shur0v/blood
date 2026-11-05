@@ -14,6 +14,12 @@ for(const route of ['/us',...USA_AREAS.map(area=>area.path)]){
  assert.equal(new URL(doc.querySelector('link[rel="canonical"]').href).pathname,route);
  assert.equal(doc.querySelectorAll('h1').length,1);assert.ok(!doc.querySelector('meta[name="robots"]')?.content.includes('noindex'));
  assert.ok(doc.querySelector('script[type="application/ld+json"]'));
+ if(route!=='/us'){
+   assert.match(doc.title,/Blood Donor Directory/);
+   assert.match(doc.querySelector('h1').textContent,/Blood donor connections/);
+   assert.ok(doc.body.textContent.includes('Can registering in'));
+   assert.ok(doc.querySelector('a[href="https://www.fda.gov/consumers/consumer-updates/have-you-given-blood-lately"]'));
+ }
 }
 assert.equal((await fetch(base+'/us/preview/las-vegas')).status,404);
 assert.equal((await fetch(base+'/us/cities/not-a-reviewed-area')).status,404);

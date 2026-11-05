@@ -1,4 +1,5 @@
 import '@/src/app/regional.css';
+import {usaDirectorySearchCopy} from '@/src/lib/usaSeo';
 import type { Metadata } from "next";
 import { BloodGroupSeoPage, CityBloodSeoPage } from "@/src/components/ProgrammaticBloodSeoPage";
 import { getBloodGroupSummary, getCityBloodSummary } from "@/src/backend/services/seoData";
@@ -28,9 +29,10 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
     const rows = await getCityBloodSummary(slug);
     const city = rows[0]?.city || cityFromSlug(slug);
     const country = rows[0]?.country;
+    const usaCopy=country?.toLowerCase()==='united states'?usaDirectorySearchCopy(city,'blood'):null;
     return {
-      title: `Blood Donors in ${city} | Urgent Blood and Organ Donation Support`,
-      description: `Find active blood donors${country ? ` in ${city}, ${country}` : ` in ${city}`}. Search available blood groups and urgent blood donor pages through BloodNet.`,
+      title: usaCopy?.title || `Blood Donors in ${city} | Urgent Blood and Organ Donation Support`,
+      description: usaCopy?.description || `Find active blood donors${country ? ` in ${city}, ${country}` : ` in ${city}`}. Search available blood groups and urgent blood donor pages through BloodNet.`,
       alternates: { canonical: `/blood/${slug.toLowerCase()}` },
       robots: rows.length ? { index: true, follow: true } : { index: false, follow: true },
     };

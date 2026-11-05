@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import UsaLocalGuidance from './UsaLocalGuidance';
 import {USA_FAMILIES,USA_RESOURCES,type UsaLocalId} from '@/src/lib/usaEdition';
 import {USA_CITY_REFERENCES} from '@/src/lib/usaGeography';
 import {USA_LOCAL_COPY} from '@/src/lib/usaLocalContent';
@@ -24,6 +25,7 @@ function LocalSection({id,context}:{id:UsaLocalId;context:UsaContext}){
     variant===2?<ol className="us-step-rail">{copy.items.map(([title,text],i)=><li key={title}><span>{i+1}</span><div><h3>{title}</h3><p>{text}</p></div></li>)}</ol>:
     variant===3?<div className="us-checklist"><p className="us-kicker">A practical note to keep</p>{copy.items.map(([title,text])=><p key={title}><span aria-hidden="true">✓</span><strong>{title}</strong>{text}</p>)}</div>:
     <div className="us-answers">{copy.items.map(([title,text])=><details key={title}><summary>{title}</summary><p>{text}</p></details>)}</div>}
+   {family==='orientation'&&context.area&&<UsaLocalGuidance area={context.area}/>}
    {family==='motivation'&&<div className="us-local-action"><p>Joining is voluntary. Keep the information you share accurate.</p><UsaActions/></div>}
    {family==='discovery'&&<nav className="us-link-row" aria-label="Discovery guidance"><a href="#regional-donor-search">Try the local search ↑</a><Link href="/guides/understand-blood-group-search">Understand matching ↗</Link></nav>}
    {family==='preparation'&&<aside className="us-care-note"><strong>Hospital-led coordination</strong><p>For urgent medical needs, contact a hospital or emergency service. Do not wait for a directory reply.</p><Link href="/guides/coordinate-an-urgent-blood-request">Prepare a request ↗</Link></aside>}

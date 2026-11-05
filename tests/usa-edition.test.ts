@@ -9,7 +9,27 @@ import {USA_LOCAL_COMPONENTS} from '../src/components/usa/UsaLocalSections';
 import {USA_MAIN_COMPONENTS} from '../src/components/usa/UsaMainSections';
 import {regionalDesignContrastError} from '../src/lib/regionalDesign';
 import type {UsaContext} from '../src/components/usa/types';
+import {usaAreaHeading,usaAreaIntroduction,usaAreaMetadata,usaAreaQuestions,usaDirectorySearchCopy,usaSearchIntent} from '../src/lib/usaSeo';
+import UsaLocalGuidance from '../src/components/usa/UsaLocalGuidance';
 Object.assign(globalThis,{React});
+
+test('USA search metadata and visible guidance describe real local functions without unsupported health claims',()=>{
+ const titles=new Set<string>();
+ for(const area of USA_AREAS){
+  const metadata=usaAreaMetadata(area),title=String(metadata.title);
+  assert.match(title,/Blood Donor Directory/);assert.ok(title.includes(area.name));assert.ok(!titles.has(title));titles.add(title);
+  assert.deepEqual(metadata.alternates,{canonical:area.path});assert.equal(metadata.keywords,undefined);
+  assert.ok(usaAreaHeading(area).includes(area.name));assert.ok(usaAreaIntroduction(area).includes(area.context));
+  assert.ok(usaSearchIntent(area).primary.includes(area.name));
+  const html=renderToStaticMarkup(React.createElement(UsaLocalGuidance,{area}));
+  for(const item of usaAreaQuestions(area))assert.ok(html.includes(item.question.replaceAll('&','&amp;')));
+  assert.ok(html.includes('www.fda.gov'));assert.ok(html.includes('collecting service'));
+  assert.ok(!/24\/7|clinically accredited|medically reviewed by/i.test(html));
+ }
+ assert.equal(usaAreaMetadata(USA_AREAS[1],{sections:{hero:{title:'Reviewed custom heading'}}}).title,'Reviewed custom heading');
+ assert.match(usaDirectorySearchCopy('Las Vegas','blood','O-').title,/O- Blood Donor Directory in Las Vegas, USA/);
+ assert.match(usaDirectorySearchCopy('Las Vegas','organ').description,/does not allocate organs/);
+});
 test('USA registry has 70 distinct component functions and 14 fixed 3+9 area recipes',()=>{
  assert.equal(USA_MAIN_IDS.length,20);assert.equal(USA_LOCAL_IDS.length,50);
  assert.equal(new Set([...Object.values(USA_LOCAL_COMPONENTS),...Object.values(USA_MAIN_COMPONENTS)]).size,70);
