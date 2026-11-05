@@ -1,3 +1,5 @@
+import useLocationSuggestions from './useLocationSuggestions';
+import LocationCountrySelect from './LocationCountrySelect';
 import React, { useEffect, useState } from "react";
 import { CheckCircle2, MapPin } from "lucide-react";
 
@@ -29,9 +31,10 @@ export default function CityLocationAutocomplete({
   onClear,
 }: CityLocationAutocompleteProps) {
   const [query, setQuery] = useState("");
-  const [suggestions, setSuggestions] = useState<LocationSuggestion[]>([]);
-  const [isFetching, setIsFetching] = useState(false);
-  const [lookupError, setLookupError] = useState("");
+  const lookup = useLocationSuggestions(query, !selectedLocation, '/api/location/cities');
+  const suggestions = lookup.suggestions;
+  const isFetching = lookup.loading;
+  const lookupError = lookup.message;
 
   useEffect(() => {
     if (selectedLocation) {
@@ -39,41 +42,6 @@ export default function CityLocationAutocomplete({
     }
   }, [selectedLocation]);
 
-  useEffect(() => {
-    if (selectedLocation) return;
-
-    const normalized = query.trim();
-    if (normalized.length < 2) {
-      setSuggestions([]);
-      setLookupError("");
-      return;
-    }
-
-    const timer = setTimeout(async () => {
-      try {
-        setIsFetching(true);
-        const res = await fetch(`/api/location/cities?text=${encodeURIComponent(normalized)}`, {
-          method: "GET",
-          cache: "no-store",
-        });
-        const payload = await res.json();
-        if (!res.ok || !payload.success) {
-          setSuggestions([]);
-          setLookupError(payload.message || "Location API error.");
-          return;
-        }
-        setSuggestions(payload.data || []);
-        setLookupError("");
-      } catch (error) {
-        setSuggestions([]);
-        setLookupError("Failed to fetch city suggestions.");
-      } finally {
-        setIsFetching(false);
-      }
-    }, 400);
-
-    return () => clearTimeout(timer);
-  }, [query, selectedLocation]);
 
   return (
     <div className="space-y-2">
@@ -105,7 +73,7 @@ export default function CityLocationAutocomplete({
               onClick={() => {
                 onClear();
                 setQuery("");
-                setSuggestions([]);
+                lookup.clear();
               }}
               className="absolute right-10 top-1/2 -translate-y-1/2 inline-flex items-center rounded-full border border-[#3f3f46] bg-[#3f3f46] px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-white hover:bg-[#52525b] focus:outline-none focus:ring-2 focus:ring-primary/60"
               title="Clear city selection"
@@ -119,11 +87,12 @@ export default function CityLocationAutocomplete({
         ) : null}
       </div>
 
+      {lookup.requiresCountry && <LocationCountrySelect value={lookup.countryChoice} onChange={lookup.setCountryChoice} />}
       {lookupError && !selectedLocation && (
         <p className="text-xs font-semibold text-amber-600">{lookupError}</p>
       )}
 
-      {!selectedLocation && query.trim().length >= 2 && suggestions.length > 0 && (
+      {!selectedLocation && query.trim().length >= 3 && suggestions.length > 0 && (
         <div className="rounded-2xl border border-border bg-white/95 backdrop-blur p-2 max-h-48 overflow-y-auto custom-scrollbar">
           {suggestions.map((item) => (
             <button
@@ -132,7 +101,7 @@ export default function CityLocationAutocomplete({
               onClick={() => {
                 onSelect(item);
                 setQuery(item.formatted_location);
-                setSuggestions([]);
+                lookup.clear();
               }}
               className="w-full text-left rounded-xl px-3 py-2.5 transition bg-transparent hover:bg-gray-100"
             >
@@ -143,7 +112,7 @@ export default function CityLocationAutocomplete({
         </div>
       )}
 
-      {!selectedLocation && query.trim().length >= 2 && !isFetching && suggestions.length === 0 && !lookupError && (
+      {!selectedLocation && query.trim().length >= 3 && !isFetching && suggestions.length === 0 && !lookupError && (
         <p className="text-xs font-medium text-gray-500">No city-only matches found.</p>
       )}
     </div>

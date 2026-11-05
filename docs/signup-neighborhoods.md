@@ -1,17 +1,56 @@
-# Worldwide neighborhoods in signup and profiles
+# Country-aware city and neighborhood selection
 
-Enable with `NEIGHBORHOODS_ENABLED=true` in the server environment, then restart BloodNet. If this variable is absent, the previous `SIGNUP_NEIGHBORHOODS_ENABLED` setting applies. The feature defaults off. A new release alone does not enable it.
+Location search starts after three characters in registration and profile pickers. It searches within an explicitly written full country name first, otherwise the detected visitor country, otherwise the signed-in account country. When these are unavailable, the picker asks for a country selection. Country restrictions also apply when neighborhoods are disabled. Phone country, browser language and timezone guesses do not silently choose a search country.
 
-The primary signup dropdown and the owner's **Edit neighborhood** control share verified worldwide lookup. Results display Area, City, Country, with state information where returned. Profile suggestions are restricted to the current primary city and country. Additional service cities retain their existing city-only picker and removal locks.
+`badda` in Bangladesh searches matching verified names throughout Bangladesh. Adding a city or district narrows the results. `Gujrat, India` explicitly searches India even for a visitor in Bangladesh. Full country names are matched case-insensitively at word boundaries; partial names and short codes in free text do not override detection. A country selected in the fallback selector is used only when automatic/account country information is unavailable.
 
-Geoapify supplies international neighborhoods where parent cities can be confirmed. Buildings, streets and ambiguous parents are rejected. Queries accept spaces, commas, hyphens, prefixes and international scripts. A reviewed directory provides South Badda, West Rampura, Banasree, Gulshan and Mohakhali under Dhaka during provider outages. Directory identifiers use the `bloodnet:` namespace and the established city fallback reference. Additional directory entries require a reviewed area and parent city. Other regions depend on actual provider coverage.
+Geoapify requests and returned records are country-filtered. Text relevance is ranked first, then proximity among similarly relevant matches. A confirmed GPS fix already available in the app can supply a distance hint within the selected country; otherwise approximate IP coordinates can be used. No GPS permission prompt is opened by typing. When compatible coordinates are unavailable, nationwide matches remain available without a nearest claim. Distance hints do not change stored city coordinates or donor ordering.
 
-The signed selection expires after ten minutes. OTP verification checks the selected area and city together. Profile editing requires the current account session and explicit Save or Clear. Cancel discards the draft. A transaction locks the account and confirms its current city before saving. Existing city-changing operations clear a saved area when the primary city or country changes. No existing accounts are backfilled. The two nullable `registration_area` fields now hold the current optional private neighborhood, including voluntary profile edits.
+Geoapify supplies supported areas with a confirmed parent city. Buildings, streets and ambiguous parent cities are excluded. Each request considers up to 20 candidates and eight distinct parent contexts, with at most three parent lookups concurrently. Provider coverage and response bounds mean a short query is not an exhaustive directory of every place. Add more letters, city or district to refine a capped list. Country, query, lookup mode and proximity context separate cache entries. Failures retain only verified fallbacks in the selected country, with a useful message when no verified result is available.
 
-Area coordinates never replace city coordinates. Public donor responses, ordering, city counts and SEO continue to use city-level data. Neighborhoods are returned only to the account owner through the private neighborhood endpoint. Do not add these fields to public DTOs or analytics.
+## Reviewed fallbacks
 
-Searches are bounded to 120 characters, eight provider candidates and three distinct parent lookups. Provider calls time out after three seconds each; verified results are cached in a bounded process-local cache for five minutes, with concurrent identical lookups shared. Anonymous signup lookup admits 60 requests per minute per trusted proxy IP per application process. Profile searches and saves use the existing durable account rate limiter. Configure Nginx to overwrite `X-Real-IP`; multiple application workers each have their own anonymous admission/cache limits.
+The reviewed Dhaka directory contains Badda, Merul Badda, South Badda, West Rampura, Banasree, Gulshan and Mohakhali. Names are not synthesized from directional prefixes. Badda and Merul Badda were checked on 5 November 2026 against OpenStreetMap locality records and their Dhaka/Bangladesh hierarchy. Their stable BloodNet identifiers use the `bloodnet:` namespace. The other five entries retain the earlier reviewed directory. Area ordering falls back to the parent-city point where area coordinates are unavailable. [Badda locality](https://www.openstreetmap.org/node/5167233263), [Merul Badda locality](https://www.openstreetmap.org/node/9028978730)
 
-Before enabling production, test the five Dhaka areas and the queries `Badda dha`, `banasree, dh`, `south-Badda`, and `west-Rampura`. Check Bandra/Mumbai, Gulberg/Lahore, Thamel/Kathmandu and supported regions elsewhere using the actual configured Geoapify key. Check city-only signup, OTP completion, Save/Cancel/Clear in profiles, duplicate names, expired selections and provider failures. A missing area is a coverage gap, not evidence that the area does not exist.
+Queries for East Badda, West Badda and New Badda did not independently confirm locality records during this review. Unrelated business and landmark results were rejected. These names may appear when the configured provider returns valid area records with confirmed parents. Expand the directory after verifying a locality and its parent, not by assuming that every directional variant exists.
 
-Rollback by setting `NEIGHBORHOODS_ENABLED=false` and restarting. Saved neighborhoods remain stored. Signup returns to city-only selection and the profile editor is hidden. In-progress area signups must reselect their city. No new database migration is needed beyond the previously deployed nullable neighborhood fields.
+## Saving and editing
+
+Enable neighborhood choices with `NEIGHBORHOODS_ENABLED=true`. If absent, the previous `SIGNUP_NEIGHBORHOODS_ENABLED` setting applies. The feature defaults off; a new deployment alone does not enable it.
+
+Primary and additional signup locations use the same country-aware area lookup. Signed selections expire after ten minutes. OTP completion verifies every selected area and saves all locations atomically. New service-location fields are nullable, and existing rows receive no backfill. City-only signup payloads remain supported.
+
+Each service city can hold one private optional neighborhood. Up to five parent cities are retained. Selecting an already-listed city's area offers an explicit Update neighborhood action, preserving the original record, coordinates and removal deadline. City-only additions retain the 30-day removal lock. Existing duplicate legacy city entries are retained; new duplicate parent-city additions are rejected. Clearing an area removes only its private neighborhood metadata.
+
+The primary neighborhood editor is restricted to the account's current primary city and country, even while travelling. It offers Save, Cancel and Clear. The primary account neighborhood and corresponding primary service entry synchronize on deliberate edits. Primary-city changes clear or replace the old account neighborhood transactionally. These operations preserve private authorization, origin protection and signed-proof checks.
+
+Public donor responses, profiles, SEO, analytics, city counts and donor matching continue to use city-level information. Neighborhood names and IDs are returned only through authenticated owner interfaces.
+
+## Deploy and enable on the VPS
+
+Run the normal deployment, which applies `20261105120000_service_city_neighborhoods` additively:
+
+```bash
+cd /var/www/bloodnet
+bash ./deploy-prod.sh
+nano .env.production.local
+```
+
+Add or update the following setting once, retaining your existing private `GEOAPIFY_API_KEY`:
+
+```dotenv
+NEIGHBORHOODS_ENABLED=true
+```
+
+`.env.production.local` takes precedence over `.env`; using the same value in both is compatible. Existing process environment variables take precedence over both files. Restart with the intended value explicitly and save the PM2 process configuration:
+
+```bash
+export PATH="/var/lib/bloodnet/node-runtime/node_modules/node/bin:$PATH"
+export NEIGHBORHOODS_ENABLED=true
+pm2 restart bloodnet --update-env
+pm2 save
+```
+
+The web process serves these pickers. Existing prescription/recovery worker configuration can remain as deployed. Verify live registration and profile searches in Bangladesh, India, Pakistan, Nepal and other intended markets with the actual configured provider key. Check short queries, variants across districts, country overrides, multiple signup areas, updates, locks and provider failures.
+
+Rollback neighborhood choices by setting the file and exported value to `false` and repeating the restart. Saved neighborhoods remain stored and country filtering stays active. In-progress area signups must select their cities again.

@@ -1,4 +1,5 @@
 import { neighborhoodsEnabled } from '../services/neighborhoods';
+import { sameLocationParent } from '@/src/lib/locationCountry';
 import { findLoginUser, normalizeLoginEmail } from '../services/loginEmails';
 import { NextResponse } from 'next/server';
 import { AuthService } from '../services/AuthService';
@@ -238,7 +239,7 @@ export class AuthController {
             locationProof.provider_place_id === item.provider_place_id &&
             locationProof.registrationArea?.name === item.registrationArea?.name &&
             locationProof.registrationArea?.placeId === item.registrationArea?.placeId &&
-            (!item.registrationArea || (index === 0 && neighborhoodsEnabled()));
+            (!item.registrationArea || neighborhoodsEnabled());
 
           if (!matches) {
             return { ok: false as const, error: 'Location payload mismatch. Please select from suggestions only.' };
@@ -255,6 +256,9 @@ export class AuthController {
         const readyLocations = validatedLocations
           .filter((item): item is { ok: true; data: z.infer<typeof VerifyOtpSchema>['locations'][number] } => item.ok)
           .map((item) => item.data);
+        if (readyLocations.some((item, index) => readyLocations.slice(0, index).some(prior => sameLocationParent(prior, item)))) {
+          return NextResponse.json({ error: 'Choose one neighborhood per service city.', code: 'LOCATION_RESELECT_REQUIRED' }, { status: 400 });
+        }
 
         if (fingerprintHash) {
           const device = await getPrisma().deviceFingerprint.findUnique({
@@ -316,7 +320,7 @@ export class AuthController {
 
           await tx.profileIdentifier.update({ where: { code: profileCode }, data: { user_id: created.id } });
           await tx.userServiceCity.createMany({
-            data: readyLocations.map((item) => ({
+            data: readyLocations.map((item, index) => ({
               user_id: created.id,
               city: item.city,
               country: item.country,
@@ -324,6 +328,9 @@ export class AuthController {
               lat: item.latitude,
               lng: item.longitude,
               provider_place_id: item.provider_place_id,
+              neighborhood_name: item.registrationArea?.name,
+              neighborhood_place_id: item.registrationArea?.placeId,
+              created_at: new Date(Date.now() + index),
               locked_until: buildLockedUntil(),
             })),
             skipDuplicates: true,

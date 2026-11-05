@@ -1,6 +1,15 @@
 import { isIP } from 'node:net';
+import { locationCountry } from '@/src/lib/locationCountry';
 
 type Location={country:string;city?:string;lat?:number;lng?:number};
+export async function detectedVisitorLocation(req: Request, detailed = true): Promise<Location | null> {
+  const header = req.headers.get('x-vercel-ip-country') || req.headers.get('cf-ipcountry') ||
+    req.headers.get('x-country-code') || req.headers.get('cloudfront-viewer-country');
+  const country = locationCountry(header)?.name;
+  const approximate = !country || detailed ? await automaticIpLocation(req) : null;
+  if (!country) return approximate;
+  return { ...(approximate && locationCountry(approximate.country)?.code === locationCountry(country)?.code ? approximate : {}), country };
+}
 const cache=new Map<string,{expires:number;value:Promise<Location|null>}>();
 export function publicClientIp(req:Request) {
   const ip=(req.headers.get('cf-connecting-ip')||req.headers.get('x-real-ip')||req.headers.get('x-forwarded-for')?.split(',')[0]||'').trim();

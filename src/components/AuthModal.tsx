@@ -1,3 +1,6 @@
+import useLocationSuggestions from './useLocationSuggestions';
+import LocationCountrySelect from './LocationCountrySelect';
+import { sameLocationParent } from '@/src/lib/locationCountry';
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { X, Mail, ArrowRight, ShieldCheck, User, MapPin, ChevronDown, CheckCircle2, CalendarDays } from "lucide-react";
@@ -27,6 +30,7 @@ interface LocationSuggestion {
   token: string;
   registrationArea?: { name: string; placeId: string };
   state?: string;
+  district?: string;
 }
 
 interface CountryOption {
@@ -69,8 +73,9 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode="reg
   const [isCountryDropdownOpen, setIsCountryDropdownOpen] = useState(false);
   const [locationInput, setLocationInput] = useState("");
   const [selectedLocations, setSelectedLocations] = useState<LocationSuggestion[]>([]);
-  const [locationSuggestions, setLocationSuggestions] = useState<LocationSuggestion[]>([]);
-  const [isFetchingLocations, setIsFetchingLocations] = useState(false);
+  const locationLookup = useLocationSuggestions(locationInput, isOpen && authMode === 'register');
+  const locationSuggestions = locationLookup.suggestions;
+  const isFetchingLocations = locationLookup.loading;
   const [locationLookupError, setLocationLookupError] = useState("");
   const [isDobPickerOpen, setIsDobPickerOpen] = useState(false);
 
@@ -84,7 +89,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode="reg
   maxDobDate.setFullYear(maxDobDate.getFullYear() - 18);
   const minDobDate = new Date(currentYear - 100, 0, 1);
   const selectingPrimary = selectedLocations.length === 0;
-  const minCharsReached = locationInput.trim().length >= 2;
+  const minCharsReached = locationInput.trim().length >= 3;
   const normalizedCountrySearch = countrySearch.trim().toLowerCase();
   const filteredCountryOptions = COUNTRY_OPTIONS.filter((item) => {
     if (!normalizedCountrySearch) {
@@ -147,64 +152,6 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode="reg
     window.localStorage.setItem(key, generated);
     return generated;
   };
-
-  useEffect(() => {
-    if (authMode !== "register") {
-      return;
-    }
-    if (!minCharsReached) {
-      setLocationSuggestions([]);
-      setLocationLookupError("");
-      return;
-    }
-
-    let cancelled = false;
-    const controller = new AbortController();
-    const timer = setTimeout(async () => {
-      const timeout = setTimeout(() => controller.abort(), 10000);
-      try {
-        setIsFetchingLocations(true);
-        const res = await fetch(`/api/location/${selectingPrimary ? "signup" : "cities"}?text=${encodeURIComponent(locationInput.trim())}`, {
-          method: "GET",
-          cache: "no-store",
-          signal: controller.signal,
-        });
-        const payload = await res.json();
-        if (cancelled) {
-          return;
-        }
-        if (!res.ok || !payload.success) {
-          setLocationSuggestions([]);
-          setLocationLookupError(payload.message || "Location API is not configured.");
-          return;
-        }
-        setLocationSuggestions(payload.data || []);
-        setLocationLookupError("");
-      } catch (error: any) {
-        if (cancelled) {
-          return;
-        }
-        if (error?.name === "AbortError") {
-          setLocationSuggestions([]);
-          setLocationLookupError("City lookup timed out. Please try again.");
-          return;
-        }
-        setLocationSuggestions([]);
-        setLocationLookupError("Failed to connect location API.");
-      } finally {
-        clearTimeout(timeout);
-        if (!cancelled) {
-          setIsFetchingLocations(false);
-        }
-      }
-    }, 400);
-
-    return () => {
-      cancelled = true;
-      controller.abort();
-      clearTimeout(timer);
-    };
-  }, [locationInput, authMode, minCharsReached, selectingPrimary]);
 
   const isRegisterSubmitDisabled =
     authMode === "register" &&
@@ -484,7 +431,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode="reg
                           placeholder={selectingPrimary ? "Search your primary location" : "Search your city"}
                           value={locationInput}
                           onChange={(e) => {
-                            setLocationSuggestions([]);
+                            locationLookup.clear();
                             setLocationInput(e.target.value);
                           }}
                           className={`w-full rounded-2xl border bg-slate-50 py-4 pl-12 pr-20 text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-1 ${
@@ -519,35 +466,35 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode="reg
                       <p className="text-[10px] font-semibold text-slate-600">
                         Selected {selectedLocations.length}/{MAX_CITIES} cities
                       </p>
-                      {locationLookupError && (
-                        <p className="text-xs font-semibold text-amber-800">{locationLookupError}</p>
+                      {locationLookup.requiresCountry && <LocationCountrySelect value={locationLookup.countryChoice} onChange={locationLookup.setCountryChoice} />}
+                      {(locationLookupError || locationLookup.message) && (
+                        <p className="text-xs font-semibold text-amber-800">{locationLookupError || locationLookup.message}</p>
                       )}
 
                       {minCharsReached && locationSuggestions.length > 0 && (
                         <div className="rounded-2xl border border-slate-200 bg-white backdrop-blur-2xl p-2 max-h-48 overflow-y-auto scrollbar-hidden">
                           {locationSuggestions.map((item) => (
                             <button
-                              key={item.provider_place_id}
+                              key={item.registrationArea?.placeId || item.provider_place_id}
                               type="button"
                               onClick={() => {
                                 setLocationInput("");
-                                setLocationSuggestions([]);
+                                locationLookup.clear();
                                 setLocationLookupError("");
-                                setSelectedLocations((prev) => {
-                                  if ((item.registrationArea && prev.length > 0) || prev.some((loc) => loc.provider_place_id === item.provider_place_id)) {
-                                    return prev;
+                                const existingIndex = selectedLocations.findIndex(loc => sameLocationParent(loc, item));
+                                if (existingIndex >= 0) {
+                                  if (window.confirm('Replace the selected location for ' + item.city + '?')) {
+                                    setSelectedLocations(prev => prev.map((loc, index) => index === existingIndex ? item : loc));
                                   }
-                                  if (prev.length >= MAX_CITIES) {
-                                    setErrorMsg(`Maximum ${MAX_CITIES} cities allowed.`);
-                                    return prev;
-                                  }
-                                  return [...prev, item];
-                                });
+                                } else if (selectedLocations.length >= MAX_CITIES) {
+                                  setErrorMsg('Maximum ' + MAX_CITIES + ' cities allowed.');
+                                } else setSelectedLocations(prev => [...prev, item]);
+
                               }}
                               className="w-full text-left rounded-xl px-3 py-2.5 transition bg-transparent hover:bg-slate-100"
                             >
                               <p className="text-sm font-semibold text-slate-900">{item.registrationArea ? `${item.registrationArea.name}, ${item.city}, ${item.country}` : item.city}</p>
-                              <p className="text-xs text-slate-600">{item.registrationArea ? ["Neighborhood", item.state].filter(Boolean).join(" · ") : [item.state, item.country].filter(Boolean).join(", ")}</p>
+                              <p className="text-xs text-slate-600">{[item.registrationArea ? 'Neighborhood' : '', item.district, item.state, item.registrationArea ? '' : item.country].filter(Boolean).join(' · ')}</p>
                             </button>
                           ))}
                         </div>
@@ -753,7 +700,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode="reg
                     setAccountIssue("");
                     setSelectedLocations([]);
                     setLocationInput("");
-                    setLocationSuggestions([]);
+                    locationLookup.clear();
                     setFormData((prev) => ({ ...prev, dateOfBirth: "" }));
                     setPhoneData({
                       countryName: "",

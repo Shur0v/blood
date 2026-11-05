@@ -732,7 +732,7 @@
     "methods": [
       "GET"
     ],
-    "sha256": "870558ec4ab728674c4a5fc744bd479a05aa49a21633c1f3f772210b83addd0b"
+    "sha256": "6b9dcc7c3fdb1af1801f9441b38ce38d9480a16de2b0263d3df72f127b71fca6"
   },
   {
     "kind": "api",
@@ -743,7 +743,7 @@
     "methods": [
       "GET"
     ],
-    "sha256": "95960cedcc1ddc607e562bc167f4d58f133cfce07a63c9e21d3c16077c14ac4f"
+    "sha256": "090e150227d62c7ae379a05f9022053b73aeb689ccc35b85d8948e4411d6b05f"
   },
   {
     "kind": "api",
@@ -765,7 +765,7 @@
     "methods": [
       "GET"
     ],
-    "sha256": "f781fa93945a81077a2dc6b6839c74f63c92c3451d619dfd45ae8d4948e7b1ec"
+    "sha256": "ecc63f3a04c43251331c3fa92d7ca81929f64207b270acb8abb9a71e15a2eb48"
   },
   {
     "kind": "api",
@@ -1115,7 +1115,7 @@
       "GET",
       "PATCH"
     ],
-    "sha256": "79d9f8c7a66b20a44cdf711a7d4af59375b2ba683dd7e79273e813bdbd6f9337"
+    "sha256": "c2d6e1759d1ea9c015a858a60e2c0ba25a230ec6695ddd82bdca99439381bd6f"
   },
   {
     "kind": "api",
@@ -1198,7 +1198,7 @@
       "GET",
       "POST"
     ],
-    "sha256": "d8da64e5d3f390357c700c48012676f8a685f2f7d4b7a60f7ffb63f8c8ea853b"
+    "sha256": "9c18c08c3b8dc3038d68678fe24a4ba466ab1847a5f251f3a3c088112e65c1b7"
   },
   {
     "kind": "api",
@@ -1207,9 +1207,10 @@
     "access": "Account owner or guarded audit",
     "source": "src/app/api/users/me/service-cities/[cityId]/route.ts",
     "methods": [
-      "DELETE"
+      "DELETE",
+      "PATCH"
     ],
-    "sha256": "905e8adc830dfbed978c6177a2c32fa844719424282811baa8373f590b1b1948"
+    "sha256": "0a5aa6cbfd3a34073cabc33efcf922472e7522ad2eff1f8d6a53f845b3a90418"
   },
   {
     "kind": "api",
@@ -1607,7 +1608,7 @@
     "access": "Server-managed; record-level publication/authorization",
     "source": "prisma/schema.prisma",
     "methods": [],
-    "sha256": "8557ee4c130ff10c63cf9a9af01f700e3940bbd70823beb3cfbd495386bfe083"
+    "sha256": "55be652fb29dc1a0bd4088c6ceaee4fc66287d6609e392ef37f13f392943c845"
   },
   {
     "kind": "model",
@@ -1724,7 +1725,7 @@
     "access": "Reviewed supporting implementation",
     "source": "src/backend/controllers/AuthController.ts",
     "methods": [],
-    "sha256": "704aae9902cda5a26482798ff151d681b0d4953be5f81fdda90ddbddd741903a"
+    "sha256": "4c44d9048d0f8651b1994f26559b6b650c751945e656c1ed5e33a375aa0f6b5c"
   },
   {
     "kind": "module",
@@ -1805,7 +1806,16 @@
     "access": "Reviewed supporting implementation",
     "source": "src/components/AuthModal.tsx",
     "methods": [],
-    "sha256": "8b61d0f5a14c50511bb8dafe01b9043f49767a9b0bee7aafda60194274070c07"
+    "sha256": "7610adbda2ee8f118cf20234a33db1ac57bd3bd079673e916610965b3a730a85"
+  },
+  {
+    "kind": "module",
+    "name": "src/components/CityLocationAutocomplete.tsx",
+    "flow": "location",
+    "access": "Reviewed supporting implementation",
+    "source": "src/components/CityLocationAutocomplete.tsx",
+    "methods": [],
+    "sha256": "be74eb36f6a681a38ae958aae070878f5de1d6d8836d49eeb19ac449b35ba07a"
   },
   {
     "kind": "module",
@@ -1836,6 +1846,15 @@
   },
   {
     "kind": "module",
+    "name": "src/components/LocationCountrySelect.tsx",
+    "flow": "location",
+    "access": "Reviewed supporting implementation",
+    "source": "src/components/LocationCountrySelect.tsx",
+    "methods": [],
+    "sha256": "ea5eb72410521b69ffde81a115d61d50c713d8c9119ea1eadbe17793eed4e3ca"
+  },
+  {
+    "kind": "module",
     "name": "src/components/ManagedImagePicker.tsx",
     "flow": "images",
     "access": "Reviewed supporting implementation",
@@ -1850,7 +1869,7 @@
     "access": "Reviewed supporting implementation",
     "source": "src/components/NeighborhoodEditor.tsx",
     "methods": [],
-    "sha256": "5d1e0ed9f584b6f03e76dde9c5ad3e966d7d26a1d2cf8dd0ed9d6bf205e5dfad"
+    "sha256": "80062ddea3ce209eb292fc773811ceccc0e4503e4e64c72ff3b6a5d8c13277ea"
   },
   {
     "kind": "module",
@@ -1926,12 +1945,21 @@
   },
   {
     "kind": "module",
+    "name": "src/components/useLocationSuggestions.ts",
+    "flow": "location",
+    "access": "Reviewed supporting implementation",
+    "source": "src/components/useLocationSuggestions.ts",
+    "methods": [],
+    "sha256": "45bc40498d237df9ff16f0186b05b6ef931fc89df7b12572339a68614d786f9e"
+  },
+  {
+    "kind": "module",
     "name": "src/components/useViewerGeo.ts",
     "flow": "location",
     "access": "Reviewed supporting implementation",
     "source": "src/components/useViewerGeo.ts",
     "methods": [],
-    "sha256": "540a05085574fd60f3bae89218c1f5845aec8b9e210aa0011c38f2578635d32e"
+    "sha256": "4416fbb6ffe57dae76345a1e76847fda78e1aaef65ab7f5916e45d144dad8fb0"
   },
   {
     "kind": "module",
@@ -1986,6 +2014,15 @@
     "source": "src/lib/homeNavigation.ts",
     "methods": [],
     "sha256": "225ccac368701100426fb3401a452569fec922ad038bfc14c1cf5adf00f284d9"
+  },
+  {
+    "kind": "module",
+    "name": "src/lib/locationCountry.ts",
+    "flow": "location",
+    "access": "Reviewed supporting implementation",
+    "source": "src/lib/locationCountry.ts",
+    "methods": [],
+    "sha256": "9fb1b8d93c4a6914684cacec33adddbd3e184efc79e1f339a272ce13e214d1ed"
   },
   {
     "kind": "module",
@@ -3173,7 +3210,7 @@
     "access": "Internal server module",
     "source": "src/backend/services/automaticLocation.ts",
     "methods": [],
-    "sha256": "24d6c32b1caa5f500dda6855a1408e1d412f5fddaab304756c73535631a5b7de"
+    "sha256": "93ffd4314e177cc1ac13af485fa5f65912bf5ca5d925a9f31f8abc541d8ed3d5"
   },
   {
     "kind": "service",
@@ -3258,6 +3295,24 @@
   },
   {
     "kind": "service",
+    "name": "locationAutocomplete",
+    "flow": "location",
+    "access": "Internal server module",
+    "source": "src/backend/services/locationAutocomplete.ts",
+    "methods": [],
+    "sha256": "889720b65260ba97d8764ed19f28ed6f51cd9b21219745bbc427efdc594c9458"
+  },
+  {
+    "kind": "service",
+    "name": "locationSearchContext",
+    "flow": "location",
+    "access": "Internal server module",
+    "source": "src/backend/services/locationSearchContext.ts",
+    "methods": [],
+    "sha256": "6b269ccf4107646db2b1561a3a6de5f98cbe2b63cba88e3e9ffd0f369d828e7a"
+  },
+  {
+    "kind": "service",
     "name": "loginEmails",
     "flow": "admin-users",
     "access": "Internal server module",
@@ -3308,7 +3363,7 @@
     "access": "Internal server module",
     "source": "src/backend/services/neighborhoods.ts",
     "methods": [],
-    "sha256": "92f2cdaf9201e8931cc5baa0b6ae191cedcb6eaeac42ffc7f605a32f5aa840e5"
+    "sha256": "11a8bdcf402a2cdeda03ecf371f68750b342caec440a1214cc6d153fd5f177bc"
   },
   {
     "kind": "service",
@@ -3470,7 +3525,7 @@
     "access": "Internal server module",
     "source": "src/backend/services/ServiceCityService.ts",
     "methods": [],
-    "sha256": "1da240ffbb6375f251abc40eddd5259633c5d21debbfc2cb722ff4d79320843b"
+    "sha256": "c440a74f615d35efa512e9d09f7a1f27c98d23f33d7dc9fb9debaf5b045ead83"
   },
   {
     "kind": "service",

@@ -486,6 +486,8 @@ model UserServiceCity {
   lat                Float
   lng                Float
   provider_place_id  String
+  neighborhood_name String?
+  neighborhood_place_id String?
   locked_until       DateTime
   created_at         DateTime @default(now())
 

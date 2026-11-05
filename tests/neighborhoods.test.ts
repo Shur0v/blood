@@ -15,7 +15,7 @@ test('reviewed areas survive provider outages, accept screenshot queries, and re
   const provider = mock.method(globalThis, 'fetch', async () => { throw new Error('provider unavailable'); });
   try {
     for (const [query, area] of [
-      ['Badda dha', 'South Badda'], ['banasree, dh', 'Banasree'], ['south-Badda', 'South Badda'],
+      ['Badda dha', 'Badda'], ['banasree, dh', 'Banasree'], ['south-Badda', 'South Badda'],
       ['west-Rampura', 'West Rampura'], ['Gulshan', 'Gulshan'], ['Mohakhali', 'Mohakhali'],
     ]) {
       const rows = await lookupNeighborhoods(query);
@@ -63,7 +63,7 @@ test('worldwide areas require confirmed parents and use parent city coordinates'
       const rows = await lookupNeighborhoods(area);
       assert.equal(rows[0].registrationArea?.name, area);
       assert.equal(rows[0].city, city);
-      assert.equal(rows[0].country, country);
+      assert.equal(rows[0].country, country === 'বাংলাদেশ' ? 'Bangladesh' : country);
       assert.equal(rows[0].latitude, 20);
       assert.equal(rows[0].longitude, 30);
       assert.equal(rows.length, 2);
@@ -91,10 +91,10 @@ test('shared flag overrides the legacy flag, including signup behavior', async (
   delete process.env.NEIGHBORHOODS_ENABLED;
   try {
     assert.equal(neighborhoodsEnabled(), true);
-    assert.ok((await (await signupLookup(new Request('http://localhost/api/location/signup?text=Gulshan'))).json()).data[0].registrationArea);
+    assert.ok((await (await signupLookup(new Request('http://localhost/api/location/signup?text=Gulshan', { headers: { 'x-country-code': 'BD' } }))).json()).data[0].registrationArea);
     process.env.NEIGHBORHOODS_ENABLED = 'false';
     assert.equal(neighborhoodsEnabled(), false);
-    assert.ok((await (await signupLookup(new Request('http://localhost/api/location/signup?text=Dhaka'))).json()).data.every((row: any) => !row.registrationArea));
+    assert.ok((await (await signupLookup(new Request('http://localhost/api/location/signup?text=Dhaka', { headers: { 'x-country-code': 'BD' } }))).json()).data.every((row: any) => !row.registrationArea));
   } finally {
     for (const [name, value] of Object.entries({ NEIGHBORHOODS_ENABLED: modern, SIGNUP_NEIGHBORHOODS_ENABLED: legacy, GEOAPIFY_API_KEY: key })) {
       if (value === undefined) delete process.env[name]; else process.env[name] = value;

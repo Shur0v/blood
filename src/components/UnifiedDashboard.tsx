@@ -1,3 +1,6 @@
+import useLocationSuggestions, { type LocationSuggestion } from './useLocationSuggestions';
+import LocationCountrySelect from './LocationCountrySelect';
+import { sameLocationParent } from '@/src/lib/locationCountry';
 import NeighborhoodEditor from './NeighborhoodEditor';
 import React, { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
@@ -58,6 +61,8 @@ interface UnifiedDashboardProps {
       city: string;
       country: string;
       formatted_location: string;
+      registrationArea?: { name: string; placeId: string };
+      provider_place_id?: string;
       remainingDays: number;
       canRemove: boolean;
     }>;
@@ -104,16 +109,12 @@ export default function UnifiedDashboard({
   const [imageState, setImageState] = useState<"idle" | "uploading" | "error">("idle");
   const [serviceCities, setServiceCities] = useState<UnifiedDashboardProps["profile"]["serviceCities"]>([]);
   const [cityInput, setCityInput] = useState("");
-  const [citySuggestions, setCitySuggestions] = useState<Array<{
-    city: string;
-    country: string;
-    formatted_location: string;
-    latitude: number;
-    longitude: number;
-    provider_place_id: string;
-    token: string;
-  }>>([]);
-  const [cityLoading, setCityLoading] = useState(false);
+  const cityLookup = useLocationSuggestions(cityInput, mode === 'self');
+  const citySuggestions = cityLookup.suggestions;
+  const cityLoading = cityLookup.loading;
+  const [pendingArea, setPendingArea] = useState<{ cityId: string; suggestion: LocationSuggestion } | null>(null);
+  const [areaSaving, setAreaSaving] = useState(false);
+  const [areasEnabled, setAreasEnabled] = useState(false);
   const [cityMessage, setCityMessage] = useState("");
   const hydratedRef = useRef(false);
   const profileImageInputRef = useRef<HTMLInputElement | null>(null);
@@ -146,6 +147,15 @@ export default function UnifiedDashboard({
         });
   const organsSignature = JSON.stringify(registeredOrgans);
   const profileId = profile?.id;
+  const visibleAccountRef = useRef(profileId);
+  visibleAccountRef.current = profileId;
+  useEffect(() => {
+    setAreasEnabled(false);
+    setPendingArea(null);
+    setAreaSaving(false);
+    setCityInput('');
+    setCityMessage('');
+  }, [profileId, mode]);
   const profileHealthData = profile?.healthData;
   const profileActiveOrgans = profile?.activeOrgans;
   const profileImage = profile?.profileImageUrl;
@@ -194,7 +204,6 @@ export default function UnifiedDashboard({
     setSelectedAllergies(Array.isArray(health.allergies) ? health.allergies.filter((a): a is string => typeof a === "string") : []);
     setRegisteredOrgans(normalizeOrganList(profileActiveOrgans ?? []));
     setProfileImageUrl(profileImage ?? null);
-    setServiceCities(profileServiceCities ?? []);
     savedHealthRef.current = JSON.stringify({
           weight: nextWeightTouched && !nextWeightUnknown ? nextWeight : null,
           weightTouched: nextWeightTouched,
@@ -219,68 +228,67 @@ export default function UnifiedDashboard({
     skipNextOrgansAutosaveRef.current = true;
   }, [profileId, profileHealthData, profileActiveOrgans, profileImage, profileServiceCities]);
 
-  useEffect(() => {
-    if (mode !== "self") return;
-    if (cityInput.trim().length < 2) {
-      setCitySuggestions([]);
-      return;
-    }
-    let cancelled = false;
-    const timer = setTimeout(async () => {
-      try {
-        setCityLoading(true);
-        const res = await fetch(`/api/location/cities?text=${encodeURIComponent(cityInput.trim())}`, {
-          method: "GET",
-          cache: "no-store",
-        });
-        const payload = await res.json();
-        if (cancelled) return;
-        if (!res.ok || !payload.success) {
-          setCitySuggestions([]);
-          return;
-        }
-        setCitySuggestions(payload.data || []);
-      } catch {
-        if (!cancelled) setCitySuggestions([]);
-      } finally {
-        if (!cancelled) setCityLoading(false);
-      }
-    }, 400);
-    return () => {
-      cancelled = true;
-      clearTimeout(timer);
-    };
-  }, [cityInput, mode]);
+  useEffect(() => { setServiceCities(profileServiceCities ?? []); }, [profileId, profileServiceCities]);
 
   const showCityMessage = (message: string) => {
     setCityMessage(message);
     setTimeout(() => setCityMessage(""), 4000);
   };
 
-  const addServiceCity = async (city: {
-    city: string;
-    country: string;
-    formatted_location: string;
-    latitude: number;
-    longitude: number;
-    provider_place_id: string;
-    token: string;
-  }) => {
+  const refreshServiceCities = async () => {
+    const accountId = profile!.id;
+    const response = await fetch('/api/users/me/service-cities', { cache: 'no-store', headers: { 'x-bloodnet-profile': accountId } });
+    const body = await response.json();
+    if (response.ok && body.success && visibleAccountRef.current === accountId) setServiceCities(body.data || []);
+  };
+
+  const updateServiceArea = async (cityId: string, suggestion?: LocationSuggestion) => {
+    if (areaSaving) return;
+    const accountId = profile!.id;
+    setAreaSaving(true);
+    try {
+      const response = await fetch('/api/users/me/service-cities/' + cityId, {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json', 'x-bloodnet-profile': accountId },
+        body: JSON.stringify(suggestion ? { token: suggestion.token } : { clear: true }),
+      });
+      const body = await response.json();
+      if (visibleAccountRef.current !== accountId) return;
+      if (!response.ok) throw new Error(body.message || 'Unable to update this area.');
+      setServiceCities(body.data || []);
+      setPendingArea(null);
+      setCityInput('');
+      cityLookup.clear();
+      showCityMessage('Neighborhood updated.');
+    } catch (error) { showCityMessage(error instanceof Error ? error.message : 'Unable to update this area.'); }
+    finally { if (visibleAccountRef.current === accountId) setAreaSaving(false); }
+  };
+
+  const addServiceCity = async (city: LocationSuggestion) => {
+    const accountId = profile!.id;
+    const existing = serviceCities?.find(row => sameLocationParent(row, city));
+    if (existing) {
+      if (city.registrationArea) setPendingArea({ cityId: existing.id, suggestion: city });
+      else showCityMessage('This city is already in your list. Choose a neighborhood to update its area.');
+      cityLookup.clear();
+      setCityInput('');
+      return;
+    }
     try {
       const res = await fetch("/api/users/me/service-cities", {
         method: "POST",
         credentials: "include",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", 'x-bloodnet-profile': accountId },
         body: JSON.stringify(city),
       });
       const payload = await res.json();
+      if (visibleAccountRef.current !== accountId) return;
       if (!res.ok || !payload.success) {
         showCityMessage(payload.message || "Failed to add city.");
         return;
       }
       setServiceCities(payload.data || []);
       setCityInput("");
-      setCitySuggestions([]);
+      cityLookup.clear();
     } catch {
       showCityMessage("Failed to add city.");
     }
@@ -644,17 +652,18 @@ export default function UnifiedDashboard({
             </div>
             <div className="min-w-0 lg:order-2">
               {profile && (
-                <div className="mb-8 rounded-2xl border border-border/10 bg-white p-4">
+                <div data-analytics-private="" className="mb-8 rounded-2xl border border-border/10 bg-white p-4">
                   <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
                     <p className="text-xs font-semibold tracking-wide text-slate-600">Manage Service Cities</p>
                     <p className="text-xs font-bold text-slate-600">{serviceCities?.length ?? 0}/5</p>
                   </div>
-                  {mode === "self" && <NeighborhoodEditor key={profile.id} userId={profile.id} revision={JSON.stringify([profile.id, profile.city, profile.country, serviceCities?.map(city => city.id)])} />}
+                  {mode === "self" && <NeighborhoodEditor key={profile.id} userId={profile.id} onSaved={refreshServiceCities} onAvailability={setAreasEnabled} revision={JSON.stringify([profile.id, profile.city, profile.country, serviceCities?.map(city => [city.id, city.registrationArea?.placeId])])} />}
                   <div className="mb-3 flex flex-wrap gap-2">
                     {(serviceCities || []).map((city, idx) => (
                       <span key={city.id} className="inline-flex items-center gap-2 rounded-full border border-border/10 bg-white px-3 py-1 text-xs font-semibold text-slate-700">
                         {idx < 2 && <MapPin className="h-3.5 w-3.5 text-primary" />}
-                        {city.city}, {city.country}
+                        {city.registrationArea ? city.registrationArea.name + ", " : ""}{city.city}, {city.country}
+                        {city.registrationArea && areasEnabled && mode === 'self' && <button type="button" disabled={areaSaving} onClick={() => void updateServiceArea(city.id)} aria-label={'Clear neighborhood for ' + city.city} className="text-xs text-primary">Clear area</button>}
                         {city.canRemove ? (
                           <button
                             type="button"
@@ -677,13 +686,12 @@ export default function UnifiedDashboard({
                       </span>
                     ))}
                   </div>
-                  {(serviceCities?.length ?? 0) < 5 && (
+                  {mode === "self" && (
                     <div className="relative">
                       <input
                         value={cityInput}
-                        disabled={mode === 'admin'}
                         onChange={(e) => setCityInput(e.target.value)}
-                        placeholder="Add another city..."
+                        placeholder="Search a city or area (3+ characters)..."
                         className="w-full rounded-xl border border-border/10 bg-white px-3 py-2 text-sm text-text outline-none focus:border-primary/50"
                       />
                       {cityLoading && <span className="absolute right-3 top-2.5 text-xs font-bold text-slate-600">Loading...</span>}
@@ -691,18 +699,25 @@ export default function UnifiedDashboard({
                         <div className="absolute z-20 mt-1 max-h-44 w-full overflow-y-auto rounded-xl border border-border/10 bg-white p-1 shadow-lg">
                           {citySuggestions.map((suggestion) => (
                             <button
-                              key={suggestion.provider_place_id}
+                              key={suggestion.registrationArea?.placeId || suggestion.provider_place_id}
                               type="button"
                               onClick={() => void addServiceCity(suggestion)}
                               className="w-full rounded-lg px-3 py-2 text-left text-sm font-semibold text-slate-700 hover:bg-primary/5"
                             >
-                              {suggestion.city}, {suggestion.country}
+                              {suggestion.registrationArea ? suggestion.registrationArea.name + ", " : ""}{suggestion.city}, {suggestion.country}{(suggestion.district || suggestion.state) && <span className="block text-xs text-slate-500">{[suggestion.district, suggestion.state].filter(Boolean).join(", ")}</span>}
                             </button>
                           ))}
                         </div>
                       )}
                     </div>
                   )}
+                  {cityLookup.requiresCountry && <LocationCountrySelect value={cityLookup.countryChoice} onChange={cityLookup.setCountryChoice} />}
+                  {cityLookup.message && <p role="status" className="mt-2 text-xs text-slate-600">{cityLookup.message}</p>}
+                  {pendingArea && <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-slate-800">
+                    <p>Update {pendingArea.suggestion.city} to {pendingArea.suggestion.registrationArea?.name}?</p>
+                    <button type="button" disabled={areaSaving} onClick={() => void updateServiceArea(pendingArea.cityId, pendingArea.suggestion)} className="mr-3 mt-2 rounded-lg bg-primary px-3 py-2 font-semibold text-white">Update neighborhood</button>
+                    <button type="button" disabled={areaSaving} onClick={() => setPendingArea(null)}>Cancel</button>
+                  </div>}
                   {cityMessage && <p className="mt-2 text-xs font-semibold text-amber-700">{cityMessage}</p>}
                 </div>
               )}

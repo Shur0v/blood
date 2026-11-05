@@ -20,6 +20,7 @@
     "test:deployment": "tsx --test tests/database-deployment.test.ts",
     "test:ads": "tsx --test tests/ads-runtime.test.ts",
     "test:discovery": "tsx --test tests/donor-discovery.test.ts tests/donor-ordering.test.ts",
+    "test:locations": "tsx --test tests/location-context.test.ts tests/neighborhoods.test.ts && tsx tests/location-pickers-ui.mjs && tsx tests/neighborhood-ui.mjs",
     "test:profile-ui": "tsx tests/profile-ui-check.mjs",
     "test:security": "tsx --test tests/security.test.ts",
     "test:seo": "tsx --test tests/seo-content.test.ts",

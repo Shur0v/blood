@@ -128,6 +128,8 @@ before(async () => {
   await sql.query(readFileSync('prisma/migrations/20261105090000_signup_neighborhood/migration.sql','utf8'));
   assert.deepEqual((await sql.query("SELECT to_jsonb(u) - 'registration_area' - 'registration_area_place_id' AS record FROM \"User\" u ORDER BY id")).rows, usersBeforeNeighborhoods);
   assert.deepEqual((await sql.query('SELECT to_jsonb(c) AS record FROM "UserServiceCity" c ORDER BY id')).rows, citiesBeforeNeighborhoods);
+  await sql.query(readFileSync('prisma/migrations/20261105120000_service_city_neighborhoods/migration.sql','utf8'));
+  assert.deepEqual((await sql.query("SELECT to_jsonb(c) - 'neighborhood_name' - 'neighborhood_place_id' AS record FROM \"UserServiceCity\" c ORDER BY id")).rows, citiesBeforeNeighborhoods);
   const migratedPublication=(await sql.query('SELECT * FROM "PublicDonorProfile" WHERE id=$1',[legacyPublicationId])).rows[0];
   assert.equal(migratedPublication.is_published,false);assert.equal(migratedPublication.bio,legacyBio);assert.equal(migratedPublication.admin_approved_at,null);assert.ok(migratedPublication.consented_at);
 });
@@ -184,7 +186,7 @@ test('migration backfills a reserved ID and preserves existing UUIDs', integrati
   assert.equal((await getPrisma().profileIdentifier.findUniqueOrThrow({where:{code:'0000'}})).user_id,migratedUserId);
   for (const [table,rows] of Object.entries(existingRows)) {
     const escaped = table.replace(/"/g, '""');
-    const expression = table === 'User' ? "to_jsonb(t) - 'profile_code' - 'profile_code_changed_at' - 'registration_area' - 'registration_area_place_id'" : 'to_jsonb(t)';
+    const expression = table === 'User' ? "to_jsonb(t) - 'profile_code' - 'profile_code_changed_at' - 'registration_area' - 'registration_area_place_id'" : table === 'UserServiceCity' ? "to_jsonb(t) - 'neighborhood_name' - 'neighborhood_place_id'" : 'to_jsonb(t)';
     const actual = (await sql.query(`SELECT COALESCE(jsonb_agg(${expression} ORDER BY (${expression})::text), '[]'::jsonb) AS rows FROM "${escaped}" t`)).rows[0].rows;
     assert.deepEqual(actual,rows,`Existing ${table} data must be preserved exactly`);
   }
@@ -1610,7 +1612,7 @@ test('signup area lookup verifies city hierarchy, uses city coordinates, and pre
   const parents=query==='Central'?[city,cities[1]]:[cities[overseas[query]||0]];
   return Response.json({results:[...parents.map(parent=>({...parent,place_id:'area-'+query+'-'+parent.city,result_type:'suburb',address_line1:query,lat:23.77,lon:90.45})),{...city,place_id:'house',result_type:'building',address_line1:'Private address'}]});
  });
- const lookup=(name:string)=>GET(new Request('http://localhost/api/location/signup?text='+encodeURIComponent(name)));
+ const lookup=(name:string)=>GET(new Request('http://localhost/api/location/signup?text='+encodeURIComponent(name), { headers: { 'x-country-code': name === 'Bandra' ? 'IN' : name === 'Gulberg' ? 'PK' : name === 'Thamel' ? 'NP' : 'BD' } }));
  try{
   for(const name of ['Badda','Rampura','Banasree','Komolapur']){
    const {data}=await (await lookup(name)).json();
@@ -1629,7 +1631,7 @@ test('signup area lookup verifies city hierarchy, uses city coordinates, and pre
    assert.equal(data[0].latitude,cities[index].lat);
   }
   const duplicate=(await (await lookup('Central')).json()).data.filter((item:any)=>item.registrationArea);
-  assert.deepEqual(duplicate.map((item:any)=>item.city),['Dhaka','Mumbai']);
+  assert.deepEqual(duplicate.map((item:any)=>item.city),['Dhaka']);
   parentAvailable=false;
   assert.ok((await (await lookup('Badda')).json()).data.every((row:any)=>!row.registrationArea || row.registrationArea.placeId.startsWith('bloodnet:')));
   process.env.SIGNUP_NEIGHBORHOODS_ENABLED='false';
@@ -1736,4 +1738,62 @@ test('owner neighborhood editing preserves city data, rejects invalid selections
     process.env.NEIGHBORHOODS_ENABLED = 'false';
     assert.equal((await save({ clear: true })).status, 409);
   } finally { if (prior === undefined) delete process.env.NEIGHBORHOODS_ENABLED; else process.env.NEIGHBORHOODS_ENABLED = prior; }
+});
+
+test('service neighborhoods persist through signup and explicit edits without changing city locks or public donor data', integration, async () => {
+  const { AuthController } = await import('../src/backend/controllers/AuthController');
+  const { transporter } = await import('../src/backend/utils/mailer');
+  const { POST: addCity, GET: readCities } = await import('../src/app/api/users/me/service-cities/route');
+  const { PATCH: updateArea } = await import('../src/app/api/users/me/service-cities/[cityId]/route');
+  const { PATCH: updatePrimary } = await import('../src/app/api/users/me/neighborhood/route');
+  const send = mock.method(transporter, 'sendMail', async () => ({ messageId: 'fixture-only' }));
+  const old = process.env.NEIGHBORHOODS_ENABLED;
+  process.env.NEIGHBORHOODS_ENABLED = 'true';
+  try {
+    const email = randomUUID() + '@example.invalid', mobile = '+880199' + String(Date.now()).slice(-7);
+    assert.equal((await AuthController.requestOtp(authRequest('request', { mode: 'register', email, mobile }))).status, 200);
+    const otp = (send.mock.calls[0].arguments as unknown as Array<{ html: string }>)[0].html.match(/>\s*(\d{6})\s*</)?.[1];
+    assert.ok(otp);
+    const base = registrationPayload(email, mobile), { token: unused, ...dhaka } = base.locations[0];
+    const primary = { ...dhaka, registrationArea: { name: 'Merul Badda', placeId: 'fixture-merul' } };
+    const second = { ...dhaka, city: 'Chattogram', formatted_location: 'Chattogram, Bangladesh', provider_place_id: 'fixture-chattogram', latitude: 22.35, longitude: 91.78, registrationArea: { name: 'Agrabad', placeId: 'fixture-agrabad' } };
+    const selected = [primary, second].map(row => ({ ...row, token: signLocationProof(row) }));
+    const result = await AuthController.verifyOtp(authRequest('verify', { ...base, otp, locations: selected }));
+    assert.equal(result.status, 200, await result.text());
+    const db = getPrisma(), user = await db.user.findUniqueOrThrow({ where: { email } });
+    const headers = { authorization: 'Bearer ' + signToken({ user_id: user.id, role: 'USER' }), 'content-type': 'application/json' };
+    const request = (url: string, body: unknown) => new Request('http://localhost' + url, { method: 'PATCH', headers, body: JSON.stringify(body) });
+    const service = await db.userServiceCity.findMany({ where: { user_id: user.id }, orderBy: { created_at: 'asc' } });
+    assert.equal(service.length, 2);
+    assert.equal(service[0].neighborhood_name, 'Merul Badda');
+    assert.equal(service[1].neighborhood_name, 'Agrabad');
+    const before = service[1];
+    const next = { ...second, registrationArea: { name: 'Halishahar', placeId: 'fixture-halishahar' } };
+    const context = { params: Promise.resolve({ cityId: before.id }) };
+    assert.equal((await updateArea(request('/api/users/me/service-cities/' + before.id, { token: signLocationProof(next) }), context)).status, 200);
+    const after = await db.userServiceCity.findUniqueOrThrow({ where: { id: before.id } });
+    assert.equal(after.neighborhood_name, 'Halishahar');
+    for (const key of ['city', 'country', 'lat', 'lng', 'provider_place_id'] as const) assert.equal(after[key], before[key]);
+    assert.equal(after.locked_until.getTime(), before.locked_until.getTime());
+    assert.equal((await db.user.findUniqueOrThrow({ where: { id: user.id } })).registration_area, 'Merul Badda');
+    assert.equal((await updateArea(request('/api/users/me/service-cities/' + before.id, { token: signLocationProof(primary) }), context)).status, 409);
+    assert.equal((await addCity(new Request('http://localhost/api/users/me/service-cities', { method: 'POST', headers, body: JSON.stringify({ ...next, token: signLocationProof(next) }) }))).status, 409);
+    assert.equal(await db.userServiceCity.count({ where: { user_id: user.id } }), 2);
+    const other = await newPatient();
+    assert.equal((await updateArea(new Request('http://localhost/api/users/me/service-cities/' + before.id, { method: 'PATCH', headers: { ...headers, authorization: 'Bearer ' + signToken({ user_id: other.id, role: 'USER' }) }, body: JSON.stringify({ clear: true }) }), context)).status, 404);
+    assert.equal((await updatePrimary(request('/api/users/me/neighborhood', { clear: true }))).status, 200);
+    assert.equal((await db.userServiceCity.findUniqueOrThrow({ where: { id: service[0].id } })).neighborhood_name, null);
+    const primaryContext = { params: Promise.resolve({ cityId: service[0].id }) };
+    assert.equal((await updateArea(request('/api/users/me/service-cities/' + service[0].id, { token: signLocationProof(primary) }), primaryContext)).status, 200);
+    assert.equal((await db.user.findUniqueOrThrow({ where: { id: user.id } })).registration_area, 'Merul Badda');
+    const owner = await (await readCities(new Request('http://localhost/api/users/me/service-cities', { headers }))).json();
+    assert.equal(owner.data[1].registrationArea.name, 'Halishahar');
+    const publicResponse = await (await publicBloodDonors(new Request('http://localhost/api/public/donors?country=Bangladesh&search=Chattogram&bloodGroup=O-&limit=16'))).text();
+    assert.ok(!publicResponse.includes('fixture-halishahar'));
+    assert.ok(!publicResponse.includes('Halishahar'));
+    for (const role of ['ADMIN', 'MANAGER']) assert.equal((await updateArea(new Request('http://localhost/api/users/me/service-cities/' + before.id, { method: 'PATCH', headers: { ...headers, authorization: 'Bearer ' + signToken({ user_id: testAdminId, role }) }, body: JSON.stringify({ clear: true }) }), context)).status, 403);
+  } finally {
+    send.mock.restore();
+    if (old === undefined) delete process.env.NEIGHBORHOODS_ENABLED; else process.env.NEIGHBORHOODS_ENABLED = old;
+  }
 });

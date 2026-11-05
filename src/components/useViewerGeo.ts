@@ -70,6 +70,9 @@ let cityPending:Promise<void>|undefined;
 let cityAttempt=0;
 const GEO_EVENT='bloodnet-viewer-geo';
 const TTL=10*60*1000;
+export function confirmedBrowserLocation() {
+  return recent?.source === 'gps' && recent.updatedAt && Date.now() - recent.updatedAt < TTL ? recent : undefined;
+}
 async function automaticLocation(): Promise<ViewerGeo> {
   if(recent?.updatedAt&&Date.now()-recent.updatedAt<TTL)return recent;
   if(pending)return pending;

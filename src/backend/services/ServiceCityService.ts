@@ -37,6 +37,8 @@ export const listServiceCities = async (userId: string, client: Pick<Prisma.Tran
       latitude: row.lat,
       longitude: row.lng,
       provider_place_id: row.provider_place_id,
+      registrationArea: row.neighborhood_name && row.neighborhood_place_id
+        ? { name: row.neighborhood_name, placeId: row.neighborhood_place_id } : undefined,
       locked_until: row.locked_until,
       canRemove: msLeft <= 0,
       remainingDays: daysLeft,
@@ -56,7 +58,7 @@ export function neighborhoodReset(current: { location_city: string; location_cou
   return changed ? { registration_area: null, registration_area_place_id: null } : {};
 }
 
-export const syncLegacyLocationFromFirstCity = async (userId: string, tx: Prisma.TransactionClient) => {
+export const syncLegacyLocationFromFirstCity = async (userId: string, tx: Prisma.TransactionClient, useNeighborhood = false) => {
   const current = await lockPrimaryLocation(tx, userId);
   const first = await tx.userServiceCity.findFirst({
     where: { user_id: userId },
@@ -68,6 +70,10 @@ export const syncLegacyLocationFromFirstCity = async (userId: string, tx: Prisma
     where: { id: userId },
     data: {
       ...neighborhoodReset(current, first.city, first.country),
+      ...(useNeighborhood || first.neighborhood_name ? {
+        registration_area: first.neighborhood_name,
+        registration_area_place_id: first.neighborhood_place_id,
+      } : {}),
       location_city: first.city,
       location_country: first.country,
       location_formatted: first.formatted_location,
