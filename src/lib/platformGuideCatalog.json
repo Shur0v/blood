@@ -253,6 +253,18 @@
   },
   {
     "kind": "api",
+    "name": "/api/admin/india-content",
+    "flow": "regional",
+    "access": "Administrator",
+    "source": "src/app/api/admin/india-content/route.ts",
+    "methods": [
+      "GET",
+      "PUT"
+    ],
+    "sha256": "429135f1853bd68f16f98744c6590fcbedbb9fda1c48e9e2b56fbd63e81a79c6"
+  },
+  {
+    "kind": "api",
     "name": "/api/admin/location-settings",
     "flow": "location-management",
     "access": "Administrator",
@@ -1388,6 +1400,15 @@
   },
   {
     "kind": "model",
+    "name": "IndiaEditorialPage",
+    "flow": "regional",
+    "access": "Server-managed; record-level publication/authorization",
+    "source": "prisma/schema.prisma",
+    "methods": [],
+    "sha256": "b157c120a210469e9c4be74869b8411284c14ec5020e57bb56af1d27d9509015"
+  },
+  {
+    "kind": "model",
     "name": "LocationSettings",
     "flow": "location-management",
     "access": "Server-managed; record-level publication/authorization",
@@ -1775,6 +1796,15 @@
   },
   {
     "kind": "module",
+    "name": "src/app/india-local.css",
+    "flow": "regional",
+    "access": "Reviewed supporting implementation",
+    "source": "src/app/india-local.css",
+    "methods": [],
+    "sha256": "bd99cef6907e609ace87510eaf877474236ce8bd63e541f2b0a31be755986678"
+  },
+  {
+    "kind": "module",
     "name": "src/app/india.css",
     "flow": "regional",
     "access": "Reviewed supporting implementation",
@@ -1789,7 +1819,7 @@
     "access": "Reviewed supporting implementation",
     "source": "src/app/layout.tsx",
     "methods": [],
-    "sha256": "af7dd4665c4f8a04767deaa9c2a8e2c625bd73596e1819a83544f1e17399349a"
+    "sha256": "f94e4d3d57995faa474485d0d85d2f415283e124e301fc439a589b6deb9d04c5"
   },
   {
     "kind": "module",
@@ -1933,7 +1963,7 @@
     "access": "Reviewed supporting implementation",
     "source": "src/components/Hero.tsx",
     "methods": [],
-    "sha256": "a309c300c41f84363da6e6e69efc8b080c803916f384b9c055d85f101e92147c"
+    "sha256": "973903f2ea88acb801bac2bf0185ffd104b4b393390429f224aa2517eaaf1c7d"
   },
   {
     "kind": "module",
@@ -1970,6 +2000,33 @@
     "source": "src/components/india/IndiaSurface.tsx",
     "methods": [],
     "sha256": "45e500582a92a2cb9b7867d4a67b7d76c69769926b3a8fb3c501e4a6fef51044"
+  },
+  {
+    "kind": "module",
+    "name": "src/components/india/local/IndiaLocalEditor.tsx",
+    "flow": "regional",
+    "access": "Reviewed supporting implementation",
+    "source": "src/components/india/local/IndiaLocalEditor.tsx",
+    "methods": [],
+    "sha256": "abbf92730f95e869bf628628276666c4b8e5f78e730b422440b453224e5693da"
+  },
+  {
+    "kind": "module",
+    "name": "src/components/india/local/IndiaLocalExperience.tsx",
+    "flow": "regional",
+    "access": "Reviewed supporting implementation",
+    "source": "src/components/india/local/IndiaLocalExperience.tsx",
+    "methods": [],
+    "sha256": "e1ebaaf8b50211988e437050f160e9a339cebfd93a78cd6b748791468a2c70c2"
+  },
+  {
+    "kind": "module",
+    "name": "src/components/india/local/IndiaSections.tsx",
+    "flow": "regional",
+    "access": "Reviewed supporting implementation",
+    "source": "src/components/india/local/IndiaSections.tsx",
+    "methods": [],
+    "sha256": "5346593e9cf0350087ca9d9cde8177da055a446692c4aeeeaf675ace4d2549fa"
   },
   {
     "kind": "module",
@@ -2077,7 +2134,7 @@
     "access": "Reviewed supporting implementation",
     "source": "src/components/regional/RegionalCityExperience.tsx",
     "methods": [],
-    "sha256": "024c8e20ed6aedbf45083eb0dd5c2c632210a4147b0d0ca91db6c401ad40f9d0"
+    "sha256": "28a04e368211eb0586457252fa96b7203f9d83753dcf1461b05937dabbe942d0"
   },
   {
     "kind": "module",
@@ -2086,7 +2143,7 @@
     "access": "Reviewed supporting implementation",
     "source": "src/components/RegionalContentEditor.tsx",
     "methods": [],
-    "sha256": "ba0623d1ac01604852d010afa29d441ecc470ce2b299e527ef3e175725ab9bf1"
+    "sha256": "013abcf992deec05295f418f8ae6b103b925dcc9876c6bdb13e6abe58024d6a2"
   },
   {
     "kind": "module",
@@ -2240,6 +2297,33 @@
     "source": "src/lib/homeNavigation.ts",
     "methods": [],
     "sha256": "225ccac368701100426fb3401a452569fec922ad038bfc14c1cf5adf00f284d9"
+  },
+  {
+    "kind": "module",
+    "name": "src/lib/indiaLocal.ts",
+    "flow": "regional",
+    "access": "Reviewed supporting implementation",
+    "source": "src/lib/indiaLocal.ts",
+    "methods": [],
+    "sha256": "4a0ad2210a9e21f086119c2a437de69022bd1e6b3fa75493d1fdb1d7e78504ff"
+  },
+  {
+    "kind": "module",
+    "name": "src/lib/indiaLocalCopy.ts",
+    "flow": "regional",
+    "access": "Reviewed supporting implementation",
+    "source": "src/lib/indiaLocalCopy.ts",
+    "methods": [],
+    "sha256": "3797e86e31cfdb3761c874c35b1754c743ee3f9347654d8c0400766df6580aa5"
+  },
+  {
+    "kind": "module",
+    "name": "src/lib/indiaRecipes.ts",
+    "flow": "regional",
+    "access": "Reviewed supporting implementation",
+    "source": "src/lib/indiaRecipes.ts",
+    "methods": [],
+    "sha256": "4b72b5b9b34875168e6a09c85e33d5c8d26803fb81c0c0fffff23e3f1dbf12d0"
   },
   {
     "kind": "module",
@@ -2491,7 +2575,7 @@
     "access": "Public or endpoint-specific guard",
     "source": "src/app/blood/[slug]/page.tsx",
     "methods": [],
-    "sha256": "ea9fe24c413e0f9e26c7982d0f155f8fac052d633e47bef8b9aa9fb8957f8ef5"
+    "sha256": "cd0b183eff9757da181da9c513a3d9ed80bb3ae4eae085407a33b2276068576b"
   },
   {
     "kind": "page",
@@ -2500,7 +2584,7 @@
     "access": "Public or endpoint-specific guard",
     "source": "src/app/blood/[slug]/[city]/page.tsx",
     "methods": [],
-    "sha256": "405ec14d2366861e19e0c02b031cb35b1197bf40a0c20e17f41cd0bdb08f4b4f"
+    "sha256": "99c28d3bf5b82ee5b2f65c98d1df182f1624ee6c55a2102ea82923262eb137d2"
   },
   {
     "kind": "page",
@@ -2684,6 +2768,33 @@
   },
   {
     "kind": "page",
+    "name": "/india",
+    "flow": "platform",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/india/page.tsx",
+    "methods": [],
+    "sha256": "4c86f378a081167ab57445417f8a00574ed93d9284830cc82863799bb442c148"
+  },
+  {
+    "kind": "page",
+    "name": "/india/[kind]/[slug]",
+    "flow": "platform",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/india/[kind]/[slug]/page.tsx",
+    "methods": [],
+    "sha256": "70979cce129c011bb8bb952c7d028c0a3b614ac9e20bbf4047d98ab70d2a864a"
+  },
+  {
+    "kind": "page",
+    "name": "/india/preview/[areaId]",
+    "flow": "platform",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/india/preview/[areaId]/page.tsx",
+    "methods": [],
+    "sha256": "7f615f66aff7bda9f5bfd39a535591ee5e32f8c9c3a0ed97b19d6eb59c110b0e"
+  },
+  {
+    "kind": "page",
     "name": "/italy",
     "flow": "platform",
     "access": "Public or endpoint-specific guard",
@@ -2752,7 +2863,7 @@
     "access": "Public or endpoint-specific guard",
     "source": "src/app/network/[country]/page.tsx",
     "methods": [],
-    "sha256": "0646ded205d068cb510455bf76607ef68e9f7f84c5e33b2dbacc499d5130efef"
+    "sha256": "0eaee5d018862aced005268e03d42080699022ddd665e9e0129fe7d349897367"
   },
   {
     "kind": "page",
@@ -3382,7 +3493,7 @@
     "access": "Public or endpoint-specific guard",
     "source": "src/app/sitemap-location.xml/route.ts",
     "methods": [],
-    "sha256": "5713cd321c11310c1c9331b8c28a3cd48bb2a61aa28924900c23db6c31e3a76b"
+    "sha256": "f1e6f00f6a27ebb2e6adab2c8aab211f7a311d254556e11a769ffc36fcc6e967"
   },
   {
     "kind": "page",
@@ -3409,7 +3520,7 @@
     "access": "Public or endpoint-specific guard",
     "source": "src/app/sitemap-regions.xml/route.ts",
     "methods": [],
-    "sha256": "e0b2478c10788262cff905e773d2e65c95ce1339c3b15fe2c8ba5457da6f9f42"
+    "sha256": "ddc7ad2214bb1c779b0ee72149f72689f74cfc4da2ae17d6ef6c20705e7bea64"
   },
   {
     "kind": "page",
@@ -3607,7 +3718,16 @@
     "access": "Internal server module",
     "source": "src/backend/services/imageSitemap.ts",
     "methods": [],
-    "sha256": "f73c75536bafc42d8841d7bf0f174b6882572ddded4445e904b273ea38c74965"
+    "sha256": "65eba6d20ed06bb2293d645e966e43066c81d6f461d39da1a1a06681fd9db033"
+  },
+  {
+    "kind": "service",
+    "name": "indiaLocalContent",
+    "flow": "regional",
+    "access": "Internal server module",
+    "source": "src/backend/services/indiaLocalContent.ts",
+    "methods": [],
+    "sha256": "b4a9fd342b2e19bc1f138c348561c178efb501c631931598fa115791d4771add"
   },
   {
     "kind": "service",
@@ -3769,7 +3889,7 @@
     "access": "Internal server module",
     "source": "src/backend/services/publicImages.ts",
     "methods": [],
-    "sha256": "1bd8ede0f3b26b42587f8d3fcdc6a6b7139672ffa14259f758880fe1d8e73b04"
+    "sha256": "ec1ee07a98266ec16c5ec670bdf6dca11476392fc562f8e5a7d3f111c5e47c88"
   },
   {
     "kind": "service",

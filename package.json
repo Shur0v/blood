@@ -46,7 +46,8 @@
     "test:india-ui": "tsx tests/india-edition-ui.mjs",
     "test:pakistan-ui": "tsx tests/pakistan-edition-ui.mjs",
     "test:usa": "tsx --test tests/usa-edition.test.ts",
-    "test:usa-ui": "tsx tests/usa-editor-ui.mjs"
+    "test:usa-ui": "tsx tests/usa-editor-ui.mjs",
+    "test:india-local": "tsx --test tests/india-local.test.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1034.0",

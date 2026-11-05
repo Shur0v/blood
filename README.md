@@ -173,3 +173,5 @@ For maintaining evidence, use the [monthly report](docs/impact/templates/monthly
 Maintained by [Shur0v](https://github.com/Shur0v). Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request and [SECURITY.md](SECURITY.md) before reporting vulnerabilities. Use synthetic examples and keep patient information, credentials and private production artifacts out of issues, commits and automated review tools.
 
 Original BloodNet code that its contributors are authorized to license is offered under **AGPL-3.0-only**; see [LICENSE](LICENSE) and [licensing boundaries](LICENSING.md). Third-party dependencies, images, user content, medical records and data retain their own rights. No clinical-data access or BloodNet trademark rights are granted by the software license.
+
+India local-page maintenance: see the [administrator operating guide](docs/india-local-pages.md) and [release evidence, component inventory and screenshots](docs/india-local-release/README.md). New state/city guides require explicit review and publication; the India country landing page retains its existing design.

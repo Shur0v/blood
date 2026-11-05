@@ -1,4 +1,6 @@
 import '@/src/app/regional.css';
+import {indiaDirectoryMetadata} from '@/src/backend/services/indiaLocalContent';
+import {indiaDirectoryArea,indiaSearchCopy} from '@/src/lib/indiaLocal';
 import {usaDirectorySearchCopy} from '@/src/lib/usaSeo';
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -32,6 +34,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
     const country = donors[0].location_country;
     const path = `/blood/${slug.toLowerCase()}/${city.toLowerCase()}`;
     const url = `${getPublicBaseUrl().replace(/\/$/, "")}${path}`;
+    if(country.toLowerCase()==='india'){const copy=await indiaDirectoryMetadata(locationCity,bloodGroup);return {...copy,alternates:{canonical:path},robots:{index:true,follow:true},openGraph:{...copy,url,type:'website'},twitter:{...copy,card:'summary_large_image'}};}
     if(country.toLowerCase()==='united states'){
       const copy=usaDirectorySearchCopy(locationCity,'blood',bloodGroup);
       return {...copy,alternates:{canonical:path},robots:{index:true,follow:true},openGraph:{...copy,url,type:'website'},twitter:{...copy,card:'summary_large_image'}};

@@ -1,0 +1,31 @@
+import Link from 'next/link';
+import {RegionalDoctorServices} from '../../PublicServiceContent';
+import {notFound} from 'next/navigation';
+import type {ReactNode,CSSProperties} from 'react';
+import {getDonorLocations} from '@/src/backend/services/donorLocations';
+import {getPrisma} from '@/src/backend/config/db';
+import {getPublicBaseUrl} from '@/src/backend/config/env';
+import {getIndiaPublication,indiaLocalContent,indiaCoverage,publishedIndiaAreas} from '@/src/backend/services/indiaLocalContent';
+import {INDIA_LOCAL_REVIEWED,indiaSearchCopy,type IndiaArea,type IndiaConfig} from '@/src/lib/indiaLocal';
+import {indiaRecipe} from '@/src/lib/indiaRecipes';
+import {formatRegionalText,resolveRegionalDesign} from '@/src/lib/regionalDesign';
+import {stringifyJsonLd} from '@/src/lib/aiSeo';
+import {getManagedImage} from '@/src/backend/services/publicImages';
+import {imageObject,imageSrcSet} from '@/src/lib/imagePresentation';
+import {IndiaIntroduction,IndiaSearch,INDIA_SECTION_COMPONENTS} from './IndiaSections';
+import DonorDiscoveryPanel from '../../DonorDiscoveryPanel';
+import type {IndiaContext} from './types';
+export default async function IndiaLocalExperience({area,path,city,group,organ,mode='blood',legacy=false,introduction,preview}:{area:IndiaArea;path:string;city?:string;group?:string;organ?:string;mode?:'blood'|'organ';legacy?:boolean;introduction?:ReactNode;preview?:IndiaConfig}){
+ if(!legacy&&preview===undefined&&!(await getIndiaPublication(area.id)))notFound();
+ const [content,coverage,locations,published,articles]=await Promise.all([indiaLocalContent(area,city,preview),indiaCoverage(area,legacy),getDonorLocations(),publishedIndiaAreas(),getPrisma().blog.findMany({where:{status:'PUBLISHED',slug:{not:null},OR:[{title:{contains:'blood donation',mode:'insensitive'}},{title:{contains:'donor',mode:'insensitive'}}]},select:{slug:true,title:true},orderBy:[{published_at:'desc'},{id:'desc'}],take:3})]);
+ const indiaLocations=locations.filter(row=>row.country.toLowerCase()==='india');
+ const searchCity=!legacy&&area.kind==='city'?(indiaLocations.find(row=>row.city.toLowerCase()===area.name.toLowerCase())||indiaLocations.find(row=>area.aliases.some(alias=>alias.toLowerCase()===row.city.toLowerCase())))?.city||city:city;
+ const c:IndiaContext={area,config:content.config,coverage,locations:indiaLocations,published,regional:content.regional,city:searchCity,group,organ,mode,legacy,introduction,articles};
+ c.services=await RegionalDoctorServices({country:'India',city:searchCity,mode:'booking'});
+ const colors=resolveRegionalDesign('India',content.regional?.design).colors,copy=indiaSearchCopy(area,group,mode),base=getPublicBaseUrl();
+ const style={'--in-paper':colors.paper,'--in-ink':colors.ink,'--in-saffron':colors.accent,'--in-green':colors.indigo} as CSSProperties;
+ const recipe=c.config.recipe||indiaRecipe(area.id);
+ const schema=[{'@context':'https://schema.org','@type':'CollectionPage',name:formatRegionalText((c.config.sections?.introduction?.title||c.config.title||copy.title).replaceAll('{place}',area.name),{country:'India',city:area.name,group}),url:base+path,description:copy.description,inLanguage:'en',dateModified:content.modified.getTime()?content.modified.toISOString():INDIA_LOCAL_REVIEWED,publisher:{'@id':base+'#medical-org'},spatialCoverage:{'@type':area.kind==='state'?'State':'Place',name:area.name+(area.state?', '+area.state:'')+', India'}},{'@context':'https://schema.org','@type':'BreadcrumbList',itemListElement:[{'@type':'ListItem',position:1,name:'India',item:base+'/india'},{'@type':'ListItem',position:2,name:area.name,item:base+path}]}];
+ const images=content.regional?.design?.hiddenSections?.includes('gallery')?[]:(await Promise.all((c.config.images||[]).map(async placement=>{const image=await getManagedImage(placement.assetId);return image?{image,placement}:null;}))).filter(v=>v!==null);
+ return <main className="india-local" data-india-area={area.id} style={style}><script type="application/ld+json" dangerouslySetInnerHTML={{__html:stringifyJsonLd(schema)}}/>{preview!==undefined&&<aside className="in-preview">Administrator preview · private draft · excluded from search</aside>}<IndiaIntroduction context={c}/><IndiaSearch context={c}/>{recipe.map((id,index)=>{const Component=INDIA_SECTION_COMPONENTS[id];return <Component key={id} context={{...c,ordinal:index+4}}/>;})}{images.length>0&&<div className="in-managed-images"><script type="application/ld+json" dangerouslySetInnerHTML={{__html:stringifyJsonLd(images.filter(item=>!item.placement.decorative).map(({image,placement})=>imageObject(image,placement)))}}/>{images.map(({image,placement})=><figure key={image.id}><img src={image.url} srcSet={imageSrcSet(image)} sizes="(max-width:700px) 100vw,600px" width={image.width} height={image.height} loading="lazy" alt={placement.decorative?'':placement.alt}/><figcaption>{placement.caption}{image.metadata.credit?' · '+image.metadata.credit:''}</figcaption></figure>)}</div>}<DonorDiscoveryPanel forcedCountry="India"/><footer className="in-footer"><Link href="/india">BloodNet / India</Link><nav aria-label="Service information"><Link href="/about">About</Link><Link href="/statistics">Directory definitions</Link><Link href="/safety-policy">Safety</Link><Link href="/privacy-policy">Privacy</Link></nav><p>Contacts and participation, not blood inventory. Confirm clinical arrangements with the collecting service.</p></footer></main>;
+}

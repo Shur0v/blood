@@ -426,6 +426,15 @@ model UsaEditorialPage {
   updated_at DateTime @updatedAt
 }
 
+model IndiaEditorialPage {
+  area_id String @id
+  draft Json @default("{}")
+  live Json?
+  published Boolean @default(false)
+  public_updated_at DateTime?
+  updated_at DateTime @updatedAt
+}
+
 model OtpVerification {
   id         String   @id @default(uuid())
   email      String   @unique

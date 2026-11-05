@@ -13,3 +13,7 @@ Indian SEO pages retain their existing server-rendered text, metadata, canonical
 Run `npm run test:india-ui`, the regional-content, donor-discovery, donor-ordering and SEO-content tests, `npm run guide:check` and the production build. Browser verification should cover `/india`, `/city/<Indian city>`, `/blood/<group>/<Indian city>`, country-qualified blood/organ routes and `/network/india` using synthetic directory fixtures. Compare SEO text and structured data with the same pre-change fixtures; check 320px, 390px, tablet and desktop widths, keyboard card activation, dialogs, empty/error results, request visibility, regional overrides and reduced motion. Check Nepal, Pakistan and Bangladesh for visual isolation.
 
 There are no migrations or new service credentials. Release through the existing backup/build/deployment workflow; a repository push does not establish that production has been deployed.
+
+## November 2026 local-page upgrade
+
+The country landing page described above remains unchanged. Eligible local directories now use the separate sixty-component India Local Pages presentation, with twelve default sections and fixed per-area recipes. Twenty curated city guides and six state guides have their own publication workflow. This follow-up **does** require the additive IndiaEditorialPage migration; it performs no donor backfill or automatic publication. See [India Local Pages](india-local-pages.md) and its [release evidence and limitations](india-local-release/README.md) for current editor, geography, verification and rollout details.

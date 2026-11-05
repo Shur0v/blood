@@ -133,6 +133,10 @@ before(async () => {
   await sql.query(readFileSync('prisma/migrations/20261105150000_location_management/migration.sql','utf8'));
   const beforeUsa=(await sql.query('SELECT to_jsonb(u) AS row FROM "User" u ORDER BY id')).rows;
   await sql.query(readFileSync('prisma/migrations/20261106090000_usa_editorial_pages/migration.sql','utf8'));
+  const indiaUsersBefore=(await sql.query('SELECT to_jsonb(u) AS record FROM "User" u ORDER BY id')).rows;
+  await sql.query(readFileSync('prisma/migrations/20261106150000_india_local_pages/migration.sql','utf8'));
+  assert.deepEqual((await sql.query('SELECT to_jsonb(u) AS record FROM "User" u ORDER BY id')).rows,indiaUsersBefore);
+  assert.equal((await sql.query('SELECT COUNT(*)::int AS n FROM "IndiaEditorialPage"')).rows[0].n,0);
   assert.deepEqual((await sql.query('SELECT to_jsonb(u) AS row FROM "User" u ORDER BY id')).rows,beforeUsa);
   assert.equal((await sql.query('SELECT count(*)::int AS n FROM "UsaEditorialPage"')).rows[0].n,0,'No automatic area publication');
   assert.deepEqual((await sql.query("SELECT to_jsonb(c) - 'neighborhood_name' - 'neighborhood_place_id' AS record FROM \"UserServiceCity\" c ORDER BY id")).rows, citiesBeforeNeighborhoods);
@@ -879,7 +883,7 @@ test('every exported administrator and manager API method denies anonymous and o
       checked++;
     }
   }
-  assert.equal(checked,98,'Cover all existing privileged API methods, including USA editorial GET and PUT');
+  assert.equal(checked,100,'Cover all existing privileged API methods, including USA and India editorial GET and PUT');
 });
 
 test('verification uploads are encrypted, owner-bound and privately readable by owner or active admin', integration, async () => {
@@ -1904,4 +1908,48 @@ test('USA registration completion is counted once without identifiers or medical
  assert.equal(row.page,'us');assert.equal(row.component,'USA Registration Completed');assert.ok(!JSON.stringify(row).includes(email));assert.ok(!JSON.stringify(row).includes(mobile));
  assert.equal((await AuthController.verifyOtp(authRequest('verify',payload))).status,401);
  assert.equal(await db.analyticsClickLog.count({where:{component:'USA Registration Completed'}}),before+1);
+});
+
+test('India editorial publication protects drafts, roles, maintenance and public assets',integration,async()=>{
+ const {GET,PUT}=await import('../src/app/api/admin/india-content/route');
+ const {saveIndiaContent,getIndiaPublication,publishedIndiaAreas}=await import('../src/backend/services/indiaLocalContent');
+ const {INDIA_CITIES}=await import('../src/lib/indiaLocal');const area=INDIA_CITIES[0],db=getPrisma();
+ const req=(body:unknown,origin='http://localhost')=>new Request('http://localhost/api/admin/india-content',{method:'PUT',headers:{authorization:'Bearer '+signToken({user_id:testAdminId,role:'ADMIN'}),'Content-Type':'application/json',origin},body:JSON.stringify(body)});
+ assert.equal((await GET(new Request('http://localhost/api/admin/india-content'))).status,401);
+ const patient=await newPatient();assert.equal((await GET(patientRequest('http://localhost/api/admin/india-content',patient.id))).status,403);
+ const manager=await db.adminUser.create({data:{admin_id:randomUUID(),password:'fixture-only',role:'MANAGER'}});
+ try{assert.equal((await GET(new Request('http://localhost/api/admin/india-content',{headers:{authorization:'Bearer '+rawSignToken({user_id:manager.id,role:'MANAGER',credential_version:staffCredentialVersion(manager.id,manager.password)})}}))).status,403);}finally{await db.adminUser.delete({where:{id:manager.id}});}
+ assert.equal((await PUT(req({areaId:area.id,action:'draft',config:{}},'https://evil.invalid'))).status,403);
+ await assert.rejects(()=>saveIndiaContent({areaId:'invented-city',action:'draft',config:{}}),/reviewed or recorded/);
+ await sql.query('UPDATE "MaintenanceGate" SET paused=true WHERE id=1');try{await assert.rejects(sql.query('INSERT INTO "IndiaEditorialPage" (area_id,updated_at) VALUES ($1,now())',[area.id]),(e:any)=>e.code==='55000');}finally{await sql.query('UPDATE "MaintenanceGate" SET paused=false WHERE id=1');}
+ await saveIndiaContent({areaId:area.id,action:'draft',config:{title:'Private Chennai preview'}});assert.equal(await getIndiaPublication(area.id),null);
+ await assert.rejects(()=>saveIndiaContent({areaId:area.id,action:'publish',config:{}}),/local scope/);
+ const config={title:'Reviewed Chennai guide',editorialNote:area.context};const first=await saveIndiaContent({areaId:area.id,action:'publish',config});
+ await saveIndiaContent({areaId:area.id,action:'draft',config:{title:'Unpublished replacement'}});assert.equal((await getIndiaPublication(area.id))?.config.title,config.title);
+ const same=await saveIndiaContent({areaId:area.id,action:'publish',config});assert.equal(same.public_updated_at?.toISOString(),first.public_updated_at?.toISOString());assert.ok((await publishedIndiaAreas()).some(a=>a.id===area.id));
+ await saveIndiaContent({areaId:area.id,action:'withdraw',config});assert.equal(await getIndiaPublication(area.id),null);
+ const restored=await saveIndiaContent({areaId:area.id,action:'restore',config});assert.deepEqual(restored.draft,{});assert.equal(restored.published,false);
+ await assert.rejects(()=>saveIndiaContent({areaId:area.id,action:'draft',config:{images:[{assetId:randomUUID(),alt:'Not a public asset',caption:'',decorative:false}]}}),/managed public image/);
+ await db.indiaEditorialPage.deleteMany();
+});
+
+test('India state aggregation deduplicates service cities and does not assign broad Odisha records to cities',integration,async()=>{
+ const {indiaCoverage}=await import('../src/backend/services/indiaLocalContent');const {indiaArea}=await import('../src/lib/indiaLocal');const db=getPrisma();
+ const user=await db.user.create({data:{profile_code:'INQ1',name:'Synthetic Kerala account',email:randomUUID()+'@example.invalid',mobile:randomUUID(),blood_group:'O+',location_city:'Kochi',location_country:'India',location_lat:9.94,location_lng:76.26}});
+ await db.userServiceCity.create({data:{user_id:user.id,city:'Kozhikode',country:'India',formatted_location:'Kozhikode, India',lat:11.259,lng:75.781,provider_place_id:'fixture-kozhikode',locked_until:new Date()}});
+ const organization=await db.communityDonor.create({data:{organization_name:'Synthetic Odisha '+randomUUID(),mobile:randomUUID(),location_city:'Odisha',location_country:'India',location_lat:20.3,location_lng:85.8,source:'Fixture',added_by_admin:'fixture'}});
+ try{const kerala=await indiaCoverage(indiaArea('kerala')!);assert.equal(kerala.registered,1);const odisha=await indiaCoverage(indiaArea('odisha')!);assert.equal(odisha.organizations,0);assert.equal(odisha.unresolved,1);const legacy=await indiaCoverage(indiaArea('odisha')!,true);assert.equal(legacy.organizations,1);const city=await indiaCoverage(indiaArea('bhubaneswar')!);assert.equal(city.organizations,0);}finally{await db.user.delete({where:{id:user.id}});await db.communityDonor.delete({where:{id:organization.id}});}
+});
+
+test('every inventoried India directory URL resolves eligible canonical metadata with matching isolated records',integration,async()=>{
+ const db=getPrisma(),{donorLocationMetadata}=await import('../src/components/DonorLocationLanding'),{bloodGroupFromSlug}=await import('../src/lib/seoRouting');
+ const inventory=JSON.parse(readFileSync('docs/india-local-release/existing-route-inventory.json','utf8')).urls as string[];
+ const pairs=new Map<string,{city:string;groups:Set<string>;organ:boolean}>();
+ for(const url of inventory){const p=new URL(url).pathname.split('/');const key=p[3];if(!pairs.has(key))pairs.set(key,{city:key.split('-').map(v=>v[0].toUpperCase()+v.slice(1)).join(' '),groups:new Set(),organ:false});const row=pairs.get(key)!;if(p[1]==='organ-donors')row.organ=true;else row.groups.add(p[4]?bloodGroupFromSlug(p[4])!:'A+');}
+ const ids:string[]=[];let index=0;const taken=new Set((await db.user.findMany({select:{profile_code:true}})).map(u=>u.profile_code));
+ try{
+ for(const row of pairs.values())for(const group of row.groups.size?row.groups:['A+']){let code;do{code='J'+(++index).toString(36).toUpperCase().padStart(3,'0');}while(taken.has(code));taken.add(code);const user=await db.user.create({data:{profile_code:code,name:'Synthetic route audit participant',email:randomUUID()+'@example.invalid',mobile:randomUUID(),blood_group:group,location_city:row.city,location_country:'India',location_lat:0,location_lng:0}});ids.push(user.id);if(row.organ)await db.organPledge.create({data:{user_id:user.id,organ_type:'Bone Marrow'}});}
+ for(const url of inventory){const p=new URL(url).pathname.split('/'),group=p[4]?bloodGroupFromSlug(p[4])!:undefined;const metadata=await donorLocationMetadata({country:'india',city:p[3]},p[1]==='organ-donors'?'organ':'blood',group);assert.equal(metadata.alternates?.canonical,new URL(url).pathname,url);assert.equal((metadata.robots as any)?.index,true,url);assert.ok(String(metadata.title).includes('directory'),url);assert.ok(!JSON.stringify(metadata).includes('@example.invalid'));}
+ assert.equal(inventory.length,443);
+ }finally{await db.user.deleteMany({where:{id:{in:ids}}});}
 });

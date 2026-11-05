@@ -1,3 +1,4 @@
+import './india-local.css';
 import type { Metadata } from "next";
 import Script from "next/script";
 import "./globals.css";

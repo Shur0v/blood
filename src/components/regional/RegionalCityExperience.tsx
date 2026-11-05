@@ -1,3 +1,5 @@
+import IndiaLocalExperience from '../india/local/IndiaLocalExperience';
+import {indiaDirectoryArea} from '@/src/lib/indiaLocal';
 import {getServiceAvailability,getServicePublicationDate} from '@/src/backend/services/publicContent';
 import {MedicalProfileDemo,RegionalDoctorServices} from '../PublicServiceContent';
 import {pakistanStyle} from '../pakistan/presentation';
@@ -21,6 +23,7 @@ import {getRegionalEdition} from '@/src/lib/regionalEdition';
 import {resolveRegionalDesign,regionalCopy,formatRegionalText,type RegionalCopyKey,type RegionalSectionKey} from '@/src/lib/regionalDesign';
 
 export default async function RegionalCityExperience({country='Nepal',city,group,canonicalPath,title,introduction,nativeAds=false}:{country?:string;city?:string;group?:string;canonicalPath:string;title?:string;introduction?:ReactNode;nativeAds?:boolean}){
+ if(country.toLowerCase()==='india'&&city)return <IndiaLocalExperience area={indiaDirectoryArea(city)} city={city} group={group} path={canonicalPath} introduction={introduction} legacy/>;
  const edition=getRegionalEdition(country);
  const [locations,content,countryEntries,network,publicationDates]=await Promise.all([getDonorLocations(),getRegionalContent(country,city),city?Promise.resolve(0):getBloodCountryEntryCount(country),getPublicBotStats(),getRegionalPublicationDates()]);
  const local=locations.find(row=>row.country.toLowerCase()===country.toLowerCase()&&toLocationSlug(row.city)===toLocationSlug(city||''));

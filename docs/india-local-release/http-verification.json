@@ -1,0 +1,165 @@
+{
+  "areas": [
+    {
+      "route": "/india/states/tamil-nadu",
+      "status": 200,
+      "canonical": true,
+      "structuredData": true
+    },
+    {
+      "route": "/india/states/kerala",
+      "status": 200,
+      "canonical": true,
+      "structuredData": true
+    },
+    {
+      "route": "/india/states/karnataka",
+      "status": 200,
+      "canonical": true,
+      "structuredData": true
+    },
+    {
+      "route": "/india/states/maharashtra",
+      "status": 200,
+      "canonical": true,
+      "structuredData": true
+    },
+    {
+      "route": "/india/states/uttar-pradesh",
+      "status": 200,
+      "canonical": true,
+      "structuredData": true
+    },
+    {
+      "route": "/india/states/odisha",
+      "status": 200,
+      "canonical": true,
+      "structuredData": true
+    },
+    {
+      "route": "/india/cities/chennai",
+      "status": 200,
+      "canonical": true,
+      "structuredData": true
+    },
+    {
+      "route": "/india/cities/coimbatore",
+      "status": 200,
+      "canonical": true,
+      "structuredData": true
+    },
+    {
+      "route": "/india/cities/madurai",
+      "status": 200,
+      "canonical": true,
+      "structuredData": true
+    },
+    {
+      "route": "/india/cities/kochi",
+      "status": 200,
+      "canonical": true,
+      "structuredData": true
+    },
+    {
+      "route": "/india/cities/thiruvananthapuram",
+      "status": 200,
+      "canonical": true,
+      "structuredData": true
+    },
+    {
+      "route": "/india/cities/kozhikode",
+      "status": 200,
+      "canonical": true,
+      "structuredData": true
+    },
+    {
+      "route": "/india/cities/bengaluru",
+      "status": 200,
+      "canonical": true,
+      "structuredData": true
+    },
+    {
+      "route": "/india/cities/mysuru",
+      "status": 200,
+      "canonical": true,
+      "structuredData": true
+    },
+    {
+      "route": "/india/cities/mangaluru",
+      "status": 200,
+      "canonical": true,
+      "structuredData": true
+    },
+    {
+      "route": "/india/cities/mumbai",
+      "status": 200,
+      "canonical": true,
+      "structuredData": true
+    },
+    {
+      "route": "/india/cities/pune",
+      "status": 200,
+      "canonical": true,
+      "structuredData": true
+    },
+    {
+      "route": "/india/cities/nagpur",
+      "status": 200,
+      "canonical": true,
+      "structuredData": true
+    },
+    {
+      "route": "/india/cities/banda",
+      "status": 200,
+      "canonical": true,
+      "structuredData": true
+    },
+    {
+      "route": "/india/cities/lucknow",
+      "status": 200,
+      "canonical": true,
+      "structuredData": true
+    },
+    {
+      "route": "/india/cities/kanpur",
+      "status": 200,
+      "canonical": true,
+      "structuredData": true
+    },
+    {
+      "route": "/india/cities/varanasi",
+      "status": 200,
+      "canonical": true,
+      "structuredData": true
+    },
+    {
+      "route": "/india/cities/noida",
+      "status": 200,
+      "canonical": true,
+      "structuredData": true
+    },
+    {
+      "route": "/india/cities/prayagraj",
+      "status": 200,
+      "canonical": true,
+      "structuredData": true
+    },
+    {
+      "route": "/india/cities/bhubaneswar",
+      "status": 200,
+      "canonical": true,
+      "structuredData": true
+    },
+    {
+      "route": "/india/cities/cuttack",
+      "status": 200,
+      "canonical": true,
+      "structuredData": true
+    }
+  ],
+  "anonymousPreview": 404,
+  "anonymousEditor": 401,
+  "unknownArea": 404,
+  "sitemap": true,
+  "inventoriedRoutes": 443
+}

@@ -1,3 +1,4 @@
+import {publishedIndiaAreas} from '@/src/backend/services/indiaLocalContent';
 import {listPublishedUsaAreas,getUsaPublication} from '@/src/backend/services/usaContent';
 import {getPublicPageDates} from '@/src/backend/services/publicContent';
 import { MetadataRoute } from 'next';
@@ -94,6 +95,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   for(const entry of staticRoutes){const date=contentDates.get(new URL(entry.url).pathname.slice(1));if(date)entry.lastModified=date;}
+  for(const area of await publishedIndiaAreas())staticRoutes.push({url:baseUrl+area.path,lastModified:area.modified||undefined,changeFrequency:'weekly',priority:.6});
   for(const area of await listPublishedUsaAreas())staticRoutes.push({url:baseUrl+area.path,lastModified:area.modified||undefined,changeFrequency:'weekly',priority:.6});
   const usaPublication=await getUsaPublication('country');const usRoute=staticRoutes.find(row=>row.url===baseUrl+'/us');if(usRoute&&usaPublication?.modified)usRoute.lastModified=usaPublication.modified;
   try {

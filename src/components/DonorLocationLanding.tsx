@@ -1,3 +1,6 @@
+import {indiaDirectoryMetadata} from '@/src/backend/services/indiaLocalContent';
+import IndiaLocalExperience from './india/local/IndiaLocalExperience';
+import {indiaDirectoryArea,indiaSearchCopy} from '@/src/lib/indiaLocal';
 import {usaDirectorySearchCopy} from '@/src/lib/usaSeo';
 import {ServiceInvitation} from './PublicServiceContent';
 import {pakistanStyle} from './pakistan/presentation';
@@ -27,16 +30,19 @@ export async function donorLocationMetadata(params: LocationParams, mode: 'blood
   const description = usaCopy?.description || (mode === 'blood'
     ? `Find active blood donor entries in ${row.city}, ${row.country}${row.bloodGroups.length ? ` for ${row.bloodGroups.join(', ')}` : ''}. Search local volunteers and coordinate donation with your hospital.`
     : `Find organ donor pledges in ${row.city}, ${row.country}${row.organs.length ? ` for ${row.organs.join(', ')}` : ''}. Coordinate through licensed hospitals and lawful transplant services.`);
+  const indiaCopy=row.country.toLowerCase()==='india'?await indiaDirectoryMetadata(row.city,bloodGroup,mode):null;
+  if(indiaCopy&&mode==='organ'&&row.organs.length)indiaCopy.description+=' Recorded categories: '+row.organs.join(', ')+'.';
   const path = donorLocationPath(row, mode)+(bloodGroup?`/${bloodGroupToSlug(bloodGroup)}`:'');
-  return { title, description, alternates: { canonical: path }, robots: { index: true, follow: true },
-    openGraph: { title, description, url: path, type: 'website', images: ['/opengraph-image'] },
-    twitter: { card: 'summary_large_image', title, description, images: ['/opengraph-image'] } };
+  return { title:indiaCopy?.title||title, description:indiaCopy?.description||description, alternates: { canonical: path }, robots: { index: true, follow: true },
+    openGraph: { title:indiaCopy?.title||title, description:indiaCopy?.description||description, url: path, type: 'website', images: ['/opengraph-image'] },
+    twitter: { card: 'summary_large_image', title:indiaCopy?.title||title, description:indiaCopy?.description||description, images: ['/opengraph-image'] } };
 }
 
 export default async function DonorLocationLanding({params,mode,bloodGroup}:{params:LocationParams;mode:'blood'|'organ';bloodGroup?:string}) {
   let row = await findDonorLocation(params.country, params.city);
   if(row&&bloodGroup){const count=(await getLocationBloodGroupCounts(row.country,row.city))[bloodGroup]||0;row={...row,bloodCount:count,bloodGroups:[bloodGroup]};}
   if (!row || !(mode === 'blood' ? row.bloodCount : row.organCount)) notFound();
+  if(row.country.toLowerCase()==='india')return <IndiaLocalExperience area={indiaDirectoryArea(row.city)} city={row.city} group={bloodGroup} mode={mode} path={donorLocationPath(row,mode)+(bloodGroup?'/'+bloodGroupToSlug(bloodGroup):'')} legacy/>;
   const count = mode === 'blood' ? row.bloodCount : row.organCount;
   const usaCopy=row.country.toLowerCase()==='united states'?usaDirectorySearchCopy(row.city,mode,bloodGroup):null;
   const path = donorLocationPath(row, mode)+(bloodGroup?`/${bloodGroupToSlug(bloodGroup)}`:''), url = getPublicBaseUrl() + path;

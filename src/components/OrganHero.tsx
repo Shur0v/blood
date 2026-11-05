@@ -49,7 +49,8 @@ interface OrganDonorApiResponse {
   };
 }
 
-export default function OrganHero({ forcedCountry,initialOrgan=null,initialCity='',heading,description }: { forcedCountry?: string;initialOrgan?:string|null;initialCity?:string;heading?:string;description?:string }) {
+export default function OrganHero({ forcedCountry,initialOrgan=null,initialCity='',heading,description,headingLevel=1 }: { forcedCountry?: string;initialOrgan?:string|null;initialCity?:string;heading?:string;description?:string;headingLevel?:1|2 }) {
+  const Heading=headingLevel===2?'h2':'h1';
   const [activeOrgan, setActiveOrgan] = useState<string | null>(initialOrgan);
   const [activeBloodGroup, setActiveBloodGroup] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState(initialCity);
@@ -203,9 +204,9 @@ export default function OrganHero({ forcedCountry,initialOrgan=null,initialCity=
               </div>
             </motion.div>
 
-            <h1 className="mb-6 text-4xl font-bold tracking-tight text-gray-900 md:text-6xl">
+            <Heading className="mb-6 text-4xl font-bold tracking-tight text-gray-900 md:text-6xl">
               {heading||<>Give the Gift of <span className="text-primary-dark">Life</span>.</>}
-            </h1>
+            </Heading>
 
             <p className="mx-auto mb-8 max-w-2xl text-base text-gray-500">
               {description||'Connect with organ donors instantly. Our platform facilitates the matching process for life-saving transplants with utmost care and security.'}

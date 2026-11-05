@@ -13,6 +13,7 @@ import {
   type BloodGroup,
 } from "@/src/lib/seoRouting";
 import ManagedNativeAdSlot from "@/src/components/ManagedNativeAdSlot";
+import {indiaDirectoryArea,indiaSearchCopy} from '@/src/lib/indiaLocal';
 import {usaDirectorySearchCopy} from '@/src/lib/usaSeo';
 import RegionalCityExperience from './regional/RegionalCityExperience';
 import {RegionalAuthActions} from './regional/RegionalInteractions';
@@ -71,7 +72,7 @@ export async function BloodGroupCitySeoPage({ bloodGroup, citySlug }: { bloodGro
 
   const city = donors[0]?.location_city || cityRows[0].city;
   const country = donors[0]?.location_country || cityRows[0].country;
-  const usaCopy=country.toLowerCase()==='united states'?usaDirectorySearchCopy(city,'blood',bloodGroup):null;
+  const usaCopy=country.toLowerCase()==='india'?indiaSearchCopy(indiaDirectoryArea(city),bloodGroup):country.toLowerCase()==='united states'?usaDirectorySearchCopy(city,'blood',bloodGroup):null;
   const design=(await getRegionalContent(country,city))?.design,context={country,city,group:bloodGroup};
   const localRows = cityRows.filter(row => row.country === country);
   const groupCount = localRows.filter(row => row.blood_group === bloodGroup).reduce((sum, row) => sum + Number(row.total ?? 0), 0);
@@ -156,7 +157,7 @@ export async function CityBloodSeoPage({ citySlug, canonicalPath }: { citySlug: 
 
   const city = rows[0].city;
   const country = rows[0].country;
-  const usaCopy=country.toLowerCase()==='united states'?usaDirectorySearchCopy(city,'blood'):null;
+  const usaCopy=country.toLowerCase()==='india'?indiaSearchCopy(indiaDirectoryArea(city)):country.toLowerCase()==='united states'?usaDirectorySearchCopy(city,'blood'):null;
   const design=(await getRegionalContent(country,city))?.design,context={country,city};
   const localRows = rows.filter(row=>row.country===country);
   const total = localRows.reduce((sum, row) => sum + Number(row.total ?? 0), 0);
