@@ -4,7 +4,7 @@ import {RegionalContentSchema} from '../src/lib/regionalContent';
 import {regionalLastModified} from '../src/backend/services/regionalContent';
 import {GLOBAL_CITY_REVISION} from '../src/lib/regionalContent';
 import {getRegionalEdition} from '../src/lib/regionalEdition';
-import {RegionalDesignSchema,REGIONAL_PALETTES,regionalDesignContrastError,regionalCopy,normalizeRegionalDesign} from '../src/lib/regionalDesign';
+import {RegionalDesignSchema,REGIONAL_PALETTES,regionalDesignContrastError,regionalCopy,normalizeRegionalDesign,resolveRegionalDesign} from '../src/lib/regionalDesign';
 import {defaultHeightUnit,heightFromCm,heightToCm,formatHeight} from '../src/lib/heightUnits';
 
 test('regional height units preserve centimetres and provide Asian inch defaults',()=>{
@@ -47,6 +47,9 @@ test('country editions use real country links and never send other countries to 
  }
 });
 test('regional design accepts bounded copy and readable palettes while protecting core sections',()=>{
+ assert.equal(resolveRegionalDesign('Pakistan').colors.accent,'#146345');
+ assert.deepEqual(resolveRegionalDesign('India',{theme:'pakistan'}).colors,REGIONAL_PALETTES.pakistan,'Existing palette choices outside Pakistan remain unchanged');
+ assert.equal(regionalDesignContrastError('Pakistan'),null);
  for(const theme of Object.keys(REGIONAL_PALETTES))assert.equal(regionalDesignContrastError('India',{theme:theme as 'india'}),null,theme);
  assert.ok(RegionalDesignSchema.safeParse({theme:'india',layout:'stacked',copy:{introTitle:'Donors in {city}'},hiddenSections:['home5'],faqs:[{question:'How can I search?',answer:'Use the city and group filters above.'}]}).success);
  for(const design of [{colors:{accent:'red;display:none'}},{hiddenSections:['donors']},{hiddenSections:['faq','faq']},{registeredAccounts:90000},{copy:{introTitle:'x'.repeat(181)}},{faqs:[{question:'Short',answer:'tiny'}]}])assert.equal(RegionalDesignSchema.safeParse(design).success,false);

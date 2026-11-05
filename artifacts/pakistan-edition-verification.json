@@ -1,0 +1,324 @@
+{
+  "date": "2026-11-05",
+  "fixture": "Isolated local PostgreSQL with synthetic users. No production data.",
+  "productionDeployed": false,
+  "databaseMigrationRequired": false,
+  "build": "Production Next.js build and type checking passed.",
+  "checks": {
+    "regionalTests": 5,
+    "discoveryAndOrderingTests": 14,
+    "seoContentTests": 4,
+    "securityTests": 6,
+    "databaseIntegrationTests": 6,
+    "guideMappedEntries": 390,
+    "bookFlow": "Pakistan and India purchase/sponsored-copy UI checks passed without initiating payment.",
+    "regionalEditor": "Existing publication, selection, visibility, gallery, auth and request-preparation UI checks passed.",
+    "alias": {
+      "path": "/pk",
+      "status": 308,
+      "location": "/pakistan",
+      "excludedFromRegionalSitemap": true
+    }
+  },
+  "browser": [
+    {
+      "route": "/pakistan",
+      "width": 320,
+      "page": true,
+      "scroll": 320,
+      "h1": 1,
+      "cards": 16,
+      "sections": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15"
+      ]
+    },
+    {
+      "route": "/pakistan",
+      "width": 390,
+      "page": true,
+      "scroll": 390,
+      "h1": 1,
+      "cards": 16,
+      "sections": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15"
+      ]
+    },
+    {
+      "route": "/pakistan",
+      "width": 768,
+      "page": true,
+      "scroll": 768,
+      "h1": 1,
+      "cards": 16,
+      "sections": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15"
+      ]
+    },
+    {
+      "route": "/pakistan",
+      "width": 1440,
+      "page": true,
+      "scroll": 1440,
+      "h1": 1,
+      "cards": 16,
+      "sections": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15"
+      ]
+    },
+    {
+      "route": "/blood/lahore",
+      "width": 390,
+      "page": true,
+      "scroll": 390,
+      "h1": 1,
+      "cards": 16,
+      "sections": [
+        "4"
+      ]
+    },
+    {
+      "route": "/blood/lahore",
+      "width": 1440,
+      "page": true,
+      "scroll": 1440,
+      "h1": 1,
+      "cards": 16,
+      "sections": [
+        "4"
+      ]
+    },
+    {
+      "route": "/blood/a-positive/lahore",
+      "width": 390,
+      "page": true,
+      "scroll": 390,
+      "h1": 1,
+      "cards": 15,
+      "sections": [
+        "4"
+      ]
+    },
+    {
+      "route": "/blood/a-positive/lahore",
+      "width": 1440,
+      "page": true,
+      "scroll": 1440,
+      "h1": 1,
+      "cards": 15,
+      "sections": [
+        "4"
+      ]
+    },
+    {
+      "route": "/blood-donors/pakistan/lahore",
+      "width": 390,
+      "page": true,
+      "scroll": 390,
+      "h1": 1,
+      "cards": 16,
+      "sections": [
+        "4"
+      ]
+    },
+    {
+      "route": "/blood-donors/pakistan/lahore",
+      "width": 1440,
+      "page": true,
+      "scroll": 1440,
+      "h1": 1,
+      "cards": 16,
+      "sections": [
+        "4"
+      ]
+    },
+    {
+      "route": "/organ-donors/pakistan/lahore",
+      "width": 390,
+      "page": true,
+      "scroll": 390,
+      "h1": 1,
+      "cards": 16,
+      "sections": []
+    },
+    {
+      "route": "/organ-donors/pakistan/lahore",
+      "width": 1440,
+      "page": true,
+      "scroll": 1440,
+      "h1": 1,
+      "cards": 16,
+      "sections": []
+    },
+    {
+      "route": "/network/pakistan",
+      "width": 390,
+      "page": true,
+      "scroll": 390,
+      "h1": 1,
+      "cards": 0,
+      "sections": []
+    },
+    {
+      "route": "/network/pakistan",
+      "width": 1440,
+      "page": true,
+      "scroll": 1440,
+      "h1": 1,
+      "cards": 0,
+      "sections": []
+    },
+    {
+      "interaction": "load more, category filter, keyboard donor modal, login",
+      "passed": true
+    },
+    {
+      "scenario": "error",
+      "passed": true
+    },
+    {
+      "scenario": "empty",
+      "passed": true
+    }
+  ],
+  "seo": [
+    {
+      "route": "/blood/lahore",
+      "metadata": true,
+      "structuredData": true,
+      "content": true,
+      "links": true
+    },
+    {
+      "route": "/blood/a-positive/lahore",
+      "metadata": true,
+      "structuredData": true,
+      "content": true,
+      "links": true
+    },
+    {
+      "route": "/blood-donors/pakistan/lahore",
+      "metadata": true,
+      "structuredData": true,
+      "content": true,
+      "links": true
+    },
+    {
+      "route": "/blood-donors/pakistan/lahore/a-positive",
+      "metadata": true,
+      "structuredData": true,
+      "content": true,
+      "links": true
+    },
+    {
+      "route": "/organ-donors/pakistan/lahore",
+      "metadata": true,
+      "structuredData": true,
+      "content": true,
+      "links": true
+    },
+    {
+      "route": "/network/pakistan",
+      "metadata": true,
+      "structuredData": true,
+      "content": true,
+      "links": true
+    },
+    {
+      "route": "/blood/chennai",
+      "metadata": true,
+      "structuredData": true,
+      "content": true,
+      "links": true
+    },
+    {
+      "route": "/blood/kathmandu",
+      "metadata": true,
+      "structuredData": true,
+      "content": true,
+      "links": true
+    },
+    {
+      "route": "/blood/dhaka",
+      "metadata": true,
+      "structuredData": true,
+      "content": true,
+      "links": true
+    }
+  ],
+  "visualIsolation": {
+    "reviewed": [
+      "Main homepage",
+      "India",
+      "Nepal",
+      "Bangladesh"
+    ],
+    "viewports": [
+      390,
+      768,
+      1440
+    ],
+    "method": "Before/after screenshots and unchanged non-Pakistan presentation branches. Exact full-page pixel equality is not claimed: existing lazy sections, animation and advertising introduce dynamic differences. Nepal captures matched exactly; homepage first-screen appearance was visually compared."
+  },
+  "screenshots": [
+    "pakistan-landing-desktop.png",
+    "pakistan-landing-tablet.png",
+    "pakistan-landing-mobile.png",
+    "pakistan-city-desktop.png"
+  ]
+}

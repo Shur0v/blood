@@ -5,10 +5,11 @@ import { Heart, X, Hospital, Mail, DollarSign, FileText, User, Activity, ArrowRi
 import DonateNowModal from "./DonateNowModal"; // High-Converting Donation Modal
 import CountryPhoneInput, { emptyPhoneValue, type PhoneFieldValue } from "./CountryPhoneInput";
 
-export default function MedicalAidFund({presentation='default'}:{presentation?:'default'|'india'}) {
+export default function MedicalAidFund({presentation='default'}:{presentation?:'default'|'india'|'pakistan'}) {
   const [isModalOpen, setIsModalOpen] = useState(false); // Verification Form Modal
   const [isDonateModalOpen, setIsDonateModalOpen] = useState(false); // Donate Now UI Modal
 
+  const [statsLoaded, setStatsLoaded] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -25,9 +26,9 @@ export default function MedicalAidFund({presentation='default'}:{presentation?:'
   const [phoneValue, setPhoneValue] = useState<PhoneFieldValue>(emptyPhoneValue());
   const [isPhoneValid, setIsPhoneValid] = useState(false);
   const [stats, setStats] = useState({
-    total_raised: presentation==='india'?0:13500,
-    total_spent: presentation==='india'?0:15000,
-    completed_ops: presentation==='india'?0:37,
+    total_raised: presentation!=='default'?0:13500,
+    total_spent: presentation!=='default'?0:15000,
+    completed_ops: presentation!=='default'?0:37,
     donor_requests: 0,
   });
 
@@ -41,6 +42,7 @@ export default function MedicalAidFund({presentation='default'}:{presentation?:'
       if (!res.ok || !payload.success || !payload.data) {
         return;
       }
+      setStatsLoaded(true);
       setStats((prev) => ({
         ...prev,
         total_raised: Number(payload.data.total_raised ?? prev.total_raised),
@@ -151,7 +153,7 @@ export default function MedicalAidFund({presentation='default'}:{presentation?:'
   };
 
   return (
-    <section className={presentation==='india'?"india-book-access relative mx-auto max-w-6xl px-4 py-16":"relative mx-auto max-w-6xl px-4 py-16"}>
+    <section className={presentation!=='default'?`${presentation}-book-access relative mx-auto max-w-6xl px-4 py-16`:"relative mx-auto max-w-6xl px-4 py-16"}>
 
       {/* High-Converting Global Donate Modal */}
       <DonateNowModal
@@ -160,10 +162,10 @@ export default function MedicalAidFund({presentation='default'}:{presentation?:'
       />
 
       <motion.div
-        initial={presentation==='india'?false:{ opacity: 0, y: 40 }}
+        initial={presentation!=='default'?false:{ opacity: 0, y: 40 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className={presentation==='india'?"india-book-panel relative overflow-hidden p-8 md:p-14":"relative overflow-hidden rounded-[40px] border border-red-500/30 bg-gradient-to-br from-rose-600 via-[#FF3131] to-red-900 p-8 shadow-[0_30px_60px_-15px_rgba(255,49,49,0.4)] md:p-14"}
+        className={presentation!=='default'?`${presentation}-book-panel relative overflow-hidden p-8 md:p-14`:"relative overflow-hidden rounded-[40px] border border-red-500/30 bg-gradient-to-br from-rose-600 via-[#FF3131] to-red-900 p-8 shadow-[0_30px_60px_-15px_rgba(255,49,49,0.4)] md:p-14"}
       >
         {/* Decorative Background Elements */}
         <div className="absolute top-0 right-0 -mr-20 -mt-20 h-64 w-64 rounded-full bg-white opacity-5 blur-3xl"></div>
@@ -231,26 +233,26 @@ export default function MedicalAidFund({presentation='default'}:{presentation?:'
               <motion.div whileHover={{ y: -5 }} className="rounded-3xl border border-white/20 bg-white/10 p-8 shadow-2xl backdrop-blur-xl transition-all">
                 {/* <p className="text-[10px] font-semibold uppercase tracking-wide text-white/70 mb-2">Total Raised</p> */}
                 <p className="text-[10px] font-semibold uppercase tracking-wide text-white/70 mb-2">TOTAL DOWNLOADS</p>
-                <div className="text-4xl font-semibold text-white tracking-tight drop-shadow-md">{stats.total_raised.toLocaleString()}+</div>
+                <div className="text-4xl font-semibold text-white tracking-tight drop-shadow-md">{presentation==='pakistan'&&!statsLoaded?'—':stats.total_raised.toLocaleString()+'+'}</div>
               </motion.div>
 
               <motion.div whileHover={{ y: -5 }} className="rounded-3xl border border-white/20 bg-white/10 p-8 shadow-2xl backdrop-blur-xl transition-all">
                 {/* <p className="text-[10px] font-semibold uppercase tracking-wide text-white/70 mb-2">Total Spent</p> */}
                 <p className="text-[10px] font-semibold uppercase tracking-wide text-white/70 mb-2">COMMUNITY SUPPORT</p>
-                <div className="text-4xl font-semibold text-white tracking-tight drop-shadow-md">${stats.total_spent.toLocaleString()}+</div>
+                <div className="text-4xl font-semibold text-white tracking-tight drop-shadow-md">${presentation==='pakistan'&&!statsLoaded?'—':stats.total_spent.toLocaleString()+'+'}</div>
               </motion.div>
 
               <motion.div whileHover={{ y: -5 }} className="rounded-3xl border border-white/40 bg-white/20 p-8 shadow-2xl backdrop-blur-xl transition-all relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-4 opacity-10"><Activity className="w-16 h-16" /></div>
                 {/* <p className="text-[10px] font-semibold uppercase tracking-wide text-white mb-2">Projects Completed</p> */}
                 <p className="text-[10px] font-semibold uppercase tracking-wide text-white mb-2">ACTIVE READERS</p>
-                <div className="text-4xl font-semibold text-white tracking-tight drop-shadow-lg">{stats.completed_ops.toLocaleString()}</div>
+                <div className="text-4xl font-semibold text-white tracking-tight drop-shadow-lg">{presentation==='pakistan'&&!statsLoaded?'—':stats.completed_ops.toLocaleString()}</div>
               </motion.div>
 
               <motion.div whileHover={{ y: -5 }} className="rounded-3xl border border-white/20 bg-white/10 p-8 shadow-2xl backdrop-blur-xl transition-all">
                 {/* <p className="text-[10px] font-semibold uppercase tracking-wide text-white/70 mb-2">Donation Requests</p> */}
                 <p className="text-[10px] font-semibold uppercase tracking-wide text-white/70 mb-2">SPONSORED COPIES</p>
-                <div className="text-4xl font-semibold text-white tracking-tight drop-shadow-md">{stats.donor_requests.toLocaleString()}</div>
+                <div className="text-4xl font-semibold text-white tracking-tight drop-shadow-md">{presentation==='pakistan'&&!statsLoaded?'—':stats.donor_requests.toLocaleString()}</div>
               </motion.div>
 
             </div>

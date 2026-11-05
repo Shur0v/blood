@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import RegionalCityExperience from '@/src/components/regional/RegionalCityExperience';
 import IndiaLanding from '@/src/components/india/IndiaLanding';
+import PakistanLanding from '@/src/components/pakistan/PakistanLanding';
 import RegionalSeoFooter from '@/src/components/RegionalSeoFooter';
 import DonorLocationDirectory from '@/src/components/DonorLocationDirectory';
 import {getDonorLocations} from '@/src/backend/services/donorLocations';
@@ -68,7 +69,7 @@ export default async function RegionalLandingPage({ params }: { params: Promise<
           ]),
         }}
       />
-      {config.country==='India'?<IndiaLanding/>:<HomeExperience forcedCountry={config.country} regionalFooter={<RegionalSeoFooter country={config.country}/>} locationDirectory={<DonorLocationDirectory country={config.country} limit={24}/>}/>}
+      {config.country==='India'?<IndiaLanding/>:config.country==='Pakistan'?<PakistanLanding/>:<HomeExperience forcedCountry={config.country} regionalFooter={<RegionalSeoFooter country={config.country}/>} locationDirectory={<DonorLocationDirectory country={config.country} limit={24}/>}/>}
     </>
   );
 }

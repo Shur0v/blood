@@ -1768,7 +1768,16 @@
     "access": "Reviewed supporting implementation",
     "source": "src/app/layout.tsx",
     "methods": [],
-    "sha256": "3ecb60f181267472a0bf8ced819ba8ff6027f8ccc692bc72c65f6d4353736577"
+    "sha256": "cde9673e0e15a19839facaa7f87b32dc6903dee73995545f5fb5cb13c20b9390"
+  },
+  {
+    "kind": "module",
+    "name": "src/app/pakistan.css",
+    "flow": "regional",
+    "access": "Reviewed supporting implementation",
+    "source": "src/app/pakistan.css",
+    "methods": [],
+    "sha256": "19bbdb7397a58bed15e9a29bb14da140d380c5c6e90d318f8bc2ed6159439922"
   },
   {
     "kind": "module",
@@ -1894,7 +1903,7 @@
     "access": "Reviewed supporting implementation",
     "source": "src/components/Hero.tsx",
     "methods": [],
-    "sha256": "32245d3a797b264a319ff1a723878184dea6ac0ec8c38bd3ae3ed460053f1af2"
+    "sha256": "0123e78862868381337c27aa5e479a72b5ab0ffe47336cfa262d9c00e04fb403"
   },
   {
     "kind": "module",
@@ -1979,6 +1988,33 @@
   },
   {
     "kind": "module",
+    "name": "src/components/pakistan/PakistanLanding.tsx",
+    "flow": "regional",
+    "access": "Reviewed supporting implementation",
+    "source": "src/components/pakistan/PakistanLanding.tsx",
+    "methods": [],
+    "sha256": "5daff02999ab02054740d0b977c8c7e014546c8dded2c278ea4506a5e2e19f46"
+  },
+  {
+    "kind": "module",
+    "name": "src/components/pakistan/PakistanSurface.tsx",
+    "flow": "regional",
+    "access": "Reviewed supporting implementation",
+    "source": "src/components/pakistan/PakistanSurface.tsx",
+    "methods": [],
+    "sha256": "4580207d14d708727891acfd2843830f604b9627bab177939946c1bb1538c42e"
+  },
+  {
+    "kind": "module",
+    "name": "src/components/pakistan/presentation.ts",
+    "flow": "regional",
+    "access": "Reviewed supporting implementation",
+    "source": "src/components/pakistan/presentation.ts",
+    "methods": [],
+    "sha256": "6897889cd2efd236c7845aa5e490cc5071757fc4fb5dfe405d04a6a37a7b796b"
+  },
+  {
+    "kind": "module",
     "name": "src/components/ProfileIdentityCard.tsx",
     "flow": "profile",
     "access": "Reviewed supporting implementation",
@@ -2011,7 +2047,7 @@
     "access": "Reviewed supporting implementation",
     "source": "src/components/regional/RegionalCityExperience.tsx",
     "methods": [],
-    "sha256": "a1d33cab9698cf104bf755eedc6279c02e0347f2b34425d6ee0fc718dca877f5"
+    "sha256": "1067f5022b2ec6395b220284357516560700ffbb4dfa8de564cc33da45a7d4dd"
   },
   {
     "kind": "module",
@@ -2029,7 +2065,7 @@
     "access": "Reviewed supporting implementation",
     "source": "src/components/RegionalDesignEditor.tsx",
     "methods": [],
-    "sha256": "4a70a9ce5a66fcacfadc1bc455d67801e10a26e1a1f05cade620a71a980884b0"
+    "sha256": "471141873c86f038bf3c47da91ef96804981b7aab4e27919f29bf6c5dda3583c"
   },
   {
     "kind": "module",
@@ -2191,7 +2227,7 @@
     "access": "Reviewed supporting implementation",
     "source": "src/lib/regionalDesign.ts",
     "methods": [],
-    "sha256": "64faa73a66a03ee0f3bb9c73690f5ff3268e790740ce2cdd5597bfcd2e2f28b9"
+    "sha256": "63f87aacd204f9cd79a0d924880f1ca4178ddfb1f42b3afcd1e50a71252688a5"
   },
   {
     "kind": "page",
@@ -2209,7 +2245,7 @@
     "access": "Public or endpoint-specific guard",
     "source": "src/app/[region]/page.tsx",
     "methods": [],
-    "sha256": "b3b24d95d45635424aa41ca167bde2db9ebe117d1d36a76b27a532900c857e70"
+    "sha256": "825c3bf808fc79d2aa0761928327f7120d1220dbb64f4d863ce7c986144d8bcd"
   },
   {
     "kind": "page",
@@ -2605,7 +2641,7 @@
     "access": "Public or endpoint-specific guard",
     "source": "src/app/network/[country]/page.tsx",
     "methods": [],
-    "sha256": "e86c2ca3b4cddd728be6de49aad60520176fab7ab148d770ed353fda1b013f6c"
+    "sha256": "29ce265bb08c89b8d04c3951402c793c2e9c6ab57ffba459c817b0b8c4a666c7"
   },
   {
     "kind": "page",
@@ -2732,6 +2768,15 @@
     "source": "src/app/ph/page.tsx",
     "methods": [],
     "sha256": "93e8ff7d2dbef588eaa4cf0e16ecb92e56d6a140b92e39c7671dbce0eec214fe"
+  },
+  {
+    "kind": "page",
+    "name": "/pk",
+    "flow": "platform",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/pk/page.tsx",
+    "methods": [],
+    "sha256": "31882b61ea22dbfac2a5a9d09e2772279e8f9eb86b34375b51075cac11fcf8e8"
   },
   {
     "kind": "page",

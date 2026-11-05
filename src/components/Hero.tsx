@@ -398,7 +398,7 @@ export default function Hero({ forcedCountry, initialCity = '', initialGroup = n
               </div>
               <div className="px-4 py-2">
                 <span className="text-base font-bold lowercase tracking-[2px] text-white">
-                  {presentation==="regional"?"country entries":"active donor"}
+                  {presentation==="regional"?(forcedCountry?.toLowerCase()==="pakistan"&&!initialCity?"worldwide entries":"country entries"):"active donor"}
                 </span>
               </div>
             </motion.div>
@@ -420,18 +420,18 @@ export default function Hero({ forcedCountry, initialCity = '', initialGroup = n
         </motion.div>
 
         {!viewerGeo.resolved || isInitialDonorLoad || !localReady ? (
-          <div data-region-section={regionalSections||presentation==="regional"?"3":undefined} className="mx-auto min-h-[320px] max-w-4xl rounded-[8px] border border-white/40 bg-white/20 p-8 text-center text-sm font-semibold text-gray-700">
+          <div data-region-section={regionalSections||presentation==="regional"?"3":undefined} data-pakistan-section={forcedCountry?.toLowerCase()==="pakistan"&&presentation==="regional"?"4":undefined} className="mx-auto min-h-[320px] max-w-4xl rounded-[8px] border border-white/40 bg-white/20 p-8 text-center text-sm font-semibold text-gray-700">
             Loading nearby active donors...
           </div>
         ) : hasNoResults ? (
-          <div data-region-section={regionalSections||presentation==="regional"?"3":undefined} className="mx-auto min-h-[320px] max-w-4xl rounded-[8px] border border-white/40 bg-white/20 p-8 text-center text-sm font-semibold text-gray-700">
+          <div data-region-section={regionalSections||presentation==="regional"?"3":undefined} data-pakistan-section={forcedCountry?.toLowerCase()==="pakistan"&&presentation==="regional"?"4":undefined} className="mx-auto min-h-[320px] max-w-4xl rounded-[8px] border border-white/40 bg-white/20 p-8 text-center text-sm font-semibold text-gray-700">
             <p>{isDonorApiDown ? 'Donor cards could not be loaded. Please retry.' : `No matching donor entries${viewerGeo.country ? ` in ${viewerGeo.country}` : ''}${normalizedSearch ? ` for “${normalizedSearch}”` : ''}${activeGroup ? ` (${activeGroup})` : ''}.`}</p>
             <button type="button" className="mt-4 rounded-full border border-rose-200 bg-white px-5 py-3 text-sm font-semibold text-rose-700" onClick={() => isDonorApiDown ? setRetryAttempt(value => value + 1) : document.querySelector<HTMLButtonElement>('.donor-discovery-trigger')?.click()}>
               {isDonorApiDown ? 'Retry donor search' : 'Choose another location'}
             </button>
           </div>
         ) : (
-          <div data-region-section={regionalSections||presentation==="regional"?"3":undefined} className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div data-region-section={regionalSections||presentation==="regional"?"3":undefined} data-pakistan-section={forcedCountry?.toLowerCase()==="pakistan"&&presentation==="regional"?"4":undefined} className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {donors.map((donor, index) => (
               <div key={`slot-${donor.id}`}>
                 {inlineBannerAd && !hideInlineBanner && adInsertIndexes.includes(index) && !failedAdSlots[index] && (

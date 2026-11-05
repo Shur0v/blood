@@ -55,6 +55,8 @@ See [regional editing](docs/regional-dashboard-editor-20261025.md), [Nepal prese
 
 The [India edition](docs/india-edition.md) uses a distinct, image-light regional layout, while Indian donor pages retain their SEO content and existing directory behavior.
 
+The [Pakistan edition](docs/pakistan-edition.md) adds a separate forest-green country landing page and Pakistan-only donor/SEO presentation, preserving the other regional designs and shared bottom navigation.
+
 Account location selection has an administrator **Location Management** page for detailed/city-only choices, countrywide/current-district scope, nearby ranking, spelling suggestions and labels. See the [location workflow and deployment notes](docs/location-management.md).
 
 Profile height defaults to inches in Asia and centimetres elsewhere. Administrators can publish country/city preferences in the regional editor; saved measurements remain in centimetres. See [regional height units](docs/profile-height-units.md).

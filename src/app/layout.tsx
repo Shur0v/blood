@@ -5,6 +5,7 @@ import "./fonts.css";
 import "./discovery.css";
 import "./research.css";
 import "./india.css";
+import "./pakistan.css";
 import SeoPagePresentation from '@/src/components/SeoPagePresentation';
 import SiteNavShell from '@/src/components/SiteNavShell';
 import { SiteNavigationProvider } from '@/src/components/SiteNavigationProvider';

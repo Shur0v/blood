@@ -47,7 +47,9 @@ export const REGIONAL_PALETTES:Record<string,{paper:string;ink:string;accent:str
 };
 export function resolveRegionalDesign(country:string,value?:RegionalDesign){
  const design=value||{},theme=design.theme&&design.theme!=='auto'?design.theme:getRegionalEdition(country).theme;
- return {design,theme,colors:{...(REGIONAL_PALETTES[theme]||REGIONAL_PALETTES.international),...design.colors}};
+ // Preserve existing palette choices in other countries, including an explicitly selected Pakistan theme.
+ const palette=country.trim().toLowerCase()==='pakistan'&&theme==='pakistan'?{paper:'#fafbf6',ink:'#163b32',accent:'#146345',indigo:'#124735'}:REGIONAL_PALETTES[theme]||REGIONAL_PALETTES.international;
+ return {design,theme,colors:{...palette,...design.colors}};
 }
 const luminance=(hex:string)=>{const rgb=[1,3,5].map(start=>parseInt(hex.slice(start,start+2),16)/255).map(value=>value<=.04045?value/12.92:((value+.055)/1.055)**2.4);return rgb[0]*.2126+rgb[1]*.7152+rgb[2]*.0722;};
 export function contrastRatio(a:string,b:string){const x=luminance(a),y=luminance(b);return (Math.max(x,y)+.05)/(Math.min(x,y)+.05);}

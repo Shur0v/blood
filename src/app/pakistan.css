@@ -1,0 +1,248 @@
+/* Pakistan presentation only. Fixed navigation and overlay contents retain their own design. */
+.pakistan-page {
+  --pk-paper:#fafbf6; --pk-ink:#163b32; --pk-green:#146345; --pk-forest:#124735;
+  --pk-mint:#e3eee4; --pk-line:#d5e2d7; --pk-gold:#e0bd70;
+  --region-ink:var(--pk-ink); --region-accent:var(--pk-green); --region-indigo:var(--pk-forest);
+  background:var(--pk-paper); color:var(--pk-ink); padding-bottom:110px;
+}
+.pakistan-page :where(h1,h2,h3,p) { overflow-wrap:break-word; }
+.pakistan-page :where(a,button,input,summary):focus-visible { outline:3px solid var(--pk-green);outline-offset:5px; }
+.pakistan-page :where(h1,h2,h3) { letter-spacing:-.045em; }
+.pakistan-page .pk-section { width:min(1184px,calc(100% - 64px)); margin:0 auto; padding:72px 0; }
+.pakistan-page .pk-section h2:not(:where([role='dialog'] *, .fixed *)) { font-size:clamp(28px,3.3vw,46px);font-weight:600;line-height:1.12;max-width:680px; }
+.pakistan-page .pk-section h3:not(:where([role='dialog'] *, .fixed *)) { font-weight:600;font-size:21px;line-height:1.25; }
+.pakistan-page .pk-section p:not(:where([role='dialog'] *, .fixed *)) { font-size:15px;line-height:1.8; }
+.pakistan-page .pk-eyebrow { display:flex;align-items:center;gap:12px;font-size:10px!important;font-weight:700;letter-spacing:.17em;text-transform:uppercase;line-height:1.5!important;margin-bottom:24px; }
+.pakistan-page .pk-eyebrow>span:not(.pk-number) { width:8px;height:8px;border-radius:50%;background:var(--pk-green); }
+.pakistan-page .pk-number { width:32px;height:32px;display:grid;place-items:center;border:1px solid var(--pk-line);border-radius:50%;letter-spacing:0; }
+.pakistan-page .pk-heading { display:grid;grid-template-columns:1.2fr 1fr;gap:64px;align-items:end;margin-bottom:36px; }
+.pakistan-page .pk-heading>p { max-width:450px;justify-self:end; }
+.pakistan-page .pk-hero { display:grid;grid-template-columns:1.12fr 1fr;gap:64px;align-items:center;padding-top:80px;padding-bottom:58px; }
+.pakistan-page .pk-hero h1 { font-size:clamp(42px,5.3vw,76px);line-height:1.02;font-weight:600;max-width:660px; }
+.pakistan-page .pk-lead { max-width:510px;margin-top:28px;font-size:17px!important; }
+.pakistan-page .pk-actions { display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:30px; }
+.pakistan-page .pk-button,.pakistan-page .region-button { display:inline-flex;align-items:center;justify-content:center;gap:14px;min-height:48px;padding:13px 22px;border:1px solid transparent;border-radius:100px;background:var(--pk-green);color:#fff;font-size:13px;font-weight:600;text-decoration:none;transition:transform .18s,box-shadow .18s; }
+.pakistan-page .pk-button:hover,.pakistan-page .region-button:hover { transform:translateY(-2px);box-shadow:0 8px 18px #123d3320; }
+.pakistan-page .region-button.secondary { color:var(--pk-ink);border-color:var(--pk-line);background:transparent; }
+.pakistan-page .region-actions { display:flex;flex-wrap:wrap;gap:10px; }
+.pakistan-page .pk-scroll { display:inline-flex;align-items:center;gap:12px;font-size:11px;letter-spacing:.03em;margin-top:38px; }
+.pakistan-page .pk-hero-board { position:relative;min-height:480px;background:var(--pk-forest);color:white;border-radius:8px 100px 8px 8px;padding:32px;overflow:hidden; }
+.pakistan-page .pk-board-heading { display:flex;align-items:center;justify-content:space-between;padding-right:34px;font-size:9px;font-weight:600;letter-spacing:.15em; }
+.pakistan-page .pk-orbit { height:280px;position:relative;display:grid;place-items:center; }
+.pakistan-page .pk-orbit>span { position:absolute;width:240px;height:240px;border:1px solid #ffffff35;border-radius:50%; }
+.pakistan-page .pk-orbit>span:nth-child(2) { width:180px;height:180px;border-style:dashed; }
+.pakistan-page .pk-orbit>div { width:124px;height:124px;display:grid;place-items:center;background:#ffffff12;border-radius:32px;transform:rotate(-12deg);border:1px solid #ffffff40;color:var(--pk-gold);box-shadow:0 20px 70px #0002; }
+.pakistan-page .pk-orbit-dot { position:absolute;width:15px;height:15px;background:var(--pk-gold);border-radius:50%;top:42px;right:28%;box-shadow:0 0 0 8px #e0bd7018; }
+.pakistan-page .pk-board-label { text-align:center;font-size:15px; }
+.pakistan-page .pk-status-dot { width:7px;height:7px;display:inline-block;border-radius:50%;background:var(--pk-gold);margin-right:8px; }
+.pakistan-page .pk-board-steps { display:grid;grid-template-columns:repeat(3,1fr);margin-top:28px;border-top:1px solid #ffffff30;padding-top:20px; }
+.pakistan-page .pk-board-steps span { display:flex;align-items:center;justify-content:center;gap:7px;font-size:11px; }
+.pakistan-page .pk-board-steps svg { width:15px;height:15px; }
+.pakistan-page .pk-hero-board>p { text-align:center;font-size:10px;margin-top:22px; }
+.pakistan-page .pk-stat-strip { display:grid;grid-template-columns:repeat(3,1fr) 1.2fr;gap:24px;border-block:1px solid var(--pk-line);padding:28px 0; }
+.pakistan-page .pk-stat-strip>div { display:grid;grid-template-columns:24px 1fr;gap:6px 12px;align-items:center; }
+.pakistan-page .pk-stat-strip>div>svg { width:19px;grid-row:span 2;color:var(--pk-green); }
+.pakistan-page .pk-stat-strip strong { font-size:30px;letter-spacing:-.05em;line-height:1.2; }
+.pakistan-page .pk-stat-strip span { font-size:10px; }
+.pakistan-page .pk-stat-strip details { font-size:12px;padding:10px 0 10px 20px;border-left:1px solid var(--pk-line);align-self:start; }
+.pakistan-page summary { cursor:pointer; }
+.pakistan-page .pk-stat-strip summary { display:flex;gap:8px;align-items:center; }
+.pakistan-page .pk-stat-strip details p { font-size:12px; }
+.pakistan-page .pk-stat-strip details a { text-decoration:underline; }
+.pakistan-page .pk-search-shell { margin:0 auto;max-width:1250px; }
+/* Shared search behavior, independently composed Pakistan presentation. */
+.pakistan-page .regional-donor-search { width:100%;max-width:1184px;margin:auto;padding:64px 0 30px;min-height:0;display:block; }
+.pakistan-page .regional-donor-search>div.absolute { display:none; }
+.pakistan-page .regional-donor-search .glass { background:var(--pk-mint);border:1px solid var(--pk-line);border-radius:28px;padding:36px;box-shadow:none;max-width:none; }
+.pakistan-page .regional-donor-search .glass>div.relative { display:grid;grid-template-columns:170px 1fr;gap:10px 36px;text-align:left;align-items:center; }
+.pakistan-page .regional-donor-search .glass>div.relative>p { grid-column:2;grid-row:2;margin:0;max-width:650px; }
+.pakistan-page .regional-donor-search .glass>div.relative>div:last-child { grid-column:1/-1;grid-row:3;margin-top:20px;max-width:none; }
+.pakistan-page .regional-donor-search h2.region-search-title { grid-column:2;grid-row:1; }
+.pakistan-page .region-search-title { font-size:clamp(28px,3.3vw,44px);line-height:1.1;font-weight:600;color:var(--pk-ink);margin:0; }
+.pakistan-page .regional-donor-search [data-region-counter] { display:inline-flex;grid-column:1;grid-row:1 / span 2;margin:0;min-height:122px;border-radius:16px;background:var(--pk-forest);box-shadow:none;padding:6px; }
+.pakistan-page [data-region-counter]>div:first-child { min-width:0;width:100%;padding:18px 8px;border-radius:10px; }
+.pakistan-page [data-region-counter] .text-5xl { font-size:38px; }
+.pakistan-page [data-region-counter]>div:last-child span { font-size:10px;letter-spacing:.12em; }
+.pakistan-page .donor-blood-filters button[aria-pressed='true'] { background:var(--pk-green);border-color:var(--pk-green);color:#fff; }
+.pakistan-page .donor-blood-filters input { border-color:var(--pk-line);background:#fff; }
+.pakistan-page .donor-blood-filters input:focus { outline-color:var(--pk-green); }
+.pakistan-page [data-regional-card],.pakistan-page [data-pakistan-organ-card] { border:1px solid var(--pk-line);border-radius:16px;background:#fff;box-shadow:none;padding:14px 12px;min-height:92px; }
+.pakistan-page [data-regional-card]:hover,.pakistan-page [data-pakistan-organ-card]:hover { border-color:var(--pk-green);box-shadow:0 10px 24px #163b3210; }
+.pakistan-page [data-regional-card]>div.relative>div:first-child { background:var(--pk-forest);border-radius:50%;box-shadow:none; }
+.pakistan-page [data-region-section='3'] { scroll-margin-top:20px; }
+.pakistan-page .pk-city-grid { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px; }
+.pakistan-page .pk-city-grid>a { display:flex;align-items:center;gap:18px;padding:23px;border:1px solid var(--pk-line);border-radius:16px;background:#fff; }
+.pakistan-page .pk-city-grid>a>svg:first-child { width:20px;flex-shrink:0;color:var(--pk-green); }
+.pakistan-page .pk-city-grid>a>svg:last-child { width:17px;margin-left:auto;flex-shrink:0; }
+.pakistan-page .pk-city-grid h3 { font-size:18px; }
+.pakistan-page .pk-city-grid p { font-size:11px; }
+.pakistan-page .pk-how { border-top:1px solid var(--pk-line); }
+.pakistan-page .pk-step-grid { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;margin-bottom:28px; }
+.pakistan-page .pk-step-grid article { background:var(--pk-mint);border-radius:24px;padding:32px; }
+.pakistan-page .pk-step-grid article:nth-child(2) { background:var(--pk-forest);color:#fff; }
+.pakistan-page .pk-step-grid article:nth-child(3) { background:#f1e9d6; }
+.pakistan-page .pk-step-grid article>div { display:flex;justify-content:space-between;align-items:center;margin-bottom:48px; }
+.pakistan-page .pk-step-grid article>div span { font-size:12px; }
+.pakistan-page .pk-step-grid h3 { margin-bottom:12px; }
+.pakistan-page .pk-text-link { display:inline-flex;align-items:center;gap:12px;margin-top:24px;font-size:13px;font-weight:600;text-decoration:underline;text-underline-offset:5px; }
+.pakistan-page .pk-request { display:grid;grid-template-columns:1.1fr 1fr;gap:80px;border-top:1px solid var(--pk-line); }
+.pakistan-page .pk-request>div>h2+p,.pakistan-page .pk-join>div>h2+p,.pakistan-page .pk-organ>div>h2+p { margin-top:24px; }
+.pakistan-page .pk-checklist { background:#fff;border:1px solid var(--pk-line);border-radius:24px;padding:20px 28px;align-self:start; }
+.pakistan-page .pk-checklist>span { display:flex;align-items:center;gap:18px;padding:24px 0;border-bottom:1px solid var(--pk-line);font-size:15px; }
+.pakistan-page .pk-checklist>span:last-of-type { border-bottom:0; }
+.pakistan-page .pk-checklist>span svg { color:var(--pk-green);width:22px; }
+.pakistan-page .pk-blood-grid { display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px; }
+.pakistan-page .pk-blood-grid a { border:1px solid var(--pk-line);background:#fff;border-radius:20px;padding:24px;display:flex;flex-direction:column;gap:20px; }
+.pakistan-page .pk-blood-grid a:hover { background:var(--pk-mint); }
+.pakistan-page .pk-blood-grid svg { width:20px;color:var(--pk-green); }
+.pakistan-page .pk-blood-grid strong { font-size:40px;font-weight:500;letter-spacing:-.05em; }
+.pakistan-page .pk-blood-grid span { display:flex;align-items:center;justify-content:space-between;font-size:12px; }
+.pakistan-page .pk-join { display:grid;grid-template-columns:1.25fr 1fr;gap:80px;border-block:1px solid var(--pk-line); }
+.pakistan-page .pk-join .region-actions { margin-top:28px; }
+.pakistan-page .pk-join aside { background:var(--pk-forest);color:#fff;border-radius:24px;padding:36px; }
+.pakistan-page .pk-join aside>svg { color:var(--pk-gold);margin-bottom:32px; }
+.pakistan-page .pk-join aside h3 { font-size:36px; }
+.pakistan-page .pk-join aside p { margin-top:16px;font-size:12px; }
+.pakistan-page .pk-organ { display:grid;grid-template-columns:1fr 3fr;gap:60px; }
+.pakistan-page .pk-organ>svg { width:100px;height:100px;border:1px solid var(--pk-line);border-radius:50%;padding:24px;color:var(--pk-green); }
+.pakistan-page .pk-link-chips { display:flex;flex-wrap:wrap;gap:10px;margin-top:24px; }
+.pakistan-page .pk-link-chips a { padding:10px 16px;border:1px solid var(--pk-line);border-radius:40px;font-size:12px; }
+.pakistan-page .pk-profile { border-block:1px solid var(--pk-line); }
+.pakistan-page .pk-profile>div { background:var(--pk-mint);border-color:var(--pk-line); }
+.pakistan-page .pk-profile>div>p { color:var(--pk-green);font-size:10px; }
+.pakistan-page .pk-records { display:grid;grid-template-columns:48px 1fr 1fr;gap:24px;align-items:start; }
+.pakistan-page .pk-records .pk-link-chips { grid-column:2/-1; }
+.pakistan-page .pk-service-grid { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;margin-top:48px; }
+.pakistan-page .pk-service-grid article { border:1px solid var(--pk-line);border-radius:20px;padding:32px;background:#fff; }
+.pakistan-page .region-text-link { color:var(--pk-green);font-weight:600; }
+.pakistan-page .pk-support { width:min(1184px,calc(100% - 64px));margin:auto; }
+.pakistan-page .pakistan-book-access { padding:0; }
+.pakistan-page .pakistan-book-panel { background:var(--pk-forest);color:#fff;border-radius:36px 8px 36px 8px;border:0;box-shadow:none; }
+.pakistan-page .pakistan-book-panel button.bg-white { color:var(--pk-forest); }
+.pakistan-page .pk-reading-grid { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-top:30px; }
+.pakistan-page .pk-reading-grid>a { padding:28px;border:1px solid var(--pk-line);border-radius:20px;display:flex;flex-direction:column;align-items:start;background:#fff; }
+.pakistan-page .pk-reading-grid svg { color:var(--pk-green);width:22px;margin-bottom:32px; }
+.pakistan-page .pk-reading-grid h3 { margin-bottom:24px; }
+.pakistan-page .pk-reading-grid span { margin-top:auto;font-size:12px; }
+.pakistan-page .pk-faq { display:grid;grid-template-columns:1fr 1.2fr;gap:80px; }
+.pakistan-page .pk-faq details { border-top:1px solid var(--pk-line);padding:22px 0; }
+.pakistan-page .pk-faq summary { font-size:15px;font-weight:600;line-height:1.6; }
+.pakistan-page .pk-faq details p { margin-top:18px; }
+.pakistan-page .pk-closing { margin-top:64px;padding:44px;background:var(--pk-mint);border-radius:28px; }
+.pakistan-page .pk-closing>p { max-width:700px;margin-top:16px; }
+.pakistan-page .pk-closing h2 { margin-top:36px; }
+/* Existing SEO content is retained verbatim, with Pakistan-only composition. */
+.pakistan-page.pakistan-seo { background:var(--pk-paper); }
+.pakistan-page.pakistan-seo>section:first-of-type { border-bottom:1px solid var(--pk-line);padding-top:64px;padding-bottom:44px; }
+.pakistan-page.pakistan-seo>section:first-of-type h1 { color:var(--pk-ink);font-size:clamp(36px,4.5vw,64px);line-height:1.06;max-width:950px; }
+.pakistan-page.pakistan-seo>section:first-of-type>div { border-color:var(--pk-line); }
+.pakistan-page.pakistan-seo .regional-city-page { --region-paper:var(--pk-paper);--region-ink:var(--pk-ink);--region-accent:var(--pk-green);--region-indigo:var(--pk-forest);--region-card:#fff;--region-panel:var(--pk-mint);--region-soft:#eef3e9;background:var(--pk-paper); }
+.pakistan-page.pakistan-seo .region-section { max-width:1184px;border-radius:0; }
+.pakistan-page.pakistan-seo .region-intro-grid { grid-template-columns:1.2fr 1fr;gap:64px; }
+.pakistan-page.pakistan-seo .region-landscape { background:var(--pk-forest);border-radius:8px 80px 8px 8px;color:#fff; }
+.pakistan-page.pakistan-seo .region-landscape .region-eyebrow { color:#fff; }
+.pakistan-page.pakistan-seo .region-landscape-lines { opacity:.3; }
+.pakistan-page.pakistan-seo .region-stats { border:1px solid var(--pk-line);background:#fff;border-radius:20px; }
+.pakistan-page.pakistan-seo .region-coverage { display:grid;grid-template-columns:1.2fr 1fr;gap:36px;border-top:1px solid var(--pk-line);background:transparent;box-shadow:none; }
+.pakistan-page.pakistan-seo .region-coverage-notes { background:var(--pk-mint);border-radius:24px;border:0;padding:28px; }
+.pakistan-page.pakistan-seo .region-home-invitation { border-radius:24px;background:var(--pk-mint);border:0; }
+.pakistan-page.pakistan-seo .region-home-invitation.indigo { background:var(--pk-forest);color:white; }
+.pakistan-page.pakistan-seo .region-home-invitation.indigo .region-text-link { color:#fff; }
+.pakistan-page.pakistan-seo .region-join { border-radius:0;border-block:1px solid var(--pk-line);background:transparent; }
+.pakistan-page.pakistan-seo .region-join aside { background:var(--pk-mint);padding:28px;border-radius:24px; }
+.pakistan-page.pakistan-seo .region-place-grid { grid-template-columns:repeat(3,minmax(0,1fr)); }
+.pakistan-page.pakistan-seo .region-place-card,.pakistan-page.pakistan-seo .region-reading-card { border-radius:18px;border:1px solid var(--pk-line);background:#fff;box-shadow:none; }
+.pakistan-page.pakistan-seo .region-faq { border-top:1px solid var(--pk-line);background:transparent; }
+.pakistan-page.pakistan-guide .research-page { background:var(--pk-paper);color:var(--pk-ink); }
+.pakistan-page.pakistan-guide .research-surface { border-color:var(--pk-line);border-radius:24px;background:#fff; }
+.pakistan-page.pakistan-guide .research-hero { background:var(--pk-mint);border-radius:8px 64px 8px 8px; }
+.pakistan-page.pakistan-guide :is(.research-kicker,.research-text-link) { color:var(--pk-green); }
+.pakistan-page[data-region-spacing='compact'] .pk-section { padding-block:40px; }
+.pakistan-page[data-region-layout='stacked'] :is(.pk-hero,.pk-heading,.pk-request,.pk-join,.pk-faq,.pk-records) { grid-template-columns:1fr;gap:32px; }
+.pakistan-page[data-region-layout='stacked'] .pk-records .pk-link-chips { grid-column:auto; }
+.pakistan-page[data-region-layout='stacked'] .pk-heading>p { justify-self:start; }
+@media (max-width:1000px) {
+  .pakistan-page .pk-hero { gap:32px; }
+  .pakistan-page .pk-hero-board { padding:24px;min-height:450px; }
+  .pakistan-page .pk-stat-strip { grid-template-columns:repeat(2,1fr); }
+  .pakistan-page .pk-stat-strip details { border:0;padding:0; }
+  .pakistan-page :is(.pk-heading,.pk-request,.pk-join,.pk-faq) { gap:32px; }
+  .pakistan-page .pk-city-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .pakistan-page .regional-donor-search { padding-inline:32px; }
+  .pakistan-page .pk-records { grid-template-columns:40px 1fr; }
+  .pakistan-page .pk-records>p { grid-column:2; }
+}
+@media (max-width:700px) {
+  .pakistan-page .pk-section { width:calc(100% - 36px);padding-block:42px; }
+  .pakistan-page .pk-hero { grid-template-columns:1fr;gap:32px;padding-top:38px; }
+  .pakistan-page .pk-hero h1 { font-size:46px;max-width:540px; }
+  .pakistan-page .pk-lead { font-size:15px!important; }
+  .pakistan-page .pk-scroll { margin-top:24px; }
+  .pakistan-page .pk-hero-board { min-height:390px;border-top-right-radius:70px; }
+  .pakistan-page .pk-orbit { height:225px; }
+  .pakistan-page .pk-orbit>span { width:205px;height:205px; }
+  .pakistan-page .pk-orbit>span:nth-child(2) { width:155px;height:155px; }
+  .pakistan-page .pk-orbit>div { width:100px;height:100px; }
+  .pakistan-page .pk-stat-strip { padding-block:24px;gap:24px 14px; }
+  .pakistan-page .pk-stat-strip>div { grid-template-columns:1fr;gap:8px; }
+  .pakistan-page .pk-stat-strip>div>svg { grid-row:auto; }
+  .pakistan-page .pk-stat-strip strong { font-size:28px; }
+  .pakistan-page .pk-heading { grid-template-columns:1fr;gap:18px; }
+  .pakistan-page .pk-heading>p { justify-self:start; }
+  .pakistan-page :is(.pk-city-grid,.pk-step-grid,.pk-request,.pk-join,.pk-faq,.pk-service-grid,.pk-reading-grid) { grid-template-columns:1fr; }
+  .pakistan-page .pk-step-grid { gap:12px; }
+  .pakistan-page .pk-step-grid article { padding:26px; }
+  .pakistan-page .pk-step-grid article>div { margin-bottom:30px; }
+  .pakistan-page .pk-blood-grid { grid-template-columns:repeat(2,minmax(0,1fr));gap:12px; }
+  .pakistan-page .pk-blood-grid a { padding:20px; }
+  .pakistan-page .pk-organ { grid-template-columns:1fr;gap:28px; }
+  .pakistan-page .pk-records { grid-template-columns:1fr;gap:20px; }
+  .pakistan-page .pk-records>p,.pakistan-page .pk-records .pk-link-chips { grid-column:auto; }
+  .pakistan-page .pk-support { width:calc(100% - 36px); }
+  .pakistan-page .pk-closing { padding:28px;margin-top:40px; }
+  .pakistan-page .pk-eyebrow { margin-bottom:18px; }
+  .pakistan-page .regional-donor-search { padding:38px 18px 20px; }
+  .pakistan-page .regional-donor-search .glass { padding:24px 18px;border-radius:20px; }
+  .pakistan-page .regional-donor-search .glass>div.relative { grid-template-columns:1fr;gap:18px; }
+  .pakistan-page .regional-donor-search [data-region-counter] { grid-column:1;grid-row:1;justify-self:start;min-height:0;min-width:130px; }
+  .pakistan-page .regional-donor-search h2.region-search-title { grid-column:1;grid-row:2; }
+  .pakistan-page .regional-donor-search .glass>div.relative>p { grid-column:1;grid-row:3; }
+  .pakistan-page [data-region-counter]>div:first-child { padding:12px; }
+  .pakistan-page [data-region-counter] .text-5xl { font-size:30px; }
+  .pakistan-page .regional-donor-search .glass>div.relative>div:last-child { grid-column:1;grid-row:4;margin-top:6px; }
+  .pakistan-page.pakistan-seo .region-section { width:calc(100% - 36px);padding-block:36px; }
+  .pakistan-page.pakistan-seo :is(.region-intro-grid,.region-coverage,.region-place-grid) { grid-template-columns:1fr;gap:24px; }
+  .pakistan-page.pakistan-seo .region-stats { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+@media (prefers-reduced-motion:reduce) {
+  .pakistan-page :where(*,*::before,*::after) { animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important; }
+}
+
+.pakistan-page.pakistan-seo .region-button:hover { background:var(--pk-forest); }
+.pakistan-page.pakistan-seo .region-button.secondary:hover { color:#fff; }
+.pakistan-page [data-pakistan-organ-card]>div.relative>div:first-child { background:var(--pk-forest);border-radius:50%;box-shadow:none; }
+.pakistan-page .pk-services:empty { display:none; }
+
+.pakistan-page .pk-footer-links { display:flex;flex-wrap:wrap;gap:24px;margin-top:40px;border-top:1px solid var(--pk-line);padding-top:26px;font-size:12px; }
+.pakistan-page .region-search-title span { color:var(--pk-green);font-family:inherit;font-style:normal; }
+.pakistan-page.pakistan-seo { color:var(--pk-ink); }
+.pakistan-page.pakistan-seo>section:first-of-type :is(.text-primary,.text-rose-700) { color:var(--pk-green); }
+.pakistan-page.pakistan-seo>section:first-of-type .border-red-100 { border-color:var(--pk-line);border-radius:16px;box-shadow:none; }
+.pakistan-page.pakistan-seo>section:first-of-type .region-actions [data-analytics-component='Regional Register'] { background:var(--pk-green); }
+.pakistan-page.pakistan-seo>section:first-of-type .region-actions button { border-color:var(--pk-line); }
+.pakistan-page :is(.research-page,.research-page .research-surface) { --research-ink:var(--pk-ink);--research-line:var(--pk-line);--research-accent:var(--pk-green); }
+.pakistan-page .research-page { background:var(--pk-paper); }
+.pakistan-page.pakistan-guide .research-hero.ink { background:var(--pk-forest);color:#fff; }
+.pakistan-page.pakistan-guide .research-hero.ink .research-kicker { color:#fff; }
+.pakistan-page [data-pakistan-organ-card] .text-primary-dark { color:var(--pk-green); }
+/* Existing SEO pages keep their hidden counter; the country landing labels its global total. */
+.pakistan-page.pakistan-seo .regional-donor-search [data-region-counter] { display:none; }
+.pakistan-page.pakistan-seo .regional-donor-search .glass>div.relative { grid-template-columns:1.2fr 1fr;gap:24px 40px; }
+.pakistan-page.pakistan-seo .regional-donor-search h2.region-search-title { grid-column:1;grid-row:1; }
+.pakistan-page.pakistan-seo .regional-donor-search .glass>div.relative>p { grid-column:2;grid-row:1; }
+.pakistan-page.pakistan-seo .regional-donor-search .glass>div.relative>div:last-child { grid-column:1/-1;grid-row:2; }
+@media (max-width:700px) {
+  .pakistan-page.pakistan-seo .regional-donor-search .glass>div.relative { grid-template-columns:1fr;gap:20px; }
+  .pakistan-page.pakistan-seo .regional-donor-search .glass>div.relative>p { grid-column:1;grid-row:2; }
+  .pakistan-page.pakistan-seo .regional-donor-search .glass>div.relative>div:last-child { grid-column:1;grid-row:3; }
+}
