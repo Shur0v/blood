@@ -1,3 +1,4 @@
+import LocationSearchFeedback from './LocationSearchFeedback';
 import useLocationSuggestions from './useLocationSuggestions';
 import LocationCountrySelect from './LocationCountrySelect';
 import React, { useEffect, useState } from "react";
@@ -88,11 +89,10 @@ export default function CityLocationAutocomplete({
       </div>
 
       {lookup.requiresCountry && <LocationCountrySelect value={lookup.countryChoice} onChange={lookup.setCountryChoice} />}
-      {lookupError && !selectedLocation && (
-        <p className="text-xs font-semibold text-amber-600">{lookupError}</p>
-      )}
+      {!selectedLocation && <LocationSearchFeedback lookup={lookup} />}
 
-      {!selectedLocation && query.trim().length >= 3 && suggestions.length > 0 && (
+
+      {!selectedLocation && query.trim().length >= 2 && suggestions.length > 0 && (
         <div className="rounded-2xl border border-border bg-white/95 backdrop-blur p-2 max-h-48 overflow-y-auto custom-scrollbar">
           {suggestions.map((item) => (
             <button
@@ -112,7 +112,7 @@ export default function CityLocationAutocomplete({
         </div>
       )}
 
-      {!selectedLocation && query.trim().length >= 3 && !isFetching && suggestions.length === 0 && !lookupError && (
+      {!selectedLocation && query.trim().length >= 2 && !isFetching && suggestions.length === 0 && !lookupError && (
         <p className="text-xs font-medium text-gray-500">No city-only matches found.</p>
       )}
     </div>

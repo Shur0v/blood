@@ -1,3 +1,4 @@
+import { districtIdentity } from '@/src/backend/services/locationDistrict';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
@@ -60,8 +61,9 @@ export async function GET(req: Request) {
     const reverseUrl = new URL('https://api.geoapify.com/v1/geocode/reverse');
     reverseUrl.searchParams.set('lat', String(lat));
     reverseUrl.searchParams.set('lon', String(lng));
-    reverseUrl.searchParams.set('type', 'city');
+    // Keep the full hierarchy for district-aware account selection.
     reverseUrl.searchParams.set('format', 'json');
+    reverseUrl.searchParams.set('lang', 'en');
     reverseUrl.searchParams.set('apiKey', apiKey);
 
     const response = await fetch(reverseUrl.toString(), { method: 'GET', signal: AbortSignal.timeout(4000) });
@@ -70,10 +72,12 @@ export async function GET(req: Request) {
     }
 
     const payload = (await response.json()) as {
-      results?: Array<{ city?: string; country?: string }>;
-      features?: Array<{ properties?: { city?: string; country?: string } }>;
+      results?: Array<{ city?: string; country?: string; country_code?: string; state?: string; county?: string; state_district?: string }>;
+      features?: Array<{ properties?: { city?: string; country?: string; country_code?: string; state?: string; county?: string; state_district?: string } }>;
     };
 
+    const place = payload.results?.[0] || payload.features?.[0]?.properties;
+    const district = districtIdentity(place || {});
     const city =
       payload.results?.[0]?.city ||
       payload.features?.[0]?.properties?.city;
@@ -84,7 +88,7 @@ export async function GET(req: Request) {
 
     return NextResponse.json({
       success: true,
-      data: { city, country },
+      data: { city, country, district },
     });
   } catch {
     return NextResponse.json({ success: false, message: 'Failed to detect location.' }, { status: 500 });

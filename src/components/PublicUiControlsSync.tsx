@@ -1,9 +1,10 @@
 "use client";
+import { LOCATION_SETTINGS_EVENT } from '@/src/lib/locationSettings';
 import {useEffect} from 'react';
 import {applyPublicUiControls,UI_CONTROLS_STORAGE} from '@/src/lib/publicUiControls';
 export default function PublicUiControlsSync(){useEffect(()=>{
 
-  const apply=(value:unknown)=>{if(!value||typeof value!=='object')return;applyPublicUiControls({ ...('cityDonationRequestVisible' in value&&typeof value.cityDonationRequestVisible==='boolean'?{cityDonationRequestVisible:value.cityDonationRequestVisible}:{}),...('discoveryVisible' in value&&typeof value.discoveryVisible==='boolean'?{discoveryVisible:value.discoveryVisible}:{}),...('patientIdVisible' in value&&typeof value.patientIdVisible==='boolean'?{patientIdVisible:value.patientIdVisible}:{}) });};
+  const apply=(value:unknown)=>{if(!value||typeof value!=='object')return;if('locationSettingsRevision' in value)window.dispatchEvent(new Event(LOCATION_SETTINGS_EVENT));applyPublicUiControls({ ...('cityDonationRequestVisible' in value&&typeof value.cityDonationRequestVisible==='boolean'?{cityDonationRequestVisible:value.cityDonationRequestVisible}:{}),...('discoveryVisible' in value&&typeof value.discoveryVisible==='boolean'?{discoveryVisible:value.discoveryVisible}:{}),...('patientIdVisible' in value&&typeof value.patientIdVisible==='boolean'?{patientIdVisible:value.patientIdVisible}:{}) });};
   const storage=(event:StorageEvent)=>{if(event.key===UI_CONTROLS_STORAGE&&event.newValue)try{apply(JSON.parse(event.newValue));}catch{}};
   window.addEventListener('storage',storage);
   const stream=typeof EventSource!=='undefined'?new EventSource('/api/public/ui-events'):null;

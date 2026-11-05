@@ -253,6 +253,18 @@
   },
   {
     "kind": "api",
+    "name": "/api/admin/location-settings",
+    "flow": "location-management",
+    "access": "Administrator",
+    "source": "src/app/api/admin/location-settings/route.ts",
+    "methods": [
+      "GET",
+      "PATCH"
+    ],
+    "sha256": "9aa92f41529d542f5694f54335af17718e7383b242606d01b3ec4537f1ac484b"
+  },
+  {
+    "kind": "api",
     "name": "/api/admin/maintenance",
     "flow": "recovery",
     "access": "Administrator",
@@ -754,7 +766,7 @@
     "methods": [
       "GET"
     ],
-    "sha256": "233b1c8b0d530bb1fa04adecfed92eda89979107797881bbba81e46de9246a2b"
+    "sha256": "2e62fa3bfc987aed36d4637beea9295be28d227f1f23946fd9817d999352c037"
   },
   {
     "kind": "api",
@@ -765,7 +777,7 @@
     "methods": [
       "GET"
     ],
-    "sha256": "ecc63f3a04c43251331c3fa92d7ca81929f64207b270acb8abb9a71e15a2eb48"
+    "sha256": "a9b8bc96a8c93f612fb24137eed344bc0e5fa34495553e441d635d049a51d7ef"
   },
   {
     "kind": "api",
@@ -926,6 +938,17 @@
       "GET"
     ],
     "sha256": "0760f3ab6a2b23d0c9e00b9a484caf09688a69669417e049c27c1ddae1d33d08"
+  },
+  {
+    "kind": "api",
+    "name": "/api/public/location-settings",
+    "flow": "location-management",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/api/public/location-settings/route.ts",
+    "methods": [
+      "GET"
+    ],
+    "sha256": "17c2f45e7fbe5a9e55e5dce26ee6d7c318d12b97f8f445777857b96943a0856d"
   },
   {
     "kind": "api",
@@ -1115,7 +1138,7 @@
       "GET",
       "PATCH"
     ],
-    "sha256": "c2d6e1759d1ea9c015a858a60e2c0ba25a230ec6695ddd82bdca99439381bd6f"
+    "sha256": "ebb4d8e0c815d5075a94bb2d8f1e59c93590dcf846e5440868f83b375e9dac3a"
   },
   {
     "kind": "api",
@@ -1162,7 +1185,7 @@
       "GET",
       "PATCH"
     ],
-    "sha256": "a4d4820f1fb6dccef3caf2210cb032074a69a2b3a881a5d91688bce6aadca57e"
+    "sha256": "636521a6e7b3c214307db77d4018062d1e75e0ea95a1b7ceec2e19f72bf9d2a3"
   },
   {
     "kind": "api",
@@ -1198,7 +1221,7 @@
       "GET",
       "POST"
     ],
-    "sha256": "9c18c08c3b8dc3038d68678fe24a4ba466ab1847a5f251f3a3c088112e65c1b7"
+    "sha256": "d1164d23fc6b62c0aa4864899e62efd4f9c10268d22fc45873f9ce11c7e7489c"
   },
   {
     "kind": "api",
@@ -1210,7 +1233,7 @@
       "DELETE",
       "PATCH"
     ],
-    "sha256": "0a5aa6cbfd3a34073cabc33efcf922472e7522ad2eff1f8d6a53f845b3a90418"
+    "sha256": "5050b824b924eda35eb1e10219fb4b95fd9efaa34566a0cbfd9957afa44b5ea1"
   },
   {
     "kind": "api",
@@ -1339,6 +1362,15 @@
     "source": "prisma/schema.prisma",
     "methods": [],
     "sha256": "1f84eced1e062f2e8df08f4314d0ea48fb8a5a3de7f87c27322a8f3c9ff780db"
+  },
+  {
+    "kind": "model",
+    "name": "LocationSettings",
+    "flow": "location-management",
+    "access": "Server-managed; record-level publication/authorization",
+    "source": "prisma/schema.prisma",
+    "methods": [],
+    "sha256": "fcfd6a92818e9ba3008ff3a08a07148fceb16c38e09f18a8a1ac9e5037f84398"
   },
   {
     "kind": "model",
@@ -1675,6 +1707,15 @@
   },
   {
     "kind": "module",
+    "name": "docs/location-management.md",
+    "flow": "location-management",
+    "access": "Reviewed supporting implementation",
+    "source": "docs/location-management.md",
+    "methods": [],
+    "sha256": "e3dd8e1da5441050809dca1149a4007343614874ca0989b914bc2a55aa391198"
+  },
+  {
+    "kind": "module",
     "name": "docs/static-asset-rollout.md",
     "flow": "deployment",
     "access": "Reviewed supporting implementation",
@@ -1725,7 +1766,7 @@
     "access": "Reviewed supporting implementation",
     "source": "src/backend/controllers/AuthController.ts",
     "methods": [],
-    "sha256": "4c44d9048d0f8651b1994f26559b6b650c751945e656c1ed5e33a375aa0f6b5c"
+    "sha256": "0425a9d3d71f94444be0a2bfad18911df302c1b788691cf13ee8c7b4e263b726"
   },
   {
     "kind": "module",
@@ -1735,6 +1776,15 @@
     "source": "src/backend/repositories/UserRepository.ts",
     "methods": [],
     "sha256": "767aca00c2e726051bf4e499587de8cd0a353531335d77598cef709990aaea75"
+  },
+  {
+    "kind": "module",
+    "name": "src/backend/scripts/checkLocationSearch.ts",
+    "flow": "location-management",
+    "access": "Reviewed supporting implementation",
+    "source": "src/backend/scripts/checkLocationSearch.ts",
+    "methods": [],
+    "sha256": "73d3548083f35c01b9c19a643a11f79ddc15637c39104ba93b24771e9fce7c74"
   },
   {
     "kind": "module",
@@ -1797,7 +1847,7 @@
     "access": "Reviewed supporting implementation",
     "source": "src/components/AdminWorkspaceShell.tsx",
     "methods": [],
-    "sha256": "adc9a870bbff0872d7242b9db699919efa442cf4452556ff932039aeabd1f703"
+    "sha256": "f5af21c7a1994c58eeb609295c4124619a647fef2b612979a24a85436e482c51"
   },
   {
     "kind": "module",
@@ -1806,7 +1856,7 @@
     "access": "Reviewed supporting implementation",
     "source": "src/components/AuthModal.tsx",
     "methods": [],
-    "sha256": "7610adbda2ee8f118cf20234a33db1ac57bd3bd079673e916610965b3a730a85"
+    "sha256": "5770d24cb7f8deab7ddab8468a015b6ffd1e938da70fe809676678f609988981"
   },
   {
     "kind": "module",
@@ -1815,7 +1865,7 @@
     "access": "Reviewed supporting implementation",
     "source": "src/components/CityLocationAutocomplete.tsx",
     "methods": [],
-    "sha256": "be74eb36f6a681a38ae958aae070878f5de1d6d8836d49eeb19ac449b35ba07a"
+    "sha256": "da25caf15015b641c163667ce7ce113747391a5fd2df9dd7e6dfa7b95833da55"
   },
   {
     "kind": "module",
@@ -1855,6 +1905,15 @@
   },
   {
     "kind": "module",
+    "name": "src/components/LocationSearchFeedback.tsx",
+    "flow": "location-management",
+    "access": "Reviewed supporting implementation",
+    "source": "src/components/LocationSearchFeedback.tsx",
+    "methods": [],
+    "sha256": "e8e5a69920323d3f22e293ffe49c63f38fcb8dc5abc713169bf5670433906a23"
+  },
+  {
+    "kind": "module",
     "name": "src/components/ManagedImagePicker.tsx",
     "flow": "images",
     "access": "Reviewed supporting implementation",
@@ -1869,7 +1928,7 @@
     "access": "Reviewed supporting implementation",
     "source": "src/components/NeighborhoodEditor.tsx",
     "methods": [],
-    "sha256": "80062ddea3ce209eb292fc773811ceccc0e4503e4e64c72ff3b6a5d8c13277ea"
+    "sha256": "8e1b5caf0c39d180e81cf82ba73c69179dfa58e1a43b43493c41bf8c641c853b"
   },
   {
     "kind": "module",
@@ -1946,11 +2005,11 @@
   {
     "kind": "module",
     "name": "src/components/useLocationSuggestions.ts",
-    "flow": "location",
+    "flow": "location-management",
     "access": "Reviewed supporting implementation",
     "source": "src/components/useLocationSuggestions.ts",
     "methods": [],
-    "sha256": "45bc40498d237df9ff16f0186b05b6ef931fc89df7b12572339a68614d786f9e"
+    "sha256": "817a0067b36ecb2492469a7d3cb0bd9197f5441ff659896536ae9c1bb8c7342a"
   },
   {
     "kind": "module",
@@ -1959,7 +2018,7 @@
     "access": "Reviewed supporting implementation",
     "source": "src/components/useViewerGeo.ts",
     "methods": [],
-    "sha256": "4416fbb6ffe57dae76345a1e76847fda78e1aaef65ab7f5916e45d144dad8fb0"
+    "sha256": "ac202ab0f52677d2b2c58fc1e0f2fcf99b98bdcf83539e539965b2882b969ef7"
   },
   {
     "kind": "module",
@@ -2023,6 +2082,15 @@
     "source": "src/lib/locationCountry.ts",
     "methods": [],
     "sha256": "9fb1b8d93c4a6914684cacec33adddbd3e184efc79e1f339a272ce13e214d1ed"
+  },
+  {
+    "kind": "module",
+    "name": "src/lib/locationSettings.ts",
+    "flow": "location-management",
+    "access": "Reviewed supporting implementation",
+    "source": "src/lib/locationSettings.ts",
+    "methods": [],
+    "sha256": "70a4d3589363c4b397b0f2b2e75b1a52fe0038d6a7ee4398a102e36833db1b71"
   },
   {
     "kind": "module",
@@ -2728,6 +2796,15 @@
   },
   {
     "kind": "page",
+    "name": "/private/console-0be5626d4305f192e37e/workspace/location-management",
+    "flow": "location-management",
+    "access": "Administrator",
+    "source": "src/app/private/console-0be5626d4305f192e37e/workspace/location-management/page.tsx",
+    "methods": [],
+    "sha256": "4b9aca156a855a5ec4c9431e75652e30e063c3d9fdff39ec2a4c25417bf43e4b"
+  },
+  {
+    "kind": "page",
     "name": "/private/console-0be5626d4305f192e37e/workspace/manual-blood-donor",
     "flow": "manual",
     "access": "Administrator",
@@ -3300,7 +3377,25 @@
     "access": "Internal server module",
     "source": "src/backend/services/locationAutocomplete.ts",
     "methods": [],
-    "sha256": "889720b65260ba97d8764ed19f28ed6f51cd9b21219745bbc427efdc594c9458"
+    "sha256": "b4cc38364e4b3d3becaf977246c3167ee557ca5d655aca800845c20d571545b1"
+  },
+  {
+    "kind": "service",
+    "name": "locationDistrict",
+    "flow": "location-management",
+    "access": "Internal server module",
+    "source": "src/backend/services/locationDistrict.ts",
+    "methods": [],
+    "sha256": "44e4366f141cf48b122573970a3b1de3b77c7dab603f7e824dee564db3c09c33"
+  },
+  {
+    "kind": "service",
+    "name": "locationPolicy",
+    "flow": "location-management",
+    "access": "Internal server module",
+    "source": "src/backend/services/locationPolicy.ts",
+    "methods": [],
+    "sha256": "ac274366a201699731a071e08fcdca5d49bb82d9a66603cdea317ecf5899b6d1"
   },
   {
     "kind": "service",
@@ -3309,7 +3404,16 @@
     "access": "Internal server module",
     "source": "src/backend/services/locationSearchContext.ts",
     "methods": [],
-    "sha256": "6b269ccf4107646db2b1561a3a6de5f98cbe2b63cba88e3e9ffd0f369d828e7a"
+    "sha256": "991921c33e3855267b762ea978fde6cd08f192a6720f8ce5b4345eed7a3fc467"
+  },
+  {
+    "kind": "service",
+    "name": "locationSettings",
+    "flow": "location-management",
+    "access": "Internal server module",
+    "source": "src/backend/services/locationSettings.ts",
+    "methods": [],
+    "sha256": "4b235c09058edd0e21406dba3ecacf2394309005157b62cd095e9e586c5f70a5"
   },
   {
     "kind": "service",
@@ -3363,7 +3467,7 @@
     "access": "Internal server module",
     "source": "src/backend/services/neighborhoods.ts",
     "methods": [],
-    "sha256": "11a8bdcf402a2cdeda03ecf371f68750b342caec440a1214cc6d153fd5f177bc"
+    "sha256": "bd37a1c8f993ca6bb3ee5d955f06cc139989a4cc3aef682787d7f9ce720c7ffd"
   },
   {
     "kind": "service",
@@ -3561,6 +3665,6 @@
     "access": "Internal server module",
     "source": "src/backend/services/uiControls.ts",
     "methods": [],
-    "sha256": "e6b7385df0f1f1e7a355e2939a2c4a3fcbd180a0651e8ec7dd7143cf6289f973"
+    "sha256": "0d93cbd2f79b0047bc6b814131b1b373fecd6ef48123d42c71e8aad3e36d2e2f"
   }
 ]

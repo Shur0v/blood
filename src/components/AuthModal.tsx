@@ -1,3 +1,5 @@
+import LocationSearchFeedback from './LocationSearchFeedback';
+import { locationLabel, locationContextLabel } from '@/src/lib/locationSettings';
 import useLocationSuggestions from './useLocationSuggestions';
 import LocationCountrySelect from './LocationCountrySelect';
 import { sameLocationParent } from '@/src/lib/locationCountry';
@@ -89,7 +91,22 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode="reg
   maxDobDate.setFullYear(maxDobDate.getFullYear() - 18);
   const minDobDate = new Date(currentYear - 100, 0, 1);
   const selectingPrimary = selectedLocations.length === 0;
-  const minCharsReached = locationInput.trim().length >= 3;
+  const chooseLocation = (item: typeof locationSuggestions[number]) => {
+    setLocationInput('');
+    locationLookup.clear();
+    setLocationLookupError('');
+    const existingIndex = selectedLocations.findIndex(location => sameLocationParent(location, item));
+    if (existingIndex >= 0) {
+      if (window.confirm('Replace the selected location for ' + item.city + '?')) {
+        setSelectedLocations(previous => previous.map((location, index) => index === existingIndex ? item : location));
+      }
+    } else if (selectedLocations.length >= MAX_CITIES) {
+      setErrorMsg('Maximum ' + MAX_CITIES + ' cities allowed.');
+    } else {
+      setSelectedLocations(previous => [...previous, item]);
+    }
+  };
+  const minCharsReached = locationInput.trim().length >= 2;
   const normalizedCountrySearch = countrySearch.trim().toLowerCase();
   const filteredCountryOptions = COUNTRY_OPTIONS.filter((item) => {
     if (!normalizedCountrySearch) {
@@ -428,6 +445,9 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode="reg
                         <input
                           type="text"
                           id="auth-city"
+                          role="combobox" aria-autocomplete="list" aria-expanded={locationSuggestions.length > 0}
+                          aria-controls={locationLookup.listId} aria-activedescendant={locationLookup.activeIndex >= 0 ? `${locationLookup.listId}-${locationLookup.activeIndex}` : undefined}
+                          onKeyDown={event => locationLookup.handleKeyDown(event, chooseLocation)}
                           placeholder={selectingPrimary ? "Search your primary location" : "Search your city"}
                           value={locationInput}
                           onChange={(e) => {
@@ -467,34 +487,23 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode="reg
                         Selected {selectedLocations.length}/{MAX_CITIES} cities
                       </p>
                       {locationLookup.requiresCountry && <LocationCountrySelect value={locationLookup.countryChoice} onChange={locationLookup.setCountryChoice} />}
-                      {(locationLookupError || locationLookup.message) && (
-                        <p className="text-xs font-semibold text-amber-800">{locationLookupError || locationLookup.message}</p>
+                      <LocationSearchFeedback lookup={locationLookup} />
+                      {locationLookupError && (
+                        <p className="text-xs font-semibold text-amber-800">{locationLookupError}</p>
                       )}
 
                       {minCharsReached && locationSuggestions.length > 0 && (
-                        <div className="rounded-2xl border border-slate-200 bg-white backdrop-blur-2xl p-2 max-h-48 overflow-y-auto scrollbar-hidden">
-                          {locationSuggestions.map((item) => (
+                        <div id={locationLookup.listId} role="listbox" aria-label="Signup location suggestions" className="rounded-2xl border border-slate-200 bg-white backdrop-blur-2xl p-2 max-h-48 overflow-y-auto scrollbar-hidden">
+                          {locationSuggestions.map((item, index) => (
                             <button
                               key={item.registrationArea?.placeId || item.provider_place_id}
+                              id={`${locationLookup.listId}-${index}`} role="option" aria-selected={index === locationLookup.activeIndex}
                               type="button"
-                              onClick={() => {
-                                setLocationInput("");
-                                locationLookup.clear();
-                                setLocationLookupError("");
-                                const existingIndex = selectedLocations.findIndex(loc => sameLocationParent(loc, item));
-                                if (existingIndex >= 0) {
-                                  if (window.confirm('Replace the selected location for ' + item.city + '?')) {
-                                    setSelectedLocations(prev => prev.map((loc, index) => index === existingIndex ? item : loc));
-                                  }
-                                } else if (selectedLocations.length >= MAX_CITIES) {
-                                  setErrorMsg('Maximum ' + MAX_CITIES + ' cities allowed.');
-                                } else setSelectedLocations(prev => [...prev, item]);
-
-                              }}
-                              className="w-full text-left rounded-xl px-3 py-2.5 transition bg-transparent hover:bg-slate-100"
+                              onClick={() => chooseLocation(item)}
+                              className="w-full text-left rounded-xl px-3 py-2.5 transition bg-transparent hover:bg-slate-100 aria-selected:bg-rose-50"
                             >
-                              <p className="text-sm font-semibold text-slate-900">{item.registrationArea ? `${item.registrationArea.name}, ${item.city}, ${item.country}` : item.city}</p>
-                              <p className="text-xs text-slate-600">{[item.registrationArea ? 'Neighborhood' : '', item.district, item.state, item.registrationArea ? '' : item.country].filter(Boolean).join(' · ')}</p>
+                              <p className="text-sm font-semibold text-slate-900">{locationLabel(item, locationLookup.settings.countryInLabel)}</p>
+                              <p className="text-xs text-slate-600">{locationContextLabel(item)}{item.corrected ? ' · Suggested spelling' : ''}</p>
                             </button>
                           ))}
                         </div>

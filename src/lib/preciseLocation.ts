@@ -1,4 +1,4 @@
-export type PreciseLocation = {country:string;city?:string;lat:number;lng:number};
+export type PreciseLocation = {country:string;city?:string;district?:{key:string;name:string;country:string;state?:string};lat:number;lng:number};
 
 // Called only by an explicit user action, never during page load.
 export async function requestBrowserLocation(geolocation:Pick<Geolocation,'getCurrentPosition'>,fetcher:typeof fetch=fetch):Promise<PreciseLocation> {
@@ -8,5 +8,5 @@ export async function requestBrowserLocation(geolocation:Pick<Geolocation,'getCu
   const response=await fetcher(`/api/location/reverse?${new URLSearchParams({lat:String(lat),lng:String(lng)})}`,{cache:'no-store',signal:AbortSignal.timeout(6000)});
   const payload=await response.json();
   if(!response.ok||!payload.success||payload.meta?.fallback||typeof payload.data?.country!=='string'||!payload.data.country.trim())throw new Error('Could not confirm your country. Automatic detection remains available.');
-  return {country:payload.data.country.trim(),city:typeof payload.data.city==='string'?payload.data.city:undefined,lat,lng};
+  return {country:payload.data.country.trim(),district:payload.data.district,city:typeof payload.data.city==='string'?payload.data.city:undefined,lat,lng};
 }

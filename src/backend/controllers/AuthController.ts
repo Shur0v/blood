@@ -1,3 +1,4 @@
+import { assertLocationPolicy, lockLocationPolicy } from '@/src/backend/services/locationPolicy';
 import { neighborhoodsEnabled } from '../services/neighborhoods';
 import { sameLocationParent } from '@/src/lib/locationCountry';
 import { findLoginUser, normalizeLoginEmail } from '../services/loginEmails';
@@ -224,12 +225,17 @@ export class AuthController {
           return NextResponse.json({ error: `Maximum ${MAX_SERVICE_CITIES} cities allowed.` }, { status: 400 });
         }
 
-        const validatedLocations = submittedLocations.map((item, index) => {
+        const validatedLocations = await Promise.all(submittedLocations.map(async item => {
           const locationProof = verifyLocationProof(item.token);
           if (!locationProof) {
             return { ok: false as const, error: 'Your location selection expired or could not be verified. Please select it again.' };
           }
 
+          try {
+            await assertLocationPolicy(req, locationProof);
+          } catch (error) {
+            return { ok: false as const, error: error instanceof MedicalError ? error.message : 'Location verification is temporarily unavailable. Please retry.' };
+          }
           const matches =
             locationProof.city === item.city &&
             locationProof.country === item.country &&
@@ -239,14 +245,14 @@ export class AuthController {
             locationProof.provider_place_id === item.provider_place_id &&
             locationProof.registrationArea?.name === item.registrationArea?.name &&
             locationProof.registrationArea?.placeId === item.registrationArea?.placeId &&
-            (!item.registrationArea || neighborhoodsEnabled());
+            (!item.registrationArea || await neighborhoodsEnabled());
 
           if (!matches) {
             return { ok: false as const, error: 'Location payload mismatch. Please select from suggestions only.' };
           }
 
           return { ok: true as const, data: item };
-        });
+        }));
 
         const invalid = validatedLocations.find((item) => !item.ok);
         if (invalid && !invalid.ok) {
@@ -277,6 +283,7 @@ export class AuthController {
 
         const firstLocation = readyLocations[0];
         targetUser = await getPrisma().$transaction(async (tx) => {
+          for (const item of readyLocations) await lockLocationPolicy(tx, req, verifyLocationProof(item.token));
           await lockRegistrationIdentity(tx, email, normalizedMobile);
           const profileCode = await reserveGeneratedProfileCode(tx);
           const created = await tx.user.create({

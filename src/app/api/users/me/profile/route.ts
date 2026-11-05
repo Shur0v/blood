@@ -1,4 +1,5 @@
-import { lockPrimaryLocation, neighborhoodReset } from '@/src/backend/services/ServiceCityService';
+import { lockPrimaryLocation } from '@/src/backend/services/ServiceCityService';
+import { normalizeLocationText } from '@/src/lib/locationCountry';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getPrisma } from '@/src/backend/config/db';
@@ -107,8 +108,6 @@ export async function PATCH(req: Request) {
 
   const updateData: {
     name?: string;
-    location_city?: string;
-    location_country?: string;
     blood_group?: string;
     date_of_birth?: Date | null;
     profile_image_url?: string | null;
@@ -117,8 +116,6 @@ export async function PATCH(req: Request) {
   } = {};
 
   if (payload.name !== undefined) updateData.name = payload.name;
-  if (payload.city !== undefined) updateData.location_city = payload.city;
-  if (payload.country !== undefined) updateData.location_country = payload.country;
   if (payload.bloodGroup !== undefined) updateData.blood_group = payload.bloodGroup;
   if (payload.dateOfBirth !== undefined) updateData.date_of_birth = payload.dateOfBirth ? new Date(payload.dateOfBirth) : null;
   if (payload.profileImageUrl !== undefined) updateData.profile_image_url = payload.profileImageUrl;
@@ -127,11 +124,14 @@ export async function PATCH(req: Request) {
 
   const updated = await prisma.$transaction(async tx => {
     const location = await lockPrimaryLocation(tx, auth.session.user_id);
+    if ((payload.city !== undefined && normalizeLocationText(payload.city) !== normalizeLocationText(location.location_city)) ||
+        (payload.country !== undefined && normalizeLocationText(payload.country) !== normalizeLocationText(location.location_country))) return null;
     return tx.user.update({
       where: { id: auth.session.user_id },
-      data: { ...updateData, ...neighborhoodReset(location, payload.city, payload.country) },
+      data: updateData,
     });
   });
+  if (!updated) return NextResponse.json({ success: false, message: 'Choose a verified location from your service location suggestions.' }, { status: 400 });
 
   if (payload.isActiveDonor !== undefined && payload.isActiveDonor !== existing.is_active_donor) {
     await prisma.donorStatusHistory.create({

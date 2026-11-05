@@ -90,10 +90,10 @@ test('shared flag overrides the legacy flag, including signup behavior', async (
   process.env.SIGNUP_NEIGHBORHOODS_ENABLED = 'true';
   delete process.env.NEIGHBORHOODS_ENABLED;
   try {
-    assert.equal(neighborhoodsEnabled(), true);
+    assert.equal(await neighborhoodsEnabled(), true);
     assert.ok((await (await signupLookup(new Request('http://localhost/api/location/signup?text=Gulshan', { headers: { 'x-country-code': 'BD' } }))).json()).data[0].registrationArea);
     process.env.NEIGHBORHOODS_ENABLED = 'false';
-    assert.equal(neighborhoodsEnabled(), false);
+    assert.equal(await neighborhoodsEnabled(), false);
     assert.ok((await (await signupLookup(new Request('http://localhost/api/location/signup?text=Dhaka', { headers: { 'x-country-code': 'BD' } }))).json()).data.every((row: any) => !row.registrationArea));
   } finally {
     for (const [name, value] of Object.entries({ NEIGHBORHOODS_ENABLED: modern, SIGNUP_NEIGHBORHOODS_ENABLED: legacy, GEOAPIFY_API_KEY: key })) {

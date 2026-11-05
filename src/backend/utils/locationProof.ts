@@ -20,6 +20,10 @@ export interface LocationSelectionPayload {
   longitude: number;
   provider_place_id: string;
   registrationArea?: RegistrationArea;
+  policyRevision?: number;
+  districtKey?: string;
+  districtRestricted?: boolean;
+  visitorKey?: string;
 }
 
 interface LocationProofTokenPayload extends LocationSelectionPayload {

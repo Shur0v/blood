@@ -41,7 +41,7 @@ test('country filtering retains area variants across districts and orders simila
   const provider = mock.method(globalThis, 'fetch', async (input: URL | string | Request) => {
     const url = new URL(String(input)); calls.push(url);
     assert.equal(url.searchParams.get('filter'), 'countrycode:bd');
-    assert.equal(url.searchParams.get('limit'), '20');
+    assert.ok(['20', '100'].includes(url.searchParams.get('limit')!));
     if (url.searchParams.get('type') === 'city') return Response.json({ results: url.searchParams.get('text')!.startsWith(near.city) ? [near] : [far] });
     return Response.json({ results: [
       { ...far, name: 'East Badda', place_id: 'far-area', result_type: 'suburb', lat: 25.9 },
@@ -58,7 +58,8 @@ test('country filtering retains area variants across districts and orders simila
     assert.ok(areas.some(row => row.city === 'Far city'));
     assert.equal(areas[0].latitude, near.lat);
     assert.equal('point' in areas[0], false);
-    assert.equal(calls[0].searchParams.get('bias'), 'proximity:90.4,23.8');
+    assert.ok(calls.some(url => url.searchParams.get('bias') === 'proximity:90.4,23.8'));
+    assert.ok(calls.some(url => !url.searchParams.has('bias')));
     const narrow = await searchLocations('badda, Far city', context);
     assert.ok(narrow.data.every(row => row.city === 'Far city'));
   } finally { provider.mock.restore(); }
@@ -88,11 +89,11 @@ test('country overrides filter provider calls and fail closed on empty results a
     process.env.NEIGHBORHOODS_ENABLED = 'false';
     const cityOnly = await (await cities(request('Delhi', 'BD'))).json();
     assert.deepEqual(cityOnly.data, []);
-    assert.equal((await signup(request('ba', 'BD'))).status, 400);
+    assert.equal((await signup(request('b', 'BD'))).status, 400);
   } finally { offline.mock.restore(); process.env.NEIGHBORHOODS_ENABLED = 'true'; }
 });
 
-test('parent verification is bounded to eight contexts and reports a truncated countrywide list', async () => {
+test('parent verification preserves all contexts with bounded concurrency', async () => {
   const parents = Array.from({ length: 9 }, (_, index) => ({ city: 'City ' + index, country: 'Nepal', country_code: 'np', state: 'State ' + index, place_id: 'city-' + index, result_type: 'city', lat: 27 + index * .01, lon: 85 }));
   let active = 0, peak = 0;
   const provider = mock.method(globalThis, 'fetch', async (input: URL | string | Request) => {
@@ -106,9 +107,9 @@ test('parent verification is bounded to eight contexts and reports a truncated c
   });
   try {
     const result = await searchLocations('central', { country: 'Nepal', countryCode: 'np' });
-    assert.equal(result.data.filter(row => row.registrationArea).length, 8);
+    assert.equal(result.data.filter(row => row.registrationArea).length, 9);
     assert.ok(peak <= 3);
-    assert.equal(result.limited, true);
+    assert.equal(result.limited, false);
   } finally { provider.mock.restore(); }
 });
 

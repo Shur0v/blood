@@ -12,6 +12,7 @@ const calls = [];
 let neighborhood = null;
 const selected = { token: 'signed-fixture', city: 'Dhaka', country: 'Bangladesh', registrationArea: { name: 'South Badda', placeId: 'bloodnet:bd:dhaka:south-badda' } };
 globalThis.fetch = async (url, init = {}) => {
+  if (!String(url).includes('/api/users/me/neighborhood')) return Response.json({ success: true, data: String(url).includes('location-settings') ? { detail: 'detailed', scope: 'country', nearbyFirst: true, typoSuggestions: true, countryInLabel: false, revision: 1 } : { country: 'Bangladesh' } });
   assert.equal(init.headers['x-bloodnet-profile'], 'owner');
   calls.push({ url: String(url), method: init.method || 'GET', body: init.body });
   if (init.method === 'PATCH') neighborhood = JSON.parse(init.body).clear ? null : selected.registrationArea.name;

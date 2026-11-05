@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { requestBrowserLocation } from '../lib/preciseLocation';
 
 interface ViewerGeo {
+  district?: { key: string; name: string; country: string; state?: string };
   city?: string;
   lat?: number;
   lng?: number;

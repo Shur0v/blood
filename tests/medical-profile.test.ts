@@ -1,3 +1,4 @@
+import { getLocationSettings, saveLocationSettings } from '../src/backend/services/locationSettings';
 import { before, after, test, mock } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
@@ -129,6 +130,7 @@ before(async () => {
   assert.deepEqual((await sql.query("SELECT to_jsonb(u) - 'registration_area' - 'registration_area_place_id' AS record FROM \"User\" u ORDER BY id")).rows, usersBeforeNeighborhoods);
   assert.deepEqual((await sql.query('SELECT to_jsonb(c) AS record FROM "UserServiceCity" c ORDER BY id')).rows, citiesBeforeNeighborhoods);
   await sql.query(readFileSync('prisma/migrations/20261105120000_service_city_neighborhoods/migration.sql','utf8'));
+  await sql.query(readFileSync('prisma/migrations/20261105150000_location_management/migration.sql','utf8'));
   assert.deepEqual((await sql.query("SELECT to_jsonb(c) - 'neighborhood_name' - 'neighborhood_place_id' AS record FROM \"UserServiceCity\" c ORDER BY id")).rows, citiesBeforeNeighborhoods);
   const migratedPublication=(await sql.query('SELECT * FROM "PublicDonorProfile" WHERE id=$1',[legacyPublicationId])).rows[0];
   assert.equal(migratedPublication.is_published,false);assert.equal(migratedPublication.bio,legacyBio);assert.equal(migratedPublication.admin_approved_at,null);assert.ok(migratedPublication.consented_at);
@@ -873,7 +875,7 @@ test('every exported administrator and manager API method denies anonymous and o
       checked++;
     }
   }
-  assert.equal(checked,94,'Cover all existing privileged API methods');
+  assert.equal(checked,96,'Cover all existing privileged API methods');
 });
 
 test('verification uploads are encrypted, owner-bound and privately readable by owner or active admin', integration, async () => {
@@ -1633,11 +1635,14 @@ test('signup area lookup verifies city hierarchy, uses city coordinates, and pre
   const duplicate=(await (await lookup('Central')).json()).data.filter((item:any)=>item.registrationArea);
   assert.deepEqual(duplicate.map((item:any)=>item.city),['Dhaka']);
   parentAvailable=false;
-  assert.ok((await (await lookup('Badda')).json()).data.every((row:any)=>!row.registrationArea || row.registrationArea.placeId.startsWith('bloodnet:')));
-  process.env.SIGNUP_NEIGHBORHOODS_ENABLED='false';
+  assert.ok((await (await lookup('Badda')).json()).data.some((row:any)=>row.registrationArea?.name === 'Badda'), 'Reverse lookup can verify a parent when autocomplete cannot');
+  const { revision, ...settings } = await getLocationSettings();
+  await saveLocationSettings({ ...settings, detail: 'cities' }, revision);
   const before=calls;
-  assert.ok((await (await lookup('Dhaka')).json()).data.every((row:any)=>!row.registrationArea));
-  assert.equal(calls,before+1);
+  try {
+    assert.ok((await (await lookup('Dhaka')).json()).data.every((row:any)=>!row.registrationArea));
+    assert.ok(calls > before && calls <= before + 2);
+  } finally { await saveLocationSettings(settings, revision + 1); }
  }finally{provider.mock.restore();if(prior===undefined)delete process.env.SIGNUP_NEIGHBORHOODS_ENABLED;else process.env.SIGNUP_NEIGHBORHOODS_ENABLED=prior;if(key===undefined)delete process.env.GEOAPIFY_API_KEY;else process.env.GEOAPIFY_API_KEY=key;}
 });
 
@@ -1721,7 +1726,9 @@ test('owner neighborhood editing preserves city data, rejects invalid selections
     assert.equal((await save({ clear: true })).status, 200);
     assert.equal((await db.user.findUniqueOrThrow({ where: { id: user.id } })).registration_area, null);
     await save({ token: signLocationProof(payload) });
-    assert.equal((await updateProfile(new Request('http://localhost/api/users/me/profile', { method: 'PATCH', headers, body: JSON.stringify({ city: 'Chattogram' }) }))).status, 200);
+    assert.equal((await updateProfile(new Request('http://localhost/api/users/me/profile', { method: 'PATCH', headers, body: JSON.stringify({ city: 'Chattogram' }) }))).status, 400);
+    assert.equal((await db.user.findUniqueOrThrow({ where: { id: user.id } })).registration_area, 'South Badda');
+    await db.user.update({ where: { id: user.id }, data: { location_city: 'Chattogram', registration_area: null, registration_area_place_id: null } });
     stored = await db.user.findUniqueOrThrow({ where: { id: user.id } });
     assert.equal(stored.registration_area, null);
     assert.equal((await save({ token: signLocationProof(payload) })).status, 409);
@@ -1735,8 +1742,10 @@ test('owner neighborhood editing preserves city data, rejects invalid selections
     stored = await db.user.findUniqueOrThrow({ where: { id: user.id } });
     assert.equal(stored.location_city, 'Kathmandu');
     assert.equal(stored.registration_area, null);
-    process.env.NEIGHBORHOODS_ENABLED = 'false';
-    assert.equal((await save({ clear: true })).status, 409);
+    const { revision, ...settings } = await getLocationSettings();
+    await saveLocationSettings({ ...settings, detail: 'cities' }, revision);
+    try { assert.equal((await save({ clear: true })).status, 409); }
+    finally { await saveLocationSettings(settings, revision + 1); }
   } finally { if (prior === undefined) delete process.env.NEIGHBORHOODS_ENABLED; else process.env.NEIGHBORHOODS_ENABLED = prior; }
 });
 

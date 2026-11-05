@@ -8,6 +8,7 @@ import Link from 'next/link';
 import {usePathname,useRouter} from 'next/navigation';
 import {LayoutDashboard,Users,AlertTriangle,UserMinus,Globe,Droplet,Heart,Image as ImageIcon,PenTool,MousePointerClick,Map,Shield,Menu,X,Search,FileText,Palette,CircleHelp,Megaphone,HeartPulse,Sun,Moon,ArrowUpRight} from 'lucide-react';
 const MENU_ITEMS = [
+  { name: 'Location Management', href: '/private/console-0be5626d4305f192e37e/workspace/location-management', icon: Map },
   { name: 'Platform Guide', href: '/private/console-0be5626d4305f192e37e/workspace/documentation', icon: CircleHelp },
   { name: 'Notifications', href: '/private/console-0be5626d4305f192e37e/workspace/notifications', icon: Megaphone },
   { name: 'Dashboard Overview', href: '/private/console-0be5626d4305f192e37e/workspace', icon: LayoutDashboard },

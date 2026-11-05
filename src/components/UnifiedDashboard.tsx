@@ -1,3 +1,5 @@
+import LocationSearchFeedback, { LocationMoreMatches } from './LocationSearchFeedback';
+import { locationLabel, locationContextLabel } from '@/src/lib/locationSettings';
 import useLocationSuggestions, { type LocationSuggestion } from './useLocationSuggestions';
 import LocationCountrySelect from './LocationCountrySelect';
 import { sameLocationParent } from '@/src/lib/locationCountry';
@@ -689,30 +691,38 @@ export default function UnifiedDashboard({
                   {mode === "self" && (
                     <div className="relative">
                       <input
+                        role="combobox" aria-label="Add service location" aria-autocomplete="list" aria-expanded={citySuggestions.length > 0}
+                        aria-controls={cityLookup.listId} aria-activedescendant={cityLookup.activeIndex >= 0 ? `${cityLookup.listId}-${cityLookup.activeIndex}` : undefined}
+                        onKeyDown={event => cityLookup.handleKeyDown(event, item => void addServiceCity(item))}
                         value={cityInput}
                         onChange={(e) => setCityInput(e.target.value)}
-                        placeholder="Search a city or area (3+ characters)..."
+                        placeholder="Search a city or area (2+ characters)..."
                         className="w-full rounded-xl border border-border/10 bg-white px-3 py-2 text-sm text-text outline-none focus:border-primary/50"
                       />
                       {cityLoading && <span className="absolute right-3 top-2.5 text-xs font-bold text-slate-600">Loading...</span>}
                       {citySuggestions.length > 0 && (
                         <div className="absolute z-20 mt-1 max-h-44 w-full overflow-y-auto rounded-xl border border-border/10 bg-white p-1 shadow-lg">
-                          {citySuggestions.map((suggestion) => (
+                          <div id={cityLookup.listId} role="listbox" aria-label="Service location suggestions">
+                          {citySuggestions.map((suggestion, index) => (
                             <button
                               key={suggestion.registrationArea?.placeId || suggestion.provider_place_id}
+                              id={`${cityLookup.listId}-${index}`} role="option" aria-selected={index === cityLookup.activeIndex}
                               type="button"
                               onClick={() => void addServiceCity(suggestion)}
-                              className="w-full rounded-lg px-3 py-2 text-left text-sm font-semibold text-slate-700 hover:bg-primary/5"
+                              className="w-full rounded-lg px-3 py-2 text-left text-sm font-semibold text-slate-700 hover:bg-primary/5 aria-selected:bg-rose-50"
                             >
-                              {suggestion.registrationArea ? suggestion.registrationArea.name + ", " : ""}{suggestion.city}, {suggestion.country}{(suggestion.district || suggestion.state) && <span className="block text-xs text-slate-500">{[suggestion.district, suggestion.state].filter(Boolean).join(", ")}</span>}
+                              {locationLabel(suggestion, cityLookup.settings.countryInLabel)}<span className="block text-xs text-slate-500">{locationContextLabel(suggestion)}{suggestion.corrected ? " · Suggested spelling" : ""}</span>
                             </button>
                           ))}
+                          </div>
+                          <LocationMoreMatches lookup={cityLookup} />
                         </div>
                       )}
                     </div>
                   )}
-                  {cityLookup.requiresCountry && <LocationCountrySelect value={cityLookup.countryChoice} onChange={cityLookup.setCountryChoice} />}
-                  {cityLookup.message && <p role="status" className="mt-2 text-xs text-slate-600">{cityLookup.message}</p>}
+                  <LocationSearchFeedback lookup={cityLookup} showMore={false} />
+                      {cityLookup.requiresCountry && <LocationCountrySelect value={cityLookup.countryChoice} onChange={cityLookup.setCountryChoice} />}
+
                   {pendingArea && <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-slate-800">
                     <p>Update {pendingArea.suggestion.city} to {pendingArea.suggestion.registrationArea?.name}?</p>
                     <button type="button" disabled={areaSaving} onClick={() => void updateServiceArea(pendingArea.cityId, pendingArea.suggestion)} className="mr-3 mt-2 rounded-lg bg-primary px-3 py-2 font-semibold text-white">Update neighborhood</button>

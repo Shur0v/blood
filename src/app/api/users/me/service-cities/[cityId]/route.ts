@@ -1,3 +1,4 @@
+import { assertLocationPolicy, lockLocationPolicy } from '@/src/backend/services/locationPolicy';
 import { NextResponse } from 'next/server';
 import { ADMIN_ROLES, getSessionFromRequest, USER_ROLE } from '@/src/backend/utils/session';
 import { getPrisma } from '@/src/backend/config/db';
@@ -83,14 +84,16 @@ const AreaUpdate = z.union([
 export async function PATCH(req: Request, { params }: { params: Promise<{ cityId: string }> }) {
   try {
     const userId = medicalUser(req);
-    if (!neighborhoodsEnabled()) throw new MedicalError('Neighborhood editing is currently disabled.', 409);
+    if (!(await neighborhoodsEnabled())) throw new MedicalError('Neighborhood editing is currently disabled.', 409);
     const input = AreaUpdate.safeParse(await securityJson(req, 8192));
     if (!input.success) throw new MedicalError('Choose a neighborhood or clear the current area.', 400);
     const proof = 'token' in input.data ? verifyLocationProof(input.data.token) : null;
     if ('token' in input.data && !proof?.registrationArea) throw new MedicalError('Selection expired or invalid. Search again.', 400);
+    if (proof) await assertLocationPolicy(req, proof);
     await securityRateLimit('service-neighborhood-save', userId, 20, 60000);
     const { cityId } = await params;
     const data = await getPrisma().$transaction(async tx => {
+      if (proof) await lockLocationPolicy(tx, req, proof);
       await lockPrimaryLocation(tx, userId);
       const row = await tx.userServiceCity.findFirst({ where: { id: cityId, user_id: userId } });
       if (!row) throw new MedicalError('Service city no longer available. Reload your profile.', 404);

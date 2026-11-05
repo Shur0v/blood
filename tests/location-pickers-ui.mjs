@@ -25,6 +25,7 @@ globalThis.fetch = async (input, init = {}) => {
   calls.push({ path: url.pathname, text: url.searchParams.get('text'), country: url.searchParams.get('country'), method: init.method || 'GET', body: init.body });
   if (url.pathname === '/api/location/ip') return Response.json({ success: true, data: { country: 'Bangladesh', city: 'Dhaka', lat: 23.8, lng: 90.4 } });
   if (url.pathname === '/api/location/signup' && url.searchParams.get('text') === 'missing' && !url.searchParams.get('country')) return Response.json({ success: true, data: [], meta: { requiresCountry: true, message: 'Choose your country.' } });
+  if (url.pathname === '/api/location/signup' && url.searchParams.get('text') === 'many') return Response.json({ success: true, data: Array.from({ length: 50 }, (_, index) => ({ ...city, city: 'Many city ' + index, provider_place_id: 'many-' + index, token: 'many-' + index })) });
   if (url.pathname === '/api/location/signup') return Response.json({ success: true, data: url.searchParams.get('text').toLowerCase().includes('agr') ? [agrabad] : [south, merul, city], meta: { country: 'Bangladesh' } });
   if (url.pathname === '/api/users/me/neighborhood') return Response.json({ success: true, data: { city: 'Dhaka', country: 'Bangladesh', neighborhood: serviceCities[0].registrationArea?.name, enabled: true, suggestions: [] } });
   if (url.pathname === '/api/users/me/service-cities/primary' && init.method === 'PATCH') {
@@ -59,11 +60,13 @@ try {
   assert.ok(input);
   assert.ok(input.closest('[role="dialog"]'));
   await type(input, 'ba');
-  assert.equal(calls.filter(call => call.path === '/api/location/signup').length, 0);
+  assert.ok(calls.some(call => call.path === '/api/location/signup' && call.text === 'ba'));
   await type(input, 'bad');
   assert.ok(document.body.textContent.includes('South Badda'));
   assert.ok(document.body.textContent.includes('Merul Badda'));
-  await clickText('Merul Badda');
+  await act(async () => input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true })));
+  await act(async () => input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true })));
+  await act(async () => input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })));
   await type(input, 'agr');
   await clickText('Agrabad');
   assert.ok(document.body.textContent.includes('Selected 2/5 cities'));
@@ -75,13 +78,14 @@ try {
   await act(async () => { countrySelect.value = 'in'; countrySelect.dispatchEvent(new Event('change', { bubbles: true })); });
   await act(async () => wait(550));
   assert.ok(calls.some(call => call.text === 'missing' && call.country === 'in'));
-  console.log('PASS signup uses three-character lookup, saves primary/additional area choices, and offers a country selector when needed.');
+  console.log('PASS signup uses two-character lookup, saves primary/additional area choices, and offers a country selector when needed.');
   await act(async () => root.render(React.createElement(Dashboard, { profile: { id: 'owner', name: 'Fixture', city: 'Dhaka', country: 'Bangladesh', bloodGroup: 'A+', verificationStatus: 'UNVERIFIED', serviceCities }, isReady: true, onToggleReady() {} })));
-  const serviceInput = [...document.querySelectorAll('input')].find(input => input.getAttribute('placeholder') === 'Search a city or area (3+ characters)...');
+  const serviceInput = [...document.querySelectorAll('input')].find(input => input.getAttribute('placeholder') === 'Search a city or area (2+ characters)...');
   assert.ok(serviceInput, JSON.stringify([...document.querySelectorAll('input')].map(input => input.getAttribute('placeholder'))));
   assert.ok(serviceInput.closest('[data-analytics-private]'));
   await type(serviceInput, 'bad');
-  await clickText('South Badda, Dhaka');
+  await act(async () => serviceInput.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true })));
+  await act(async () => serviceInput.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })));
   assert.equal(calls.filter(call => call.method === 'PATCH').length, 0);
   assert.ok(document.body.textContent.includes('Update Dhaka to South Badda?'));
   await clickText('Update neighborhood');
@@ -91,6 +95,12 @@ try {
   await clickText('Agrabad, Chattogram');
   assert.equal(calls.filter(call => call.method === 'POST').length, 1);
   assert.equal(serviceCities.length, 2);
+  await type(serviceInput, 'many');
+  assert.equal(document.querySelectorAll('[role=option]').length, 20);
+  assert.ok([...document.querySelectorAll('button')].find(button => button.textContent.includes('Show more matches')).closest('.absolute'));
+  await clickText('Show more matches');
+  await clickText('Show more matches');
+  assert.equal(document.querySelectorAll('[role=option]').length, 50);
   console.log('PASS profile confirms existing-city neighborhood changes and adds new cities with their area.');
   const { default: useLocationSuggestions } = await import('../src/components/useLocationSuggestions.ts');
   let resolveOld;

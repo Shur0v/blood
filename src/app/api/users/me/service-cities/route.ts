@@ -1,3 +1,4 @@
+import { assertLocationPolicy, lockLocationPolicy } from '@/src/backend/services/locationPolicy';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { ADMIN_ROLES, getSessionFromRequest, USER_ROLE } from '@/src/backend/utils/session';
@@ -64,6 +65,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: false, message: 'Invalid location proof token.' }, { status: 400 });
   }
 
+  try { await assertLocationPolicy(req, proof); } catch (error) { return medicalFailure(error); }
   const matches =
     proof.city === payload.city &&
     proof.country === payload.country &&
@@ -73,7 +75,7 @@ export async function POST(req: Request) {
     proof.provider_place_id === payload.provider_place_id &&
     proof.registrationArea?.name === payload.registrationArea?.name &&
     proof.registrationArea?.placeId === payload.registrationArea?.placeId &&
-    (!payload.registrationArea || neighborhoodsEnabled());
+    (!payload.registrationArea || await neighborhoodsEnabled());
 
   if (!matches) {
     return NextResponse.json({ success: false, message: 'Location mismatch detected.' }, { status: 400 });
@@ -82,6 +84,7 @@ export async function POST(req: Request) {
   const prisma = getPrisma();
   try {
     await prisma.$transaction(async tx => {
+      await lockLocationPolicy(tx, req, proof);
       await lockPrimaryLocation(tx, auth.session.user_id);
       const existing = await tx.userServiceCity.findMany({ where: { user_id: auth.session.user_id } });
       if (existing.some(row => sameLocationParent(row, payload))) {

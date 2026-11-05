@@ -395,6 +395,13 @@ model PlatformSettings {
   updated_at        DateTime @updatedAt
 }
 
+model LocationSettings {
+  id String @id
+  settings Json @default("{}")
+  revision Int @default(1)
+  updated_at DateTime @updatedAt
+}
+
 model RegionalPageContent {
   key        String   @id
   country    String

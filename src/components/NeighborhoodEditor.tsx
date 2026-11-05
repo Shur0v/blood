@@ -1,5 +1,7 @@
+import useLocationSuggestions from './useLocationSuggestions';
+import LocationSearchFeedback from './LocationSearchFeedback';
+import { locationLabel, locationContextLabel } from '@/src/lib/locationSettings';
 import { useEffect, useId, useState } from 'react';
-import { confirmedBrowserLocation } from './useViewerGeo';
 
 type Suggestion = {
   token: string; city: string; country: string; state?: string; district?: string;
@@ -14,11 +16,13 @@ export default function NeighborhoodEditor({ revision, userId, onSaved, onAvaila
   const [location, setLocation] = useState<Location | null>(null);
   const [editing, setEditing] = useState(false);
   const [text, setText] = useState('');
-  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+
   const [selected, setSelected] = useState<Suggestion | null>(null);
+  const lookup = useLocationSuggestions(text, editing && !selected, '/api/users/me/neighborhood', userId);
+  const suggestions = lookup.suggestions.filter((item): item is typeof item & { registrationArea: { name: string; placeId: string } } => Boolean(item.registrationArea));
   const [active, setActive] = useState(-1);
   const [message, setMessage] = useState('');
-  const [loading, setLoading] = useState(false);
+  const loading = lookup.loading;
   const [saving, setSaving] = useState(false);
   const listId = useId();
 
@@ -36,42 +40,16 @@ export default function NeighborhoodEditor({ revision, userId, onSaved, onAvaila
         }
       }).catch(error => { if (!controller.signal.aborted) setMessage(error.message); });
     return () => controller.abort();
-  }, [revision, userId, onAvailability]);
+  }, [revision, userId, onAvailability, lookup.settings.revision]);
 
-  useEffect(() => {
-    setSuggestions([]);
-    setActive(-1);
-    if (!editing || selected || text.trim().length < 3) return;
-    const controller = new AbortController();
-    const timer = setTimeout(async () => {
-      setLoading(true);
-      try {
-        const params = new URLSearchParams({ text: text.trim() });
-        const gps = confirmedBrowserLocation();
-        if (gps?.country && gps.lat !== undefined && gps.lng !== undefined) {
-          params.set('browserCountry', gps.country);
-          params.set('browserLat', String(gps.lat));
-          params.set('browserLng', String(gps.lng));
-        }
-        const response = await fetch('/api/users/me/neighborhood?' + params, {
-          cache: 'no-store', signal: controller.signal, headers: { 'x-bloodnet-profile': userId },
-        });
-        const body = await response.json();
-        if (!response.ok) throw new Error(body.message || 'Unable to search. Please retry.');
-        if (controller.signal.aborted) return;
-        setSuggestions(body.data.suggestions);
-        setMessage(body.data.suggestions.length ? '' : 'No verified area found. You can continue using your city.');
-      } catch (error) {
-        if (!controller.signal.aborted) setMessage(error instanceof Error ? error.message : 'Unable to search.');
-      } finally { if (!controller.signal.aborted) setLoading(false); }
-    }, 350);
-    return () => { clearTimeout(timer); controller.abort(); setLoading(false); };
-  }, [text, editing, selected, userId]);
+  useEffect(() => { setActive(-1); }, [text]);
+
+  useEffect(() => { onAvailability?.(lookup.settings.detail === 'detailed'); }, [lookup.settings.detail, onAvailability]);
 
   const choose = (item: Suggestion) => {
     setSelected(item);
     setText(label(item));
-    setSuggestions([]);
+    lookup.clear();
     setMessage('');
   };
   const save = async (clear = false) => {
@@ -93,7 +71,7 @@ export default function NeighborhoodEditor({ revision, userId, onSaved, onAvaila
     finally { setSaving(false); }
   };
 
-  if (!location?.enabled) return message ? <p role="status" className="mb-3 text-xs text-amber-700">{message}</p> : null;
+  if (!location?.enabled || lookup.settings.detail === 'cities') return message ? <p role="status" className="mb-3 text-xs text-amber-700">{message}</p> : null;
   return <section data-analytics-private="" className="mb-4 rounded-xl border border-border/10 bg-white p-3" aria-label="Primary neighborhood">
     <div className="flex flex-wrap items-center justify-between gap-2">
       <div>
@@ -112,7 +90,7 @@ export default function NeighborhoodEditor({ revision, userId, onSaved, onAvaila
         className="mt-1 w-full rounded-xl border border-border/20 bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/40"
         onChange={event => { setText(event.target.value); setSelected(null); }}
         onKeyDown={event => {
-          if (event.key === 'Escape') { setSuggestions([]); setActive(-1); }
+          if (event.key === 'Escape') { lookup.clear(); setActive(-1); }
           if (suggestions.length && ['ArrowDown', 'ArrowUp'].includes(event.key)) {
             event.preventDefault();
             setActive(index => event.key === 'ArrowDown' ? (index + 1) % suggestions.length : (index <= 0 ? suggestions.length : index) - 1);
@@ -125,10 +103,11 @@ export default function NeighborhoodEditor({ revision, userId, onSaved, onAvaila
       <ul id={listId} role="listbox" aria-label="Neighborhood suggestions" className="mt-1 max-h-52 overflow-auto">
         {suggestions.map((item, index) => <li key={item.registrationArea.placeId} id={`${listId}-${index}`} role="option" aria-selected={index === active}>
           <button type="button" disabled={saving} onClick={() => choose(item)} className={`w-full rounded-lg px-3 py-2 text-left text-sm text-slate-800 hover:bg-primary/5 focus-visible:ring-2 focus-visible:ring-primary ${index === active ? 'bg-primary/10' : ''}`}>
-            {label(item)}{(item.district || item.state) && <span className="block text-xs text-slate-500">{[item.district, item.state].filter(Boolean).join(', ')}</span>}
+            {locationLabel(item, lookup.settings.countryInLabel)}<span className="block text-xs text-slate-500">{locationContextLabel(item)}{item.corrected ? ' · Suggested spelling' : ''}</span>
           </button>
         </li>)}
       </ul>
+      <LocationSearchFeedback lookup={lookup} />
       {loading && <p role="status" className="text-xs text-slate-600">Searching…</p>}
       <div className="mt-2 flex flex-wrap gap-2">
         <button type="button" disabled={!selected || saving} onClick={() => void save()} className="rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-white disabled:opacity-50">{saving ? 'Saving…' : 'Save'}</button>

@@ -22,7 +22,10 @@ export async function resolveLocationSearch(req: Request, text: string, accountC
       where: { id: session.user_id }, select: { location_country: true },
     }))?.location_country;
   }
-  const country = explicit || locationCountry(detected?.country) || locationCountry(fallback) || locationCountry(params.get('country'));
+  const browser = params.has('browserLat') && params.has('browserLng')
+    ? browserPoint.safeParse({ lat: params.get('browserLat'), lng: params.get('browserLng') }) : undefined;
+  const browserCountry = browser?.success ? locationCountry(params.get('browserCountry')) : undefined;
+  const country = explicit || browserCountry || locationCountry(detected?.country) || locationCountry(fallback) || locationCountry(params.get('country'));
   if (!country) return null;
   let bias: SearchBias | undefined;
   if (locationCountry(detected?.country)?.code === country.code && Number.isFinite(detected?.lat) && Number.isFinite(detected?.lng)) {
