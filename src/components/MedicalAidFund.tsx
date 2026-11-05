@@ -1,10 +1,11 @@
+'use client';
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Heart, X, Hospital, Mail, DollarSign, FileText, User, Activity, ArrowRight, ShieldAlert, ImagePlus } from "lucide-react";
 import DonateNowModal from "./DonateNowModal"; // High-Converting Donation Modal
 import CountryPhoneInput, { emptyPhoneValue, type PhoneFieldValue } from "./CountryPhoneInput";
 
-export default function MedicalAidFund() {
+export default function MedicalAidFund({presentation='default'}:{presentation?:'default'|'india'}) {
   const [isModalOpen, setIsModalOpen] = useState(false); // Verification Form Modal
   const [isDonateModalOpen, setIsDonateModalOpen] = useState(false); // Donate Now UI Modal
 
@@ -24,9 +25,9 @@ export default function MedicalAidFund() {
   const [phoneValue, setPhoneValue] = useState<PhoneFieldValue>(emptyPhoneValue());
   const [isPhoneValid, setIsPhoneValid] = useState(false);
   const [stats, setStats] = useState({
-    total_raised: 13500,
-    total_spent: 15000,
-    completed_ops: 37,
+    total_raised: presentation==='india'?0:13500,
+    total_spent: presentation==='india'?0:15000,
+    completed_ops: presentation==='india'?0:37,
     donor_requests: 0,
   });
 
@@ -150,7 +151,7 @@ export default function MedicalAidFund() {
   };
 
   return (
-    <section className="relative mx-auto max-w-6xl px-4 py-16">
+    <section className={presentation==='india'?"india-book-access relative mx-auto max-w-6xl px-4 py-16":"relative mx-auto max-w-6xl px-4 py-16"}>
 
       {/* High-Converting Global Donate Modal */}
       <DonateNowModal
@@ -159,10 +160,10 @@ export default function MedicalAidFund() {
       />
 
       <motion.div
-        initial={{ opacity: 0, y: 40 }}
+        initial={presentation==='india'?false:{ opacity: 0, y: 40 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="relative overflow-hidden rounded-[40px] border border-red-500/30 bg-gradient-to-br from-rose-600 via-[#FF3131] to-red-900 p-8 shadow-[0_30px_60px_-15px_rgba(255,49,49,0.4)] md:p-14"
+        className={presentation==='india'?"india-book-panel relative overflow-hidden p-8 md:p-14":"relative overflow-hidden rounded-[40px] border border-red-500/30 bg-gradient-to-br from-rose-600 via-[#FF3131] to-red-900 p-8 shadow-[0_30px_60px_-15px_rgba(255,49,49,0.4)] md:p-14"}
       >
         {/* Decorative Background Elements */}
         <div className="absolute top-0 right-0 -mr-20 -mt-20 h-64 w-64 rounded-full bg-white opacity-5 blur-3xl"></div>

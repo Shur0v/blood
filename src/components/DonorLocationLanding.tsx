@@ -11,6 +11,8 @@ import RegionalCityExperience from './regional/RegionalCityExperience';
 import {RegionalAuthActions} from './regional/RegionalInteractions';
 import {getRegionalContent} from '@/src/backend/services/regionalContent';
 import {regionalCopy} from '@/src/lib/regionalDesign';
+import {resolveRegionalDesign} from '@/src/lib/regionalDesign';
+import type {CSSProperties} from 'react';
 import { locationCommentary } from '@/src/backend/services/donorResearch';
 
 export type LocationParams = { country: string; city: string };
@@ -50,9 +52,10 @@ export default async function DonorLocationLanding({params,mode,bloodGroup}:{par
   if(mode==='blood')return <RegionalCityExperience country={row.country} city={row.city} group={bloodGroup} canonicalPath={donorLocationPath(row,'blood')+(bloodGroup?'/'+bloodGroupToSlug(bloodGroup):'')} title={title} introduction={introduction}/>;
   const nearby = (await getDonorLocations()).filter(other => other.country === row.country && other.city !== row.city && other.organCount).slice(0,24);
   const preview = await getLocationDonorPreview(row.country,row.city,mode,bloodGroup);
+  const india=row.country.toLowerCase()==='india',indiaColors=india?resolveRegionalDesign(row.country,(await getRegionalContent(row.country,row.city))?.design).colors:null;
   const schema = [{ '@context':'https://schema.org', '@type':'CollectionPage', name:title, url, description:`${count} active ${mode} donor entries serving ${row.city}, ${row.country}.`, dateModified:row.updatedAt.toISOString(), spatialCoverage:{'@type':'Place',name:`${row.city}, ${row.country}`}, isPartOf:{'@id':`${getPublicBaseUrl()}#website`} },
     { '@context':'https://schema.org', '@type':'BreadcrumbList', itemListElement:[{ '@type':'ListItem',position:1,name:'BloodNet',item:getPublicBaseUrl() },{ '@type':'ListItem',position:2,name:'Donor locations',item:getPublicBaseUrl()+'/cities' },{ '@type':'ListItem',position:3,name:`${row.city}, ${row.country}`,item:url }] }];
-  return <main className="min-h-screen bg-bg text-slate-900">
+  return <main className={'min-h-screen bg-bg text-slate-900'+(india?' india-page india-seo india-organ-page':'')} style={indiaColors?{'--india-paper':indiaColors.paper,'--india-ink':indiaColors.ink,'--india-accent':indiaColors.accent,'--india-green':indiaColors.indigo} as CSSProperties:undefined}>
     <script type="application/ld+json" dangerouslySetInnerHTML={{__html:stringifyJsonLd(schema)}}/>
     {introduction}
     {preview.length>0&&<section aria-labelledby="recent-local-donors" className="mx-auto max-w-7xl px-4 pb-8"><h2 id="recent-local-donors" className="text-xl font-semibold">Recent donor entries in {row.city}</h2><p className="mt-2 text-sm text-slate-600">A sample of public entries. Use the donor cards below to contact volunteers and check availability.</p><ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{preview.map((donor,index)=><li key={index} className="rounded-xl border border-slate-200 bg-white p-4 text-sm"><p className="font-semibold text-slate-900">{donor.name}</p><p className="mt-2 text-rose-700">{donor.category}</p><p className="mt-1 text-slate-600">{row.city}, {row.country}</p></li>)}</ul></section>}

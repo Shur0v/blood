@@ -40,7 +40,7 @@ export function normalizeRegionalDesign(country:string,input:unknown):RegionalDe
 }
 export const REGIONAL_PALETTES:Record<string,{paper:string;ink:string;accent:string;indigo:string}>={
  nepal:{paper:'#f8f5ee',ink:'#16263e',accent:'#ad2444',indigo:'#293f71'},
- india:{paper:'#fff8f0',ink:'#292b35',accent:'#a3302c',indigo:'#354b41'},
+ india:{paper:'#fff7ed',ink:'#242a30',accent:'#b83e0b',indigo:'#245747'},
  pakistan:{paper:'#f3f8f5',ink:'#17352d',accent:'#9d2847',indigo:'#245e50'},
  bangladesh:{paper:'#f5f8f4',ink:'#183c35',accent:'#ad2444',indigo:'#17614f'},
  international:{paper:'#f5f6fb',ink:'#20314b',accent:'#ad2444',indigo:'#365274'},

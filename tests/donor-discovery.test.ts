@@ -36,7 +36,7 @@ test('explicit browser location uses high accuracy and confirmed reverse-geocode
   let options:PositionOptions|undefined;
   const browser={getCurrentPosition(success:PositionCallback,_error?:PositionErrorCallback|null,settings?:PositionOptions){options=settings;success({coords:{latitude:23.81,longitude:90.41}} as GeolocationPosition);}};
   const fetcher=(async(input)=>{const url=new URL(String(input),'http://localhost');assert.equal(url.pathname,'/api/location/reverse');assert.equal(url.searchParams.get('lat'),'23.81');return Response.json({success:true,data:{country:'Bangladesh',city:'Dhaka'}});}) as typeof fetch;
-  assert.deepEqual(await requestBrowserLocation(browser,fetcher),{country:'Bangladesh',city:'Dhaka',lat:23.81,lng:90.41});
+  assert.deepEqual(await requestBrowserLocation(browser,fetcher),{country:'Bangladesh',city:'Dhaka',lat:23.81,lng:90.41,district:undefined});
   assert.equal(options?.enableHighAccuracy,true);assert.equal(options?.timeout,10000);
 });
 

@@ -1754,12 +1754,21 @@
   },
   {
     "kind": "module",
+    "name": "src/app/india.css",
+    "flow": "regional",
+    "access": "Reviewed supporting implementation",
+    "source": "src/app/india.css",
+    "methods": [],
+    "sha256": "3df4e59ff677a548c16d6afa90f746b9cd79aaa3dc697e9970249c08fce37484"
+  },
+  {
+    "kind": "module",
     "name": "src/app/layout.tsx",
     "flow": "platform",
     "access": "Reviewed supporting implementation",
     "source": "src/app/layout.tsx",
     "methods": [],
-    "sha256": "92e6a2f756a812b2f6ef777a42ad3db01e9c3ff52dd5f68714770f99054d582f"
+    "sha256": "3ecb60f181267472a0bf8ced819ba8ff6027f8ccc692bc72c65f6d4353736577"
   },
   {
     "kind": "module",
@@ -1907,6 +1916,24 @@
   },
   {
     "kind": "module",
+    "name": "src/components/india/IndiaLanding.tsx",
+    "flow": "regional",
+    "access": "Reviewed supporting implementation",
+    "source": "src/components/india/IndiaLanding.tsx",
+    "methods": [],
+    "sha256": "4166a5e497dc4c0f996ab391747ff3796630ebca20c5cfd69f929bcadba73c0a"
+  },
+  {
+    "kind": "module",
+    "name": "src/components/india/IndiaSurface.tsx",
+    "flow": "regional",
+    "access": "Reviewed supporting implementation",
+    "source": "src/components/india/IndiaSurface.tsx",
+    "methods": [],
+    "sha256": "45e500582a92a2cb9b7867d4a67b7d76c69769926b3a8fb3c501e4a6fef51044"
+  },
+  {
+    "kind": "module",
     "name": "src/components/LocationCountrySelect.tsx",
     "flow": "location",
     "access": "Reviewed supporting implementation",
@@ -1984,7 +2011,7 @@
     "access": "Reviewed supporting implementation",
     "source": "src/components/regional/RegionalCityExperience.tsx",
     "methods": [],
-    "sha256": "a6f2c0970feb0cae73087a55a2ae7424ffda2f4dc6eeef3f8459bb452bcd9006"
+    "sha256": "a1d33cab9698cf104bf755eedc6279c02e0347f2b34425d6ee0fc718dca877f5"
   },
   {
     "kind": "module",
@@ -2164,7 +2191,7 @@
     "access": "Reviewed supporting implementation",
     "source": "src/lib/regionalDesign.ts",
     "methods": [],
-    "sha256": "b1e2ec8282b29a4b02b6a5b897f20cd1b0a0a1c36705218aafe84e8afca792a0"
+    "sha256": "64faa73a66a03ee0f3bb9c73690f5ff3268e790740ce2cdd5597bfcd2e2f28b9"
   },
   {
     "kind": "page",
@@ -2182,7 +2209,7 @@
     "access": "Public or endpoint-specific guard",
     "source": "src/app/[region]/page.tsx",
     "methods": [],
-    "sha256": "108902f7e5262f5a2f1710c6d6f18a293e5810a7816ffe5dd6d7f55acafb6b35"
+    "sha256": "b3b24d95d45635424aa41ca167bde2db9ebe117d1d36a76b27a532900c857e70"
   },
   {
     "kind": "page",
@@ -2578,7 +2605,7 @@
     "access": "Public or endpoint-specific guard",
     "source": "src/app/network/[country]/page.tsx",
     "methods": [],
-    "sha256": "1c232f73eb3fa3d0f687b60998aa78ebab87303c5634cc2549a516180db9fd50"
+    "sha256": "e86c2ca3b4cddd728be6de49aad60520176fab7ab148d770ed353fda1b013f6c"
   },
   {
     "kind": "page",
