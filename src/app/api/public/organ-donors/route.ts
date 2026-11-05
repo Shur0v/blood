@@ -9,7 +9,7 @@ import {getDiscoveryOrigin} from '@/src/backend/services/donorCoverage';
 export const dynamic = 'force-dynamic';
 
 const QuerySchema = z.object({
-  limit: z.coerce.number().int().min(1).max(16).default(16),
+  limit: z.coerce.number().int().min(1).max(18).default(16),
   cursor: z.string().optional(),
   organ: z.string().min(1).max(80).optional(),
   bloodGroup: z.string().min(1).max(10).optional(),

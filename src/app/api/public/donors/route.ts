@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic';
 const freshDonorHeaders = { 'Cache-Control': 'no-store, no-cache, must-revalidate' };
 
 const QuerySchema = z.object({
-  limit: z.coerce.number().int().min(1).max(16).default(16),
+  limit: z.coerce.number().int().min(1).max(18).default(16),
   cursor: z.string().optional(),
   bloodGroup: z.string().min(1).max(10).optional(),
   search: z.string().min(1).max(120).optional(),

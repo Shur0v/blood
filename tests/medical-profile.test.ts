@@ -1241,6 +1241,22 @@ test('expanded blood discovery fills pages local-first, retains categories and m
  await db.manualBloodDonor.updateMany({where:{location_country:country,blood_group:'B-'},data:{location_country:'Foreign'}});params.set('expand','nearby');params.delete('viewerCountry');const single=await read();assert.equal(single.data.length,16);assert.equal(single.data[0].id,user.id);assert.equal(single.data.filter((row:any)=>row.location_country===country).length,1,'A one-donor country is followed by real nearby matches');
 });
 
+test('eighteen-card discovery batches preserve ordering and cursor continuity for blood and organ entries',integration,async()=>{
+ const db=getPrisma(),marker='IndiaBatch'+randomUUID();
+ for(let i=0;i<21;i++){
+  await db.manualBloodDonor.create({data:{name:marker+' '+i,mobile:randomUUID(),blood_group:'A+',location_city:'Delhi',location_country:'India',location_lat:28.61,location_lng:77.2,source:'TEST',added_by_admin:'TEST'}});
+  await db.manualOrganDonor.create({data:{name:marker+' '+i,mobile:randomUUID(),organ_type:'Kidney',location_city:'Delhi',location_country:'India',location_lat:28.61,location_lng:77.2,source:'TEST',added_by_admin:'TEST'}});
+ }
+ for(const endpoint of [publicBloodDonors,publicOrganDonors]){
+  const params=new URLSearchParams({country:'India',viewerCountry:'India',viewerCity:'Delhi',search:marker,expand:'nearby',limit:'18'});
+  const read=async()=>{const response=await endpoint(new Request('http://localhost/api/public/donors?'+params));assert.equal(response.status,200);return response.json();};
+  const first=await read();assert.equal(first.data.length,18);assert.equal(first.pagination.total,21);
+  params.set('cursor',first.pagination.nextCursor);const second=await read();assert.equal(second.data.length,3);assert.equal(second.pagination.nextCursor,null);
+  assert.equal(new Set([...first.data,...second.data].map(row=>row.id)).size,21);
+  params.delete('cursor');params.set('limit','19');assert.equal((await endpoint(new Request('http://localhost/api/public/donors?'+params))).status,400);
+ }
+});
+
 test('expanded organ discovery fills matching nearby pledges while preserving selected organ and blood group',integration,async()=>{
  const db=getPrisma(),country='Organ priority '+randomUUID(),marker='OrganBrowse'+randomUUID(),user=await newPatient();
  await db.user.update({where:{id:user.id},data:{name:marker+' local',blood_group:'B-',location_country:country,location_city:'Local',location_lat:10,location_lng:10}});

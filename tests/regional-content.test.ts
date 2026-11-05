@@ -58,6 +58,7 @@ test('regional design accepts bounded copy and readable palettes while protectin
  assert.match(regionalDesignContrastError('India',{colors:{indigo:'#707070'}})!,/Feature panel/);
  assert.equal(regionalCopy({copy:{introTitle:'{group} volunteers in {city}, {country}'}},'introTitle',{country:'India',city:'Chennai',group:'A+'},'Default'),'A+ volunteers in Chennai, India');
  assert.equal(regionalCopy(undefined,'joinTitle',{country:'India'},'Original title'),'Original title');
- assert.deepEqual(normalizeRegionalDesign('India',{theme:'auto',layout:'balanced',spacing:'comfortable',copy:{introTitle:''},hiddenSections:[],faqs:[],colors:{paper:'#FFF7ED'}}),{},'Default-equivalent fields do not create artificial publication edits');
+ assert.deepEqual(normalizeRegionalDesign('India',{theme:'auto',layout:'balanced',spacing:'comfortable',copy:{introTitle:''},hiddenSections:[],faqs:[],colors:{paper:'#FFFDF8'}}),{},'Default-equivalent fields do not create artificial publication edits');
+ assert.deepEqual(normalizeRegionalDesign('India',{colors:{paper:'#FFF7ED'}}),{colors:{paper:'#fff7ed'}},'Previously saved India colors retain precedence');
  assert.deepEqual(normalizeRegionalDesign('India',{colors:{paper:'#FFF8F0'}}),{colors:{paper:'#fff8f0'}},'An explicitly saved earlier India background remains an override');
 });

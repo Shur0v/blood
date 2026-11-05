@@ -40,7 +40,7 @@ export default function CityLandingDonorGrid({ mode, city, country, bloodGroup }
     setLoading(true);
     try {
       const params = new URLSearchParams({
-        limit: "16",
+        limit: country.trim().toLowerCase()==='india' ? "18" : "16",
         viewerCity: city,
         viewerCountry: country,
         sort: 'NEARBY',
@@ -106,7 +106,7 @@ export default function CityLandingDonorGrid({ mode, city, country, bloodGroup }
           No donors available right now.
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div data-india-donor-grid={country.trim().toLowerCase()==='india'?'true':undefined} className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {cards.map((card, idx) => (
             <motion.div
               key={`${card.id}-${idx}`}

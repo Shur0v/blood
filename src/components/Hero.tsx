@@ -150,10 +150,11 @@ export default function Hero({ forcedCountry, initialCity = '', initialGroup = n
   const effectiveQuery=useRef<URLSearchParams|null>(null);
   const regionKey=viewerGeo.country||'global';
   const localReady = Boolean(viewerGeo.resolved) && loadedCountry === regionKey;
-  const donorCacheKey = `bloodnet_public_donors_cache:v8:${viewerGeo.country}:${initialCity || viewerGeo.city || ''}:${activeGroup || 'all'}:${normalizedSearch}`;
+  const indiaEdition = forcedCountry?.trim().toLowerCase() === 'india';
+  const donorCacheKey = `bloodnet_public_donors_cache:${indiaEdition?'v9-india-18':'v8'}:${viewerGeo.country}:${initialCity || viewerGeo.city || ''}:${activeGroup || 'all'}:${normalizedSearch}`;
   const donorRequests = useRef<AbortController | null>(null);
   const buildBaseParams = () => {
-    const params = new URLSearchParams({ limit: "16", sort: 'NEARBY',expand:'nearby' });
+    const params = new URLSearchParams({ limit: indiaEdition ? "18" : "16", sort: 'NEARBY',expand:'nearby' });
     if (viewerGeo.country) {
       params.set("country", viewerGeo.country);
     }
@@ -431,7 +432,7 @@ export default function Hero({ forcedCountry, initialCity = '', initialGroup = n
             </button>
           </div>
         ) : (
-          <div data-region-section={regionalSections||presentation==="regional"?"3":undefined} data-pakistan-section={forcedCountry?.toLowerCase()==="pakistan"&&presentation==="regional"?"4":undefined} className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div data-india-donor-grid={indiaEdition?'true':undefined} data-region-section={regionalSections||presentation==="regional"?"3":undefined} data-pakistan-section={forcedCountry?.toLowerCase()==="pakistan"&&presentation==="regional"?"4":undefined} className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {donors.map((donor, index) => (
               <div key={`slot-${donor.id}`}>
                 {inlineBannerAd && !hideInlineBanner && adInsertIndexes.includes(index) && !failedAdSlots[index] && (

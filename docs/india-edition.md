@@ -4,7 +4,9 @@
 
 The resolved directory country selects India styling for city, blood-group/city, country-qualified blood and organ pages, and the India network overview. Old keyword redirects retain their existing destinations. Generic global pages do not become India pages because a visitor searches for an Indian location.
 
-The existing regional editor still controls published copy, colors, optional sections, FAQs and approved images. Its India palette defaults to ivory, charcoal, dark saffron and green; saved overrides retain precedence. No decorative photographs or fabricated results are added. Current listing counts remain directory figures, not clinical availability or successful donations.
+The existing regional editor still controls published copy, colors, optional sections, FAQs and approved images. Its India palette defaults to warm white, navy-charcoal, saffron and deeper green; saved overrides retain precedence. No decorative photographs or fabricated results are added. Current listing counts remain directory figures, not clinical availability or successful donations.
+
+India donor pickers request batches of 18 so desktop three-column rows fill when matching entries are available. Blood and organ endpoints accept up to 18 per request and retain their default of 16 for existing callers. India uses a separate cache key for the larger batch; pagination continues from the server cursor. On the final partial row, genuine remaining cards expand to use the row rather than inventing placeholders or duplicating donors.
 
 Indian SEO pages retain their existing server-rendered text, metadata, canonical URLs, structured data, links and route eligibility. Their presentation is scoped through `.india-page`; shared navigation, other countries and account screens keep their current appearance. Donor filters, pagination, contact dialogs, authentication, book payments and sponsored-copy requests reuse the existing flows and destinations. The support block is book access, not a new fundraising product. India does not show the legacy support component's sample numeric defaults while awaiting its statistics response.
 
