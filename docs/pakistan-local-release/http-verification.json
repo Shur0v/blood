@@ -1,0 +1,195 @@
+{
+  "areas": [
+    {
+      "route": "/pakistan/regions/punjab",
+      "status": 200,
+      "canonical": true,
+      "structuredData": true
+    },
+    {
+      "route": "/pakistan/regions/sindh",
+      "status": 200,
+      "canonical": true,
+      "structuredData": true
+    },
+    {
+      "route": "/pakistan/regions/khyber-pakhtunkhwa",
+      "status": 200,
+      "canonical": true,
+      "structuredData": true
+    },
+    {
+      "route": "/pakistan/regions/balochistan",
+      "status": 200,
+      "canonical": true,
+      "structuredData": true
+    },
+    {
+      "route": "/pakistan/regions/islamabad-capital-territory",
+      "status": 200,
+      "canonical": true,
+      "structuredData": true
+    },
+    {
+      "route": "/pakistan/regions/azad-jammu-and-kashmir",
+      "status": 200,
+      "canonical": true,
+      "structuredData": true
+    },
+    {
+      "route": "/pakistan/regions/gilgit-baltistan",
+      "status": 200,
+      "canonical": true,
+      "structuredData": true
+    },
+    {
+      "route": "/pakistan/cities/lahore",
+      "status": 200,
+      "canonical": true,
+      "structuredData": true
+    },
+    {
+      "route": "/pakistan/cities/faisalabad",
+      "status": 200,
+      "canonical": true,
+      "structuredData": true
+    },
+    {
+      "route": "/pakistan/cities/rawalpindi",
+      "status": 200,
+      "canonical": true,
+      "structuredData": true
+    },
+    {
+      "route": "/pakistan/cities/gujranwala",
+      "status": 200,
+      "canonical": true,
+      "structuredData": true
+    },
+    {
+      "route": "/pakistan/cities/multan",
+      "status": 200,
+      "canonical": true,
+      "structuredData": true
+    },
+    {
+      "route": "/pakistan/cities/sialkot",
+      "status": 200,
+      "canonical": true,
+      "structuredData": true
+    },
+    {
+      "route": "/pakistan/cities/bahawalpur",
+      "status": 200,
+      "canonical": true,
+      "structuredData": true
+    },
+    {
+      "route": "/pakistan/cities/sargodha",
+      "status": 200,
+      "canonical": true,
+      "structuredData": true
+    },
+    {
+      "route": "/pakistan/cities/gujrat",
+      "status": 200,
+      "canonical": true,
+      "structuredData": true
+    },
+    {
+      "route": "/pakistan/cities/sheikhupura",
+      "status": 200,
+      "canonical": true,
+      "structuredData": true
+    },
+    {
+      "route": "/pakistan/cities/karachi",
+      "status": 200,
+      "canonical": true,
+      "structuredData": true
+    },
+    {
+      "route": "/pakistan/cities/hyderabad",
+      "status": 200,
+      "canonical": true,
+      "structuredData": true
+    },
+    {
+      "route": "/pakistan/cities/sukkur",
+      "status": 200,
+      "canonical": true,
+      "structuredData": true
+    },
+    {
+      "route": "/pakistan/cities/larkana",
+      "status": 200,
+      "canonical": true,
+      "structuredData": true
+    },
+    {
+      "route": "/pakistan/cities/peshawar",
+      "status": 200,
+      "canonical": true,
+      "structuredData": true
+    },
+    {
+      "route": "/pakistan/cities/mardan",
+      "status": 200,
+      "canonical": true,
+      "structuredData": true
+    },
+    {
+      "route": "/pakistan/cities/abbottabad",
+      "status": 200,
+      "canonical": true,
+      "structuredData": true
+    },
+    {
+      "route": "/pakistan/cities/quetta",
+      "status": 200,
+      "canonical": true,
+      "structuredData": true
+    },
+    {
+      "route": "/pakistan/cities/islamabad",
+      "status": 200,
+      "canonical": true,
+      "structuredData": true
+    },
+    {
+      "route": "/pakistan/cities/muzaffarabad",
+      "status": 200,
+      "canonical": true,
+      "structuredData": true
+    },
+    {
+      "route": "/pakistan/cities/mirpur",
+      "status": 200,
+      "canonical": true,
+      "structuredData": true
+    },
+    {
+      "route": "/pakistan/cities/rawalakot",
+      "status": 200,
+      "canonical": true,
+      "structuredData": true
+    },
+    {
+      "route": "/pakistan/cities/gilgit",
+      "status": 200,
+      "canonical": true,
+      "structuredData": true
+    },
+    {
+      "route": "/pakistan/cities/skardu",
+      "status": 200,
+      "canonical": true,
+      "structuredData": true
+    }
+  ],
+  "anonymousPreview": 404,
+  "anonymousEditor": 401,
+  "unknownArea": 404,
+  "sitemap": true,
+  "inventoriedRoutes": 44
+}

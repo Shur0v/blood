@@ -1,0 +1,110 @@
+[
+  {
+    "page": "home",
+    "width": 390,
+    "sameDimensions": true,
+    "changedPixels": 104933
+  },
+  {
+    "page": "home",
+    "width": 768,
+    "sameDimensions": true,
+    "changedPixels": 118655
+  },
+  {
+    "page": "home",
+    "width": 1440,
+    "sameDimensions": true,
+    "changedPixels": 204367
+  },
+  {
+    "page": "india",
+    "width": 390,
+    "sameDimensions": true,
+    "changedPixels": 0
+  },
+  {
+    "page": "india",
+    "width": 768,
+    "sameDimensions": true,
+    "changedPixels": 0
+  },
+  {
+    "page": "india",
+    "width": 1440,
+    "sameDimensions": true,
+    "changedPixels": 0
+  },
+  {
+    "page": "nepal",
+    "width": 390,
+    "sameDimensions": true,
+    "changedPixels": 0
+  },
+  {
+    "page": "nepal",
+    "width": 768,
+    "sameDimensions": true,
+    "changedPixels": 0
+  },
+  {
+    "page": "nepal",
+    "width": 1440,
+    "sameDimensions": true,
+    "changedPixels": 39
+  },
+  {
+    "page": "bangladesh",
+    "width": 390,
+    "sameDimensions": true,
+    "changedPixels": 571957
+  },
+  {
+    "page": "bangladesh",
+    "width": 768,
+    "sameDimensions": true,
+    "changedPixels": 941762
+  },
+  {
+    "page": "bangladesh",
+    "width": 1440,
+    "sameDimensions": true,
+    "changedPixels": 225933
+  },
+  {
+    "page": "pakistan",
+    "width": 390,
+    "sameDimensions": true,
+    "changedPixels": 0
+  },
+  {
+    "page": "pakistan",
+    "width": 768,
+    "sameDimensions": true,
+    "changedPixels": 0
+  },
+  {
+    "page": "pakistan",
+    "width": 1440,
+    "sameDimensions": true,
+    "changedPixels": 0
+  },
+  {
+    "page": "us",
+    "width": 390,
+    "sameDimensions": true,
+    "changedPixels": 0
+  },
+  {
+    "page": "us",
+    "width": 768,
+    "sameDimensions": true,
+    "changedPixels": 0
+  },
+  {
+    "page": "us",
+    "width": 1440,
+    "sameDimensions": true,
+    "changedPixels": 0
+  }
+]

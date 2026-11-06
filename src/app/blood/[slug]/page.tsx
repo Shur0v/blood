@@ -1,3 +1,4 @@
+import {pakistanDirectoryMetadata} from '@/src/backend/services/pakistanLocalContent';
 import '@/src/app/regional.css';
 import {indiaDirectoryMetadata} from '@/src/backend/services/indiaLocalContent';
 import {indiaDirectoryArea,indiaSearchCopy} from '@/src/lib/indiaLocal';
@@ -31,7 +32,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
     const rows = await getCityBloodSummary(slug);
     const city = rows[0]?.city || cityFromSlug(slug);
     const country = rows[0]?.country;
-    const usaCopy=country?.toLowerCase()==='india'?await indiaDirectoryMetadata(city):country?.toLowerCase()==='united states'?usaDirectorySearchCopy(city,'blood'):null;
+    const usaCopy=country?.toLowerCase()==='pakistan'?await pakistanDirectoryMetadata(city):country?.toLowerCase()==='india'?await indiaDirectoryMetadata(city):country?.toLowerCase()==='united states'?usaDirectorySearchCopy(city,'blood'):null;
     return {
       title: usaCopy?.title || `Blood Donors in ${city} | Urgent Blood and Organ Donation Support`,
       description: usaCopy?.description || `Find active blood donors${country ? ` in ${city}, ${country}` : ` in ${city}`}. Search available blood groups and urgent blood donor pages through BloodNet.`,

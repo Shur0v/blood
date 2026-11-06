@@ -27,3 +27,7 @@ No schema migration or new credential is required. Use the normal `bash ./deploy
 The [verification record](../artifacts/pakistan-edition-verification.json) records the test results and limits of visual comparison. The country search counter is explicitly labelled worldwide entries; the separate country metric shows Pakistan entries. Existing SEO-page counters remain hidden.
 
 Synthetic previews: [desktop](../artifacts/pakistan-landing-desktop.png), [tablet](../artifacts/pakistan-landing-tablet.png), [mobile](../artifacts/pakistan-landing-mobile.png), and [Lahore city page](../artifacts/pakistan-city-desktop.png). These demonstrate layout, not actual donor identities or production coverage.
+
+## November 2026 local-page upgrade
+
+The country landing page described above remains independent. The subsequent Pakistan Local Pages release adds sixty original component registrations, twelve-section default local recipes, twenty-four city guides and seven province/territory guides. Existing eligible local directories use the scoped presentation; new editorial guides require administrator review and explicit publication. This follow-up requires the additive PakistanEditorialPage migration. See [Pakistan Local Pages operations](pakistan-local-pages.md) and [release evidence](pakistan-local-release/README.md). Donor records and sixteen-card discovery behavior are preserved.

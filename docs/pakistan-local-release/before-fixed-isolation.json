@@ -1,0 +1,113 @@
+{
+  "normalization": "Same synthetic database, fixed device shuffle seed, paused marquee transform and reduced motion",
+  "results": [
+    {
+      "route": "/",
+      "width": 390,
+      "sameDimensions": null,
+      "changedPixels": null
+    },
+    {
+      "route": "/",
+      "width": 768,
+      "sameDimensions": null,
+      "changedPixels": null
+    },
+    {
+      "route": "/",
+      "width": 1440,
+      "sameDimensions": null,
+      "changedPixels": null
+    },
+    {
+      "route": "/india",
+      "width": 390,
+      "sameDimensions": null,
+      "changedPixels": null
+    },
+    {
+      "route": "/india",
+      "width": 768,
+      "sameDimensions": null,
+      "changedPixels": null
+    },
+    {
+      "route": "/india",
+      "width": 1440,
+      "sameDimensions": null,
+      "changedPixels": null
+    },
+    {
+      "route": "/nepal",
+      "width": 390,
+      "sameDimensions": null,
+      "changedPixels": null
+    },
+    {
+      "route": "/nepal",
+      "width": 768,
+      "sameDimensions": null,
+      "changedPixels": null
+    },
+    {
+      "route": "/nepal",
+      "width": 1440,
+      "sameDimensions": null,
+      "changedPixels": null
+    },
+    {
+      "route": "/bangladesh",
+      "width": 390,
+      "sameDimensions": null,
+      "changedPixels": null
+    },
+    {
+      "route": "/bangladesh",
+      "width": 768,
+      "sameDimensions": null,
+      "changedPixels": null
+    },
+    {
+      "route": "/bangladesh",
+      "width": 1440,
+      "sameDimensions": null,
+      "changedPixels": null
+    },
+    {
+      "route": "/pakistan",
+      "width": 390,
+      "sameDimensions": null,
+      "changedPixels": null
+    },
+    {
+      "route": "/pakistan",
+      "width": 768,
+      "sameDimensions": null,
+      "changedPixels": null
+    },
+    {
+      "route": "/pakistan",
+      "width": 1440,
+      "sameDimensions": null,
+      "changedPixels": null
+    },
+    {
+      "route": "/us",
+      "width": 390,
+      "sameDimensions": null,
+      "changedPixels": null
+    },
+    {
+      "route": "/us",
+      "width": 768,
+      "sameDimensions": null,
+      "changedPixels": null
+    },
+    {
+      "route": "/us",
+      "width": 1440,
+      "sameDimensions": null,
+      "changedPixels": null
+    }
+  ]
+}

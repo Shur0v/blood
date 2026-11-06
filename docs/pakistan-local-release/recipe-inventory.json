@@ -1,0 +1,1075 @@
+{
+  "date": "2026-11-06",
+  "core": [
+    "introduction",
+    "search",
+    "results"
+  ],
+  "families": {
+    "orientation": [
+      "region-branches",
+      "place-comparison",
+      "city-index",
+      "coverage-ledger",
+      "scope-compass",
+      "location-guide"
+    ],
+    "discovery": [
+      "filter-lab",
+      "source-lanes",
+      "broader-path",
+      "card-guide",
+      "count-explainer",
+      "participation-gap"
+    ],
+    "coordination": [
+      "request-worksheet",
+      "coordinator-board",
+      "hospital-questions",
+      "handoff-timeline",
+      "travel-check",
+      "request-updates"
+    ],
+    "participation": [
+      "registration-journey",
+      "availability-demo",
+      "service-planner",
+      "contact-choices",
+      "profile-check",
+      "first-profile"
+    ],
+    "records": [
+      "fictional-timeline",
+      "report-folders",
+      "visit-organizer",
+      "prescription-roadmap",
+      "privacy-split",
+      "record-walkthrough"
+    ],
+    "resources": [
+      "official-resources",
+      "contacts-stock",
+      "collecting-roles",
+      "component-glossary",
+      "source-notes",
+      "screening-path"
+    ],
+    "community": [
+      "resident-panel",
+      "family-roles",
+      "student-guide",
+      "workplace-guide",
+      "consent-path",
+      "responsible-sharing"
+    ],
+    "exploration": [
+      "same-region",
+      "region-navigator",
+      "group-links",
+      "published-reading",
+      "organization-explorer",
+      "decision-tree"
+    ],
+    "trust": [
+      "local-faq",
+      "definitions",
+      "scope-facts",
+      "service-status",
+      "response-expectations",
+      "closing-invitation"
+    ]
+  },
+  "components": [
+    "region-branches",
+    "place-comparison",
+    "city-index",
+    "coverage-ledger",
+    "scope-compass",
+    "location-guide",
+    "filter-lab",
+    "source-lanes",
+    "broader-path",
+    "card-guide",
+    "count-explainer",
+    "participation-gap",
+    "request-worksheet",
+    "coordinator-board",
+    "hospital-questions",
+    "handoff-timeline",
+    "travel-check",
+    "request-updates",
+    "registration-journey",
+    "availability-demo",
+    "service-planner",
+    "contact-choices",
+    "profile-check",
+    "first-profile",
+    "fictional-timeline",
+    "report-folders",
+    "visit-organizer",
+    "prescription-roadmap",
+    "privacy-split",
+    "record-walkthrough",
+    "official-resources",
+    "contacts-stock",
+    "collecting-roles",
+    "component-glossary",
+    "source-notes",
+    "screening-path",
+    "resident-panel",
+    "family-roles",
+    "student-guide",
+    "workplace-guide",
+    "consent-path",
+    "responsible-sharing",
+    "same-region",
+    "region-navigator",
+    "group-links",
+    "published-reading",
+    "organization-explorer",
+    "decision-tree",
+    "local-faq",
+    "definitions",
+    "scope-facts",
+    "service-status",
+    "response-expectations",
+    "closing-invitation",
+    "coverage-evidence",
+    "regional-update",
+    "organ-pathway"
+  ],
+  "areas": [
+    {
+      "id": "punjab",
+      "kind": "region",
+      "administration": "province",
+      "name": "Punjab",
+      "urdu": "پنجاب",
+      "aliases": [
+        "Punjab"
+      ],
+      "source": "https://punjab.gov.pk/",
+      "path": "/pakistan/regions/punjab",
+      "context": "This guide covers reviewed city mappings in Pakistan’s Punjab province. It does not combine every district or establish blood availability throughout the province. Choose the collecting city before contacting a listing."
+    },
+    {
+      "id": "sindh",
+      "kind": "region",
+      "administration": "province",
+      "name": "Sindh",
+      "urdu": "سندھ",
+      "aliases": [
+        "Sindh"
+      ],
+      "source": "https://sindh.gov.pk/",
+      "path": "/pakistan/regions/sindh",
+      "context": "Sindh’s reviewed city guides include Karachi, Hyderabad, Sukkur and Larkana. An overview of those mappings is not complete provincial coverage. Each contact keeps its actual recorded city and source."
+    },
+    {
+      "id": "khyber-pakhtunkhwa",
+      "kind": "region",
+      "administration": "province",
+      "name": "Khyber Pakhtunkhwa",
+      "urdu": "خیبر پختونخوا",
+      "aliases": [
+        "Khyber Pakhtunkhwa",
+        "KPK",
+        "KP"
+      ],
+      "source": "https://kp.gov.pk/",
+      "path": "/pakistan/regions/khyber-pakhtunkhwa",
+      "context": "This overview connects reviewed Peshawar, Mardan and Abbottabad mappings. It does not establish coverage across all districts of Khyber Pakhtunkhwa. Confirm the collecting facility before making travel plans."
+    },
+    {
+      "id": "balochistan",
+      "kind": "region",
+      "administration": "province",
+      "name": "Balochistan",
+      "urdu": "بلوچستان",
+      "aliases": [
+        "Balochistan",
+        "Baluchistan"
+      ],
+      "source": "https://balochistan.gov.pk/",
+      "path": "/pakistan/regions/balochistan",
+      "context": "Quetta is the initial reviewed city in this Balochistan guide. Quetta-labelled entries must not be presented as a directory for the entire province. Wider coverage requires additional reviewed mappings."
+    },
+    {
+      "id": "islamabad-capital-territory",
+      "kind": "region",
+      "administration": "territory",
+      "name": "Islamabad Capital Territory",
+      "urdu": "اسلام آباد",
+      "aliases": [
+        "Islamabad Capital Territory",
+        "ICT"
+      ],
+      "source": "https://ictadministration.gov.pk/",
+      "path": "/pakistan/regions/islamabad-capital-territory",
+      "context": "This territory guide uses the reviewed Islamabad city mapping. Rawalpindi is a separate city in Punjab, even when people travel between them. Confirm the actual collecting city instead of assuming shared local availability."
+    },
+    {
+      "id": "azad-jammu-and-kashmir",
+      "kind": "region",
+      "administration": "territory",
+      "name": "Azad Jammu and Kashmir",
+      "urdu": "آزاد جموں و کشمیر",
+      "aliases": [
+        "Azad Jammu and Kashmir",
+        "AJK",
+        "Azad Kashmir"
+      ],
+      "source": "https://ajk.gov.pk/",
+      "path": "/pakistan/regions/azad-jammu-and-kashmir",
+      "context": "This guide describes reviewed Muzaffarabad, Mirpur and Rawalakot mappings in Pakistan-administered Azad Jammu and Kashmir. It is not a guide to all Kashmir, and it does not reassign records from other countries or administrative areas."
+    },
+    {
+      "id": "gilgit-baltistan",
+      "kind": "region",
+      "administration": "territory",
+      "name": "Gilgit-Baltistan",
+      "urdu": "گلگت بلتستان",
+      "aliases": [
+        "Gilgit-Baltistan",
+        "Gilgit Baltistan"
+      ],
+      "source": "https://gilgitbaltistan.gov.pk/",
+      "path": "/pakistan/regions/gilgit-baltistan",
+      "context": "Gilgit and Skardu are separate reviewed cities in this guide. A regional label does not establish practical travel access, response time or blood availability across Gilgit-Baltistan. Confirm the collecting location directly."
+    },
+    {
+      "id": "lahore",
+      "kind": "city",
+      "name": "Lahore",
+      "urdu": "لاہور",
+      "region": "Punjab",
+      "regionId": "punjab",
+      "aliases": [
+        "Lahore"
+      ],
+      "lat": 31.558,
+      "lng": 74.35071,
+      "reference": "https://www.geonames.org/1172451/",
+      "source": "https://punjab.gov.pk/",
+      "path": "/pakistan/cities/lahore",
+      "context": "Lahore city contacts are not a promise of coverage across Lahore district or Punjab. Start with the collecting hospital’s city and confirm the individual contact’s location, willingness and next steps."
+    },
+    {
+      "id": "faisalabad",
+      "kind": "city",
+      "name": "Faisalabad",
+      "urdu": "فیصل آباد",
+      "region": "Punjab",
+      "regionId": "punjab",
+      "aliases": [
+        "Faisalabad",
+        "Lyallpur"
+      ],
+      "lat": 31.41554,
+      "lng": 73.08969,
+      "reference": "https://www.geonames.org/1179400/",
+      "source": "https://punjab.gov.pk/",
+      "path": "/pakistan/cities/faisalabad",
+      "context": "Faisalabad is also historically known as Lyallpur. The alias helps explain recorded names; it does not rename accounts or combine the entire district into one available donor pool."
+    },
+    {
+      "id": "rawalpindi",
+      "kind": "city",
+      "name": "Rawalpindi",
+      "urdu": "راولپنڈی",
+      "region": "Punjab",
+      "regionId": "punjab",
+      "aliases": [
+        "Rawalpindi"
+      ],
+      "lat": 33.59733,
+      "lng": 73.0479,
+      "reference": "https://www.geonames.org/1166993/",
+      "source": "https://punjab.gov.pk/",
+      "path": "/pakistan/cities/rawalpindi",
+      "context": "Rawalpindi is in Punjab and is distinct from Islamabad. Confirm which city the collecting facility is in. A nearby city link is an exploration option, not proof that a contact can travel or donate."
+    },
+    {
+      "id": "gujranwala",
+      "kind": "city",
+      "name": "Gujranwala",
+      "urdu": "گوجرانوالہ",
+      "region": "Punjab",
+      "regionId": "punjab",
+      "aliases": [
+        "Gujranwala"
+      ],
+      "lat": 32.15567,
+      "lng": 74.18705,
+      "reference": "https://www.geonames.org/1177662/",
+      "source": "https://punjab.gov.pk/",
+      "path": "/pakistan/cities/gujranwala",
+      "context": "Gujranwala city and the wider district are different scopes. Use the collecting facility’s address and the contact’s displayed location rather than assuming every district entry is nearby."
+    },
+    {
+      "id": "multan",
+      "kind": "city",
+      "name": "Multan",
+      "urdu": "ملتان",
+      "region": "Punjab",
+      "regionId": "punjab",
+      "aliases": [
+        "Multan"
+      ],
+      "lat": 30.19679,
+      "lng": 71.47824,
+      "reference": "https://www.geonames.org/1169825/",
+      "source": "https://punjab.gov.pk/",
+      "path": "/pakistan/cities/multan",
+      "context": "This guide concerns Multan city-labelled records. It does not describe current blood stock across southern Punjab. Confirm collection instructions, timing and location with the care team."
+    },
+    {
+      "id": "sialkot",
+      "kind": "city",
+      "name": "Sialkot",
+      "urdu": "سیالکوٹ",
+      "region": "Punjab",
+      "regionId": "punjab",
+      "aliases": [
+        "Sialkot"
+      ],
+      "lat": 32.49268,
+      "lng": 74.53134,
+      "reference": "https://www.geonames.org/1164909/",
+      "source": "https://punjab.gov.pk/",
+      "path": "/pakistan/cities/sialkot",
+      "context": "Sialkot city entries remain separate from assumptions about district-wide coverage. Agree where a person should attend and who will coordinate before sharing or acting on a contact request."
+    },
+    {
+      "id": "bahawalpur",
+      "kind": "city",
+      "name": "Bahawalpur",
+      "urdu": "بہاولپور",
+      "region": "Punjab",
+      "regionId": "punjab",
+      "aliases": [
+        "Bahawalpur"
+      ],
+      "lat": 29.39779,
+      "lng": 71.6752,
+      "reference": "https://www.geonames.org/1183880/",
+      "source": "https://punjab.gov.pk/",
+      "path": "/pakistan/cities/bahawalpur",
+      "context": "A Bahawalpur label is a starting point for location checking, not coverage across the whole division. Confirm the actual collecting city and keep the latest hospital instructions with one coordinator."
+    },
+    {
+      "id": "sargodha",
+      "kind": "city",
+      "name": "Sargodha",
+      "urdu": "سرگودھا",
+      "region": "Punjab",
+      "regionId": "punjab",
+      "aliases": [
+        "Sargodha"
+      ],
+      "lat": 32.08586,
+      "lng": 72.67418,
+      "reference": "https://www.geonames.org/1166000/",
+      "source": "https://punjab.gov.pk/",
+      "path": "/pakistan/cities/sargodha",
+      "context": "Sargodha city contacts are not a blood-bank inventory for the district. Read the source label and confirm the collecting service before relying on a listing or arranging travel."
+    },
+    {
+      "id": "gujrat",
+      "kind": "city",
+      "name": "Gujrat",
+      "urdu": "گجرات",
+      "region": "Punjab",
+      "regionId": "punjab",
+      "aliases": [
+        "Gujrat"
+      ],
+      "lat": 32.5742,
+      "lng": 74.07542,
+      "reference": "https://www.geonames.org/1177654/",
+      "source": "https://punjab.gov.pk/",
+      "path": "/pakistan/cities/gujrat",
+      "context": "Gujrat here means the city in Pakistan’s Punjab province. It is not Gujarat state in India. Country, city and coordinate context keep similarly written locations distinct without changing existing accounts."
+    },
+    {
+      "id": "sheikhupura",
+      "kind": "city",
+      "name": "Sheikhupura",
+      "urdu": "شیخوپورہ",
+      "region": "Punjab",
+      "regionId": "punjab",
+      "aliases": [
+        "Sheikhupura",
+        "Shekhupura"
+      ],
+      "lat": 31.71287,
+      "lng": 73.98556,
+      "reference": "https://www.geonames.org/1165221/",
+      "source": "https://punjab.gov.pk/",
+      "path": "/pakistan/cities/sheikhupura",
+      "context": "Sheikhupura and the spelling Shekhupura refer to the reviewed city mapping. Contacts retain their recorded labels. Confirm the collecting hospital rather than assuming coverage from a district or neighbouring city."
+    },
+    {
+      "id": "karachi",
+      "kind": "city",
+      "name": "Karachi",
+      "urdu": "کراچی",
+      "region": "Sindh",
+      "regionId": "sindh",
+      "aliases": [
+        "Karachi"
+      ],
+      "lat": 24.8608,
+      "lng": 67.0104,
+      "reference": "https://www.geonames.org/1174872/",
+      "source": "https://sindh.gov.pk/",
+      "path": "/pakistan/cities/karachi",
+      "context": "Karachi is a large urban area with multiple districts and collecting locations. A Karachi-labelled contact does not establish access across the whole metropolitan area. Check the actual destination and practical arrangements."
+    },
+    {
+      "id": "hyderabad",
+      "kind": "city",
+      "name": "Hyderabad",
+      "urdu": "حیدرآباد",
+      "region": "Sindh",
+      "regionId": "sindh",
+      "aliases": [
+        "Hyderabad"
+      ],
+      "lat": 25.39689,
+      "lng": 68.37718,
+      "reference": "https://www.geonames.org/1176734/",
+      "source": "https://sindh.gov.pk/",
+      "path": "/pakistan/cities/hyderabad",
+      "context": "This Hyderabad guide concerns Sindh, Pakistan. It does not include Hyderabad in India or similarly named places elsewhere. Confirm country and collecting location before contacting an entry."
+    },
+    {
+      "id": "sukkur",
+      "kind": "city",
+      "name": "Sukkur",
+      "urdu": "سکھر",
+      "region": "Sindh",
+      "regionId": "sindh",
+      "aliases": [
+        "Sukkur"
+      ],
+      "lat": 27.70323,
+      "lng": 68.85889,
+      "reference": "https://www.geonames.org/1164408/",
+      "source": "https://sindh.gov.pk/",
+      "path": "/pakistan/cities/sukkur",
+      "context": "Sukkur city is distinct from neighbouring cities and the wider division. This guide does not infer access throughout northern Sindh. Read each record and confirm the collecting facility directly."
+    },
+    {
+      "id": "larkana",
+      "kind": "city",
+      "name": "Larkana",
+      "urdu": "لاڑکانہ",
+      "region": "Sindh",
+      "regionId": "sindh",
+      "aliases": [
+        "Larkana"
+      ],
+      "lat": 27.55898,
+      "lng": 68.21204,
+      "reference": "https://www.geonames.org/1172128/",
+      "source": "https://sindh.gov.pk/",
+      "path": "/pakistan/cities/larkana",
+      "context": "Larkana city contacts are not a promise of coverage throughout the district. A directory record provides a possible starting point; the collecting service confirms screening and collection arrangements."
+    },
+    {
+      "id": "peshawar",
+      "kind": "city",
+      "name": "Peshawar",
+      "urdu": "پشاور",
+      "region": "Khyber Pakhtunkhwa",
+      "regionId": "khyber-pakhtunkhwa",
+      "aliases": [
+        "Peshawar"
+      ],
+      "lat": 34.008,
+      "lng": 71.57849,
+      "reference": "https://www.geonames.org/1168197/",
+      "source": "https://kp.gov.pk/",
+      "path": "/pakistan/cities/peshawar",
+      "context": "Peshawar city entries do not describe availability across Khyber Pakhtunkhwa. Keep the collecting city, requested component and agreed coordinator clear when reading or sharing a directory link."
+    },
+    {
+      "id": "mardan",
+      "kind": "city",
+      "name": "Mardan",
+      "urdu": "مردان",
+      "region": "Khyber Pakhtunkhwa",
+      "regionId": "khyber-pakhtunkhwa",
+      "aliases": [
+        "Mardan"
+      ],
+      "lat": 34.19794,
+      "lng": 72.04965,
+      "reference": "https://www.geonames.org/1170880/",
+      "source": "https://kp.gov.pk/",
+      "path": "/pakistan/cities/mardan",
+      "context": "Mardan city and Mardan district are different scopes. A contact listed in this guide may still need to confirm willingness, timing and where the collecting service expects attendance."
+    },
+    {
+      "id": "abbottabad",
+      "kind": "city",
+      "name": "Abbottabad",
+      "urdu": "ایبٹ آباد",
+      "region": "Khyber Pakhtunkhwa",
+      "regionId": "khyber-pakhtunkhwa",
+      "aliases": [
+        "Abbottabad",
+        "Abbotabad"
+      ],
+      "lat": 34.1463,
+      "lng": 73.21168,
+      "reference": "https://www.geonames.org/1185056/",
+      "source": "https://kp.gov.pk/",
+      "path": "/pakistan/cities/abbottabad",
+      "context": "Abbottabad may also be recorded as Abbotabad. The reviewed alias connects city labels without rewriting profiles or assuming district-wide coverage. Confirm the location on the individual result."
+    },
+    {
+      "id": "quetta",
+      "kind": "city",
+      "name": "Quetta",
+      "urdu": "کوئٹہ",
+      "region": "Balochistan",
+      "regionId": "balochistan",
+      "aliases": [
+        "Quetta"
+      ],
+      "lat": 30.18414,
+      "lng": 67.00141,
+      "reference": "https://www.geonames.org/1167528/",
+      "source": "https://balochistan.gov.pk/",
+      "path": "/pakistan/cities/quetta",
+      "context": "Quetta is the initial city mapping for the Balochistan regional guide. Quetta-labelled contacts are not evidence of province-wide response or available blood units. Confirm local collection arrangements directly."
+    },
+    {
+      "id": "islamabad",
+      "kind": "city",
+      "name": "Islamabad",
+      "urdu": "اسلام آباد",
+      "region": "Islamabad Capital Territory",
+      "regionId": "islamabad-capital-territory",
+      "aliases": [
+        "Islamabad"
+      ],
+      "lat": 33.72148,
+      "lng": 73.04329,
+      "reference": "https://www.geonames.org/1176615/",
+      "source": "https://ictadministration.gov.pk/",
+      "path": "/pakistan/cities/islamabad",
+      "context": "Islamabad belongs to the capital territory and remains separate from Rawalpindi in Punjab. A broader suggestion may show another city, but its real location and practical travel limits must remain visible."
+    },
+    {
+      "id": "muzaffarabad",
+      "kind": "city",
+      "name": "Muzaffarabad",
+      "urdu": "مظفرآباد",
+      "region": "Azad Jammu and Kashmir",
+      "regionId": "azad-jammu-and-kashmir",
+      "aliases": [
+        "Muzaffarabad"
+      ],
+      "lat": 34.37002,
+      "lng": 73.47082,
+      "reference": "https://www.geonames.org/1169607/",
+      "source": "https://ajk.gov.pk/",
+      "path": "/pakistan/cities/muzaffarabad",
+      "context": "Muzaffarabad is mapped within Pakistan-administered Azad Jammu and Kashmir for this guide. City contacts do not represent all Kashmir or establish travel access from other districts."
+    },
+    {
+      "id": "mirpur",
+      "kind": "city",
+      "name": "Mirpur",
+      "urdu": "میرپور",
+      "region": "Azad Jammu and Kashmir",
+      "regionId": "azad-jammu-and-kashmir",
+      "aliases": [
+        "Mirpur",
+        "New Mirpur",
+        "New Mirpur City"
+      ],
+      "lat": 33.14782,
+      "lng": 73.75187,
+      "reference": "https://www.geonames.org/1169027/",
+      "source": "https://ajk.gov.pk/",
+      "path": "/pakistan/cities/mirpur",
+      "context": "This guide refers to Mirpur in Pakistan-administered Azad Jammu and Kashmir, also recorded as New Mirpur. It does not combine other places called Mirpur. Reviewed coordinate context is required for curated local counts."
+    },
+    {
+      "id": "rawalakot",
+      "kind": "city",
+      "name": "Rawalakot",
+      "urdu": "راولاکوٹ",
+      "region": "Azad Jammu and Kashmir",
+      "regionId": "azad-jammu-and-kashmir",
+      "aliases": [
+        "Rawalakot",
+        "Rawala Kot"
+      ],
+      "lat": 33.85782,
+      "lng": 73.76043,
+      "reference": "https://www.geonames.org/1161983/",
+      "source": "https://ajk.gov.pk/",
+      "path": "/pakistan/cities/rawalakot",
+      "context": "Rawalakot and Rawala Kot identify the reviewed city mapping in Pakistan-administered Azad Jammu and Kashmir. Regional links do not establish that a contact is in this city or able to travel here."
+    },
+    {
+      "id": "gilgit",
+      "kind": "city",
+      "name": "Gilgit",
+      "urdu": "گلگت",
+      "region": "Gilgit-Baltistan",
+      "regionId": "gilgit-baltistan",
+      "aliases": [
+        "Gilgit"
+      ],
+      "lat": 35.91869,
+      "lng": 74.31245,
+      "reference": "https://www.geonames.org/1178338/",
+      "source": "https://gilgitbaltistan.gov.pk/",
+      "path": "/pakistan/cities/gilgit",
+      "context": "Gilgit city is distinct from the wider Gilgit-Baltistan region. The guide does not infer road access, travel time or blood availability across surrounding areas. Confirm the intended collecting location."
+    },
+    {
+      "id": "skardu",
+      "kind": "city",
+      "name": "Skardu",
+      "urdu": "سکردو",
+      "region": "Gilgit-Baltistan",
+      "regionId": "gilgit-baltistan",
+      "aliases": [
+        "Skardu"
+      ],
+      "lat": 35.29787,
+      "lng": 75.63372,
+      "reference": "https://www.geonames.org/1164709/",
+      "source": "https://gilgitbaltistan.gov.pk/",
+      "path": "/pakistan/cities/skardu",
+      "context": "Skardu is a separate city from Gilgit. A regional heading must not make those contacts appear interchangeable. Confirm the collecting city and practical arrangements with the people involved."
+    }
+  ],
+  "recipes": {
+    "punjab": [
+      "region-branches",
+      "filter-lab",
+      "request-worksheet",
+      "registration-journey",
+      "fictional-timeline",
+      "coverage-evidence",
+      "resident-panel",
+      "same-region",
+      "local-faq"
+    ],
+    "sindh": [
+      "place-comparison",
+      "source-lanes",
+      "coordinator-board",
+      "availability-demo",
+      "report-folders",
+      "regional-update",
+      "family-roles",
+      "region-navigator",
+      "definitions"
+    ],
+    "khyber-pakhtunkhwa": [
+      "city-index",
+      "broader-path",
+      "hospital-questions",
+      "service-planner",
+      "visit-organizer",
+      "organ-pathway",
+      "student-guide",
+      "group-links",
+      "scope-facts"
+    ],
+    "balochistan": [
+      "coverage-ledger",
+      "card-guide",
+      "handoff-timeline",
+      "contact-choices",
+      "prescription-roadmap",
+      "component-glossary",
+      "workplace-guide",
+      "published-reading",
+      "service-status"
+    ],
+    "islamabad-capital-territory": [
+      "scope-compass",
+      "count-explainer",
+      "travel-check",
+      "profile-check",
+      "privacy-split",
+      "source-notes",
+      "consent-path",
+      "organization-explorer",
+      "response-expectations"
+    ],
+    "azad-jammu-and-kashmir": [
+      "location-guide",
+      "participation-gap",
+      "request-updates",
+      "first-profile",
+      "record-walkthrough",
+      "screening-path",
+      "responsible-sharing",
+      "decision-tree",
+      "closing-invitation"
+    ],
+    "gilgit-baltistan": [
+      "region-branches",
+      "source-lanes",
+      "hospital-questions",
+      "contact-choices",
+      "privacy-split",
+      "screening-path",
+      "resident-panel",
+      "region-navigator",
+      "scope-facts"
+    ],
+    "lahore": [
+      "place-comparison",
+      "broader-path",
+      "handoff-timeline",
+      "profile-check",
+      "record-walkthrough",
+      "official-resources",
+      "family-roles",
+      "group-links",
+      "service-status"
+    ],
+    "faisalabad": [
+      "city-index",
+      "card-guide",
+      "travel-check",
+      "first-profile",
+      "fictional-timeline",
+      "contacts-stock",
+      "student-guide",
+      "published-reading",
+      "response-expectations"
+    ],
+    "rawalpindi": [
+      "coverage-ledger",
+      "count-explainer",
+      "request-updates",
+      "registration-journey",
+      "report-folders",
+      "collecting-roles",
+      "workplace-guide",
+      "organization-explorer",
+      "closing-invitation"
+    ],
+    "gujranwala": [
+      "scope-compass",
+      "participation-gap",
+      "request-worksheet",
+      "availability-demo",
+      "visit-organizer",
+      "component-glossary",
+      "consent-path",
+      "decision-tree",
+      "local-faq"
+    ],
+    "multan": [
+      "location-guide",
+      "filter-lab",
+      "coordinator-board",
+      "service-planner",
+      "prescription-roadmap",
+      "source-notes",
+      "responsible-sharing",
+      "same-region",
+      "definitions"
+    ],
+    "sialkot": [
+      "region-branches",
+      "broader-path",
+      "travel-check",
+      "registration-journey",
+      "visit-organizer",
+      "source-notes",
+      "resident-panel",
+      "group-links",
+      "response-expectations"
+    ],
+    "bahawalpur": [
+      "place-comparison",
+      "card-guide",
+      "request-updates",
+      "availability-demo",
+      "prescription-roadmap",
+      "screening-path",
+      "family-roles",
+      "published-reading",
+      "closing-invitation"
+    ],
+    "sargodha": [
+      "city-index",
+      "count-explainer",
+      "request-worksheet",
+      "service-planner",
+      "privacy-split",
+      "official-resources",
+      "student-guide",
+      "organization-explorer",
+      "local-faq"
+    ],
+    "gujrat": [
+      "coverage-ledger",
+      "participation-gap",
+      "coordinator-board",
+      "contact-choices",
+      "record-walkthrough",
+      "contacts-stock",
+      "workplace-guide",
+      "decision-tree",
+      "definitions"
+    ],
+    "sheikhupura": [
+      "scope-compass",
+      "filter-lab",
+      "hospital-questions",
+      "profile-check",
+      "fictional-timeline",
+      "collecting-roles",
+      "consent-path",
+      "same-region",
+      "scope-facts"
+    ],
+    "karachi": [
+      "location-guide",
+      "source-lanes",
+      "handoff-timeline",
+      "first-profile",
+      "report-folders",
+      "component-glossary",
+      "responsible-sharing",
+      "region-navigator",
+      "service-status"
+    ],
+    "hyderabad": [
+      "region-branches",
+      "card-guide",
+      "request-worksheet",
+      "contact-choices",
+      "fictional-timeline",
+      "component-glossary",
+      "resident-panel",
+      "published-reading",
+      "local-faq"
+    ],
+    "sukkur": [
+      "place-comparison",
+      "count-explainer",
+      "coordinator-board",
+      "profile-check",
+      "report-folders",
+      "source-notes",
+      "family-roles",
+      "organization-explorer",
+      "definitions"
+    ],
+    "larkana": [
+      "city-index",
+      "participation-gap",
+      "hospital-questions",
+      "first-profile",
+      "visit-organizer",
+      "screening-path",
+      "student-guide",
+      "decision-tree",
+      "scope-facts"
+    ],
+    "peshawar": [
+      "coverage-ledger",
+      "filter-lab",
+      "handoff-timeline",
+      "registration-journey",
+      "prescription-roadmap",
+      "official-resources",
+      "workplace-guide",
+      "same-region",
+      "service-status"
+    ],
+    "mardan": [
+      "scope-compass",
+      "source-lanes",
+      "travel-check",
+      "availability-demo",
+      "privacy-split",
+      "contacts-stock",
+      "consent-path",
+      "region-navigator",
+      "response-expectations"
+    ],
+    "abbottabad": [
+      "location-guide",
+      "broader-path",
+      "request-updates",
+      "service-planner",
+      "record-walkthrough",
+      "collecting-roles",
+      "responsible-sharing",
+      "group-links",
+      "closing-invitation"
+    ],
+    "quetta": [
+      "region-branches",
+      "count-explainer",
+      "hospital-questions",
+      "registration-journey",
+      "privacy-split",
+      "collecting-roles",
+      "resident-panel",
+      "organization-explorer",
+      "scope-facts"
+    ],
+    "islamabad": [
+      "place-comparison",
+      "participation-gap",
+      "handoff-timeline",
+      "availability-demo",
+      "record-walkthrough",
+      "component-glossary",
+      "family-roles",
+      "decision-tree",
+      "service-status"
+    ],
+    "muzaffarabad": [
+      "city-index",
+      "filter-lab",
+      "travel-check",
+      "service-planner",
+      "fictional-timeline",
+      "source-notes",
+      "student-guide",
+      "same-region",
+      "response-expectations"
+    ],
+    "mirpur": [
+      "coverage-ledger",
+      "source-lanes",
+      "request-updates",
+      "contact-choices",
+      "report-folders",
+      "screening-path",
+      "workplace-guide",
+      "region-navigator",
+      "closing-invitation"
+    ],
+    "rawalakot": [
+      "scope-compass",
+      "broader-path",
+      "request-worksheet",
+      "profile-check",
+      "visit-organizer",
+      "official-resources",
+      "consent-path",
+      "group-links",
+      "local-faq"
+    ],
+    "gilgit": [
+      "location-guide",
+      "card-guide",
+      "coordinator-board",
+      "first-profile",
+      "prescription-roadmap",
+      "contacts-stock",
+      "responsible-sharing",
+      "published-reading",
+      "definitions"
+    ],
+    "skardu": [
+      "region-branches",
+      "participation-gap",
+      "travel-check",
+      "contact-choices",
+      "visit-organizer",
+      "contacts-stock",
+      "resident-panel",
+      "decision-tree",
+      "response-expectations"
+    ],
+    "legacy:attock": [
+      "place-comparison",
+      "filter-lab",
+      "request-updates",
+      "profile-check",
+      "prescription-roadmap",
+      "collecting-roles",
+      "family-roles",
+      "same-region",
+      "closing-invitation"
+    ],
+    "legacy:cantt": [
+      "city-index",
+      "source-lanes",
+      "request-worksheet",
+      "first-profile",
+      "privacy-split",
+      "component-glossary",
+      "student-guide",
+      "region-navigator",
+      "local-faq"
+    ],
+    "legacy:jhang": [
+      "coverage-ledger",
+      "broader-path",
+      "coordinator-board",
+      "registration-journey",
+      "record-walkthrough",
+      "source-notes",
+      "workplace-guide",
+      "group-links",
+      "definitions"
+    ],
+    "legacy:lahore-cant": [
+      "scope-compass",
+      "card-guide",
+      "hospital-questions",
+      "availability-demo",
+      "fictional-timeline",
+      "screening-path",
+      "consent-path",
+      "published-reading",
+      "scope-facts"
+    ],
+    "legacy:sahiwal": [
+      "location-guide",
+      "count-explainer",
+      "handoff-timeline",
+      "service-planner",
+      "report-folders",
+      "official-resources",
+      "responsible-sharing",
+      "organization-explorer",
+      "service-status"
+    ],
+    "legacy:taxila": [
+      "region-branches",
+      "filter-lab",
+      "request-worksheet",
+      "registration-journey",
+      "fictional-timeline",
+      "official-resources",
+      "resident-panel",
+      "same-region",
+      "local-faq"
+    ],
+    "legacy:wah-cantonment": [
+      "place-comparison",
+      "source-lanes",
+      "coordinator-board",
+      "availability-demo",
+      "report-folders",
+      "contacts-stock",
+      "family-roles",
+      "region-navigator",
+      "definitions"
+    ]
+  }
+}

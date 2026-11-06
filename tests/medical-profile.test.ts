@@ -137,6 +137,9 @@ before(async () => {
   await sql.query(readFileSync('prisma/migrations/20261106150000_india_local_pages/migration.sql','utf8'));
   assert.deepEqual((await sql.query('SELECT to_jsonb(u) AS record FROM "User" u ORDER BY id')).rows,indiaUsersBefore);
   assert.equal((await sql.query('SELECT COUNT(*)::int AS n FROM "IndiaEditorialPage"')).rows[0].n,0);
+  await sql.query(readFileSync('prisma/migrations/20261106190000_pakistan_local_pages/migration.sql','utf8'));
+  assert.deepEqual((await sql.query('SELECT to_jsonb(u) AS record FROM "User" u ORDER BY id')).rows,indiaUsersBefore);
+  assert.equal((await sql.query('SELECT COUNT(*)::int AS n FROM "PakistanEditorialPage"')).rows[0].n,0);
   assert.deepEqual((await sql.query('SELECT to_jsonb(u) AS row FROM "User" u ORDER BY id')).rows,beforeUsa);
   assert.equal((await sql.query('SELECT count(*)::int AS n FROM "UsaEditorialPage"')).rows[0].n,0,'No automatic area publication');
   assert.deepEqual((await sql.query("SELECT to_jsonb(c) - 'neighborhood_name' - 'neighborhood_place_id' AS record FROM \"UserServiceCity\" c ORDER BY id")).rows, citiesBeforeNeighborhoods);
@@ -883,7 +886,7 @@ test('every exported administrator and manager API method denies anonymous and o
       checked++;
     }
   }
-  assert.equal(checked,100,'Cover all existing privileged API methods, including USA and India editorial GET and PUT');
+  assert.equal(checked,102,'Cover all privileged API methods, including Pakistan editorial GET and PUT');
 });
 
 test('verification uploads are encrypted, owner-bound and privately readable by owner or active admin', integration, async () => {
@@ -1952,4 +1955,57 @@ test('every inventoried India directory URL resolves eligible canonical metadata
  for(const url of inventory){const p=new URL(url).pathname.split('/'),group=p[4]?bloodGroupFromSlug(p[4])!:undefined;const metadata=await donorLocationMetadata({country:'india',city:p[3]},p[1]==='organ-donors'?'organ':'blood',group);assert.equal(metadata.alternates?.canonical,new URL(url).pathname,url);assert.equal((metadata.robots as any)?.index,true,url);assert.ok(String(metadata.title).includes('directory'),url);assert.ok(!JSON.stringify(metadata).includes('@example.invalid'));}
  assert.equal(inventory.length,443);
  }finally{await db.user.deleteMany({where:{id:{in:ids}}});}
+});
+
+test('Pakistan editorial publication protects drafts, roles, maintenance and public assets',integration,async()=>{
+ const {GET,PUT}=await import('../src/app/api/admin/pakistan-content/route');
+ const {savePakistanContent,getPakistanPublication,publishedPakistanAreas}=await import('../src/backend/services/pakistanLocalContent');
+ const {PAKISTAN_CITIES}=await import('../src/lib/pakistanLocal');const area=PAKISTAN_CITIES[0],db=getPrisma();
+ const req=(body:unknown,origin='http://localhost')=>new Request('http://localhost/api/admin/pakistan-content',{method:'PUT',headers:{authorization:'Bearer '+signToken({user_id:testAdminId,role:'ADMIN'}),'Content-Type':'application/json',origin},body:JSON.stringify(body)});
+ assert.equal((await GET(new Request('http://localhost/api/admin/pakistan-content'))).status,401);
+ const patient=await newPatient();assert.equal((await GET(patientRequest('http://localhost/api/admin/pakistan-content',patient.id))).status,403);
+ const manager=await db.adminUser.create({data:{admin_id:randomUUID(),password:'fixture-only',role:'MANAGER'}});
+ try{assert.equal((await GET(new Request('http://localhost/api/admin/pakistan-content',{headers:{authorization:'Bearer '+rawSignToken({user_id:manager.id,role:'MANAGER',credential_version:staffCredentialVersion(manager.id,manager.password)})}}))).status,403);}finally{await db.adminUser.delete({where:{id:manager.id}});}
+ assert.equal((await PUT(req({areaId:area.id,action:'draft',config:{}},'https://evil.invalid'))).status,403);
+ await assert.rejects(()=>savePakistanContent({areaId:'invented-city',action:'draft',config:{}}),/reviewed or recorded/);
+ await sql.query('UPDATE "MaintenanceGate" SET paused=true WHERE id=1');try{await assert.rejects(sql.query('INSERT INTO "PakistanEditorialPage" (area_id,updated_at) VALUES ($1,now())',[area.id]),(e:any)=>e.code==='55000');}finally{await sql.query('UPDATE "MaintenanceGate" SET paused=false WHERE id=1');}
+ await savePakistanContent({areaId:area.id,action:'draft',config:{title:'Private Lahore preview'}});assert.equal(await getPakistanPublication(area.id),null);
+ await assert.rejects(()=>savePakistanContent({areaId:area.id,action:'publish',config:{}}),/local scope/);
+ const config={title:'Reviewed Lahore guide',editorialNote:area.context};const first=await savePakistanContent({areaId:area.id,action:'publish',config});
+ await savePakistanContent({areaId:area.id,action:'draft',config:{title:'Unpublished replacement'}});assert.equal((await getPakistanPublication(area.id))?.config.title,config.title);
+ const same=await savePakistanContent({areaId:area.id,action:'publish',config});assert.equal(same.public_updated_at?.toISOString(),first.public_updated_at?.toISOString());assert.ok((await publishedPakistanAreas()).some(a=>a.id===area.id));
+ await savePakistanContent({areaId:area.id,action:'withdraw',config});assert.equal(await getPakistanPublication(area.id),null);
+ const restored=await savePakistanContent({areaId:area.id,action:'restore',config});assert.deepEqual(restored.draft,{});assert.equal(restored.published,false);
+ await assert.rejects(()=>savePakistanContent({areaId:area.id,action:'draft',config:{images:[{assetId:randomUUID(),alt:'Not a public asset',caption:'',decorative:false}]}}),/managed public image/);
+ await db.pakistanEditorialPage.deleteMany();
+});
+
+test('Pakistan regional aggregation deduplicates accounts and preserves unresolved or foreign geography',integration,async()=>{
+ const {pakistanCoverage}=await import('../src/backend/services/pakistanLocalContent');const {pakistanArea,pakistanDirectoryArea}=await import('../src/lib/pakistanLocal');const db=getPrisma();
+ const before=await pakistanCoverage(pakistanArea('punjab')!);
+ const user=await db.user.create({data:{profile_code:'PKQ1',name:'Synthetic Punjab account',email:randomUUID()+'@example.invalid',mobile:randomUUID(),blood_group:'O+',location_city:'Lahore',location_country:'Pakistan',location_lat:31.55,location_lng:74.34}});
+ await db.userServiceCity.create({data:{user_id:user.id,city:'Sialkot',country:'Pakistan',formatted_location:'Sialkot, Pakistan',lat:32.49,lng:74.53,provider_place_id:'fixture-sialkot',locked_until:new Date()}});
+ const organization=await db.communityDonor.create({data:{organization_name:'Synthetic broad Kashmir '+randomUUID(),mobile:randomUUID(),location_city:'Kashmir',location_country:'Pakistan',location_lat:34.37,location_lng:73.47,source:'Fixture',added_by_admin:'fixture'}});
+ const foreign=await db.communityDonor.create({data:{organization_name:'Synthetic foreign Mirpur '+randomUUID(),mobile:randomUUID(),location_city:'Mirpur',location_country:'Bangladesh',location_lat:23.8,location_lng:90.4,source:'Fixture',added_by_admin:'fixture'}});
+ try{const punjab=await pakistanCoverage(pakistanArea('punjab')!);assert.equal(punjab.registered,before.registered+1);const ajk=await pakistanCoverage(pakistanArea('azad-jammu-and-kashmir')!);assert.equal(ajk.organizations,0);assert.ok(ajk.unresolved>=1);const legacy=await pakistanCoverage(pakistanDirectoryArea('Kashmir'),true);assert.equal(legacy.organizations,1);const city=await pakistanCoverage(pakistanArea('muzaffarabad')!);assert.equal(city.organizations,0);assert.equal((await pakistanCoverage(pakistanArea('mirpur')!)).organizations,0);}finally{await db.user.delete({where:{id:user.id}});await db.communityDonor.deleteMany({where:{id:{in:[organization.id,foreign.id]}}});}
+});
+
+test('every inventoried Pakistan directory URL resolves eligible canonical metadata with matching isolated records',integration,async()=>{
+ const db=getPrisma(),{donorLocationMetadata}=await import('../src/components/DonorLocationLanding'),{bloodGroupFromSlug}=await import('../src/lib/seoRouting');
+ const inventory=JSON.parse(readFileSync('docs/pakistan-local-release/existing-route-inventory.json','utf8')).urls as string[];
+ const pairs=new Map<string,{city:string;groups:Set<string>;organ:boolean}>();
+ for(const url of inventory){const p=new URL(url).pathname.split('/');const key=p[3];if(!pairs.has(key))pairs.set(key,{city:key.split('-').map(v=>v[0].toUpperCase()+v.slice(1)).join(' '),groups:new Set(),organ:false});const row=pairs.get(key)!;if(p[1]==='organ-donors')row.organ=true;else row.groups.add(p[4]?bloodGroupFromSlug(p[4])!:'A+');}
+ const ids:string[]=[];let index=0;const taken=new Set((await db.user.findMany({select:{profile_code:true}})).map(u=>u.profile_code));
+ try{
+ for(const row of pairs.values())for(const group of row.groups.size?row.groups:['A+']){let code;do{code='Q'+(++index).toString(36).toUpperCase().padStart(3,'0');}while(taken.has(code));taken.add(code);const user=await db.user.create({data:{profile_code:code,name:'Synthetic route audit participant',email:randomUUID()+'@example.invalid',mobile:randomUUID(),blood_group:group,location_city:row.city,location_country:'Pakistan',location_lat:0,location_lng:0}});ids.push(user.id);if(row.organ)await db.organPledge.create({data:{user_id:user.id,organ_type:'Bone Marrow'}});}
+ for(const url of inventory){const p=new URL(url).pathname.split('/'),group=p[4]?bloodGroupFromSlug(p[4])!:undefined;const metadata=await donorLocationMetadata({country:'pakistan',city:p[3]},p[1]==='organ-donors'?'organ':'blood',group);assert.equal(metadata.alternates?.canonical,new URL(url).pathname,url);assert.equal((metadata.robots as any)?.index,true,url);assert.match(String(metadata.title),/directory|entries|guide/i,url);assert.ok(!JSON.stringify(metadata).includes('@example.invalid'));}
+ assert.equal(inventory.length,44);
+ }finally{await db.user.deleteMany({where:{id:{in:ids}}});}
+});
+test('Pakistan coverage distinguishes manual, organization-only and empty reviewed city scopes',integration,async()=>{
+ const {pakistanCoverage}=await import('../src/backend/services/pakistanLocalContent');const {pakistanArea}=await import('../src/lib/pakistanLocal');const db=getPrisma();
+ const before=await pakistanCoverage(pakistanArea('lahore')!);
+ const manual=await db.manualBloodDonor.create({data:{name:'Synthetic Lahore manual',mobile:randomUUID(),blood_group:'A-',location_city:'Lahore',location_country:'Pakistan',location_lat:31.558,location_lng:74.35,source:'Synthetic test',added_by_admin:'fixture'}});
+ const organization=await db.communityDonor.create({data:{organization_name:'Synthetic Sukkur '+randomUUID(),mobile:randomUUID(),location_city:'Sukkur',location_country:'Pakistan',location_lat:27.7,location_lng:68.86,source:'Synthetic test',added_by_admin:'fixture'}});
+ try{const lahore=await pakistanCoverage(pakistanArea('lahore')!);assert.equal(lahore.manual,before.manual+1);assert.equal(lahore.registered,before.registered);const sukkur=await pakistanCoverage(pakistanArea('sukkur')!);assert.equal(sukkur.organizations,1);assert.equal(sukkur.registered+sukkur.manual,0);const skardu=await pakistanCoverage(pakistanArea('skardu')!);assert.equal(skardu.registered+skardu.manual+skardu.organizations,0);assert.equal(skardu.available,true);}finally{await db.manualBloodDonor.delete({where:{id:manual.id}});await db.communityDonor.delete({where:{id:organization.id}});}
 });

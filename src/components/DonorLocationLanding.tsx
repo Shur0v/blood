@@ -1,3 +1,6 @@
+import {pakistanDirectoryMetadata} from '@/src/backend/services/pakistanLocalContent';
+import PakistanLocalExperience from './pakistan/local/PakistanLocalExperience';
+import {pakistanDirectoryArea} from '@/src/lib/pakistanLocal';
 import {indiaDirectoryMetadata} from '@/src/backend/services/indiaLocalContent';
 import IndiaLocalExperience from './india/local/IndiaLocalExperience';
 import {indiaDirectoryArea,indiaSearchCopy} from '@/src/lib/indiaLocal';
@@ -30,7 +33,7 @@ export async function donorLocationMetadata(params: LocationParams, mode: 'blood
   const description = usaCopy?.description || (mode === 'blood'
     ? `Find active blood donor entries in ${row.city}, ${row.country}${row.bloodGroups.length ? ` for ${row.bloodGroups.join(', ')}` : ''}. Search local volunteers and coordinate donation with your hospital.`
     : `Find organ donor pledges in ${row.city}, ${row.country}${row.organs.length ? ` for ${row.organs.join(', ')}` : ''}. Coordinate through licensed hospitals and lawful transplant services.`);
-  const indiaCopy=row.country.toLowerCase()==='india'?await indiaDirectoryMetadata(row.city,bloodGroup,mode):null;
+  const indiaCopy=row.country.toLowerCase()==='pakistan'?await pakistanDirectoryMetadata(row.city,bloodGroup,mode):row.country.toLowerCase()==='india'?await indiaDirectoryMetadata(row.city,bloodGroup,mode):null;
   if(indiaCopy&&mode==='organ'&&row.organs.length)indiaCopy.description+=' Recorded categories: '+row.organs.join(', ')+'.';
   const path = donorLocationPath(row, mode)+(bloodGroup?`/${bloodGroupToSlug(bloodGroup)}`:'');
   return { title:indiaCopy?.title||title, description:indiaCopy?.description||description, alternates: { canonical: path }, robots: { index: true, follow: true },
@@ -43,6 +46,7 @@ export default async function DonorLocationLanding({params,mode,bloodGroup}:{par
   if(row&&bloodGroup){const count=(await getLocationBloodGroupCounts(row.country,row.city))[bloodGroup]||0;row={...row,bloodCount:count,bloodGroups:[bloodGroup]};}
   if (!row || !(mode === 'blood' ? row.bloodCount : row.organCount)) notFound();
   if(row.country.toLowerCase()==='india')return <IndiaLocalExperience area={indiaDirectoryArea(row.city)} city={row.city} group={bloodGroup} mode={mode} path={donorLocationPath(row,mode)+(bloodGroup?'/'+bloodGroupToSlug(bloodGroup):'')} legacy/>;
+  if(row.country.toLowerCase()==='pakistan')return <PakistanLocalExperience area={pakistanDirectoryArea(row.city)} city={row.city} group={bloodGroup} mode={mode} path={donorLocationPath(row,mode)+(bloodGroup?'/'+bloodGroupToSlug(bloodGroup):'')} legacy/>;
   const count = mode === 'blood' ? row.bloodCount : row.organCount;
   const usaCopy=row.country.toLowerCase()==='united states'?usaDirectorySearchCopy(row.city,mode,bloodGroup):null;
   const path = donorLocationPath(row, mode)+(bloodGroup?`/${bloodGroupToSlug(bloodGroup)}`:''), url = getPublicBaseUrl() + path;

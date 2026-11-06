@@ -175,3 +175,5 @@ Maintained by [Shur0v](https://github.com/Shur0v). Read [CONTRIBUTING.md](CONTRI
 Original BloodNet code that its contributors are authorized to license is offered under **AGPL-3.0-only**; see [LICENSE](LICENSE) and [licensing boundaries](LICENSING.md). Third-party dependencies, images, user content, medical records and data retain their own rights. No clinical-data access or BloodNet trademark rights are granted by the software license.
 
 India local-page maintenance: see the [administrator operating guide](docs/india-local-pages.md) and [release evidence, component inventory and screenshots](docs/india-local-release/README.md). New state/city guides require explicit review and publication; the India country landing page retains its existing design.
+
+Pakistan local-page maintenance: see the [administrator guide](docs/pakistan-local-pages.md), [component/source/recipe inventory](docs/pakistan-local-release/content-and-recipes.md), and [release evidence](docs/pakistan-local-release/README.md). New guides remain unpublished until reviewed; `/pakistan` retains its country landing design.

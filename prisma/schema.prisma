@@ -726,3 +726,12 @@ model MaintenanceGate {
  id Int @id @default(1)
  paused Boolean @default(false)
 }
+
+model PakistanEditorialPage {
+ area_id String @id
+ draft Json @default("{}")
+ live Json?
+ published Boolean @default(false)
+ public_updated_at DateTime?
+ updated_at DateTime @updatedAt
+}
