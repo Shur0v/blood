@@ -15,6 +15,7 @@ import dynamic from "next/dynamic";
 
 import { usePathname, useRouter } from "next/navigation";
 import DonorDiscoveryPanel from './DonorDiscoveryPanel';
+import EmergencyAccountEntry from './EmergencyAccountEntry';
 import LocalizedSeoFooter from "../components/LocalizedSeoFooter";
 import ManagedNativeAdSlot from "../components/ManagedNativeAdSlot";
 
@@ -438,6 +439,7 @@ export function HomeExperience({ forcedCountry, locationDirectory, regionalFoote
       <main>
         {isProfileView && sessionUser && (
           <div className="profile-page-shell mx-auto w-full max-w-7xl px-0 py-4 sm:px-4 sm:py-24">
+            <EmergencyAccountEntry />
             {(isSessionLoading || (isProfileLoading && !profileData) || (profileData && profileData.id !== sessionUser.id)) ? (
               <div className="rounded-3xl border border-border/20 bg-glass p-8 text-center text-sm font-semibold text-text/70">
                 Loading your profile...
@@ -545,7 +547,7 @@ export function HomeExperience({ forcedCountry, locationDirectory, regionalFoote
         />
       )}
 
-      {!isProfileView && (currentPage === 'home' || currentPage === 'organ') && <DonorDiscoveryPanel forcedCountry={forcedCountry}>{locationDirectory}</DonorDiscoveryPanel>}
+      {!isProfileView && (currentPage === 'home' || currentPage === 'organ') && <DonorDiscoveryPanel forcedCountry={forcedCountry} emergencySms={currentPage === "home" && !forcedCountry}>{locationDirectory}</DonorDiscoveryPanel>}
 
       <PolicyModal
         isOpen={policyModal.isOpen}

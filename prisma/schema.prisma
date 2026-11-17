@@ -51,6 +51,8 @@ model User {
   Prescriptions       Prescription[]
   PublicDonorProfile  PublicDonorProfile?
   LoginEmails         UserLoginEmail[]
+  EmergencySmsConsent EmergencySmsConsent?
+  EmergencySmsRequests EmergencySmsRequest[]
 
   @@index([is_active_donor, blood_group, location_country, location_city, updated_at])
 }
@@ -734,4 +736,107 @@ model PakistanEditorialPage {
  published Boolean @default(false)
  public_updated_at DateTime?
  updated_at DateTime @updatedAt
+}
+
+model EmergencySmsBranch {
+  id String @id @default(uuid())
+  name String
+  area String
+  contact String
+  latitude Float
+  longitude Float
+  active Boolean @default(false)
+  opens_minute Int @default(0)
+  closes_minute Int @default(1440)
+  sponsor_remaining Int @default(0)
+  created_at DateTime @default(now())
+  requests EmergencySmsRequest[]
+  access EmergencySmsAccess[]
+}
+
+model EmergencySmsConsent {
+  user_id String @id
+  phone_digest String
+  point Bytes
+  language String @default("bn")
+  available Boolean @default(true)
+  confirmed_at DateTime @default(now())
+  last_contact_at DateTime?
+  User User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model EmergencySmsAccess {
+  id String @id @default(uuid())
+  branch_id String
+  email String
+  role String
+  accepted_user_id String?
+  invite_digest String? @unique
+  invite_expires DateTime
+  expires_at DateTime?
+  accepted_at DateTime?
+  revoked_at DateTime?
+  Branch EmergencySmsBranch @relation(fields: [branch_id], references: [id], onDelete: Restrict)
+  @@unique([branch_id, email, role])
+}
+
+model EmergencySmsRequest {
+  id String @id @default(uuid())
+  user_id String?
+  branch_id String
+  reference_digest String
+  reference Bytes
+  blood_group String
+  component String
+  needed_at DateTime
+  status String @default("PENDING")
+  funding String?
+  charged_paisa Int @default(0)
+  refund_paisa Int @default(0)
+  template_version String?
+  next_batch_at DateTime?
+  pilot_second_approved Boolean @default(false)
+  covered_count Int @default(0)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  Branch EmergencySmsBranch @relation(fields: [branch_id], references: [id], onDelete: Restrict)
+  User User? @relation(fields: [user_id], references: [id], onDelete: SetNull)
+  deliveries EmergencySmsDelivery[]
+  @@unique([branch_id, reference_digest])
+  @@index([user_id, created_at])
+  @@index([status, next_batch_at])
+}
+
+model EmergencySmsDelivery {
+  id String @id @default(uuid())
+  request_id String
+  donor_id String
+  phone_digest String
+  language String
+  status String
+  response String?
+  created_at DateTime @default(now())
+  Request EmergencySmsRequest @relation(fields: [request_id], references: [id], onDelete: Cascade)
+  @@unique([request_id, phone_digest])
+  @@index([donor_id, created_at])
+}
+
+model EmergencySmsAudit {
+  id String @id @default(uuid())
+  actor_id String
+  branch_id String?
+  request_id String?
+  event String
+  created_at DateTime @default(now())
+  @@index([created_at])
+}
+
+model EmergencySmsTemplate {
+  id String @id @default(uuid())
+  language String
+  body String
+  status String @default("DRAFT")
+  created_at DateTime @default(now())
+  published_at DateTime?
+  @@index([language, status, published_at])
 }

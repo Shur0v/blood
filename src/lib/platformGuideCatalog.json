@@ -171,6 +171,18 @@
   },
   {
     "kind": "api",
+    "name": "/api/admin/emergency-sms",
+    "flow": "emergency-sms",
+    "access": "Administrator",
+    "source": "src/app/api/admin/emergency-sms/route.ts",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "sha256": "78f0b14ac07450d25f6a20b4f960889d4a238be07d8279154169ed476c56f583"
+  },
+  {
+    "kind": "api",
     "name": "/api/admin/faqs",
     "flow": "appearance",
     "access": "Administrator",
@@ -748,6 +760,18 @@
       "GET"
     ],
     "sha256": "fe55e706a06015ec0778fb094fd7a41f24d6274728d20d459e6d2e3efd5cff4a"
+  },
+  {
+    "kind": "api",
+    "name": "/api/emergency-sms",
+    "flow": "emergency-sms",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/api/emergency-sms/route.ts",
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "sha256": "334b8c9a457b80bae3eb91943837fb6956ef78480541715ab23629ac952c6a86"
   },
   {
     "kind": "api",
@@ -1385,6 +1409,69 @@
   },
   {
     "kind": "model",
+    "name": "EmergencySmsAccess",
+    "flow": "emergency-sms",
+    "access": "Server-managed; record-level publication/authorization",
+    "source": "prisma/schema.prisma",
+    "methods": [],
+    "sha256": "9fdb6ce5cab51699c7197b9ef87e3ab07a45d3bd11ce5a3de25a972bd80c512c"
+  },
+  {
+    "kind": "model",
+    "name": "EmergencySmsAudit",
+    "flow": "emergency-sms",
+    "access": "Server-managed; record-level publication/authorization",
+    "source": "prisma/schema.prisma",
+    "methods": [],
+    "sha256": "453fcc9e45dc873d402406b9732fd59f16bcf728a9a028d684d5f8b4b2393d4a"
+  },
+  {
+    "kind": "model",
+    "name": "EmergencySmsBranch",
+    "flow": "emergency-sms",
+    "access": "Server-managed; record-level publication/authorization",
+    "source": "prisma/schema.prisma",
+    "methods": [],
+    "sha256": "6cac7ced1c19092aeb44d1b59ec6f3fd5f6626a2c16f0a45e2368bc4d4ebdae5"
+  },
+  {
+    "kind": "model",
+    "name": "EmergencySmsConsent",
+    "flow": "emergency-sms",
+    "access": "Server-managed; record-level publication/authorization",
+    "source": "prisma/schema.prisma",
+    "methods": [],
+    "sha256": "96bdc48d15beed5c1d9d4414db8489d34584a40f8ac6a5cd1cbfb2adee3f239e"
+  },
+  {
+    "kind": "model",
+    "name": "EmergencySmsDelivery",
+    "flow": "emergency-sms",
+    "access": "Server-managed; record-level publication/authorization",
+    "source": "prisma/schema.prisma",
+    "methods": [],
+    "sha256": "c4179ee6a0ced29af2c86ed5df1c5a52e676003989371559866910644dc787b3"
+  },
+  {
+    "kind": "model",
+    "name": "EmergencySmsRequest",
+    "flow": "emergency-sms",
+    "access": "Server-managed; record-level publication/authorization",
+    "source": "prisma/schema.prisma",
+    "methods": [],
+    "sha256": "4f62e1d0fe1805f3edfcce468d54077eb43d95ce8a4cea8ed0b2a1a02a09d018"
+  },
+  {
+    "kind": "model",
+    "name": "EmergencySmsTemplate",
+    "flow": "emergency-sms",
+    "access": "Server-managed; record-level publication/authorization",
+    "source": "prisma/schema.prisma",
+    "methods": [],
+    "sha256": "5cde87602ed42a3d207bde5fc22b2ed63093230530c8746bcba4c178318d2e0c"
+  },
+  {
+    "kind": "model",
     "name": "FaqItem",
     "flow": "appearance",
     "access": "Server-managed; record-level publication/authorization",
@@ -1696,7 +1783,7 @@
     "access": "Server-managed; record-level publication/authorization",
     "source": "prisma/schema.prisma",
     "methods": [],
-    "sha256": "48e2efb2b868f5e90015e6f15bd784a5b7d47e8208c33748e07d454c9a6b8798"
+    "sha256": "25b0f76a5800b8d6daf5f7d54b590d6a7ad9b16afd01578c57ed17b2092f99aa"
   },
   {
     "kind": "model",
@@ -1769,6 +1856,15 @@
     "source": "deploy/static-assets.mjs",
     "methods": [],
     "sha256": "b362176ac39708c499d7ce89d587c2e41689482a221154c4c7e734cefdcea882"
+  },
+  {
+    "kind": "module",
+    "name": "docs/emergency-sms-pilot.md",
+    "flow": "emergency-sms",
+    "access": "Reviewed supporting implementation",
+    "source": "docs/emergency-sms-pilot.md",
+    "methods": [],
+    "sha256": "2854537ccd94c6dbf910ebf7e7072c13c55cf37ea28579eac95124cf5cbe127f"
   },
   {
     "kind": "module",
@@ -1907,6 +2003,15 @@
   },
   {
     "kind": "module",
+    "name": "src/backend/scripts/emergencySmsWorker.ts",
+    "flow": "emergency-sms",
+    "access": "Reviewed supporting implementation",
+    "source": "src/backend/scripts/emergencySmsWorker.ts",
+    "methods": [],
+    "sha256": "8cb55fede4fdd3903578d00d3fc926116e979b8a33ecf11eac0554e6d7e312bb"
+  },
+  {
+    "kind": "module",
     "name": "src/backend/scripts/prescriptionEmailWorker.ts",
     "flow": "prescriptions",
     "access": "Reviewed supporting implementation",
@@ -1957,7 +2062,7 @@
     "access": "Reviewed supporting implementation",
     "source": "src/components/AdminWorkspaceShell.tsx",
     "methods": [],
-    "sha256": "f5af21c7a1994c58eeb609295c4124619a647fef2b612979a24a85436e482c51"
+    "sha256": "332cd06b9716bfa49e4929d11b9895f142e77936f2ba7dac6f18697a85e36524"
   },
   {
     "kind": "module",
@@ -1976,6 +2081,42 @@
     "source": "src/components/CityLocationAutocomplete.tsx",
     "methods": [],
     "sha256": "da25caf15015b641c163667ce7ce113747391a5fd2df9dd7e6dfa7b95833da55"
+  },
+  {
+    "kind": "module",
+    "name": "src/components/EmergencyAccountEntry.tsx",
+    "flow": "emergency-sms",
+    "access": "Reviewed supporting implementation",
+    "source": "src/components/EmergencyAccountEntry.tsx",
+    "methods": [],
+    "sha256": "94bfe3943f408df034f15c9da0648c5c5a8dec168576d14f193be8d06405ea71"
+  },
+  {
+    "kind": "module",
+    "name": "src/components/EmergencyAdmin.tsx",
+    "flow": "emergency-sms",
+    "access": "Reviewed supporting implementation",
+    "source": "src/components/EmergencyAdmin.tsx",
+    "methods": [],
+    "sha256": "2f9331221e5a8376e7f646e1a2260cbdcaa3352a449fbb7772c0709b9cbbe6d9"
+  },
+  {
+    "kind": "module",
+    "name": "src/components/EmergencyBranchWorkspace.tsx",
+    "flow": "emergency-sms",
+    "access": "Reviewed supporting implementation",
+    "source": "src/components/EmergencyBranchWorkspace.tsx",
+    "methods": [],
+    "sha256": "a3c5185c0dc6ffeac645672272bd7ae2fd1ec4b1aa2195628f9a617b99689d70"
+  },
+  {
+    "kind": "module",
+    "name": "src/components/EmergencySmsPanel.tsx",
+    "flow": "emergency-sms",
+    "access": "Reviewed supporting implementation",
+    "source": "src/components/EmergencySmsPanel.tsx",
+    "methods": [],
+    "sha256": "014d17ce9cfac9a68ba38f5c58f0de829a4badd45afe708fd8fa9001ac7d15f9"
   },
   {
     "kind": "module",
@@ -2300,6 +2441,15 @@
     "source": "src/lib/donorOrdering.ts",
     "methods": [],
     "sha256": "71652300d4e11abf5d673e6d4e0e81a4c565390a86f206fe673a3cca7001ce80"
+  },
+  {
+    "kind": "module",
+    "name": "src/lib/emergencySms.ts",
+    "flow": "emergency-sms",
+    "access": "Reviewed supporting implementation",
+    "source": "src/lib/emergencySms.ts",
+    "methods": [],
+    "sha256": "69c8e236b4cf1ba8e9ebda53e9f99c2f77fbf0a8d2cb061105a6576fe6c0e9e5"
   },
   {
     "kind": "module",
@@ -2726,6 +2876,15 @@
   },
   {
     "kind": "page",
+    "name": "/emergency-sms/workspace",
+    "flow": "emergency-sms",
+    "access": "Public or endpoint-specific guard",
+    "source": "src/app/emergency-sms/workspace/page.tsx",
+    "methods": [],
+    "sha256": "090e89d50a7418d9c8e6cb1f0da6b8e40588345b16bfce6ddfd4525902fa5201"
+  },
+  {
+    "kind": "page",
     "name": "/faq",
     "flow": "appearance",
     "access": "Public or endpoint-specific guard",
@@ -3137,6 +3296,15 @@
     "source": "src/app/private/console-0be5626d4305f192e37e/workspace/documentation/page.tsx",
     "methods": [],
     "sha256": "3066c50bc5bb43eb3f76afaf83ae13f0326b3db484f93cd0243c03c2178c6df3"
+  },
+  {
+    "kind": "page",
+    "name": "/private/console-0be5626d4305f192e37e/workspace/emergency-sms",
+    "flow": "emergency-sms",
+    "access": "Administrator",
+    "source": "src/app/private/console-0be5626d4305f192e37e/workspace/emergency-sms/page.tsx",
+    "methods": [],
+    "sha256": "71eb4841bf009bc2e1b986431ea3439aeefea8b55e813389b72a6f55c2d3cc27"
   },
   {
     "kind": "page",
@@ -3722,6 +3890,15 @@
     "source": "src/backend/services/donorResearch.ts",
     "methods": [],
     "sha256": "8a61a0fd11f6959a7bdfedb18b49b77071ef4274f582c3e4bf8bb98a7756b94d"
+  },
+  {
+    "kind": "service",
+    "name": "emergencySms",
+    "flow": "emergency-sms",
+    "access": "Internal server module",
+    "source": "src/backend/services/emergencySms.ts",
+    "methods": [],
+    "sha256": "1c4829a1b1cb6c8563a1af343315907a96b57cf69b8909cfa4b64a1469ddf1c5"
   },
   {
     "kind": "service",

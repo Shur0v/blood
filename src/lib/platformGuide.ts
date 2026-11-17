@@ -7,6 +7,14 @@ function flow(id:string,chapter:string,title:string,intro:string,href:string,sou
 export const GUIDE_SOURCE_VERSION='admin-operations-v1 · baseline 7a678be';
 export const GUIDE_REVIEW_DATE='26 October 2026 · Asia/Dhaka';
 export const guideFlows:GuideFlow[]=[
+flow('emergency-sms','Hospital operations','জরুরি রক্তদাতা এসএমএস','ঢাকার পরীক্ষামূলক হাসপাতাল, কর্মীর অ্যাক্সেস এবং দাতার ৫ কিমি কভারেজ। বাস্তব অর্থ বা এসএমএস চালুর আগে প্রদানকারী ও হাসপাতালের অনুমোদন লাগবে।','emergency-sms',['docs/emergency-sms-pilot.md','src/components/EmergencySmsPanel.tsx','src/components/EmergencyBranchWorkspace.tsx','src/components/EmergencyAdmin.tsx','src/components/EmergencyAccountEntry.tsx','src/lib/emergencySms.ts','src/backend/scripts/emergencySmsWorker.ts'],[
+ ['শাখা তৈরি করুন','অ্যাডমিনের বর্তমান পাসওয়ার্ড দিয়ে শাখা, হাসপাতালের সেবা-বিন্দু, সেবার সময় ও পরীক্ষামূলক ক্রেডিট যোগ করুন।','বাস্তব রোগীর তথ্য ছাড়া স্টেজিং ডেটায় পরীক্ষা করুন।'],
+ ['টিম অ্যাক্সেস ভাগ করুন','ভূমিকা ও শাখা বেছে আমন্ত্রণ কোড তৈরি করুন। কর্মী /emergency-sms/workspace-এ নিজের অ্যাকাউন্টে লগইন করে কোড ব্যবহার করবেন।','গৃহীত আমন্ত্রণ অ্যাকাউন্টে বাঁধা। প্রত্যাহারের পরে পরের সার্ভার অনুরোধেই অ্যাক্সেস বন্ধ।'],
+ ['দাতার সম্মতি নিন','অ্যাকাউন্টের জরুরি এসএমএস মডালে নির্ভুল সেবা-বিন্দু বেছে আলাদা সম্মতি দিন।','৫ কিমি সেবা-বিন্দুর দূরত্ব বোঝায়। প্রোফাইলের শহর বা বর্তমান অবস্থান ধরে তালিকা হয় না।'],
+ ['একটি অনুরোধ পরীক্ষা করুন','ডেস্কটপে প্লাস মডাল, মোবাইলে অ্যাকাউন্ট থেকে শাখা, রেফারেন্স ও প্রয়োজন জমা দিন। কর্মী হাসপাতাল থেকে নিশ্চিত করে যাচাই করবেন।','কভারেজ শূন্য হলে পেমেন্টের অনুশীলন বন্ধ।'],
+ ['ব্যাচ, সাড়া ও ফেরত দেখুন','স্পনসর বা ৳৩৫ পরীক্ষামূলক মোড বাছুন। ওয়ার্কার তালিকা চালায়। সাড়া মডালের পরীক্ষামূলক ইনবক্সে দিন।','পাইলটের দ্বিতীয় ব্যাচের জন্য পাঁচ মিনিট পরে ডিসপ্যাচ অনুমোদন লাগে।'],
+ ['সমস্যায় কাজ বন্ধ করুন','শাখা বন্ধ করার কাজ অপেক্ষার প্রেরণ থামায়। অ্যাকাউন্ট থেকে আগের রসিদ দেখা যায়।','শাখা, এসএমএস ও বিকাশের বাস্তব পরীক্ষা ছাড়া পেইড রোলআউট শুরু করবেন না।']], 'configuration-dependent'),
+
 flow('location-management','Location','Location Management','Control account location selection and preview the saved Geoapify search policy.','/location-management',['src/lib/locationSettings.ts','src/components/LocationSearchFeedback.tsx','src/components/useLocationSuggestions.ts','docs/location-management.md','src/backend/scripts/checkLocationSearch.ts'],[
  ['Choose detail and scope','Use Cities and local areas for detailed selection or Cities only for the older city workflow. Countrywide is the default. Current detected district only limits new selections to the visitor district.','Existing saved locations are retained.'],
  ['Control ranking and labels','Nearby priority orders similarly relevant matches. Spelling corrections use verified candidates. Country may be shown in the main label and remains in secondary context.','Writing a complete foreign country name changes countrywide search. District restriction still applies.'],
