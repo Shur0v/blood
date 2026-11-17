@@ -8,7 +8,13 @@ import { BATCH_DELAY_MS, BATCH_SIZE, CONSENT_AGE_MS, CONTACT_INTERVAL_MS, MAX_RE
   PRICE_PAISA, RADIUS_KM, TEMPLATE_VERSION, selectRecipients } from '@/src/lib/emergencySms';
 
 export type Tx = Prisma.TransactionClient;
-export const sandboxEnabled = () => process.env.EMERGENCY_SMS_MODE === 'sandbox';
+/**
+ * The emergency workflow is deliberately sandbox-only.  A fresh deployment
+ * must expose the pilot UI without an environment toggle, while an operator
+ * can still disable new requests immediately with EMERGENCY_SMS_MODE=disabled.
+ * No setting enables a live SMS provider or a live payment charge.
+ */
+export const sandboxEnabled = () => process.env.EMERGENCY_SMS_MODE?.trim().toLowerCase() !== 'disabled';
 export const roles = ['BRANCH_ADMIN', 'VERIFIER', 'DISPATCH', 'FINANCE', 'CAMPAIGN'] as const;
 export const defaultNotice = 'পরীক্ষামূলক মোড। টাকা কাটা বা মোবাইলে এসএমএস পাঠানো হবে না।';
 

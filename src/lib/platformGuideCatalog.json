@@ -1864,7 +1864,7 @@
     "access": "Reviewed supporting implementation",
     "source": "docs/emergency-sms-pilot.md",
     "methods": [],
-    "sha256": "2854537ccd94c6dbf910ebf7e7072c13c55cf37ea28579eac95124cf5cbe127f"
+    "sha256": "23f844be02addeaab5838da44f5d9cea98f7e71f311af099e2a2852d17bb1c7c"
   },
   {
     "kind": "module",
@@ -3898,7 +3898,7 @@
     "access": "Internal server module",
     "source": "src/backend/services/emergencySms.ts",
     "methods": [],
-    "sha256": "1c4829a1b1cb6c8563a1af343315907a96b57cf69b8909cfa4b64a1469ddf1c5"
+    "sha256": "47947f3c605085939253369e98437ac7e44257a0a4110709abffa31db453af60"
   },
   {
     "kind": "service",
